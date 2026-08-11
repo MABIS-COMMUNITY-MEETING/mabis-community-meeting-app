@@ -180,6 +180,11 @@ export function applyTheme(themeKey) {
   Object.entries(theme.vars).forEach(([key, value]) => {
     root.style.setProperty(key, value);
   });
+  // The editorial layer paints panels/labels with --ink and --bone. Themes never
+  // set them, so every theme was drawing on the original maroon/bone pair — that
+  // was the clash. Tie them to the theme's own foreground/background instead.
+  root.style.setProperty("--ink", theme.vars["--foreground"]);
+  root.style.setProperty("--bone", theme.vars["--background"]);
   applyPalette(theme.swatches);
   Object.values(THEMES).forEach(t => document.body.classList.remove(t.bodyClass));
   document.body.classList.add(theme.bodyClass);
