@@ -1,11 +1,10 @@
 import React, { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { isLinux } from "@/lib/perf";
 
 /*
  * Pointer-driven 3D tilt. Purely decorative: the element settles perfectly flat
  * when the pointer leaves, so it never sits at an angle over real content.
- * Skipped entirely in perf-lite (Linux) and reduced-motion.
+ * Skipped under reduced-motion.
  */
 export default function Tilt3D({ children, max = 12, className = "" }) {
 	const ref = useRef(null);
@@ -15,8 +14,7 @@ export default function Tilt3D({ children, max = 12, className = "" }) {
 	const ry = useSpring(useTransform(mx, [-0.5, 0.5], [-max, max]), { stiffness: 160, damping: 18 });
 
 	const off =
-		isLinux ||
-		(typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+		typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 	if (off) return <div className={className}>{children}</div>;
 
