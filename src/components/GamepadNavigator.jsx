@@ -34,7 +34,12 @@ export default function GamepadNavigator() {
 			const el = find_neighbour(document.activeElement, dir);
 			if (!el) return;
 			el.focus({ preventScroll: true });
-			el.scrollIntoView({ block: "center", behavior: "smooth" });
+			/* only scroll when the target is actually off-screen, and never with
+			   smooth behaviour — repeated smooth scrolls fight each other */
+			const r = el.getBoundingClientRect();
+			if (r.top < 80 || r.bottom > window.innerHeight - 80) {
+				el.scrollIntoView({ block: "center", behavior: "auto" });
+			}
 			playHover();
 		};
 
@@ -85,19 +90,33 @@ export default function GamepadNavigator() {
 			press(pad, confirm, (p) => {
 				setActive(true);
 				const el = document.activeElement;
-				if (el && el !== document.body) {
-					playClick();
-					rumble(p, 0.35);
-					el.click();
-				}
+				if (!el || el === document.body) return;
+				playClick();
+				rumble(p, 0.35);
+				const tag = el.tagName;
+				/* clicking a text field just re-focuses it — typing is the OS keyboard's
+				   job, so leave inputs alone and only activate real controls */
+				if (tag === "INPUT" || tag === "TEXTAREA") return;
+				el.click();
 			});
 			press(pad, cancel, (p) => {
 				setActive(true);
 				playMenuClose();
 				rumble(p, 0.18);
+				/* dispatch on the focused node first so component-level key handlers
+				   (dialogs, popovers) see it, then let it bubble to document */
+				const target = document.activeElement || document;
+				target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+				document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
 				document.activeElement?.blur?.();
-				window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
 			});
+
+			/* right stick scrolls the page — the grid is taller than one screen */
+			const ry = pad.axes[3] || 0;
+			if (Math.abs(ry) > 0.2) {
+				setActive(true);
+				window.scrollBy(0, ry * 26);
+			}
 
 			raf = requestAnimationFrame(poll);
 		};
