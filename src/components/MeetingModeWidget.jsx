@@ -107,26 +107,25 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
       whileHover={{ scale: (meetingEnded || !canStart) ? 1 : 1.01 }}
       whileTap={{ scale: (meetingEnded || !canStart) ? 1 : 0.99 }}
       onClick={handleWidgetClick}
-      className={`bg-gradient-to-br from-[#951E3A] to-[#7a1830] rounded-2xl shadow-lg overflow-hidden border border-[#7a1830] select-none ${(meetingEnded || !canStart) ? "" : "cursor-pointer"}`}
-      style={{ boxShadow: "0 8px 32px hsl(var(--primary) / 0.35)" }}
+      className={`relative bg-ink text-bone border border-ink overflow-hidden select-none ${(meetingEnded || !canStart) ? "" : "cursor-pointer"}`}
     >
-      <div className="p-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center shrink-0 backdrop-blur-sm border border-white/20">
-            {meetingEnded || isLocked || !canStart ? <Lock className="w-7 h-7 text-white" /> : <Video className="w-7 h-7 text-white" />}
+      <div className="p-6 sm:p-8 flex flex-wrap items-center justify-between gap-6">
+        <div className="flex items-center gap-5 min-w-0">
+          <div className="w-14 h-14 bg-bone/10 flex items-center justify-center shrink-0 border border-bone/25">
+            {meetingEnded || isLocked || !canStart ? <Lock className="w-6 h-6" /> : <Video className="w-6 h-6" />}
           </div>
-          <div>
-            <p className="text-white/70 text-xs uppercase tracking-widest font-semibold mb-0.5">
+          <div className="min-w-0">
+            <p className="tech-label text-bone/60 mb-1.5">
               {meetingEnded ? "Completed" : !canStart ? "Locked" : isLocked ? "Meeting Locked until Friday" : isToday ? "Today's Meeting" : "Next Meeting"}
             </p>
-            <h2 className="font-display font-black text-white text-2xl leading-none">
+            <h2 className="font-display font-extralight tracking-ultra text-3xl sm:text-4xl leading-[1.05]">
               {meetingEnded ? "Meeting Ended for the Week" : !canStart ? "Meeting Mode" : "Start Meeting"}
             </h2>
-            <p lang="ja" className="font-jp text-white/70 text-sm mt-1">
+            <p lang="ja" className="font-jp text-bone/65 text-sm mt-1.5">
               {meetingEnded ? "今週の会議は終了しました" : !canStart ? "会議モード" : "会議を始める"}
             </p>
-            <div className="flex items-center gap-2 mt-1.5">
-              <p className="text-white text-sm font-semibold">
+            <div className="flex items-center gap-2 mt-3">
+              <p className="tech-label text-bone">
                 {isToday ? format(meetingDate, "EEEE — 'Today'") : format(meetingDate, "EEEE, d MMMM yyyy")}
               </p>
             </div>
@@ -135,7 +134,7 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
 
         <div className="flex items-center gap-3">
           {status && (
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-xl ${status.bg || ""} ${status.text || ""} font-bold text-sm shadow-md`}
+            <div className={`flex items-center gap-2 px-3.5 py-1.5 tech-label ${status.bg || ""} ${status.text || ""}`}
               style={status.style || {}}>
               <status.icon className="w-4 h-4" />
               {status.label}
@@ -145,34 +144,34 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
             <>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 onClick={(e) => { e.stopPropagation(); navigate("/history"); }}
-                className="w-10 h-10 rounded-full bg-[#EACE54] flex items-center justify-center shrink-0 shadow-md" title="View History">
-                <Lock className="w-5 h-5 text-[#951E3A]" />
+                className="w-10 h-10 bg-secondary flex items-center justify-center shrink-0" title="View History">
+                <Lock className="w-4 h-4 text-ink" />
               </motion.button>
               {canStart && (
                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                   onClick={(e) => { e.stopPropagation(); setShowPassword(true); }}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm border border-white/30 transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-bone/10 hover:bg-bone/20 text-bone tech-label border border-bone/30 transition-colors"
                   title="Undo End Meeting">
                   <Undo2 className="w-4 h-4" /> Undo
                 </motion.button>
               )}
             </>
           ) : isLocked || !canStart ? (
-            <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center shrink-0 border border-white/30">
-              <Lock className="w-5 h-5 text-white/70" />
+            <div className="w-10 h-10 bg-bone/10 flex items-center justify-center shrink-0 border border-bone/30">
+              <Lock className="w-4 h-4 text-bone/70" />
             </div>
           ) : (
             <motion.div
               animate={{ x: [0, 6, 0] }}
               transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-              className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-md">
-              <ArrowRight className="w-5 h-5 text-[#951E3A]" />
+              className="w-10 h-10 bg-bone flex items-center justify-center shrink-0">
+              <ArrowRight className="w-4 h-4 text-ink" />
             </motion.div>
           )}
         </div>
       </div>
 
-      <div className="h-1 w-full bg-gradient-to-r from-[#EACE54] via-white/30 to-[#EACE54]/40" />
+      <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, var(--flag-1, hsl(var(--primary))), var(--flag-3, hsl(var(--secondary))), var(--flag-5, hsl(var(--primary))))" }} />
     </motion.div>
       <PasswordModal open={showPassword} onClose={() => setShowPassword(false)} onSuccess={handleUndoEnd} title="Undo End Meeting" />
       <PasswordModal open={showUnlockPassword} onClose={() => setShowUnlockPassword(false)} onSuccess={() => { setPendingDate(todayStr); setShowUnlockPassword(false); setShowDateConfirm(true); }} title="Unlock Meeting Mode" />
