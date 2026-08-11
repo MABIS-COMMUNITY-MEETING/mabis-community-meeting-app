@@ -47,6 +47,13 @@ function pastelTheme(key, name, p, s) {
   };
 }
 
+// Pride flag theme: primary/secondary drive the UI; swatches show the full flag.
+function prideTheme(key, name, p, s, flagHexes) {
+  const t = pastelTheme(key, name, p, s);
+  t.swatches = flagHexes;
+  return t;
+}
+
 export const THEMES = {
   default: {
     name: "MABIS",
@@ -109,6 +116,16 @@ export const THEMES = {
   copper:    pastelTheme("copper",    "Copper",    "25 55% 42%",  "195 35% 60%"),
   sakura:    pastelTheme("sakura",    "Sakura",    "340 45% 55%", "150 30% 60%"),
   nebula:    pastelTheme("nebula",    "Nebula",    "290 35% 50%", "200 40% 62%"),
+
+  // ── Pride flag palettes ──
+  pride:       prideTheme("pride",       "Pride",       "0 79% 47%",   "27 98% 47%",  ["#E40303","#FF8C00","#FFED00","#008026","#004DFF","#750787"]),
+  trans:       prideTheme("trans",       "Trans",       "197 74% 62%", "349 100% 78%",["#5BCEFA","#F5A9B8","#FFFFFF","#F5A9B8","#5BCEFA"]),
+  bi:          prideTheme("bi",          "Bisexual",    "330 65% 42%", "240 60% 45%", ["#D60270","#9B4F96","#0038A8"]),
+  lesbian:     prideTheme("lesbian",     "Lesbian",     "15 90% 45%",  "323 61% 47%", ["#D52D00","#FF9A56","#FFFFFF","#D362A4","#A30262"]),
+  pan:         prideTheme("pan",         "Pansexual",   "331 100% 45%",  "201 100% 45%",["#FF218C","#FFD800","#21B1FF"]),
+  nonbinary:   prideTheme("nonbinary",   "Nonbinary",   "60 80% 38%",  "271 42% 47%", ["#FCF434","#FFFFFF","#9C59D1","#2C2C2C"]),
+  ace:         prideTheme("ace",         "Asexual",     "270 43% 43%", "0 0% 40%",    ["#000000","#A3A3A3","#FFFFFF","#800080"]),
+  genderfluid: prideTheme("genderfluid", "Genderfluid", "323 88% 60%", "234 60% 45%", ["#FF75A2","#FFFFFF","#BE18D6","#000000","#333EBD"]),
 };
 
 export function applyTheme(themeKey) {
