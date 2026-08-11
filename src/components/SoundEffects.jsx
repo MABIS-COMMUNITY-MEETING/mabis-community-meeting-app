@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { playClick, playType, playHover } from "@/lib/sound";
+import { playClick, playType, playHover, playSectionEnter } from "@/lib/sound";
 
 /* things worth a tick when the pointer crosses them — controls plus the
    card-ish rows (members, jobs, list items) that read as pickable */
 const HOVER_TARGETS =
-  "button, a, [role='button'], [role='option'], [role='menuitem'], [role='tab'], summary, label, li, [data-cursor], input[type='checkbox'], input[type='radio'], select";
+  "button, a, [role='button'], [role='option'], [role='menuitem'], [role='tab'], [role='checkbox'], [role='switch'], summary, label, li, tr, th, [data-cursor], input, textarea, select, h1, h2, h3, .cursor-pointer";
 
 // Plays a mouse click for any button / link / toggle press app-wide,
 // and a soft keypress "tock" while typing in text fields.
@@ -26,7 +26,15 @@ export default function SoundEffects() {
     };
     // one tick per element entered — moving within the same element stays quiet
     let last = null;
+    let lastSection = null;
     const hoverHandler = (e) => {
+      // entering one of the numbered sections (meeting mode, announcements,
+      // discussion … 01–10) gets its own lower tone
+      const section = e.target.closest?.("[data-gp-section]") || null;
+      if (section !== lastSection) {
+        lastSection = section;
+        if (section) playSectionEnter();
+      }
       const t = e.target.closest?.(HOVER_TARGETS) || null;
       if (t === last) return;
       last = t;

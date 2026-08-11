@@ -137,6 +137,21 @@ export function playHover() {
   tick(c, t, 2400 + Math.random() * 240, 0.028, 0.045);
 }
 
+// Low wooden tone — pointer crossing into a new numbered section (01–10).
+let lastSection = 0;
+export function playSectionEnter() {
+  if (!enabled) return;
+  const now = performance.now();
+  if (now - lastSection < 260) return;
+  lastSection = now;
+  const c = getCtx();
+  if (!c) return;
+  if (c.state === "suspended") c.resume();
+  const t = c.currentTime;
+  tick(c, t, 520, 0.035, 0.09);
+  tick(c, t + 0.05, 780, 0.02, 0.07);
+}
+
 // Low transient + high detail — fullscreen menu opening.
 export function playMenuOpen() {
   if (!enabled) return;
