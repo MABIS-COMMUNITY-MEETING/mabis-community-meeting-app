@@ -93,25 +93,25 @@ export default function FamicomController({ onUnlock }) {
           {/* D-pad: red square recess 92x92 at (22,59) with black cross plate */}
           {/* black outline cross */}
           <div className="absolute" style={{
-            left: 17, top: 50, width: 96, height: 96, background: "#1b1b1b",
-            clipPath: "polygon(33px 0, 63px 0, 63px 33px, 96px 33px, 96px 63px, 63px 63px, 63px 96px, 33px 96px, 33px 63px, 0 63px, 0 33px, 33px 33px)"
+            left: 18, top: 51, width: 94, height: 94, background: "#1b1b1b",
+            clipPath: "polygon(32px 0, 62px 0, 62px 32px, 94px 32px, 94px 62px, 62px 62px, 62px 94px, 32px 94px, 32px 62px, 0 62px, 0 32px, 32px 32px)"
           }} />
           {/* red cross plate */}
           <div className="absolute" style={{
             left: 20, top: 53, width: 90, height: 90, background: RED,
             clipPath: "polygon(30px 0, 60px 0, 60px 30px, 90px 30px, 90px 60px, 60px 60px, 60px 90px, 30px 90px, 30px 60px, 0 60px, 0 30px, 30px 30px)"
           }} />
-          <div className="absolute" style={{ left: 26, top: 59, width: 78, height: 78 }}>
-            {/* black cross plate — arms 26px */}
+          <div className="absolute" style={{ left: 23, top: 56, width: 84, height: 84 }}>
+            {/* black cross plate — arms 24px */}
             <div className="absolute" style={{
-              left: 0, top: 0, width: 78, height: 78, background: "#1b1b1b",
-              clipPath: "polygon(26px 0, 52px 0, 52px 26px, 78px 26px, 78px 52px, 52px 52px, 52px 78px, 26px 78px, 26px 52px, 0 52px, 0 26px, 26px 26px)"
+              left: 0, top: 0, width: 84, height: 84, background: "#1b1b1b",
+              clipPath: "polygon(30px 0, 54px 0, 54px 30px, 84px 30px, 84px 54px, 54px 54px, 54px 84px, 30px 84px, 30px 54px, 0 54px, 0 30px, 30px 30px)"
             }} />
-            {arm("up", "▲", { left: 30, top: 3, width: 18, height: 20 })}
-            {arm("left", "◀", { left: 3, top: 30, width: 20, height: 18 })}
-            {arm("right", "▶", { left: 55, top: 30, width: 20, height: 18 })}
-            {arm("down", "▼", { left: 30, top: 55, width: 18, height: 20 })}
-            <div className="absolute rounded-full" style={{ left: 27, top: 27, width: 24, height: 24, background: "linear-gradient(145deg,#5c5c5c,#2c2c2c)" }} />
+            {arm("up", "▲", { left: 30, top: 4, width: 24, height: 22 })}
+            {arm("left", "◀", { left: 4, top: 30, width: 22, height: 24 })}
+            {arm("right", "▶", { left: 58, top: 30, width: 22, height: 24 })}
+            {arm("down", "▼", { left: 30, top: 58, width: 24, height: 22 })}
+            <div className="absolute rounded-full" style={{ left: 30, top: 30, width: 24, height: 24, background: "linear-gradient(145deg,#5c5c5c,#2c2c2c)" }} />
           </div>
 
           {/* SELECT / START */}
