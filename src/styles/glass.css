@@ -1,0 +1,267 @@
+/* ──────────────────────────────────────────────────────────────
+   LIQUID GLASS — an optical material for the floating control
+   plane only. The editorial content plane stays crisp.
+
+   Anatomy of one surface (single backdrop-filter, never nested):
+     .lg-surface            the material itself (blur/saturate/tint)
+       ::before             pointer-tracked specular highlight
+       ::after              edge lens — refraction reads strongest at
+                            the rim, near-zero at the centre
+     > .lg-content          the micro control plane (icons/labels)
+
+   Thickness scales with role: a 36px icon button and a full menu bar
+   are the same material at different depths, not the same class.
+   ────────────────────────────────────────────────────────────── */
+
+.lg-surface {
+  --glass_blur: 20px;
+  --glass_saturation: 160%;
+  --glass_brightness: 1.04;
+  --glass_tint: 0.10;          /* base fill strength */
+  --glass_lens: 1.5px;         /* edge refraction travel */
+  --glass_spec: 0.26;          /* specular highlight peak */
+  --glass_shadow: 0 10px 30px -12px hsl(var(--ink) / 0.28);
+  --glass_pointer_x: 50%;
+  --glass_pointer_y: 0%;
+  --glass_press: 1;
+
+  position: relative;
+  isolation: isolate;
+  transform: scale(var(--glass_press));
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              backdrop-filter 0.42s ease;
+
+  /* the fill is a directional wedge, not a flat white wash — the
+     surface is brighter where the light enters it */
+  background:
+    linear-gradient(
+      135deg,
+      hsl(var(--bone) / calc(var(--glass_tint) * 1.7)),
+      hsl(var(--bone) / calc(var(--glass_tint) * 0.55)) 58%,
+      hsl(var(--ink) / calc(var(--glass_tint) * 0.35))
+    );
+
+  backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+  -webkit-backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+
+  border: 1px solid hsl(var(--bone) / 0.20);
+  /* inner top edge lit, inner bottom edge shaded → thickness */
+  box-shadow:
+    inset 0 1px 0 hsl(var(--bone) / 0.34),
+    inset 0 -1px 0 hsl(var(--ink) / 0.16),
+    inset 1px 0 0 hsl(var(--bone) / 0.10),
+    var(--glass_shadow);
+}
+
+/* specular — follows the pointer, stable at rest, never a sweeping sheen */
+.lg-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      120px 90px at var(--glass_pointer_x) var(--glass_pointer_y),
+      hsl(var(--bone) / var(--glass_spec)),
+      hsl(var(--bone) / calc(var(--glass_spec) * 0.3)) 24%,
+      transparent 55%
+    ),
+    linear-gradient(to bottom, hsl(var(--bone) / 0.12), transparent 42%);
+  transition: opacity 0.3s ease;
+}
+
+/* edge lens — a second, tiny blur pass masked to the rim with a smooth
+   falloff, so only the border region bends the backdrop; the middle of
+   the panel stays optically stable and text behind it stays legible */
+.lg-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  backdrop-filter: blur(var(--glass_lens)) brightness(1.05);
+  -webkit-backdrop-filter: blur(var(--glass_lens)) brightness(1.05);
+  -webkit-mask-image: radial-gradient(120% 160% at 50% 50%, transparent 34%, rgba(0,0,0,0.35) 62%, #000 100%);
+  mask-image: radial-gradient(120% 160% at 50% 50%, transparent 34%, rgba(0,0,0,0.35) 62%, #000 100%);
+  /* restrained material noise kills gradient banding without graining the UI */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.9;
+}
+
+.lg-surface > .lg-content { position: relative; z-index: 1; }
+
+/* ── variants: thickness by role ─────────────────────────────── */
+
+/* compact — icon buttons, toggles, glyph chips */
+.lg-compact {
+  --glass_blur: 14px;
+  --glass_saturation: 145%;
+  --glass_brightness: 1.03;
+  --glass_tint: 0.09;
+  --glass_lens: 0.6px;
+  --glass_spec: 0.30;          /* sharper on small surfaces */
+  --glass_shadow: 0 4px 12px -6px hsl(var(--ink) / 0.30);
+}
+
+/* regular — toolbars, contextual clusters */
+.lg-regular {
+  --glass_blur: 22px;
+  --glass_saturation: 160%;
+  --glass_brightness: 1.04;
+  --glass_tint: 0.12;
+  --glass_lens: 1.4px;
+  --glass_spec: 0.26;
+}
+
+/* navigation — the persistent header strip */
+.lg-navigation {
+  --glass_blur: 26px;
+  --glass_saturation: 168%;
+  --glass_brightness: 1.05;
+  --glass_tint: 0.11;
+  --glass_lens: 1.8px;
+  --glass_spec: 0.22;
+  --glass_shadow: 0 14px 40px -22px hsl(var(--ink) / 0.40);
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+/* controller — thin floating optical strip for the input prompts */
+.lg-controller {
+  --glass_blur: 20px;
+  --glass_saturation: 165%;
+  --glass_brightness: 1.05;
+  --glass_tint: 0.13;
+  --glass_lens: 1.4px;
+  --glass_spec: 0.24;
+  --glass_shadow: 0 -10px 34px -20px hsl(var(--ink) / 0.45);
+}
+
+/* panel / thick — large floating surfaces and overlays */
+.lg-panel {
+  --glass_blur: 30px;
+  --glass_saturation: 170%;
+  --glass_brightness: 1.05;
+  --glass_tint: 0.15;
+  --glass_lens: 2.4px;
+  --glass_spec: 0.24;
+  --glass_shadow: 0 26px 70px -28px hsl(var(--ink) / 0.45);
+}
+.lg-thick {
+  --glass_blur: 38px;
+  --glass_saturation: 178%;
+  --glass_brightness: 1.06;
+  --glass_tint: 0.18;
+  --glass_lens: 3.4px;
+  --glass_spec: 0.22;          /* wider, more diffuse on deep material */
+  --glass_shadow: 0 34px 90px -30px hsl(var(--ink) / 0.55);
+}
+.lg-thick::before {
+  background:
+    radial-gradient(220px 170px at var(--glass_pointer_x) var(--glass_pointer_y),
+      hsl(var(--bone) / var(--glass_spec)),
+      hsl(var(--bone) / calc(var(--glass_spec) * 0.28)) 26%,
+      transparent 58%),
+    linear-gradient(to bottom, hsl(var(--bone) / 0.10), transparent 38%);
+}
+
+/* clear — minimal tint, for glass over already-quiet backgrounds */
+.lg-clear {
+  --glass_blur: 16px;
+  --glass_saturation: 150%;
+  --glass_brightness: 1.02;
+  --glass_tint: 0.05;
+  --glass_lens: 1px;
+  --glass_spec: 0.18;
+}
+
+/* overlay — full-bleed scrim behind a modal; carries no highlight */
+.lg-overlay {
+  --glass_blur: 18px;
+  --glass_saturation: 120%;
+  --glass_brightness: 0.92;
+  --glass_tint: 0.06;
+  --glass_shadow: none;
+  border: none;
+}
+.lg-overlay::before, .lg-overlay::after { display: none; }
+
+/* ── adaptive tint ───────────────────────────────────────────── */
+/* over dark sections the material is graphite with a luminous rim —
+   not an inverted copy of the light one */
+.lg-on-dark {
+  background:
+    linear-gradient(135deg,
+      hsl(var(--bone) / calc(var(--glass_tint) * 0.85)),
+      hsl(var(--bone) / calc(var(--glass_tint) * 0.25)) 60%,
+      hsl(var(--ink) / calc(var(--glass_tint) * 1.4)));
+  border-color: hsl(var(--bone) / 0.16);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--bone) / 0.26),
+    inset 0 -1px 0 hsl(var(--ink) / 0.4),
+    var(--glass_shadow);
+}
+/* over bright sections lean on contrast rather than more white */
+.lg-on-light {
+  --glass_brightness: 0.99;
+  background:
+    linear-gradient(135deg,
+      hsl(var(--bone) / calc(var(--glass_tint) * 1.9)),
+      hsl(var(--bone) / calc(var(--glass_tint) * 0.9)) 55%,
+      hsl(var(--ink) / calc(var(--glass_tint) * 0.5)));
+  border-color: hsl(var(--ink) / 0.12);
+}
+
+/* press — physical compression, released with a spring-ish ease */
+.lg-surface[data-glass-press="1"] {
+  --glass_press: 0.988;
+  --glass_spec: 0.36;
+  --glass_lens: 0.8px;
+  transition: transform 0.09s ease-out;
+}
+
+/* fast pointer travel: cheaper optics while moving, full quality at rest */
+.lg-surface[data-glass-fast="1"] {
+  --glass_blur: 12px;
+  --glass_lens: 0.5px;
+}
+
+/* focus inside glass — brackets, never translucency alone */
+.lg-surface :focus-visible {
+  outline: 1px solid hsl(var(--primary));
+  outline-offset: 3px;
+}
+
+/* ── mobile: smaller radii, no lens pass ─────────────────────── */
+@media (max-width: 640px) {
+  .lg-surface {
+    --glass_blur: 16px;
+    --glass_tint: 0.14;
+    --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
+  }
+  .lg-thick { --glass_blur: 22px; }
+  .lg-surface::after { display: none; }
+}
+
+/* ── reduced motion: material keeps its optics, stops behaving ── */
+@media (prefers-reduced-motion: reduce) {
+  .lg-surface { transform: none !important; transition: none; }
+  .lg-surface::before {
+    background: linear-gradient(to bottom, hsl(var(--bone) / 0.14), transparent 45%);
+  }
+}
+
+/* ── final fallback: no backdrop-filter → translucent solid ──── */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lg-surface {
+    background: hsl(var(--background) / 0.94);
+    border-color: hsl(var(--foreground) / 0.18);
+  }
+  .lg-surface::after { display: none; }
+  .lg-overlay { background: hsl(var(--ink) / 0.55); }
+}

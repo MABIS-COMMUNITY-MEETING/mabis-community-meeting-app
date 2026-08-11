@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import SoundToggle from "@/components/SoundToggle";
+import Glass from "@/components/glass/Glass";
 import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
@@ -47,7 +48,7 @@ export default function SiteHeader({ rightSlot }) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="flex items-center justify-between px-5 sm:px-8 py-4 bg-background/60 backdrop-blur-md">
+        <Glass variant="navigation" tone="light" contentClassName="flex items-center justify-between px-5 sm:px-8 py-4">
           <Link to="/" data-cursor="HOME" className="group flex items-center gap-3">
             <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden border border-foreground/30 bg-bone">
               <img src={LOGO} alt="MABIS" className="h-6 w-6 object-contain transition-transform duration-500 group-hover:scale-110" />
@@ -77,8 +78,7 @@ export default function SiteHeader({ rightSlot }) {
               <span className="hidden sm:inline">{open ? "CLOSE" : "MENU"}</span>
             </button>
           </div>
-        </div>
-        <div className="h-px w-full bg-foreground/12" />
+        </Glass>
       </header>
 
       <AnimatePresence>
