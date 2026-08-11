@@ -13,10 +13,12 @@ const NAV = [
   { label: "Feedback Inbox", to: "/feedback", n: "05" },
 ];
 
+const EASE = [0.16, 1, 0.3, 1];
+
 /**
- * Minimal fixed header with a full-screen animated overlay menu.
- * Shows the brand mark, a live clock, and a menu toggle. The overlay
- * reveals large menu typography that enters sequentially.
+ * Bespoke site header: persistent brand + live clock + a full-screen nav
+ * overlay whose giant items assemble sequentially with index numbers, an
+ * active indicator that morphs between items, and hover duplication.
  */
 export default function SiteHeader({ rightSlot }) {
   const [open, setOpen] = useState(false);
@@ -43,7 +45,7 @@ export default function SiteHeader({ rightSlot }) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="flex items-center justify-between px-5 sm:px-8 py-4">
+        <div className="flex items-center justify-between px-5 sm:px-8 py-4 bg-background/60 backdrop-blur-md">
           <Link to="/" data-cursor="HOME" className="group flex items-center gap-3">
             <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden border border-foreground/30 bg-bone">
               <img src={LOGO} alt="MABIS" className="h-6 w-6 object-contain transition-transform duration-500 group-hover:scale-110" />
@@ -55,7 +57,7 @@ export default function SiteHeader({ rightSlot }) {
           </Link>
 
           <div className="flex items-center gap-3 sm:gap-5">
-            <span className="hidden md:inline tech-label text-muted-foreground">{time}</span>
+            <span className="hidden md:inline tech-label text-muted-foreground tabular-nums">{time}</span>
             {rightSlot}
             <button
               onClick={() => setOpen(v => !v)}
@@ -78,17 +80,29 @@ export default function SiteHeader({ rightSlot }) {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ clipPath: "inset(0 0 100% 0)" }}
+            animate={{ clipPath: "inset(0 0 0 0)" }}
+            exit={{ clipPath: "inset(0 0 100% 0)" }}
+            transition={{ duration: 0.5, ease: EASE }}
             className="fixed inset-0 z-40 bg-ink text-bone"
           >
-            <div className="grid-bg absolute inset-0 opacity-40" />
+            <div className="grid-bg absolute inset-0 opacity-30" />
+            {/* giant vertical background label */}
+            <motion.span
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 0.06, y: 0 }} transition={{ duration: 0.8, ease: EASE }}
+              className="vert-text pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-display font-thin tracking-ultra text-bone leading-none select-none whitespace-nowrap"
+              style={{ fontSize: "26vw" }}
+            >
+              INDEX
+            </motion.span>
+
             <div className="relative flex h-full flex-col justify-between px-5 sm:px-8 pt-28 pb-8">
               <div className="flex items-start justify-between">
-                <span className="tech-label text-bone/50">INDEX ／ NAVIGATION</span>
-                <span className="tech-label vert-text text-bone/50 sm:hidden">MENU</span>
+                <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="flex items-center gap-3">
+                  <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.15, duration: 0.6, ease: EASE }} className="block h-px w-10 bg-secondary origin-left" />
+                  <span className="tech-label text-bone/50">SELECTED ／ NAVIGATION</span>
+                </motion.div>
+                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="tech-label vert-text text-bone/50 sm:hidden">MENU</motion.span>
               </div>
 
               <nav className="flex flex-col gap-1 sm:gap-2">
@@ -98,17 +112,25 @@ export default function SiteHeader({ rightSlot }) {
                     <motion.button
                       key={item.to}
                       onClick={() => go(item.to)}
-                      initial={{ y: 40, opacity: 0 }}
+                      initial={{ y: 60, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: 20, opacity: 0 }}
-                      transition={{ delay: 0.08 + i * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                      exit={{ y: 30, opacity: 0 }}
+                      transition={{ delay: 0.12 + i * 0.07, duration: 0.55, ease: EASE }}
                       data-cursor="OPEN"
-                      className="group flex items-baseline gap-4 sm:gap-8 text-left"
+                      className="group relative flex items-baseline gap-4 sm:gap-8 text-left"
                     >
-                      <span className="tech-label text-bone/40 pt-3 sm:pt-4">{item.n}</span>
-                      <span className="flex-1 flex items-center gap-3 border-b border-bone/15 py-2 sm:py-3">
-                        <span className="text-5xl sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-none transition-all duration-300 group-hover:tracking-tight group-hover:text-secondary">
-                          {item.label}
+                      <span className="tech-label text-bone/40 pt-3 sm:pt-4 w-8 sm:w-10">{item.n}</span>
+                      <span className="relative flex-1 flex items-center gap-3 border-b border-bone/15 py-2 sm:py-3 overflow-hidden">
+                        {active && (
+                          <motion.span layoutId="nav-active" className="absolute left-0 top-0 bottom-0 w-[3px] bg-secondary" />
+                        )}
+                        <span className="relative block overflow-hidden">
+                          <span className="block text-5xl sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-none transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:-translate-y-full">
+                            {item.label}
+                          </span>
+                          <span className="absolute inset-0 block text-5xl sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-none text-secondary translate-y-full transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0">
+                            {item.label}
+                          </span>
                         </span>
                         <ArrowUpRight className="ml-auto h-6 w-6 sm:h-10 sm:w-10 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" />
                       </span>
@@ -117,14 +139,14 @@ export default function SiteHeader({ rightSlot }) {
                 })}
               </nav>
 
-              <div className="flex items-end justify-between">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex items-end justify-between">
                 <div className="tech-label text-bone/40">
                   SECONDARY COMMUNITY<br />MEETING APP ／ 2026
                 </div>
                 <div className="tech-label text-bone/40 text-right">
                   ／ EST. MABIS<br />BANGKOK ／ TH
                 </div>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         )}

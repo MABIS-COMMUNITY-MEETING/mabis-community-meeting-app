@@ -2,11 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Palette, Inbox, Settings } from "lucide-react";
+import { Palette, Inbox, Settings, Plus } from "lucide-react";
+import moment from "moment";
 import PageFooter from "@/components/PageFooter";
 import { motion } from "framer-motion";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
+import SectionReveal from "@/components/SectionReveal";
+import Marquee from "@/components/Marquee";
 import DiscussionWidget from "@/components/DiscussionWidget";
 import MembersWidget from "@/components/MembersWidget";
 import CalendarWidget from "@/components/CalendarWidget";
@@ -28,11 +31,6 @@ import BirthdayBanner from "@/components/BirthdayBanner";
 import JobReminder from "@/components/JobReminder";
 import SettingsModal from "@/components/SettingsModal";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.3, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] } })
-};
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
@@ -56,11 +54,6 @@ export default function Home() {
     queryFn: () => base44.entities.Member.list("name", 200)
   });
 
-  // Detect the minutes-taker (Member with role "minutes") for the signed-in user.
-  // A person can have duplicate member records with different roles (e.g. a
-  // "student" copy alongside the real "minutes" record), so we match by email or
-  // name and detect the minutes-taker if ANY matching member has role "minutes"
-  // — rather than trusting the first match .find() would return.
   const userMatches = members.filter(m =>
     (m.email && user?.email && m.email.toLowerCase() === user.email.toLowerCase()) ||
     (m.name && user?.full_name && m.name.toLowerCase() === user.full_name.toLowerCase())
@@ -69,7 +62,6 @@ export default function Home() {
   const userMember = [...userMatches].sort((a, b) => (ROLE_RANK[b.role] || 0) - (ROLE_RANK[a.role] || 0))[0];
   const isMinutesTaker = userMatches.some(m => m.role === "minutes");
 
-  // Role preview: admins (incl. minutes-taker) can temporarily view the app as another role.
   const canPreview = userRole === "admin" || userRole === "minutes" || isSummerOrBenjamin || isMinutesTaker;
   const [previewRole, setPreviewRole] = useState(() => localStorage.getItem("mabis_preview_role") || "");
   useEffect(() => {
@@ -83,7 +75,6 @@ export default function Home() {
   const canManage = ["admin", "editor", "chair", "minutes", "teacher"].includes(effectiveRole) || isMinutesTaker || (isSummerOrBenjamin && effectiveRole !== "student");
   const [showDove, setShowDove] = useState(false);
 
-  // Auto-set Summer's role to admin on first login
   useEffect(() => {
     if (isSummerOrBenjamin && (!userRole || userRole === "user")) {
       base44.auth.updateMe({ role_override: "admin" }).then(() => refetchUser?.()).catch(() => {});
@@ -94,7 +85,6 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const effectiveAdmin = isAdmin;
   const isFullAdmin = effectiveRole === "admin" || effectiveRole === "editor" || effectiveRole === "minutes" || isMinutesTaker;
-  // The reports inbox is admin/editor only — minutes-takers get everything except this.
   const canSeeInbox = (effectiveRole === "admin" || effectiveRole === "editor") && !isMinutesTaker;
   const roleColor = ROLE_COLOR_VARS[effectiveRole] || "hsl(var(--primary))";
 
@@ -105,8 +95,6 @@ export default function Home() {
   const hasNewFeedback = newFeedback.length > 0;
 
   const discussionCanManage = canManage || isMinutesTaker;
-  // Meeting start is restricted to lead roles (chair, minutes, teacher, admin, editor),
-  // detected from either the app user role or the Member record role.
   const leadRoles = ["admin", "editor", "chair", "minutes", "teacher"];
   const canStartMeeting = canManage || leadRoles.includes(effectiveMemberRole);
 
@@ -150,12 +138,15 @@ export default function Home() {
         <span className="text-xs tech-label text-foreground hidden lg:inline">
           {user?.full_name?.split(" ")[0]?.toUpperCase() || "USER"}
         </span>
-        <button onClick={() => base44.auth.logout()} data-cursor="EXIT" className="tech-label px-3.5 py-2 border border-foreground/30 bg-bone text-foreground hover:bg-foreground hover:text-bone transition-colors">
+        <button onClick={() => base44.auth.logout()} data-cursor="EXIT" className="liquid-btn tech-label px-3.5 py-2 border border-foreground/30 bg-bone text-foreground">
           SIGN OUT
         </button>
       </div>
     </>
   );
+
+  const weekLabel = moment().format("YYYY-[W]WW");
+  const dateLabel = moment().format("DD.MM.YYYY");
 
   return (
     <div className="min-h-screen bg-background">
@@ -165,41 +156,92 @@ export default function Home() {
 
       {showDove && <DoveAnimation onComplete={() => setShowDove(false)} />}
 
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-8 space-y-5">
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-8 space-y-6 sm:space-y-8">
+        {/* editorial masthead */}
+        <motion.section
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="border-b border-foreground/15 pb-7"
+        >
+          <div className="flex items-center gap-3 mb-5">
+            <span className="tech-label text-primary">／ 00</span>
+            <span className="tech-label text-muted-foreground">DASHBOARD</span>
+            <span className="flex-1 h-px bg-foreground/15" />
+            <span className="tech-label text-muted-foreground hidden sm:block">{dateLabel}</span>
+          </div>
+          <h1 className="font-display font-extralight tracking-ultra leading-[0.9] text-5xl sm:text-7xl md:text-8xl">
+            <span className="block">COMMUNITY</span>
+            <span className="block text-stroke">MEETING</span>
+          </h1>
+          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 tech-label text-muted-foreground">
+            <span>WEEK {weekLabel}</span>
+            <Plus className="h-3 w-3 text-primary/60" />
+            <span>FRIDAY ／ WEEKLY RITUAL</span>
+            <Plus className="h-3 w-3 text-primary/60" />
+            <span>MABIS ／ BANGKOK</span>
+          </div>
+        </motion.section>
+
+        {/* date marquee */}
+        <div className="-mx-4 sm:-mx-6 border-y border-foreground/15 bg-card/50 py-2.5">
+          <Marquee speed={40} className="text-muted-foreground">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <span key={i} className="flex items-center tech-label">
+                <span className="px-5">SECONDARY COMMUNITY MEETING</span>
+                <Plus className="h-3 w-3 text-primary/60" />
+                <span className="px-5">{weekLabel}</span>
+                <Plus className="h-3 w-3 text-primary/60" />
+                <span className="px-5">LIVE DASHBOARD</span>
+                <Plus className="h-3 w-3 text-primary/60" />
+              </span>
+            ))}
+          </Marquee>
+        </div>
+
         <BirthdayBanner />
-        {/* Meeting Mode — standalone widget */}
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={0}>
+
+        <SectionReveal index="01" label="MEETING MODE">
           <MeetingModeWidget canStart={canStartMeeting} onStartMeeting={() => {
             window.dispatchEvent(new CustomEvent("startMeetingMode"));
           }} />
-        </motion.div>
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
+        </SectionReveal>
+
+        <SectionReveal index="02" label="ANNOUNCEMENTS">
           <AnnouncementsWidget members={members} isAdmin={canManage} />
-        </motion.div>
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={1.5}>
+        </SectionReveal>
+
+        <SectionReveal index="03" label="DISCUSSION">
           <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
-        </motion.div>
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={3}>
+        </SectionReveal>
+
+        <SectionReveal index="04" label="JOBS ／ ROTATION">
           <JobsWidget members={members} isAdmin={canManage} compact={false} />
-        </motion.div>
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={4}>
+        </SectionReveal>
+
+        <SectionReveal index="05" label="CALENDAR">
           <CalendarWidget />
-        </motion.div>
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={4.25}>
+        </SectionReveal>
+
+        <SectionReveal index="06" label="SCHEDULE">
           <ScheduleWidget isAdmin={canManage} />
-        </motion.div>
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={4.5}>
+        </SectionReveal>
+
+        <SectionReveal index="07" label="LOST ／ FOUND">
           <MissingItemsWidget members={members} />
-        </motion.div>
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={4.75}>
+        </SectionReveal>
+
+        <SectionReveal index="08" label="LUNCH MENU">
           <LunchMenuWidget isAdmin={canManage} />
-        </motion.div>
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={5}>
+        </SectionReveal>
+
+        <SectionReveal index="09" label="NEWS">
           <NewsWidget members={members} isAdmin={canManage} />
-        </motion.div>
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={5.25}>
+        </SectionReveal>
+
+        <SectionReveal index="10" label="MEMBERS">
           <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
-        </motion.div>
+        </SectionReveal>
 
         <PageFooter />
       </main>
@@ -207,5 +249,4 @@ export default function Home() {
       <MabisAIAssistant />
       <FeedbackWidget />
     </div>);
-
 }

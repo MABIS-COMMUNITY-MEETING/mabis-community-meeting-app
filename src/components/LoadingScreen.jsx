@@ -1,39 +1,101 @@
-import React, { motion } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
-/** Editorial loader: framed mark + sweeping scan line + tiny status label. */
+/**
+ * Numeric loader. A giant Iosevka counter climbs 00 → 100 while a hairline
+ * sweeps across, the grid initializes, and a masked wordmark assembles
+ * beneath — then resolves toward the app. Not a generic spinner.
+ */
 export default function LoadingScreen() {
-  return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden bg-bone">
-      <div className="grid-bg absolute inset-0 opacity-50" />
-      <div className="relative z-10 flex flex-col items-center">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-8 flex h-20 w-20 items-center justify-center border border-foreground/20 bg-card overflow-hidden"
-        >
-          <img src={LOGO} alt="MABIS" className="h-14 w-14 object-contain" />
-        </motion.div>
+  const [n, setN] = useState(0);
+  const [done, setDone] = useState(false);
+  const raf = useRef();
 
-        {/* scan line */}
-        <div className="relative mb-6 h-px w-40 overflow-hidden bg-foreground/15">
+  useEffect(() => {
+    const start = performance.now();
+    const dur = 1300;
+    const tick = (t) => {
+      const p = Math.min((t - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setN(Math.round(eased * 100));
+      if (p < 1) raf.current = requestAnimationFrame(tick);
+      else setDone(true);
+    };
+    raf.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf.current);
+  }, []);
+
+  const pad = String(n).padStart(3, "0");
+
+  return (
+    <div className="fixed inset-0 overflow-hidden bg-ink text-bone">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.4 }} transition={{ duration: 1 }} className="absolute inset-0 grid-bg" />
+      {/* faint drifting glow */}
+      <div
+        className="absolute left-1/2 top-1/2 h-[60vw] w-[60vw] max-w-[600px] max-h-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl blob-drift"
+        style={{ background: "radial-gradient(circle, hsl(var(--primary)/0.28) 0%, transparent 62%)" }}
+      />
+
+      {/* corner brackets */}
+      <div className="pointer-events-none absolute inset-5 sm:inset-8 corner-bracket" />
+
+      {/* meta */}
+      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 tech-label text-bone/50">／ INITIALISING</div>
+      <div className="absolute top-6 right-6 sm:top-8 sm:right-8 tech-label text-bone/50">MABIS ／ 2026</div>
+
+      <div className="relative z-10 flex h-full flex-col items-center justify-center">
+        <AnimatePresence>
+          {!done && (
+            <motion.div
+              key="count"
+              exit={{ opacity: 0, scale: 1.04 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-baseline"
+            >
+              <span className="font-display font-thin tracking-ultra text-[22vw] sm:text-[16vw] leading-none tabular-nums">
+                {pad}
+              </span>
+              <span className="ml-2 tech-label text-primary">％</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* assembling wordmark behind counter */}
+        <motion.span
+          initial={{ clipPath: "inset(0 100% 0 0)" }}
+          animate={{ clipPath: `inset(0 ${(100 - n) * 0.6}% 0 0)` }}
+          transition={{ ease: "linear" }}
+          className="absolute font-display font-thin tracking-ultra text-bone/8 text-[18vw] leading-none select-none"
+        >
+          COMMUNITY
+        </motion.span>
+
+        {/* sweeping line */}
+        <div className="relative mt-6 h-px w-56 overflow-hidden bg-bone/15">
           <motion.div
-            className="absolute inset-y-0 left-0 w-1/3 bg-primary"
-            animate={{ x: ["-100%", "300%"] }}
-            transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-y-0 left-0 bg-primary"
+            style={{ width: `${n}%` }}
           />
         </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="tech-label text-muted-foreground"
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+          className="mt-5 flex items-center gap-3 tech-label text-bone/45"
         >
-          ／ LOADING
-        </motion.p>
+          <motion.span
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
+            className="inline-block h-2.5 w-2.5 border border-bone/40 border-t-primary"
+          />
+          <span>LOADING ASSETS ／ {n}%</span>
+        </motion.div>
+      </div>
+
+      <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-8 tech-label text-bone/40">
+        <img src={LOGO} alt="" className="h-5 w-5 object-contain opacity-70 inline-block mr-2 align-middle" />
+        SECONDARY COMMUNITY MEETING
       </div>
     </div>
   );

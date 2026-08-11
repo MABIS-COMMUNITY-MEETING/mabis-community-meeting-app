@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Custom cursor: a small dot rigidly following the pointer + a lagging ring
- * that grows when hovering interactive elements and shows a label
- * (VIEW / OPEN / DRAG) when a [data-cursor="..."] attribute is present.
- * Disabled on touch / coarse pointers and when prefers-reduced-motion is set.
+ * Liquid custom cursor. A rigid center dot tracks the pointer instantly while
+ * a spring-following ring lags, stretches along its velocity vector, and
+ * relaxes back to a circle at rest. Context labels (VIEW / DRAG / OPEN …) are
+ * read from [data-cursor] on the hovered element. Touch + reduced-motion safe.
  */
 export default function CustomCursor() {
   const dotRef = useRef(null);
@@ -20,6 +20,8 @@ export default function CustomCursor() {
 
     const pos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     const ring = { x: pos.x, y: pos.y };
+    let prev = { x: ring.x, y: ring.y, t: performance.now() };
+    let scaleX = 1;
     let raf;
 
     const onMove = (e) => {
@@ -29,19 +31,39 @@ export default function CustomCursor() {
       }
       const t = e.target.closest?.("a, button, [role='button'], [data-cursor], input, textarea, select, label");
       const label = t?.getAttribute?.("data-cursor");
-      ringRef.current.classList.toggle("is-hover", !!t && !label);
-      ringRef.current.classList.toggle("is-label", !!label);
-      ringRef.current.textContent = label || "";
+      const r = ringRef.current; if (!r) return;
+      r.classList.toggle("is-hover", !!t && !label);
+      r.classList.toggle("is-label", !!label);
+      r.textContent = label || "";
     };
-    const onDown = () => ringRef.current && (ringRef.current.style.opacity = "0.4");
+    const onDown = () => ringRef.current && (ringRef.current.style.opacity = "0.5");
     const onUp = () => ringRef.current && (ringRef.current.style.opacity = "1");
-    const onLeave = () => { if (dotRef.current) dotRef.current.style.opacity = "0"; if (ringRef.current) ringRef.current.style.opacity = "0"; };
-    const onEnter = () => { if (dotRef.current) dotRef.current.style.opacity = "1"; if (ringRef.current) ringRef.current.style.opacity = "1"; };
+    const onLeave = () => {
+      if (dotRef.current) dotRef.current.style.opacity = "0";
+      if (ringRef.current) ringRef.current.style.opacity = "0";
+    };
+    const onEnter = () => {
+      if (dotRef.current) dotRef.current.style.opacity = "1";
+      if (ringRef.current) ringRef.current.style.opacity = "1";
+    };
 
     const loop = () => {
-      ring.x += (pos.x - ring.x) * 0.18;
-      ring.y += (pos.y - ring.y) * 0.18;
-      if (ringRef.current) ringRef.current.style.transform = `translate(${ring.x}px, ${ring.y}px) translate(-50%,-50%)`;
+      const dx = pos.x - ring.x, dy = pos.y - ring.y;
+      ring.x += dx * 0.16; ring.y += dy * 0.16;
+      const now = performance.now();
+      const dt = Math.max(now - prev.t, 1);
+      const vx = (ring.x - prev.x) / dt;
+      const vy = (ring.y - prev.y) / dt;
+      const r = ringRef.current;
+      const hasLabel = r && r.classList.contains("is-label");
+      const speed = Math.hypot(vx, vy);
+      const target = hasLabel ? 1 : 1 + Math.min(speed * 0.45, 1.15);
+      scaleX += (target - scaleX) * 0.18;
+      const angle = !hasLabel && speed > 0.03 ? (Math.atan2(ring.y - prev.y, ring.x - prev.x) * 180) / Math.PI : 0;
+      if (r) {
+        r.style.transform = `translate(${ring.x}px, ${ring.y}px) translate(-50%,-50%) rotate(${angle}deg) scale(${scaleX}, ${1 / Math.max(scaleX, 1)})`;
+      }
+      prev = { x: ring.x, y: ring.y, t: now };
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
