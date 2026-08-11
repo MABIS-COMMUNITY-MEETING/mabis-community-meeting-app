@@ -46,16 +46,6 @@ export default function CustomCursor() {
     };
     const onDown = () => ringRef.current && (ringRef.current.style.opacity = "0.5");
     const onUp = () => ringRef.current && (ringRef.current.style.opacity = "1");
-    const onLeave = () => {
-      if (dotRef.current) dotRef.current.style.opacity = "0";
-      if (ringRef.current) ringRef.current.style.opacity = "0";
-    };
-    const onEnter = () => {
-      if (!seen) return;
-      if (dotRef.current) dotRef.current.style.opacity = "1";
-      if (ringRef.current) ringRef.current.style.opacity = "1";
-    };
-    window.addEventListener("blur", onLeave);
 
     const loop = () => {
       const dx = pos.x - ring.x, dy = pos.y - ring.y;
@@ -81,16 +71,11 @@ export default function CustomCursor() {
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mousedown", onDown);
     window.addEventListener("mouseup", onUp);
-    document.addEventListener("mouseleave", onLeave);
-    document.addEventListener("mouseenter", onEnter);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("mouseup", onUp);
-      document.removeEventListener("mouseleave", onLeave);
-      document.removeEventListener("mouseenter", onEnter);
-      window.removeEventListener("blur", onLeave);
       document.body.classList.remove("cursor-ready");
     };
   }, []);
