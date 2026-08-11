@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
+import { isHackerMode, disableHackerMode, HACKER_USER } from '@/lib/hacker';
 
 const AuthContext = createContext();
 
@@ -41,6 +42,11 @@ export const AuthProvider = ({ children }) => {
         // If we got the app public settings successfully, check if user is authenticated
         if (appParams.token) {
           await checkUserAuth();
+        } else if (isHackerMode()) {
+          setUser(HACKER_USER);
+          setIsAuthenticated(true);
+          setIsLoadingAuth(false);
+          setAuthChecked(true);
         } else {
           setIsLoadingAuth(false);
           setIsAuthenticated(false);
@@ -115,6 +121,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = (shouldRedirect = true) => {
+    if (isHackerMode()) {
+      disableHackerMode();
+      window.location.href = '/login';
+      return;
+    }
     setUser(null);
     setIsAuthenticated(false);
     

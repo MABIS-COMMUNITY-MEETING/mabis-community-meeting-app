@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2, ArrowUpRight } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import FamicomController from "@/components/FamicomController";
+import { enableHackerMode } from "@/lib/hacker";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
@@ -120,6 +122,8 @@ export default function Login() {
           )}
         </Button>
       </form>
+
+      <FamicomController onUnlock={() => { enableHackerMode(); window.location.href = "/home"; }} />
     </AuthLayout>
   );
 }
