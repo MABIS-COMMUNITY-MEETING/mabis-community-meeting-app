@@ -27,9 +27,9 @@
 
   position: relative;
   isolation: isolate;
-  transform: scale(var(--glass_press));
-  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+  /* NOTE: no transform at rest — a transformed element becomes a backdrop
+     root, which would blank out the edge-lens pass below */
+  transition: box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1),
               backdrop-filter 0.42s ease;
 
   /* the fill is a directional wedge, not a flat white wash — the
@@ -129,6 +129,7 @@
   border-left: none;
   border-right: none;
   border-top: none;
+  border-bottom: 1px solid hsl(var(--foreground) / 0.14);
 }
 
 /* controller — thin floating optical strip for the input prompts */
@@ -219,7 +220,7 @@
 
 /* press — physical compression, released with a spring-ish ease */
 .lg-surface[data-glass-press="1"] {
-  --glass_press: 0.988;
+  transform: scale(0.988);
   --glass_spec: 0.36;
   --glass_lens: 0.8px;
   transition: transform 0.09s ease-out;
