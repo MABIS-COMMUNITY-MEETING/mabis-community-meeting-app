@@ -46,7 +46,7 @@ export default function FamicomController({ onUnlock }) {
   const arm = (dir, glyph, style) => (
     <button type="button" aria-label={dir} onClick={() => push(dir)}
       className="absolute flex items-center justify-center transition-colors"
-      style={{ background: flash === dir ? RED : DARK_2, color: "#d8d8d8", fontSize: 9, lineHeight: 1, ...style }}>
+      style={{ background: flash === dir ? RED : "transparent", color: "#9a9a9a", fontSize: 12, lineHeight: 1, ...style }}>
       {glyph}
     </button>
   );
@@ -90,19 +90,18 @@ export default function FamicomController({ onUnlock }) {
           <div className="absolute" style={{ left: 12, right: 12, top: 99, height: 3, background: "#1c1c1c" }} />
           <div className="absolute" style={{ left: 12, right: 12, top: 109, height: 3, background: "#1c1c1c" }} />
 
-          {/* D-pad: 64x64 at (26,73), arms 21px, black outline */}
-          <div className="absolute" style={{
-            left: 26, top: 73, width: 64, height: 64, background: RED,
-            clipPath: "polygon(21px 0, 43px 0, 43px 21px, 64px 21px, 64px 43px, 43px 43px, 43px 64px, 21px 64px, 21px 43px, 0 43px, 0 21px, 21px 21px)",
-            filter: "drop-shadow(0 0 0 #111)"
-          }}>
-            <div className="absolute" style={{ inset: 3, background: "#1b1b1b",
-              clipPath: "polygon(18px 0, 40px 0, 40px 18px, 58px 18px, 58px 40px, 40px 40px, 40px 58px, 18px 58px, 18px 40px, 0 40px, 0 18px, 18px 18px)" }} />
-            {arm("up", "▲", { left: 26, top: 6, width: 12, height: 15 })}
-            {arm("left", "◀", { left: 6, top: 26, width: 15, height: 12 })}
-            {arm("right", "▶", { left: 43, top: 26, width: 15, height: 12 })}
-            {arm("down", "▼", { left: 26, top: 43, width: 12, height: 15 })}
-            <div className="absolute rounded-full" style={{ left: 22, top: 22, width: 20, height: 20, background: "linear-gradient(145deg,#5c5c5c,#333)" }} />
+          {/* D-pad: red square recess 92x92 at (22,59) with black cross plate */}
+          <div className="absolute" style={{ left: 22, top: 54, width: 92, height: 92, background: RED, border: "3px solid #1b1b1b", borderRadius: 4, boxSizing: "border-box" }}>
+            {/* black cross plate — arms 30px, 86x86 inner area */}
+            <div className="absolute" style={{
+              left: 0, top: 0, width: 86, height: 86, background: "#1b1b1b",
+              clipPath: "polygon(29px 0, 57px 0, 57px 29px, 86px 29px, 86px 57px, 57px 57px, 57px 86px, 29px 86px, 29px 57px, 0 57px, 0 29px, 29px 29px)"
+            }} />
+            {arm("up", "▲", { left: 33, top: 4, width: 20, height: 22 })}
+            {arm("left", "◀", { left: 4, top: 33, width: 22, height: 20 })}
+            {arm("right", "▶", { left: 60, top: 33, width: 22, height: 20 })}
+            {arm("down", "▼", { left: 33, top: 60, width: 20, height: 22 })}
+            <div className="absolute rounded-full" style={{ left: 30, top: 30, width: 26, height: 26, background: "linear-gradient(145deg,#5c5c5c,#2c2c2c)" }} />
           </div>
 
           {/* SELECT / START */}
