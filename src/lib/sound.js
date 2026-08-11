@@ -34,6 +34,7 @@ export function isSoundEnabled() {
 export function setSoundEnabled(v) {
   enabled = !!v;
   try { localStorage.setItem(KEY, enabled ? "true" : "false"); } catch {}
+  try { window.dispatchEvent(new CustomEvent("mabis-sound-changed", { detail: enabled })); } catch {}
 }
 
 function getCtx() {
@@ -102,4 +103,88 @@ export function playType() {
 
   // Soft clack (band-passed noise ~1.2 kHz)
   noiseBurst(c, now + 0.003, 0.012, 0.03, "bandpass", 1200, 1.4);
+}
+
+/* ── refined tactile UI palette ──
+   One sonic family: tiny sine ticks + filtered noise gestures.
+   All extremely short and quiet; hover is throttled. */
+
+function tick(c, t, freq, vol, dur = 0.05) {
+  const o = c.createOscillator();
+  const g = c.createGain();
+  o.type = "sine";
+  o.frequency.setValueAtTime(freq, t);
+  o.frequency.exponentialRampToValueAtTime(freq * 0.82, t + dur);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.004);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(c.destination);
+  o.start(t);
+  o.stop(t + dur + 0.01);
+}
+
+let lastHover = 0;
+// Tiny glassy tick for major nav / project hovers. Throttled.
+export function playHover() {
+  if (!enabled) return;
+  const now = performance.now();
+  if (now - lastHover < 90) return;
+  lastHover = now;
+  const c = getCtx();
+  if (!c) return;
+  if (c.state === "suspended") c.resume();
+  const t = c.currentTime;
+  tick(c, t, 2400 + Math.random() * 240, 0.028, 0.045);
+}
+
+// Low transient + high detail — fullscreen menu opening.
+export function playMenuOpen() {
+  if (!enabled) return;
+  const c = getCtx();
+  if (!c) return;
+  if (c.state === "suspended") c.resume();
+  const t = c.currentTime;
+  tick(c, t, 140, 0.06, 0.14);
+  tick(c, t + 0.05, 2900, 0.02, 0.04);
+  noiseBurst(c, t, 0.12, 0.018, "lowpass", 600, 0.8);
+}
+
+// Related downward gesture — menu closing.
+export function playMenuClose() {
+  if (!enabled) return;
+  const c = getCtx();
+  if (!c) return;
+  if (c.state === "suspended") c.resume();
+  const t = c.currentTime;
+  tick(c, t, 2900, 0.018, 0.04);
+  tick(c, t + 0.04, 110, 0.05, 0.12);
+}
+
+// Subtle filtered sweep for page/section transitions.
+export function playTransition() {
+  if (!enabled) return;
+  const c = getCtx();
+  if (!c) return;
+  if (c.state === "suspended") c.resume();
+  const t = c.currentTime;
+  const len = Math.ceil(c.sampleRate * 0.28);
+  const buf = c.createBuffer(1, len, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) {
+    const p = i / len;
+    d[i] = (Math.random() * 2 - 1) * Math.sin(p * Math.PI) * 0.6;
+  }
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  const f = c.createBiquadFilter();
+  f.type = "bandpass";
+  f.Q.value = 1.1;
+  f.frequency.setValueAtTime(400, t);
+  f.frequency.exponentialRampToValueAtTime(2200, t + 0.28);
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.035, t + 0.06);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+  src.connect(f).connect(g).connect(c.destination);
+  src.start(t);
 }

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
+import SoundToggle from "@/components/SoundToggle";
+import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
@@ -58,9 +60,10 @@ export default function SiteHeader({ rightSlot }) {
 
           <div className="flex items-center gap-3 sm:gap-5">
             <span className="hidden md:inline tech-label text-muted-foreground tabular-nums">{time}</span>
+            <SoundToggle />
             {rightSlot}
             <button
-              onClick={() => setOpen(v => !v)}
+              onClick={() => setOpen(v => { const next = !v; (next ? playMenuOpen : playMenuClose)(); return next; })}
               data-cursor={open ? "CLOSE" : "MENU"}
               className="relative flex h-9 items-center gap-2 border border-foreground/30 bg-bone px-3 tech-label text-foreground hover:bg-foreground hover:text-bone transition-colors"
               aria-label={open ? "Close menu" : "Open menu"}
@@ -117,6 +120,7 @@ export default function SiteHeader({ rightSlot }) {
                       exit={{ y: 30, opacity: 0 }}
                       transition={{ delay: 0.12 + i * 0.07, duration: 0.55, ease: EASE }}
                       data-cursor="OPEN"
+                      onMouseEnter={playHover}
                       className="group relative flex items-baseline gap-4 sm:gap-8 text-left"
                     >
                       <span className="tech-label text-bone/40 pt-3 sm:pt-4 w-8 sm:w-10">{item.n}</span>

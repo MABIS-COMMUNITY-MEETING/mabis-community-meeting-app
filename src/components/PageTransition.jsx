@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
+import { playTransition } from "@/lib/sound";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -10,6 +11,7 @@ const EASE = [0.16, 1, 0.3, 1];
  * Keeps navigation feeling choreographed without becoming sluggish.
  */
 export default function PageTransition({ children }) {
+  useEffect(() => { playTransition(); }, []);
   return (
     <div className="relative">
       <motion.div
