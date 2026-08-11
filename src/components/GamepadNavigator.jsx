@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { classify_gamepad, action_binding } from "@/lib/gamepad_profiles";
+import { action_binding } from "@/lib/gamepad_profiles";
+import { resolve_profile, OVERRIDE_EVENT } from "@/lib/gamepad_detect";
 import { find_neighbour } from "@/lib/gamepad_nav";
 import { playHover, playClick, playMenuClose } from "@/lib/sound";
 import ControllerHints from "@/components/ControllerHints";
@@ -7,6 +8,13 @@ import ControllerHints from "@/components/ControllerHints";
 const DEADZONE = 0.45;
 const REPEAT_FIRST = 380;
 const REPEAT_NEXT = 130;
+const TEXTY = ["text", "email", "password", "search", "url", "tel", "number", "date", "time"];
+
+/* Any meaningful intent from a pad — used to pick the active controller. */
+function pad_is_active(pad) {
+	if (pad.buttons.some((b) => b.pressed)) return true;
+	return pad.axes.some((a) => Math.abs(a) > DEADZONE);
+}
 
 /*
  * Gamepad polling only runs while a pad is actually connected — an idle rAF
@@ -14,9 +22,9 @@ const REPEAT_NEXT = 130;
  * that never plug anything in.
  */
 export default function GamepadNavigator() {
-	const [family, setFamily] = useState(null);
+	const [profile, setProfile] = useState(null);
 	const [active, setActive] = useState(false);
-	const state = useRef({ dir: null, next_at: 0, buttons: {} });
+	const state = useRef({ dir: null, next_at: 0, buttons: {}, pad_index: null });
 
 	useEffect(() => {
 		if (typeof navigator === "undefined" || !navigator.getGamepads) return;
@@ -34,8 +42,6 @@ export default function GamepadNavigator() {
 			const el = find_neighbour(document.activeElement, dir);
 			if (!el) return;
 			el.focus({ preventScroll: true });
-			/* only scroll when the target is actually off-screen, and never with
-			   smooth behaviour — repeated smooth scrolls fight each other */
 			const r = el.getBoundingClientRect();
 			if (r.top < 80 || r.bottom > window.innerHeight - 80) {
 				el.scrollIntoView({ block: "center", behavior: "auto" });
@@ -50,16 +56,33 @@ export default function GamepadNavigator() {
 			if (down && !was) fn(pad);
 		};
 
+		const pick_pad = () => {
+			const pads = Array.from(navigator.getGamepads?.() || []).filter(Boolean);
+			if (!pads.length) return null;
+			/* the pad most recently producing intentional input owns the UI */
+			const acting = pads.find(pad_is_active);
+			if (acting) {
+				if (state.current.pad_index !== acting.index) {
+					state.current.pad_index = acting.index;
+					state.current.buttons = {};
+				}
+				return acting;
+			}
+			return pads.find((p) => p.index === state.current.pad_index) || pads[0];
+		};
+
 		const poll = () => {
-			const pads = navigator.getGamepads?.() || [];
-			const pad = Array.from(pads).find(Boolean);
+			const pad = pick_pad();
 			if (!pad) {
 				raf = requestAnimationFrame(poll);
 				return;
 			}
 
-			const fam = classify_gamepad(pad.id);
-			setFamily((f) => (f === fam ? f : fam));
+			const next = resolve_profile(pad);
+			setProfile((p) =>
+				p && p.family === next.family && p.mode === next.mode && p.id === next.id ? p : next
+			);
+			const family = next.family;
 
 			const ax = pad.axes[0] || 0;
 			const ay = pad.axes[1] || 0;
@@ -85,35 +108,30 @@ export default function GamepadNavigator() {
 				s.dir = null;
 			}
 
-			const confirm = action_binding(fam, "confirm").index;
-			const cancel = action_binding(fam, "cancel").index;
-			press(pad, confirm, (p) => {
+			press(pad, action_binding(family, "confirm").index, (p) => {
 				setActive(true);
 				const el = document.activeElement;
 				if (!el || el === document.body) return;
 				playClick();
 				rumble(p, 0.35);
-				/* text fields do nothing useful on click — but checkboxes, radios and
-				   file inputs must still toggle, so only skip the typing ones */
-				const TEXTY = ["text", "email", "password", "search", "url", "tel", "number", "date", "time"];
+				/* text fields do nothing useful on click — checkboxes and radios must
+				   still toggle, so only skip the typing ones */
 				if (el.tagName === "TEXTAREA") return;
 				if (el.tagName === "INPUT" && TEXTY.includes((el.type || "text").toLowerCase())) return;
 				el.click();
 			});
-			press(pad, cancel, (p) => {
+
+			press(pad, action_binding(family, "cancel").index, (p) => {
 				setActive(true);
 				playMenuClose();
 				rumble(p, 0.18);
-				/* one dispatch only — it bubbles from the focused node to document,
-				   so dialogs and popovers close once instead of twice */
 				const target = document.activeElement || document;
 				target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
 				document.activeElement?.blur?.();
 			});
 
 			/* right stick scrolls the page — eased so small tilts creep and full
-			   tilt travels fast, written straight to the scroller so the smooth-
-			   scroll wheel handler has nothing to fight */
+			   tilt travels fast */
 			const ry = pad.axes[3] || 0;
 			if (Math.abs(ry) > 0.12) {
 				const eased = Math.sign(ry) * Math.pow((Math.abs(ry) - 0.12) / 0.88, 2) * 30;
@@ -123,22 +141,24 @@ export default function GamepadNavigator() {
 			raf = requestAnimationFrame(poll);
 		};
 
-		const on_connect = () => {
-			if (raf === null) raf = requestAnimationFrame(poll);
-		};
+		const on_connect = () => { if (raf === null) raf = requestAnimationFrame(poll); };
 		const on_disconnect = () => {
 			const any = Array.from(navigator.getGamepads?.() || []).some(Boolean);
 			if (any) return;
 			if (raf) cancelAnimationFrame(raf);
 			raf = null;
 			setActive(false);
-			setFamily(null);
+			setProfile(null);
+			state.current.pad_index = null;
 		};
 		const on_pointer = () => setActive(false);
+		/* manual glyph override changes must take effect without a reload */
+		const on_override = () => setProfile(null);
 
 		window.addEventListener("gamepadconnected", on_connect);
 		window.addEventListener("gamepaddisconnected", on_disconnect);
 		window.addEventListener("mousemove", on_pointer, { passive: true });
+		window.addEventListener(OVERRIDE_EVENT, on_override);
 		if (Array.from(navigator.getGamepads?.() || []).some(Boolean)) on_connect();
 
 		return () => {
@@ -146,6 +166,7 @@ export default function GamepadNavigator() {
 			window.removeEventListener("gamepadconnected", on_connect);
 			window.removeEventListener("gamepaddisconnected", on_disconnect);
 			window.removeEventListener("mousemove", on_pointer);
+			window.removeEventListener(OVERRIDE_EVENT, on_override);
 		};
 	}, []);
 
@@ -153,6 +174,6 @@ export default function GamepadNavigator() {
 		document.body.classList.toggle("gamepad-active", active);
 	}, [active]);
 
-	if (!family || !active) return null;
-	return <ControllerHints family={family} />;
+	if (!profile || !active) return null;
+	return <ControllerHints profile={profile} />;
 }

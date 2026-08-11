@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
+import ControllerSettings from "@/components/ControllerSettings";
 
 export default function SettingsModal({ open, onClose, isAdmin }) {
   const [currentCode, setCurrentCode] = useState("");
@@ -81,6 +82,9 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   </span>
                 </button>
               </div>
+
+              {/* Controller */}
+              <ControllerSettings />
 
               {/* Account */}
               <div>
