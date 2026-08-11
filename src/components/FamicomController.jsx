@@ -65,7 +65,7 @@ export default function FamicomController({ onUnlock }) {
         }} />
 
         {/* horizontal black bar */}
-        <div className="absolute" style={{ left: 0, right: 0, top: 96, height: 4, background: "#1e1e1e" }} />
+        <div className="absolute" style={{ left: 12, right: 12, top: 96, height: 4, background: "#1e1e1e" }} />
 
         {/* D-pad */}
         <div className="absolute" style={{ left: 26, top: 46, width: 72, height: 72 }}>
