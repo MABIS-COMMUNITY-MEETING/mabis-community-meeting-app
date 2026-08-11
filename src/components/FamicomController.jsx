@@ -10,7 +10,6 @@ const KEY_MAP = {
 /** Famicom-style controller. Enter the Konami code (pad or keyboard) to unlock. */
 export default function FamicomController({ onUnlock }) {
   const seq = useRef([]);
-  const [progress, setProgress] = useState(0);
   const [flash, setFlash] = useState(null);
 
   const push = (input) => {
@@ -18,15 +17,8 @@ export default function FamicomController({ onUnlock }) {
     setTimeout(() => setFlash(null), 140);
     const next = [...seq.current, input].slice(-KONAMI.length);
     seq.current = next;
-    let match = 0;
-    for (let i = 0; i < next.length; i++) {
-      if (next[next.length - 1 - i] === KONAMI[KONAMI.length - 1 - i]) match++;
-      else break;
-    }
-    setProgress(match);
     if (next.length === KONAMI.length && next.every((v, i) => v === KONAMI[i])) {
       seq.current = [];
-      setProgress(0);
       onUnlock();
     }
   };
@@ -54,7 +46,6 @@ export default function FamicomController({ onUnlock }) {
 
   return (
     <div className="mt-8 flex flex-col items-center gap-3">
-      <div className="tech-label text-muted-foreground">／ INSERT CODE</div>
       <motion.div
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         className="relative w-full max-w-[320px] border-2 border-foreground/25 bg-[#e6ded0] px-5 py-4 shadow-ink"
@@ -81,14 +72,7 @@ export default function FamicomController({ onUnlock }) {
           </div>
         </div>
 
-        {/* progress ticks */}
-        <div className="mt-4 flex justify-center gap-1">
-          {KONAMI.map((_, i) => (
-            <span key={i} className={`h-1 w-4 ${i < progress ? "bg-primary" : "bg-[#2b2b2b]/20"}`} />
-          ))}
-        </div>
       </motion.div>
-      <p className="tech-label text-[9px] text-muted-foreground">↑↑↓↓←→←→ B A</p>
     </div>
   );
 }

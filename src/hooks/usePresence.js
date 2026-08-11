@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/AuthContext";
+import { isHackerMode } from "@/lib/hacker";
 
 const HEARTBEAT_MS = 20000;
 const ACTIVE_WINDOW_MS = 45000;
@@ -10,7 +11,7 @@ const ACTIVE_WINDOW_MS = 45000;
 export function usePresenceHeartbeat() {
   const { user } = useAuth();
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.email || isHackerMode()) return; // ghost session leaves no trace
     const email = user.email.toLowerCase();
     const upsert = async () => {
       try {
@@ -62,6 +63,6 @@ export function useActivePresence() {
     }
   });
   // The signed-in user's own heartbeat is running, so always show themselves as active.
-  if (user?.email) active.add(user.email.toLowerCase());
+  if (user?.email && !isHackerMode()) active.add(user.email.toLowerCase());
   return active;
 }
