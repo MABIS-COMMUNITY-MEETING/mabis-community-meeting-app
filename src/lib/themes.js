@@ -110,6 +110,8 @@ const prideTheme = paletteTheme;
 const distroTheme = paletteTheme;
 const consoleTheme = paletteTheme;
 const touhouTheme = paletteTheme;
+const sonicTheme = paletteTheme;
+const bfdiTheme = paletteTheme;
 
 export const THEMES = {
   default: {
@@ -239,6 +241,30 @@ export const THEMES = {
   yukari:    touhouTheme("yukari",    "Yukari",     "275 42% 48%", "48 70% 55%",  ["#8A5EC0","#F0D264","#3B2C55","#EFE6F7"]),
   patchouli: touhouTheme("patchouli", "Patchouli",  "285 35% 48%", "45 60% 55%",  ["#9A6BB8","#EBD98A","#4A3560","#F3ECF6"]),
   aya:       touhouTheme("aya",       "Aya",        "0 0% 28%",    "10 75% 50%",  ["#3A3A3A","#D9522E","#FFFFFF","#B03A20"]),
+
+  // ── Sonic character colourways ──
+  sonic:     sonicTheme("sonic",     "Sonic",      "215 85% 45%", "20 85% 50%",  ["#1F6FD0","#0B2E6B","#E88B36","#FFFFFF"]),
+  tails:     sonicTheme("tails",     "Tails",      "30 90% 48%",  "205 75% 50%", ["#EE8A22","#FFFFFF","#2E9BD6","#8A4B12"]),
+  knuckles:  sonicTheme("knuckles",  "Knuckles",   "355 72% 45%", "45 80% 50%",  ["#C7202F","#F0C93B","#FFFFFF","#7A1420"]),
+  amy:       sonicTheme("amy",       "Amy",        "335 75% 52%", "0 78% 48%",   ["#E5479B","#D4283C","#FFFFFF","#8C2158"]),
+  shadow:    sonicTheme("shadow",    "Shadow",     "0 0% 22%",    "355 80% 48%", ["#2B2B2B","#D42A3C","#F2F2F2","#8E1B26"]),
+  eggman:    sonicTheme("eggman",    "Eggman",     "355 70% 45%", "35 80% 50%",  ["#C42A33","#E0A32C","#3A3A3A","#F0E6D2"]),
+  silver:    sonicTheme("silver",    "Silver",     "185 45% 45%", "150 40% 48%", ["#4FA6AE","#CFD6DA","#3C8A6E","#FFFFFF"]),
+  rouge:     sonicTheme("rouge",     "Rouge",      "330 55% 45%", "285 40% 48%", ["#B8397A","#7A4499","#FFFFFF","#2E1F33"]),
+
+  // ── BFDI object colourways ──
+  firey:     bfdiTheme("firey",     "Firey",      "20 88% 48%",  "48 92% 52%",  ["#E85D0F","#F5C518","#FFF3D0","#9C3407"]),
+  leafy:     bfdiTheme("leafy",     "Leafy",      "104 48% 38%", "80 55% 45%",  ["#4FA82E","#9FD65B","#2C5E1A","#EAF6DF"]),
+  bubble:    bfdiTheme("bubble",    "Bubble",     "195 65% 48%", "205 45% 60%", ["#63C6E0","#D9F2F8","#2E7C93","#FFFFFF"]),
+  pencil:    bfdiTheme("pencil",    "Pencil",     "45 88% 48%",  "20 45% 45%",  ["#F0C022","#B07A38","#FFFFFF","#5A4020"]),
+  match:     bfdiTheme("match",     "Match",      "348 78% 52%", "320 60% 60%", ["#E63958","#F291AC","#FFF0F3","#8C1B30"]),
+  blocky:    bfdiTheme("blocky",    "Blocky",     "48 88% 45%",  "30 65% 45%",  ["#E8C223","#C08A1E","#FFF5CC","#6B4C0C"]),
+  four:      bfdiTheme("four",      "Four",       "140 55% 38%", "150 45% 50%", ["#2E9E56","#7ED9A0","#1B5C33","#EAF7EF"]),
+  x:         bfdiTheme("x",         "X",          "48 92% 45%",  "40 70% 55%",  ["#EFC01E","#F7DE7C","#8A6B08","#FFF8DC"]),
+  icecube:   bfdiTheme("icecube",   "Ice Cube",   "195 55% 48%", "210 40% 62%", ["#7FCBE0","#FFFFFF","#3D8AA8","#DCF1F7"]),
+  flower:    bfdiTheme("flower",    "Flower",     "330 65% 55%", "285 45% 55%", ["#E86FAE","#A45BC4","#FFE4F0","#7A2A55"]),
+  coiny:     bfdiTheme("coiny",     "Coiny",      "35 60% 45%",  "45 55% 55%",  ["#C08A3C","#E8C87A","#7A5220","#FBF0DA"]),
+  gelatin:   bfdiTheme("gelatin",   "Gelatin",    "50 85% 48%",  "95 45% 50%",  ["#EBD022","#B7D95E","#7A6C0A","#FDF7C9"]),
 };
 
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
