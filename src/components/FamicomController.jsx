@@ -91,8 +91,17 @@ export default function FamicomController({ onUnlock }) {
           <div className="absolute" style={{ left: 12, right: 12, top: 109, height: 3, background: "#1c1c1c" }} />
 
           {/* D-pad: red square recess 92x92 at (22,59) with black cross plate */}
-          <div className="absolute" style={{ left: 20, top: 60, width: 90, height: 90, background: RED, border: "2px solid #1b1b1b", borderRadius: 3, boxSizing: "border-box" }} />
-          <div className="absolute" style={{ left: 26, top: 66, width: 78, height: 78 }}>
+          {/* black outline cross */}
+          <div className="absolute" style={{
+            left: 17, top: 50, width: 96, height: 96, background: "#1b1b1b",
+            clipPath: "polygon(33px 0, 63px 0, 63px 33px, 96px 33px, 96px 63px, 63px 63px, 63px 96px, 33px 96px, 33px 63px, 0 63px, 0 33px, 33px 33px)"
+          }} />
+          {/* red cross plate */}
+          <div className="absolute" style={{
+            left: 20, top: 53, width: 90, height: 90, background: RED,
+            clipPath: "polygon(30px 0, 60px 0, 60px 30px, 90px 30px, 90px 60px, 60px 60px, 60px 90px, 30px 90px, 30px 60px, 0 60px, 0 30px, 30px 30px)"
+          }} />
+          <div className="absolute" style={{ left: 26, top: 59, width: 78, height: 78 }}>
             {/* black cross plate — arms 26px */}
             <div className="absolute" style={{
               left: 0, top: 0, width: 78, height: 78, background: "#1b1b1b",
