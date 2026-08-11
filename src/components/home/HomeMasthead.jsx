@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import Tilt3D from "@/components/Tilt3D";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -20,6 +21,7 @@ export default function HomeMasthead({ week_label, date_label }) {
 					<span className="tech-label text-muted-foreground">LIVE ／ DASHBOARD</span>
 				</motion.div>
 
+				<Tilt3D max={7}>
 				<h1 className="font-display font-thin tracking-ultra leading-[0.8]">
 					<span className="reveal-mask">
 						<motion.span
@@ -40,6 +42,7 @@ export default function HomeMasthead({ week_label, date_label }) {
 						</motion.span>
 					</span>
 				</h1>
+				</Tilt3D>
 			</div>
 
 			<motion.aside

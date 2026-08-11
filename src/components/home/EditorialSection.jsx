@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import Tilt3D from "@/components/Tilt3D";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -26,12 +27,15 @@ export default function EditorialSection({ index = "00", label = "", jp = "", ch
 		>
 			{/* gutter: giant index + vertical japanese label */}
 			<div className="hidden lg:flex flex-col items-end pt-1 select-none">
-				<motion.span
-					variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } } }}
-					className="font-display font-thin leading-[0.78] tracking-ultra text-[4.5rem] text-foreground/12 tabular-nums"
-				>
-					{index}
-				</motion.span>
+				<Tilt3D max={18}>
+					<motion.span
+						variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } } }}
+						className="block font-display font-thin leading-[0.78] tracking-ultra text-[4.5rem] text-foreground/12 tabular-nums"
+						style={{ textShadow: "1px 1px 0 hsl(var(--foreground)/0.06), 3px 3px 0 hsl(var(--foreground)/0.04)" }}
+					>
+						{index}
+					</motion.span>
+				</Tilt3D>
 				<motion.span
 					variants={{ hidden: { scaleY: 0 }, show: { scaleY: 1, transition: { duration: 0.8, ease: EASE } } }}
 					className="mt-4 w-px flex-1 min-h-[3rem] bg-foreground/15 origin-top"
@@ -71,9 +75,10 @@ export default function EditorialSection({ index = "00", label = "", jp = "", ch
 				</motion.div>
 
 				<motion.div
+					style={{ perspective: 1400, transformStyle: "preserve-3d" }}
 					variants={{
-						hidden: { y: 26, opacity: 0, clipPath: "inset(0 0 100% 0)" },
-						show: { y: 0, opacity: 1, clipPath: "inset(0 0 0 0)", transition: { duration: 0.8, ease: EASE } },
+						hidden: { y: 26, opacity: 0, rotateX: 9, clipPath: "inset(0 0 100% 0)" },
+						show: { y: 0, opacity: 1, rotateX: 0, clipPath: "inset(0 0 0 0)", transition: { duration: 0.9, ease: EASE } },
 					}}
 				>
 					{children}
