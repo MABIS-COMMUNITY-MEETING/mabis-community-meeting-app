@@ -47,7 +47,7 @@ const ROLE_COLOR_VARS = {
 };
 
 export default function Home() {
-  const { user, refetchUser } = useAuth();
+  const { user, refetchUser, logout } = useAuth();
   usePresenceHeartbeat();
   const isSummerOrBenjamin = user?.email === "summer@montessoribkk.com" || /benjamin/i.test(user?.full_name || "") || /benjamin/i.test(user?.email || "");
   const userRole = user?.role_override || user?.role;
@@ -141,7 +141,7 @@ export default function Home() {
         <span className="text-xs tech-label text-foreground hidden lg:inline">
           {user?.full_name?.split(" ")[0]?.toUpperCase() || "USER"}
         </span>
-        <button onClick={() => base44.auth.logout()} data-cursor="EXIT" className="liquid-btn tech-label px-3.5 py-2 border border-foreground/30 bg-bone text-foreground">
+        <button onClick={() => logout()} data-cursor="EXIT" className="liquid-btn tech-label px-3.5 py-2 border border-foreground/30 bg-bone text-foreground">
           SIGN OUT
         </button>
       </div>
