@@ -1,0 +1,81 @@
+import React from "react";
+import { motion } from "framer-motion";
+
+const EASE = [0.16, 1, 0.3, 1];
+
+/*
+ * Offset-column section chrome.
+ *
+ * Replaces the old full-width "header bar + panel" stack. The index number
+ * lives OUTSIDE the content column as oversized graphic material, the Japanese
+ * label runs vertically down the gutter, and the content sits in an offset
+ * column so the page reads as an editorial index rather than a widget stack.
+ */
+export default function EditorialSection({ index = "00", label = "", jp = "", children }) {
+	return (
+		<motion.section
+			id={`sec-${index}`}
+			initial="hidden"
+			whileInView="show"
+			viewport={{ once: true, margin: "-10% 0px" }}
+			variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
+			className="grid grid-cols-1 lg:grid-cols-[7rem_1fr] gap-x-8"
+		>
+			{/* gutter: giant index + vertical japanese label */}
+			<div className="hidden lg:flex flex-col items-end pt-1 select-none">
+				<motion.span
+					variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } } }}
+					className="font-display font-thin leading-[0.78] tracking-ultra text-[4.5rem] text-foreground/12 tabular-nums"
+				>
+					{index}
+				</motion.span>
+				<motion.span
+					variants={{ hidden: { scaleY: 0 }, show: { scaleY: 1, transition: { duration: 0.8, ease: EASE } } }}
+					className="mt-4 w-px flex-1 min-h-[3rem] bg-foreground/15 origin-top"
+				/>
+				{jp && (
+					<motion.span
+						lang="ja"
+						variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.5, delay: 0.15 } } }}
+						className="vert-text font-jp text-sm text-foreground/45 mt-4"
+					>
+						{jp}
+					</motion.span>
+				)}
+			</div>
+
+			<div className="min-w-0">
+				<motion.div
+					variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+					className="flex items-baseline gap-3 mb-4"
+				>
+					<motion.span
+						variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.4 } } }}
+						className="lg:hidden tech-label text-primary tabular-nums"
+					>
+						{index}
+					</motion.span>
+					<motion.h2
+						variants={{ hidden: { y: "110%" }, show: { y: 0, transition: { duration: 0.8, ease: EASE } } }}
+						className="font-display font-extralight tracking-ultra text-2xl sm:text-4xl leading-none"
+					>
+						{label}
+					</motion.h2>
+					<motion.span
+						variants={{ hidden: { scaleX: 0 }, show: { scaleX: 1, transition: { duration: 0.9, ease: EASE } } }}
+						className="flex-1 h-px bg-foreground/20 origin-left"
+					/>
+				</motion.div>
+
+				<motion.div
+					variants={{
+						hidden: { y: 26, opacity: 0, clipPath: "inset(0 0 100% 0)" },
+						show: { y: 0, opacity: 1, clipPath: "inset(0 0 0 0)", transition: { duration: 0.8, ease: EASE } },
+					}}
+				>
+					{children}
+				</motion.div>
+			</div>
+		</motion.section>
+	);
+}

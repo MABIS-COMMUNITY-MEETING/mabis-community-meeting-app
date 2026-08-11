@@ -2,15 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Palette, Inbox, Settings, Plus } from "lucide-react";
+import { Palette, Inbox, Settings } from "lucide-react";
 import moment from "moment";
 import PageFooter from "@/components/PageFooter";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
-import SectionReveal from "@/components/SectionReveal";
-import Marquee from "@/components/Marquee";
-import KineticHeading from "@/components/KineticHeading";
+import EditorialSection from "@/components/home/EditorialSection";
+import HomeMasthead from "@/components/home/HomeMasthead";
 import ScrollVelocity from "@/components/ScrollVelocity";
 import ScrollSectionIndicator from "@/components/ScrollSectionIndicator";
 import DiscussionWidget from "@/components/DiscussionWidget";
@@ -160,109 +159,66 @@ export default function Home() {
 
       {showDove && <DoveAnimation onComplete={() => setShowDove(false)} />}
 
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-8 space-y-6 sm:space-y-8">
-        {/* editorial masthead */}
-        <motion.section
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="border-b border-foreground/15 pb-7"
-        >
-          <div className="flex items-center gap-3 mb-5">
-            <span className="tech-label text-primary flex items-center gap-1.5">
-              <span className="pulse-dot inline-block h-1.5 w-1.5 bg-primary" />／ 00
-            </span>
-            <span className="tech-label text-muted-foreground">DASHBOARD</span>
-            <span className="flex-1 h-px bg-foreground/15" />
-            <span className="tech-label text-muted-foreground hidden sm:block tabular-nums">{dateLabel}</span>
-          </div>
-          <h1 className="font-display font-extralight tracking-ultra leading-[0.9] text-5xl sm:text-7xl md:text-8xl">
-            <span className="block">COMMUNITY</span>
-            <span className="block text-stroke">MEETING</span>
-          </h1>
-          <p lang="ja" className="font-jp mt-4 text-xl sm:text-2xl text-foreground/60">コミュニティ・ミーティング</p>
-          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 tech-label text-muted-foreground">
-            <span className="tabular-nums">WEEK {weekLabel}</span>
-            <Plus className="h-3 w-3 text-primary/60" />
-            <span>FRIDAY ／ WEEKLY RITUAL <span lang="ja" className="font-jp normal-case tracking-normal text-foreground/60">毎週金曜日</span></span>
-            <Plus className="h-3 w-3 text-primary/60" />
-            <span>MABIS ／ BANGKOK</span>
-          </div>
-        </motion.section>
+      <main className="max-w-[1600px] mx-auto px-5 sm:px-10 pt-24 sm:pt-32 pb-8">
+        <HomeMasthead week_label={weekLabel} date_label={dateLabel} />
 
-        {/* kinetic scroll-reactive divider */}
-        <section className="py-2 -mx-4 sm:-mx-6 px-4 sm:px-6 overflow-hidden">
-          <KineticHeading text="WEEKLY RITUAL" className="text-[15vw] sm:text-[11vw] text-foreground/85" />
-          <p lang="ja" className="font-jp mt-1 text-base sm:text-xl text-foreground/50">週の儀式</p>
-        </section>
-
-        {/* velocity-driven typographic band */}
-        <div className="-mx-4 sm:-mx-6 border-y border-foreground/15 bg-card/40 py-5">
+        {/* velocity band — edge to edge, no container */}
+        <div className="-mx-5 sm:-mx-10 py-6 overflow-hidden">
           <ScrollVelocity
             text="SECONDARY COMMUNITY MEETING ／ FRIDAY ／ MABIS BANGKOK ／ "
-            className="font-display font-thin tracking-ultra text-foreground/80 text-[6.5vw] sm:text-[4.6vw]"
+            className="font-display font-thin tracking-ultra text-foreground/25 text-[8vw] sm:text-[5vw]"
           />
         </div>
 
-        {/* date marquee */}
-        <div className="-mx-4 sm:-mx-6 border-y border-foreground/15 bg-card/50 py-2.5">
-          <Marquee speed={40} className="text-muted-foreground">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <span key={i} className="flex items-center tech-label">
-                <span className="px-5">SECONDARY COMMUNITY MEETING</span>
-                <Plus className="h-3 w-3 text-primary/60" />
-                <span className="px-5">{weekLabel}</span>
-                <Plus className="h-3 w-3 text-primary/60" />
-                <span className="px-5">LIVE DASHBOARD</span>
-                <Plus className="h-3 w-3 text-primary/60" />
-              </span>
-            ))}
-          </Marquee>
+        <div className="pt-2 pb-12">
+          <BirthdayBanner />
         </div>
 
-        <BirthdayBanner />
+        <div className="space-y-24 sm:space-y-36">
 
-        <SectionReveal index="01" label="MEETING MODE" jp="会議モード">
+        <EditorialSection index="01" label="MEETING MODE" jp="会議モード">
           <MeetingModeWidget canStart={canStartMeeting} onStartMeeting={() => {
             window.dispatchEvent(new CustomEvent("startMeetingMode"));
           }} />
-        </SectionReveal>
+        </EditorialSection>
 
-        <SectionReveal index="02" label="ANNOUNCEMENTS" jp="お知らせ">
+        <EditorialSection index="02" label="ANNOUNCEMENTS" jp="お知らせ">
           <AnnouncementsWidget members={members} isAdmin={canManage} />
-        </SectionReveal>
+        </EditorialSection>
 
-        <SectionReveal index="03" label="DISCUSSION" jp="議題">
+        <EditorialSection index="03" label="DISCUSSION" jp="議題">
           <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
-        </SectionReveal>
+        </EditorialSection>
 
-        <SectionReveal index="04" label="JOBS ／ ROTATION" jp="当番">
+        <EditorialSection index="04" label="JOBS ／ ROTATION" jp="当番">
           <JobsWidget members={members} isAdmin={canManage} compact={false} />
-        </SectionReveal>
+        </EditorialSection>
 
-        <SectionReveal index="05" label="CALENDAR" jp="カレンダー">
+        <EditorialSection index="05" label="CALENDAR" jp="カレンダー">
           <CalendarWidget />
-        </SectionReveal>
+        </EditorialSection>
 
-        <SectionReveal index="06" label="SCHEDULE" jp="時間割">
+        <EditorialSection index="06" label="SCHEDULE" jp="時間割">
           <ScheduleWidget isAdmin={canManage} />
-        </SectionReveal>
+        </EditorialSection>
 
-        <SectionReveal index="07" label="LOST ／ FOUND" jp="落とし物">
+        <EditorialSection index="07" label="LOST ／ FOUND" jp="落とし物">
           <MissingItemsWidget members={members} />
-        </SectionReveal>
+        </EditorialSection>
 
-        <SectionReveal index="08" label="LUNCH MENU" jp="給食の献立">
+        <EditorialSection index="08" label="LUNCH MENU" jp="給食の献立">
           <LunchMenuWidget isAdmin={canManage} />
-        </SectionReveal>
+        </EditorialSection>
 
-        <SectionReveal index="09" label="NEWS" jp="ニュース">
+        <EditorialSection index="09" label="NEWS" jp="ニュース">
           <NewsWidget members={members} isAdmin={canManage} />
-        </SectionReveal>
+        </EditorialSection>
 
-        <SectionReveal index="10" label="MEMBERS" jp="メンバー">
+        <EditorialSection index="10" label="MEMBERS" jp="メンバー">
           <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
-        </SectionReveal>
+        </EditorialSection>
+
+        </div>
 
         <PageFooter />
       </main>
