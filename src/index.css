@@ -180,6 +180,9 @@
 .cursor-ring.is-hover { width: 46px; height: 46px; background:transparent; }
 .cursor-ring.is-label { width: 62px; height: 62px; background:rgba(255,255,255,0.14); }
 
+/* ── japanese (Hina Mincho ships at one weight — thicken optically) ── */
+.font-jp { -webkit-text-stroke: 0.45px currentColor; paint-order: stroke fill; }
+
 /* ── thin technical label ── */
 .tech-label { font-family:'Iosevka',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; font-weight:500; }
 
