@@ -143,7 +143,10 @@ function gmkTheme(key) {
   const u = gmk_ui[key];
   const bg = hexToHsl(u.background);
   const fg = hexToHsl(u.foreground);
-  const acc = hexToHsl(u.accent);
+  // `accent_ui` is a DERIVED chrome tone for themes whose canonical accent has
+  // no contrast against the page (WoB's white on black). The canonical accent
+  // itself is never altered — it still ships as --accent and --character-*.
+  const acc = hexToHsl(u.accent_ui || u.accent);
   const acc2 = hexToHsl(u.accent_secondary);
   const d = u.dark;
 
@@ -406,8 +409,11 @@ export function applyTheme(themeKey) {
   // The editorial layer paints panels/labels with --ink and --bone. Themes never
   // set them, so every theme was drawing on the original maroon/bone pair — that
   // was the clash. Tie them to the theme's own foreground/background instead.
-  root.style.setProperty("--ink", theme.vars["--foreground"]);
-  root.style.setProperty("--bone", theme.vars["--background"]);
+  // On dark themes the roles flip: ink panels must stay the dark surface and
+  // bone the light one, otherwise header panels go light with light text.
+  root.style.setProperty("--ink", theme.dark ? (theme.vars["--card"] || theme.vars["--background"]) : theme.vars["--foreground"]);
+  root.style.setProperty("--bone", theme.dark ? theme.vars["--foreground"] : theme.vars["--background"]);
+  document.body.classList.toggle("theme-is-dark", !!theme.dark);
   applyPalette(theme.swatches);
   applyCharacterTokens(theme.character);
   Object.values(THEMES).forEach(t => document.body.classList.remove(t.bodyClass));

@@ -205,6 +205,8 @@ export const gmk_ui = {
 		foreground: C.wob.white,
 		surface: C.wob.black,
 		accent: C.wob.white,
+		// derived chrome tone: canonical white has no contrast on the black page
+		accent_ui: "#3A3A3B",
 		accent_secondary: C.wob.white,
 		dark: true,
 		swatches: [C.wob.black, C.wob.white],

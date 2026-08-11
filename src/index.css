@@ -233,6 +233,27 @@ body .bg-\[\#EACE54\]\/10 { background-color: hsl(var(--secondary) / 0.1) !impor
 body .from-\[\#EACE54\] { --tw-gradient-from: hsl(var(--secondary)) !important; }
 body .to-\[\#f5d880\] { --tw-gradient-to: hsl(var(--secondary) / 0.85) !important; }
 
+/* ── dark colourways (WoB, 8008, Metropolis…) ──
+   Widgets were written with hardcoded light utilities (bg-white, gray borders,
+   gray text). On a dark keyset those read as bright white slabs, so remap them
+   to the theme's own surface tokens. */
+body.theme-is-dark .bg-white { background-color: hsl(var(--card)) !important; }
+body.theme-is-dark .bg-gray-50,
+body.theme-is-dark .bg-gray-50\/50,
+body.theme-is-dark .bg-gray-100 { background-color: hsl(var(--muted)) !important; }
+body.theme-is-dark .hover\:bg-gray-50:hover,
+body.theme-is-dark .hover\:bg-gray-100:hover { background-color: hsl(var(--muted)) !important; }
+body.theme-is-dark .border-gray-100,
+body.theme-is-dark .border-gray-200,
+body.theme-is-dark .border-gray-300 { border-color: hsl(var(--border)) !important; }
+body.theme-is-dark .text-gray-800,
+body.theme-is-dark .text-gray-700,
+body.theme-is-dark .text-gray-600 { color: hsl(var(--foreground)) !important; }
+body.theme-is-dark .text-gray-500,
+body.theme-is-dark .text-gray-400,
+body.theme-is-dark .text-gray-300 { color: hsl(var(--muted-foreground)) !important; }
+body.theme-is-dark .bg-blue-50 { background-color: hsl(var(--primary) / 0.22) !important; }
+
 /* range slider */
 input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 0; background: hsl(var(--primary)); border: none; cursor: pointer; }
 input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 0; background: hsl(var(--primary)); border: none; cursor: pointer; }
