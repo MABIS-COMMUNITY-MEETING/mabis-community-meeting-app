@@ -7,7 +7,11 @@ const KEY_MAP = {
   b: "b", B: "b", a: "a", A: "a",
 };
 
-/** Famicom-style controller. Enter the Konami code (pad or keyboard) to unlock. */
+const RED = "#cf3441";
+const CREAM = "#ece2cd";
+const DARK = "#3b3b3b";
+
+/** Famicom-style controller (flat illustration). Konami code (pad or keyboard) unlocks. */
 export default function FamicomController({ onUnlock }) {
   const seq = useRef([]);
   const [flash, setFlash] = useState(null);
@@ -34,44 +38,54 @@ export default function FamicomController({ onUnlock }) {
 
   const pad = (dir, cls) => (
     <button type="button" aria-label={dir} onClick={() => push(dir)}
-      className={`absolute bg-[#2b2b2b] hover:bg-[#3d3d3d] active:bg-primary transition-colors ${cls} ${flash === dir ? "!bg-primary" : ""}`} />
+      className={`absolute rounded-[2px] transition-colors ${cls}`}
+      style={{ background: flash === dir ? RED : DARK }} />
   );
 
-  const round = (label) => (
+  const round = (label, left) => (
     <button type="button" aria-label={label.toUpperCase()} onClick={() => push(label)}
-      className={`w-10 h-10 rounded-full bg-[#8b1220] hover:bg-primary active:scale-95 transition-all text-bone tech-label flex items-center justify-center border-2 border-[#5e0b16] ${flash === label ? "!bg-primary" : ""}`}>
-      {label.toUpperCase()}
+      className="absolute bottom-[16px] h-[46px] w-[46px] rounded-full transition-transform active:scale-95"
+      style={{ left, background: RED, padding: "5px" }}>
+      <span className="block h-full w-full rounded-full transition-colors"
+        style={{ background: flash === label ? "#111" : DARK }} />
     </button>
   );
 
   return (
-    <div className="mt-8 flex flex-col items-center gap-3">
+    <div className="mt-8 flex justify-center">
       <motion.div
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-        className="relative w-full max-w-[320px] border-2 border-foreground/25 bg-[#e6ded0] px-5 py-4 shadow-ink"
+        className="relative"
+        style={{ width: 340, height: 150, background: RED, borderRadius: 10, boxShadow: "8px 8px 0 rgba(0,0,0,0.35)" }}
       >
-        <div className="flex items-center justify-between gap-4">
-          {/* D-pad */}
-          <div className="relative w-[84px] h-[84px]">
-            {pad("up", "left-[28px] top-0 w-7 h-7")}
-            {pad("left", "left-0 top-[28px] w-7 h-7")}
-            <div className="absolute left-[28px] top-[28px] w-7 h-7 bg-[#2b2b2b]" />
-            {pad("right", "left-[56px] top-[28px] w-7 h-7")}
-            {pad("down", "left-[28px] top-[56px] w-7 h-7")}
-          </div>
+        {/* cream inner panel — notched top-left step */}
+        <div className="absolute" style={{
+          left: 12, top: 10, right: 12, bottom: 10, background: CREAM, borderRadius: 8,
+          clipPath: "polygon(0 0, 44% 0, 44% 34%, 100% 34%, 100% 100%, 0 100%)"
+        }} />
 
-          <div className="flex-1 flex flex-col items-center gap-1">
-            <div className="h-2 w-16 bg-[#8b1220]/70" />
-            <div className="h-2 w-16 bg-[#8b1220]/70" />
-            <span className="tech-label text-[9px] text-[#2b2b2b]/60">FAMICOM</span>
-          </div>
+        {/* horizontal black bar */}
+        <div className="absolute" style={{ left: 0, right: 0, top: 96, height: 4, background: "#1e1e1e" }} />
 
-          <div className="flex items-end gap-2 -rotate-12">
-            {round("b")}
-            {round("a")}
-          </div>
+        {/* D-pad */}
+        <div className="absolute" style={{ left: 26, top: 46, width: 72, height: 72 }}>
+          {pad("up", "left-[24px] top-0 w-6 h-6")}
+          {pad("left", "left-0 top-[24px] w-6 h-6")}
+          <div className="absolute left-[24px] top-[24px] w-6 h-6" style={{ background: DARK }} />
+          {pad("right", "left-[48px] top-[24px] w-6 h-6")}
+          {pad("down", "left-[24px] top-[48px] w-6 h-6")}
         </div>
 
+        {/* select / start pill */}
+        <div className="absolute flex items-center justify-center gap-2"
+          style={{ left: 122, top: 82, width: 76, height: 32, background: RED, borderRadius: 8 }}>
+          <span style={{ width: 22, height: 8, background: DARK, borderRadius: 3 }} />
+          <span style={{ width: 22, height: 8, background: DARK, borderRadius: 3 }} />
+        </div>
+
+        {/* A / B buttons */}
+        {round("b", 212)}
+        {round("a", 264)}
       </motion.div>
     </div>
   );
