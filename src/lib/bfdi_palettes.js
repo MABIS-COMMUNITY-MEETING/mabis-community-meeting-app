@@ -109,6 +109,17 @@ export const bfdi_colorways = {
     character_outline: "#B33F80",
     character_special: "#FFDE59", // yellow centre
   },
+  book: {
+    name: "Book",
+    // green cover + blue spine/cover details + white pages — never one colour
+    character_primary: "#24B814",   // cover green
+    character_secondary: "#139CB9", // cover/spine blue
+    character_highlight: "#75CE60", // bright green highlight
+    character_shade: "#1E9A38",     // shaded green
+    character_outline: "#11580A",   // deep green structure
+    character_blue_dark: "#084F56", // deep blue structure
+    character_special: "#FFFFFF",   // pages
+  },
   gelatin: {
     name: "Gelatin",
     character_primary: "#8CD94A", // Gelatin is a green jelly
@@ -127,8 +138,10 @@ export function character_swatches(key) {
     c.character_primary,
     c.character_secondary,
     c.character_highlight,
-    c.character_outline,
+    c.character_shade,
     c.character_special,
+    c.character_outline,
+    c.character_blue_dark,
   ].filter(Boolean);
   return [...new Set(list.map((h) => h.toUpperCase()))];
 }

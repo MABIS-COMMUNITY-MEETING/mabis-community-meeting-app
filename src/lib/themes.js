@@ -283,6 +283,7 @@ export const THEMES = {
   gelatin:   bfdiTheme("gelatin"),
   eraser:    bfdiTheme("eraser"),
   pin:       bfdiTheme("pin"),
+  book:      bfdiTheme("book"),
 };
 
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
@@ -306,7 +307,7 @@ function applyPalette(colors) {
    UI keeps working off the derived theme tokens. */
 function applyCharacterTokens(character) {
   const root = document.documentElement;
-  const keys = ["primary", "secondary", "highlight", "outline", "special"];
+  const keys = ["primary", "secondary", "highlight", "shade", "outline", "blue_dark", "special"];
   keys.forEach((k) => {
     const v = character?.[`character_${k}`];
     if (v) root.style.setProperty(`--character-${k}`, v);
@@ -315,9 +316,12 @@ function applyCharacterTokens(character) {
   if (character) {
     root.style.setProperty("--glass-edge", `${character.character_highlight}59`);
     root.style.setProperty("--rim-light", character.character_primary);
+    // secondary refraction tint — keeps the glass optical, not opaque
+    root.style.setProperty("--glass-tint-2", `${character.character_secondary}33`);
   } else {
     root.style.removeProperty("--glass-edge");
     root.style.removeProperty("--rim-light");
+    root.style.removeProperty("--glass-tint-2");
   }
 }
 
