@@ -107,6 +107,7 @@ export const bfdi_colorways = {
     character_secondary: "#D9539E",
     character_highlight: "#FFFFFF", // white petal core
     character_outline: "#B33F80",
+    character_special: "#FFDE59", // yellow centre
   },
   gelatin: {
     name: "Gelatin",
