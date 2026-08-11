@@ -24,8 +24,15 @@ export default function CustomCursor() {
     let scaleX = 1;
     let raf;
 
+    let seen = false;
     const onMove = (e) => {
       pos.x = e.clientX; pos.y = e.clientY;
+      if (!seen) {
+        seen = true;
+        ring.x = pos.x; ring.y = pos.y;
+        if (dotRef.current) dotRef.current.style.opacity = "1";
+        if (ringRef.current) ringRef.current.style.opacity = "1";
+      }
       if (dotRef.current) {
         dotRef.current.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%,-50%)`;
       }
@@ -43,9 +50,11 @@ export default function CustomCursor() {
       if (ringRef.current) ringRef.current.style.opacity = "0";
     };
     const onEnter = () => {
+      if (!seen) return;
       if (dotRef.current) dotRef.current.style.opacity = "1";
       if (ringRef.current) ringRef.current.style.opacity = "1";
     };
+    window.addEventListener("blur", onLeave);
 
     const loop = () => {
       const dx = pos.x - ring.x, dy = pos.y - ring.y;
@@ -80,6 +89,7 @@ export default function CustomCursor() {
       window.removeEventListener("mouseup", onUp);
       document.removeEventListener("mouseleave", onLeave);
       document.removeEventListener("mouseenter", onEnter);
+      window.removeEventListener("blur", onLeave);
       document.body.classList.remove("cursor-ready");
     };
   }, []);
@@ -87,8 +97,8 @@ export default function CustomCursor() {
   if (!enabled) return null;
   return (
     <>
-      <div ref={dotRef} className="cursor-dot" aria-hidden />
-      <div ref={ringRef} className="cursor-ring" aria-hidden />
+      <div ref={dotRef} className="cursor-dot" style={{ opacity: 0 }} aria-hidden />
+      <div ref={ringRef} className="cursor-ring" style={{ opacity: 0 }} aria-hidden />
     </>
   );
 }
