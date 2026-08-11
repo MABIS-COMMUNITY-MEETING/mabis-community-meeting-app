@@ -91,17 +91,17 @@ export default function FamicomController({ onUnlock }) {
           <div className="absolute" style={{ left: 12, right: 12, top: 109, height: 3, background: "#1c1c1c" }} />
 
           {/* D-pad: red square recess 92x92 at (22,59) with black cross plate */}
-          <div className="absolute" style={{ left: 22, top: 54, width: 92, height: 92, background: RED, border: "3px solid #1b1b1b", borderRadius: 4, boxSizing: "border-box" }}>
-            {/* black cross plate — arms 30px, 86x86 inner area */}
+          <div className="absolute" style={{ left: 26, top: 66, width: 78, height: 78 }}>
+            {/* black cross plate — arms 26px */}
             <div className="absolute" style={{
-              left: 0, top: 0, width: 86, height: 86, background: "#1b1b1b",
-              clipPath: "polygon(29px 0, 57px 0, 57px 29px, 86px 29px, 86px 57px, 57px 57px, 57px 86px, 29px 86px, 29px 57px, 0 57px, 0 29px, 29px 29px)"
+              left: 0, top: 0, width: 78, height: 78, background: "#1b1b1b",
+              clipPath: "polygon(26px 0, 52px 0, 52px 26px, 78px 26px, 78px 52px, 52px 52px, 52px 78px, 26px 78px, 26px 52px, 0 52px, 0 26px, 26px 26px)"
             }} />
-            {arm("up", "▲", { left: 33, top: 4, width: 20, height: 22 })}
-            {arm("left", "◀", { left: 4, top: 33, width: 22, height: 20 })}
-            {arm("right", "▶", { left: 60, top: 33, width: 22, height: 20 })}
-            {arm("down", "▼", { left: 33, top: 60, width: 20, height: 22 })}
-            <div className="absolute rounded-full" style={{ left: 30, top: 30, width: 26, height: 26, background: "linear-gradient(145deg,#5c5c5c,#2c2c2c)" }} />
+            {arm("up", "▲", { left: 30, top: 3, width: 18, height: 20 })}
+            {arm("left", "◀", { left: 3, top: 30, width: 20, height: 18 })}
+            {arm("right", "▶", { left: 55, top: 30, width: 20, height: 18 })}
+            {arm("down", "▼", { left: 30, top: 55, width: 18, height: 20 })}
+            <div className="absolute rounded-full" style={{ left: 27, top: 27, width: 24, height: 24, background: "linear-gradient(145deg,#5c5c5c,#2c2c2c)" }} />
           </div>
 
           {/* SELECT / START */}
