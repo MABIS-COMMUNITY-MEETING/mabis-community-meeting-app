@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import SoundEffects from '@/components/SoundEffects';
 import CustomCursor from '@/components/CustomCursor';
 import GrainOverlay from '@/components/GrainOverlay';
+import SmoothScroll from '@/components/SmoothScroll';
 import ScrollProgress from '@/components/ScrollProgress';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PageTransition from '@/components/PageTransition';
@@ -70,6 +71,7 @@ function App() {
         <Router>
           <ScrollToTop />
           <SoundEffects />
+          <SmoothScroll />
           <GrainOverlay />
           <CustomCursor />
           <ScrollProgress />
