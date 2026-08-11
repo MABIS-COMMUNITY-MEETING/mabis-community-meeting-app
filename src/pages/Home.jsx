@@ -10,6 +10,9 @@ import { Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import SectionReveal from "@/components/SectionReveal";
 import Marquee from "@/components/Marquee";
+import KineticHeading from "@/components/KineticHeading";
+import ScrollVelocity from "@/components/ScrollVelocity";
+import ScrollSectionIndicator from "@/components/ScrollSectionIndicator";
 import DiscussionWidget from "@/components/DiscussionWidget";
 import MembersWidget from "@/components/MembersWidget";
 import CalendarWidget from "@/components/CalendarWidget";
@@ -151,6 +154,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader rightSlot={controls} />
+      <ScrollSectionIndicator total={10} />
       <ProfileEditor open={editingProfile} onClose={() => setEditingProfile(false)} />
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} isAdmin={effectiveAdmin} />
 
@@ -165,23 +169,38 @@ export default function Home() {
           className="border-b border-foreground/15 pb-7"
         >
           <div className="flex items-center gap-3 mb-5">
-            <span className="tech-label text-primary">／ 00</span>
+            <span className="tech-label text-primary flex items-center gap-1.5">
+              <span className="pulse-dot inline-block h-1.5 w-1.5 bg-primary" />／ 00
+            </span>
             <span className="tech-label text-muted-foreground">DASHBOARD</span>
             <span className="flex-1 h-px bg-foreground/15" />
-            <span className="tech-label text-muted-foreground hidden sm:block">{dateLabel}</span>
+            <span className="tech-label text-muted-foreground hidden sm:block tabular-nums">{dateLabel}</span>
           </div>
           <h1 className="font-display font-extralight tracking-ultra leading-[0.9] text-5xl sm:text-7xl md:text-8xl">
             <span className="block">COMMUNITY</span>
             <span className="block text-stroke">MEETING</span>
           </h1>
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 tech-label text-muted-foreground">
-            <span>WEEK {weekLabel}</span>
+            <span className="tabular-nums">WEEK {weekLabel}</span>
             <Plus className="h-3 w-3 text-primary/60" />
             <span>FRIDAY ／ WEEKLY RITUAL</span>
             <Plus className="h-3 w-3 text-primary/60" />
             <span>MABIS ／ BANGKOK</span>
           </div>
         </motion.section>
+
+        {/* kinetic scroll-reactive divider */}
+        <section className="py-2 -mx-4 sm:-mx-6 px-4 sm:px-6">
+          <KineticHeading text="WEEKLY RITUAL" className="text-[15vw] sm:text-[11vw] text-foreground/85" />
+        </section>
+
+        {/* velocity-driven typographic band */}
+        <div className="-mx-4 sm:-mx-6 border-y border-foreground/15 bg-card/40 py-5">
+          <ScrollVelocity
+            text="SECONDARY COMMUNITY MEETING ／ FRIDAY ／ MABIS BANGKOK ／ "
+            className="font-display font-thin tracking-ultra text-foreground/80 text-[6.5vw] sm:text-[4.6vw]"
+          />
+        </div>
 
         {/* date marquee */}
         <div className="-mx-4 sm:-mx-6 border-y border-foreground/15 bg-card/50 py-2.5">
