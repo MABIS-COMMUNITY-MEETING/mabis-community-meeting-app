@@ -110,10 +110,10 @@ export const bfdi_colorways = {
   },
   gelatin: {
     name: "Gelatin",
-    character_primary: "#9B5FC7", // Gelatin is purple, not yellow
-    character_secondary: "#7B3FA8",
-    character_highlight: "#C79BE6",
-    character_outline: "#5C2B80",
+    character_primary: "#8CD94A", // Gelatin is a green jelly
+    character_secondary: "#6BBF33",
+    character_highlight: "#B8ED7E",
+    character_outline: "#4E9420",
   },
 };
 
