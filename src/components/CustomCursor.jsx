@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * Liquid custom cursor. A rigid center dot tracks the pointer instantly while
@@ -95,10 +96,11 @@ export default function CustomCursor() {
   }, []);
 
   if (!enabled) return null;
-  return (
+  return createPortal(
     <>
       <div ref={dotRef} className="cursor-dot" style={{ opacity: 0 }} aria-hidden />
       <div ref={ringRef} className="cursor-ring" style={{ opacity: 0 }} aria-hidden />
-    </>
+    </>,
+    document.body
   );
 }
