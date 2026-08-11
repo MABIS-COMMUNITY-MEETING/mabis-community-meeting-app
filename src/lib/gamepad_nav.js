@@ -11,9 +11,14 @@ const FOCUSABLE =
 
 export function collect_targets() {
 	const out = [];
+	const vh = window.innerHeight;
+	const vw = window.innerWidth;
 	for (const el of document.querySelectorAll(FOCUSABLE)) {
 		const r = el.getBoundingClientRect();
 		if (r.width < 4 || r.height < 4) continue;
+		/* only consider what is on (or just off) the current screen */
+		if (r.bottom < -vh || r.top > vh * 2) continue;
+		if (r.right < 0 || r.left > vw) continue;
 		if (el.closest("[aria-hidden='true']")) continue;
 		const s = getComputedStyle(el);
 		if (s.visibility === "hidden" || s.display === "none" || s.opacity === "0") continue;
@@ -29,7 +34,17 @@ function center(r) {
 export function find_neighbour(current, dir) {
 	const targets = collect_targets();
 	if (!targets.length) return null;
-	if (!current) return targets[0].el;
+
+	/* nothing focused (or the body is) — start from the element nearest the
+	   top of the viewport instead of measuring from the body's full-page rect */
+	const has_current = current && current !== document.body && current !== document.documentElement;
+	if (!has_current) {
+		return targets.reduce((a, b) => {
+			const ay = Math.abs(a.r.top);
+			const by = Math.abs(b.r.top);
+			return by < ay ? b : a;
+		}).el;
+	}
 
 	const from = center(current.getBoundingClientRect());
 	let best = null;
