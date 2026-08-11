@@ -7,7 +7,7 @@ import { Plus } from "lucide-react";
  * crosshair decorations, and a glass content card. Preserves the same
  * { logo, title, subtitle, footer, children } contract used by all auth pages.
  */
-export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, children }) {
+export default function AuthLayout({ icon: Icon, title, titleJp, subtitle, subtitleJp, footer, footerJp, logo, children }) {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-bone text-foreground">
       <div className="grid-bg absolute inset-0 opacity-60" />
@@ -26,7 +26,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, 
 
       {/* top meta row */}
       <div className="absolute top-6 sm:top-9 left-0 right-0 flex items-center justify-between px-8 sm:px-14">
-        <span className="tech-label text-muted-foreground">／ AUTH</span>
+        <span className="tech-label text-muted-foreground">／ AUTH <span lang="ja" className="font-jp normal-case tracking-normal">認証</span></span>
         <span className="tech-label text-muted-foreground">N° 00</span>
       </div>
 
@@ -38,7 +38,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, 
           className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16"
         >
           <div className="lg:col-span-6 lg:col-start-1">
-            <div className="tech-label text-primary mb-4">／ IDENTITY</div>
+            <div className="tech-label text-primary mb-4">／ IDENTITY <span lang="ja" className="font-jp normal-case tracking-normal text-foreground/60">本人確認</span></div>
             {logo ? (
               <div className="mb-6 inline-flex h-16 w-16 items-center justify-center border border-foreground/20 bg-card overflow-hidden">
                 {logo}
@@ -51,14 +51,19 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, 
             <h1 className="font-display font-extralight tracking-ultra leading-[0.9] text-5xl sm:text-7xl lg:text-8xl">
               {title}
             </h1>
+            {titleJp && <p lang="ja" className="font-jp mt-3 text-2xl sm:text-3xl text-foreground/60">{titleJp}</p>}
             {subtitle && <p className="mt-3 text-sm text-muted-foreground">{subtitle}</p>}
+            {subtitleJp && <p lang="ja" className="font-jp mt-1 text-sm text-muted-foreground">{subtitleJp}</p>}
           </div>
 
           <div className="lg:col-span-5 lg:col-start-8">
             <div className="border-t border-foreground/20 pt-8 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10">
               {children}
               {footer && (
-                <p className="mt-8 text-xs tech-label text-muted-foreground">{footer}</p>
+                <p className="mt-8 text-xs tech-label text-muted-foreground">
+                  {footer}
+                  {footerJp && <span lang="ja" className="font-jp block normal-case tracking-normal mt-1 text-foreground/55">{footerJp}</span>}
+                </p>
               )}
             </div>
           </div>

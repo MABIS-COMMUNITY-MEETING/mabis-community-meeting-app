@@ -75,7 +75,9 @@ export default function Register() {
       <AuthLayout
         icon={Mail}
         title="Verify your email"
+        titleJp="メールの確認"
         subtitle={`We sent a code to ${email}`}
+        subtitleJp="確認コードを送信しました"
       >
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
@@ -108,10 +110,10 @@ export default function Register() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
+              Verifying... <span lang="ja" className="font-jp ml-1">確認中</span>
             </>
           ) : (
-            "Verify"
+            <span className="flex items-center gap-2">Verify <span lang="ja" className="font-jp">確認する</span></span>
           )}
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">
@@ -119,6 +121,7 @@ export default function Register() {
           <button onClick={handleResend} className="text-primary font-medium hover:underline">
             Resend
           </button>
+          <span lang="ja" className="font-jp block mt-1">コードが届かない場合は再送信してください</span>
         </p>
       </AuthLayout>
     );
@@ -128,7 +131,10 @@ export default function Register() {
     <AuthLayout
       icon={UserPlus}
       title="Create your account"
+      titleJp="アカウント作成"
       subtitle="Sign up to get started"
+      subtitleJp="ご登録して始めましょう"
+      footerJp="すでにアカウントをお持ちの方はログイン"
       footer={
         <>
           Already have an account?{" "}
@@ -144,7 +150,7 @@ export default function Register() {
         onClick={handleGoogle}
       >
         <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
+        Continue with Google <span lang="ja" className="font-jp ml-2">Googleで続ける</span>
       </Button>
 
       <div className="relative mb-6">
@@ -152,7 +158,7 @@ export default function Register() {
           <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
+          <span className="bg-card px-3 text-muted-foreground">or <span lang="ja" className="font-jp normal-case">または</span></span>
         </div>
       </div>
 
@@ -164,7 +170,7 @@ export default function Register() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Email <span lang="ja" className="font-jp text-muted-foreground">メールアドレス</span></Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -181,7 +187,7 @@ export default function Register() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">Password <span lang="ja" className="font-jp text-muted-foreground">パスワード</span></Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -197,7 +203,7 @@ export default function Register() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirm">Confirm Password</Label>
+          <Label htmlFor="confirm">Confirm Password <span lang="ja" className="font-jp text-muted-foreground">パスワードの確認</span></Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -216,10 +222,10 @@ export default function Register() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating account...
+              Creating account... <span lang="ja" className="font-jp ml-1">作成中</span>
             </>
           ) : (
-            "Create account"
+            <span className="flex items-center gap-2">Create account <span lang="ja" className="font-jp">アカウント作成</span></span>
           )}
         </Button>
       </form>

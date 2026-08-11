@@ -39,7 +39,10 @@ export default function ResetPassword() {
       <AuthLayout
         icon={AlertTriangle}
         title="Invalid reset link"
+        titleJp="無効なリンク"
         subtitle="This password reset link is missing or invalid"
+        subtitleJp="この再設定リンクは無効か、見つかりません"
+        footerJp="新しいリンクを申請する"
         footer={
           <Link to="/forgot-password" className="text-primary font-medium hover:underline">
             Request a new link
@@ -48,6 +51,7 @@ export default function ResetPassword() {
       >
         <p className="text-sm text-foreground text-center">
           The link you used appears to be incomplete. Please request a new password reset email.
+          <span lang="ja" className="font-jp block mt-2 text-muted-foreground">リンクが不完全です。再設定メールをもう一度お申し込みください。</span>
         </p>
       </AuthLayout>
     );
@@ -57,7 +61,9 @@ export default function ResetPassword() {
     <AuthLayout
       icon={Lock}
       title="New password"
+      titleJp="新しいパスワード"
       subtitle="Enter your new password below"
+      subtitleJp="新しいパスワードを入力してください"
     >
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
@@ -66,7 +72,7 @@ export default function ResetPassword() {
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="password">New Password</Label>
+          <Label htmlFor="password">New Password <span lang="ja" className="font-jp text-muted-foreground">新しいパスワード</span></Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -83,7 +89,7 @@ export default function ResetPassword() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirm">Confirm Password</Label>
+          <Label htmlFor="confirm">Confirm Password <span lang="ja" className="font-jp text-muted-foreground">パスワードの確認</span></Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -102,10 +108,10 @@ export default function ResetPassword() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Resetting...
+              Resetting... <span lang="ja" className="font-jp ml-1">再設定中</span>
             </>
           ) : (
-            "Reset password"
+            <span className="flex items-center gap-2">Reset password <span lang="ja" className="font-jp">パスワードを再設定</span></span>
           )}
         </Button>
       </form>

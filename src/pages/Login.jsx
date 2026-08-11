@@ -41,7 +41,10 @@ export default function Login() {
     <AuthLayout
       logo={<img src={LOGO} alt="MABIS" className="w-12 h-12 object-contain" />}
       title="Log in"
+      titleJp="ログイン"
       subtitle="／ authenticate to enter the community meeting"
+      subtitleJp="／ コミュニティ・ミーティングへの認証"
+      footerJp="アカウントをお持ちでない方はご登録ください"
       footer={
         <>
           NO ACCOUNT?{" "}
@@ -56,12 +59,12 @@ export default function Login() {
         className="group w-full h-12 flex items-center justify-center gap-2 border border-foreground/20 bg-card text-xs tech-label text-foreground hover:bg-foreground hover:text-bone transition-colors mb-6"
       >
         <GoogleIcon className="w-4 h-4" />
-        CONTINUE WITH GOOGLE
+        CONTINUE WITH GOOGLE <span lang="ja" className="font-jp normal-case tracking-normal">Googleで続ける</span>
       </button>
 
       <div className="relative mb-6 flex items-center">
         <div className="h-px flex-1 bg-foreground/15" />
-        <span className="px-3 tech-label text-muted-foreground">OR</span>
+        <span className="px-3 tech-label text-muted-foreground">OR <span lang="ja" className="font-jp normal-case tracking-normal">または</span></span>
         <div className="h-px flex-1 bg-foreground/15" />
       </div>
 
@@ -73,7 +76,7 @@ export default function Login() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email" className="tech-label text-muted-foreground">EMAIL ／ N°01</Label>
+          <Label htmlFor="email" className="tech-label text-muted-foreground">EMAIL ／ N°01 <span lang="ja" className="font-jp normal-case tracking-normal">メールアドレス</span></Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -92,8 +95,8 @@ export default function Login() {
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="tech-label text-muted-foreground">PASSWORD ／ N°02</Label>
-            <Link to="/forgot-password" className="tech-label text-primary ul-grow">RESET?</Link>
+            <Label htmlFor="password" className="tech-label text-muted-foreground">PASSWORD ／ N°02 <span lang="ja" className="font-jp normal-case tracking-normal">パスワード</span></Label>
+            <Link to="/forgot-password" className="tech-label text-primary ul-grow">RESET? <span lang="ja" className="font-jp normal-case tracking-normal">再設定</span></Link>
           </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
@@ -116,9 +119,9 @@ export default function Login() {
           disabled={loading}
         >
           {loading ? (
-            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> AUTHENTICATING…</>
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> AUTHENTICATING… <span lang="ja" className="font-jp normal-case tracking-normal ml-1">認証中</span></>
           ) : (
-            <span className="flex items-center gap-2">LOG IN <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></span>
+            <span className="flex items-center gap-2">LOG IN <span lang="ja" className="font-jp normal-case tracking-normal">ログイン</span> <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></span>
           )}
         </Button>
       </form>
