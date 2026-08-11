@@ -152,7 +152,7 @@ export default function Home() {
   const dateLabel = moment().format("DD.MM.YYYY");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <SiteHeader rightSlot={controls} />
       <ScrollSectionIndicator total={10} />
       <ProfileEditor open={editingProfile} onClose={() => setEditingProfile(false)} />
@@ -190,7 +190,7 @@ export default function Home() {
         </motion.section>
 
         {/* kinetic scroll-reactive divider */}
-        <section className="py-2 -mx-4 sm:-mx-6 px-4 sm:px-6">
+        <section className="py-2 -mx-4 sm:-mx-6 px-4 sm:px-6 overflow-hidden">
           <KineticHeading text="WEEKLY RITUAL" className="text-[15vw] sm:text-[11vw] text-foreground/85" />
         </section>
 
