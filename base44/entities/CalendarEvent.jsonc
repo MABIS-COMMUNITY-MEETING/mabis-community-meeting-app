@@ -1,0 +1,39 @@
+{
+  "name": "CalendarEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Event title"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Event date (YYYY-MM-DD)"
+    },
+    "time": {
+      "type": "string",
+      "description": "Optional time (HH:mm)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "event",
+        "holiday",
+        "meeting",
+        "birthday",
+        "other"
+      ],
+      "default": "event",
+      "description": "Event type for color coding"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional event description"
+    }
+  },
+  "required": [
+    "title",
+    "date"
+  ]
+}

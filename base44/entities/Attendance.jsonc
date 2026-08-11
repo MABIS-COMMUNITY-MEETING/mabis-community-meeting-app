@@ -1,0 +1,26 @@
+{
+  "name": "Attendance",
+  "type": "object",
+  "properties": {
+    "week_label": {
+      "type": "string",
+      "description": "e.g. 2026-W24"
+    },
+    "present_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Names of present members for that week's meeting"
+    },
+    "meeting_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Actual date the meeting was held (if changed from Friday)"
+    }
+  },
+  "required": [
+    "week_label"
+  ]
+}

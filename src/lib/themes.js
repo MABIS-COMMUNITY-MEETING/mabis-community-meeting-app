@@ -1,0 +1,250 @@
+// Theme definitions for MABIS platform
+// MABIS Default is the original maroon + gold theme
+// Pastel themes use 2 harmonious pastel colors + white background
+
+function pastelTheme(key, name, p, s) {
+  // Derive role colors from primary hue
+  const shift = (hslStr, deg, lAdj = 0) => {
+    const [h, sat, lRaw] = hslStr.split(" ");
+    const newH = (parseInt(h) + deg + 360) % 360;
+    const newL = Math.max(32, Math.min(48, parseInt(lRaw) + lAdj));
+    return `${newH} ${sat} ${newL}%`;
+  };
+  // Very light background tint from primary hue
+  const [pH] = p.split(" ");
+  const bg = `${pH} 25% 97%`;
+
+  return {
+    name,
+    vars: {
+      "--primary": p,
+      "--primary-foreground": "0 0% 100%",
+      "--secondary": s,
+      "--secondary-foreground": "30 15% 25%",
+      "--accent": s,
+      "--accent-foreground": "30 15% 25%",
+      "--background": bg,
+      "--foreground": "220 12% 22%",
+      "--card": "0 0% 100%",
+      "--card-foreground": "220 12% 22%",
+      "--popover": "0 0% 100%",
+      "--popover-foreground": "220 12% 22%",
+      "--muted": `${pH} 14% 95%`,
+      "--muted-foreground": "220 8% 48%",
+      "--border": `${pH} 12% 90%`,
+      "--input": `${pH} 12% 90%`,
+      "--ring": p,
+      "--role-student": p,
+      "--role-teacher": shift(p, 180),
+      "--role-chair": s,
+      "--role-minutes": shift(p, 45),
+      "--role-admin": "270 45% 45%",
+      "--role-editor": shift(p, 120),
+    },
+    bodyClass: `theme-${key}`,
+    swatches: [`hsl(${p})`, `hsl(${s})`, "#ffffff"],
+    dark: false,
+  };
+}
+
+export const THEMES = {
+  default: {
+    name: "MABIS",
+    vars: {
+      "--primary": "345 67% 35%", "--primary-foreground": "0 0% 100%",
+      "--secondary": "44 76% 62%", "--secondary-foreground": "345 67% 20%",
+      "--accent": "44 76% 62%", "--accent-foreground": "345 67% 20%",
+      "--background": "0 0% 97%", "--foreground": "345 67% 20%",
+      "--card": "0 0% 100%", "--card-foreground": "345 67% 20%",
+      "--popover": "0 0% 100%", "--popover-foreground": "345 67% 20%",
+      "--muted": "0 0% 94%", "--muted-foreground": "345 20% 50%",
+      "--border": "345 20% 88%", "--input": "345 20% 88%", "--ring": "345 67% 35%",
+      "--role-student": "345 67% 35%",
+      "--role-teacher": "165 55% 35%",
+      "--role-chair": "44 76% 52%",
+      "--role-minutes": "205 60% 42%",
+      "--role-admin": "270 55% 45%",
+      "--role-editor": "170 50% 38%",
+    },
+    bodyClass: "theme-default", swatches: ["#951E3A", "#EACE54", "#f4f4f6"], dark: false,
+  },
+
+  // ── Pastel 2-color themes ──
+  sage:       pastelTheme("sage",       "Sage",       "95 25% 40%",  "20 55% 65%"),
+  lavender:   pastelTheme("lavender",   "Lavender",   "265 35% 50%", "45 55% 65%"),
+  mint:       pastelTheme("mint",       "Mint",       "160 32% 38%", "5 55% 63%"),
+  sky:        pastelTheme("sky",        "Sky",        "205 42% 48%", "340 42% 65%"),
+  teal:       pastelTheme("teal",       "Teal",       "175 38% 38%", "15 50% 65%"),
+  periwinkle: pastelTheme("periwinkle", "Periwinkle", "240 32% 52%", "25 50% 68%"),
+  olive:      pastelTheme("olive",      "Olive",      "85 22% 38%",  "35 45% 65%"),
+  ocean:      pastelTheme("ocean",      "Ocean",      "200 42% 42%", "40 42% 68%"),
+  rose:       pastelTheme("rose",       "Rose",       "340 35% 45%", "30 40% 70%"),
+  coral:      pastelTheme("coral",      "Coral",      "8 45% 48%",   "160 25% 65%"),
+  peach:      pastelTheme("peach",      "Peach",      "18 70% 48%",  "200 35% 65%"),
+  lilac:      pastelTheme("lilac",      "Lilac",      "280 30% 50%", "40 45% 68%"),
+  seafoam:    pastelTheme("seafoam",    "Seafoam",    "155 30% 42%", "15 45% 68%"),
+  blush:      pastelTheme("blush",      "Blush",      "345 30% 50%", "150 25% 65%"),
+  amber:      pastelTheme("amber",      "Amber",      "32 75% 40%",  "210 35% 65%"),
+  plum:       pastelTheme("plum",       "Plum",       "310 28% 42%", "35 40% 68%"),
+  denim:      pastelTheme("denim",      "Denim",      "215 35% 45%", "20 40% 68%"),
+  berry:      pastelTheme("berry",      "Berry",      "330 35% 40%", "90 20% 65%"),
+  sand:       pastelTheme("sand",       "Sand",       "40 35% 45%",  "180 30% 60%"),
+  cloud:      pastelTheme("cloud",      "Cloud",      "210 30% 50%", "40 35% 70%"),
+  moss:       pastelTheme("moss",       "Moss",       "80 20% 38%",  "30 35% 68%"),
+  dusk:       pastelTheme("dusk",       "Dusk",       "260 25% 45%", "30 35% 68%"),
+  spring:     pastelTheme("spring",     "Spring",     "120 30% 40%", "50 40% 68%"),
+  honey:      pastelTheme("honey",      "Honey",      "38 82% 38%",  "190 30% 62%"),
+  clay:       pastelTheme("clay",       "Clay",       "15 35% 45%",  "175 25% 60%"),
+
+  // ── New themes ──
+  aurora:    pastelTheme("aurora",    "Aurora",    "280 40% 48%", "180 45% 60%"),
+  glacier:   pastelTheme("glacier",   "Glacier",   "190 45% 45%", "210 35% 70%"),
+  sunset:    pastelTheme("sunset",    "Sunset",    "15 65% 50%",  "280 40% 65%"),
+  forest:    pastelTheme("forest",    "Forest",    "140 35% 35%", "40 45% 65%"),
+  midnight:  pastelTheme("midnight",  "Midnight",  "225 50% 40%", "200 40% 62%"),
+  ruby:      pastelTheme("ruby",      "Ruby",      "348 70% 40%", "45 65% 60%"),
+  emerald:   pastelTheme("emerald",   "Emerald",   "155 55% 38%", "40 50% 62%"),
+  indigo:    pastelTheme("indigo",    "Indigo",    "240 40% 45%", "30 45% 65%"),
+  twilight:  pastelTheme("twilight",  "Twilight",  "250 35% 48%", "20 40% 68%"),
+  copper:    pastelTheme("copper",    "Copper",    "25 55% 42%",  "195 35% 60%"),
+  sakura:    pastelTheme("sakura",    "Sakura",    "340 45% 55%", "150 30% 60%"),
+  nebula:    pastelTheme("nebula",    "Nebula",    "290 35% 50%", "200 40% 62%"),
+};
+
+export function applyTheme(themeKey) {
+  const theme = THEMES[themeKey] || THEMES.default;
+  const root = document.documentElement;
+  Object.entries(theme.vars).forEach(([key, value]) => {
+    root.style.setProperty(key, value);
+  });
+  Object.values(THEMES).forEach(t => document.body.classList.remove(t.bodyClass));
+  document.body.classList.add(theme.bodyClass);
+  localStorage.setItem("mabis-theme", themeKey);
+  window.dispatchEvent(new Event("themeChanged"));
+}
+
+// Convert hex (#RRGGBB) to "H S% L%" string
+export function hexToHsl(hex) {
+  hex = hex.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+      case g: h = ((b - r) / d + 2); break;
+      case b: h = ((r - g) / d + 4); break;
+    }
+    h *= 60;
+  }
+  return `${Math.round(h)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
+// Convert "H S% L%" to hex
+export function hslToHex(hslStr) {
+  const parts = hslStr.split(" ");
+  const h = parseInt(parts[0]) / 360;
+  const s = parseInt(parts[1]) / 100;
+  const l = parseInt(parts[2].replace("%", "")) / 100;
+  let r, g, b;
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+  const toHex = (x) => Math.round(x * 255).toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+export function applyCustomColors(primaryHex, secondaryHex) {
+  const root = document.documentElement;
+  root.style.setProperty("--primary", hexToHsl(primaryHex));
+  root.style.setProperty("--secondary", hexToHsl(secondaryHex));
+  root.style.setProperty("--accent", hexToHsl(secondaryHex));
+  root.style.setProperty("--ring", hexToHsl(primaryHex));
+  localStorage.setItem("mabis-custom-colors", JSON.stringify({ primary: primaryHex, secondary: secondaryHex }));
+  window.dispatchEvent(new Event("themeChanged"));
+}
+
+export function clearCustomColors() {
+  localStorage.removeItem("mabis-custom-colors");
+  window.dispatchEvent(new Event("themeChanged"));
+}
+
+export function getStoredTheme() {
+  return localStorage.getItem("mabis-theme") || "default";
+}
+
+export function getStoredCustomColors() {
+  const stored = localStorage.getItem("mabis-custom-colors");
+  if (!stored) return null;
+  try { return JSON.parse(stored); } catch { return null; }
+}
+
+// ── Saved custom themes (user-named) ──
+export function getSavedThemes() {
+  const stored = localStorage.getItem("mabis-saved-themes");
+  if (!stored) return [];
+  try { return JSON.parse(stored); } catch { return []; }
+}
+
+export function saveCustomTheme(name, primaryHex, secondaryHex) {
+  const themes = getSavedThemes();
+  const idx = themes.findIndex(t => t.name === name);
+  const entry = { name, primary: primaryHex, secondary: secondaryHex };
+  if (idx >= 0) themes[idx] = entry;
+  else themes.push(entry);
+  localStorage.setItem("mabis-saved-themes", JSON.stringify(themes));
+  return themes;
+}
+
+export function deleteSavedTheme(name) {
+  const themes = getSavedThemes().filter(t => t.name !== name);
+  localStorage.setItem("mabis-saved-themes", JSON.stringify(themes));
+  return themes;
+}
+
+// ── Fonts ──
+export const FONTS = [
+  { key: "default",   name: "Space Grotesk", heading: "'Space Grotesk', sans-serif", body: "'Inter', sans-serif" },
+  { key: "inter",     name: "Inter",         heading: "'Inter', sans-serif",         body: "'Inter', sans-serif" },
+  { key: "poppins",   name: "Poppins",      heading: "'Poppins', sans-serif",       body: "'Poppins', sans-serif" },
+  { key: "montserrat",name: "Montserrat",   heading: "'Montserrat', sans-serif",    body: "'Montserrat', sans-serif" },
+  { key: "nunito",    name: "Nunito",       heading: "'Nunito', sans-serif",        body: "'Nunito', sans-serif" },
+  { key: "lato",      name: "Lato",         heading: "'Lato', sans-serif",          body: "'Lato', sans-serif" },
+  { key: "raleway",   name: "Raleway",      heading: "'Raleway', sans-serif",       body: "'Raleway', sans-serif" },
+  { key: "dmsans",    name: "DM Sans",      heading: "'DM Sans', sans-serif",       body: "'DM Sans', sans-serif" },
+  { key: "manrope",   name: "Manrope",      heading: "'Manrope', sans-serif",       body: "'Manrope', sans-serif" },
+  { key: "alegreya",  name: "Alegreya",     heading: "'Alegreya', serif",            body: "'Alegreya', serif" },
+];
+
+export function applyFont(key) {
+  const font = FONTS.find(f => f.key === key) || FONTS[0];
+  const root = document.documentElement;
+  root.style.setProperty("--font-heading", font.heading);
+  root.style.setProperty("--font-body", font.body);
+  root.style.setProperty("--font-display", font.heading);
+  localStorage.setItem("mabis-font", key);
+  window.dispatchEvent(new Event("themeChanged"));
+}
+
+export function getStoredFont() {
+  return localStorage.getItem("mabis-font") || "default";
+}

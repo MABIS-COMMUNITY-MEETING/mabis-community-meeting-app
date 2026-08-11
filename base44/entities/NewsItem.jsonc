@@ -1,0 +1,35 @@
+{
+  "name": "NewsItem",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "News title"
+    },
+    "body": {
+      "type": "string",
+      "description": "News body text"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Optional image attachment URL"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "Optional video attachment URL"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Name of person posting"
+    },
+    "author_email": {
+      "type": "string",
+      "description": "Email of person posting"
+    }
+  },
+  "required": [
+    "title",
+    "body",
+    "author_name"
+  ]
+}

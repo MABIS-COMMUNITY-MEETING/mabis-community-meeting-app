@@ -1,0 +1,51 @@
+{
+  "name": "Job",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Job title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Job description"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Team member ID assigned"
+    },
+    "assigned_to_name": {
+      "type": "string",
+      "description": "Name of assignee"
+    },
+    "assigned_to_email": {
+      "type": "string",
+      "description": "Email of assignee"
+    },
+    "meeting_id": {
+      "type": "string",
+      "description": "Meeting ID where assigned"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "assigned",
+        "in_progress",
+        "completed"
+      ],
+      "default": "assigned"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "xp_reward": {
+      "type": "number",
+      "default": 10,
+      "description": "XP reward for completion"
+    }
+  },
+  "required": [
+    "title"
+  ]
+}

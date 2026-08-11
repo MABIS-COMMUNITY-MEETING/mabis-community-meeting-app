@@ -1,0 +1,26 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "editor",
+        "teacher",
+        "student",
+        "chair",
+        "minutes"
+      ],
+      "default": "student"
+    },
+    "avatar_color": {
+      "type": "string",
+      "description": "Avatar background color hex"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Custom uploaded profile picture URL"
+    }
+  }
+}

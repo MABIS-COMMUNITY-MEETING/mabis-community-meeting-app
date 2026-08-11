@@ -1,0 +1,68 @@
+{
+  "name": "JobAssignment",
+  "type": "object",
+  "properties": {
+    "job_title": {
+      "type": "string",
+      "description": "Name of the job"
+    },
+    "assigned_to_name": {
+      "type": "string"
+    },
+    "assigned_to_email": {
+      "type": "string"
+    },
+    "week_label": {
+      "type": "string",
+      "description": "e.g. 2026-W24"
+    },
+    "scheduled_day": {
+      "type": "string",
+      "enum": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ],
+      "description": "Day scheduled to do the job"
+    },
+    "days_completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Days the job was completed/ticked"
+    },
+    "not_done_days": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Days marked as not done"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the job has been completed"
+    },
+    "not_done": {
+      "type": "boolean",
+      "default": false,
+      "description": "Marked as did not do the job"
+    },
+    "carried_over": {
+      "type": "boolean",
+      "default": false,
+      "description": "This assignment was carried over from a previous week"
+    }
+  },
+  "required": [
+    "job_title",
+    "assigned_to_name",
+    "assigned_to_email",
+    "week_label"
+  ]
+}

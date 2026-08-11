@@ -1,0 +1,50 @@
+{
+  "name": "Feedback",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "feedback",
+        "bug"
+      ],
+      "default": "feedback",
+      "description": "Whether this is satisfaction feedback or a bug report"
+    },
+    "rating": {
+      "type": "number",
+      "description": "1-10 satisfaction rating (feedback only)"
+    },
+    "message": {
+      "type": "string",
+      "description": "Feedback message or bug description"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Optional image attachment URL"
+    },
+    "submitted_by_name": {
+      "type": "string",
+      "description": "Name of the person who submitted"
+    },
+    "submitted_by_email": {
+      "type": "string",
+      "description": "Email of the person who submitted"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "reviewed",
+        "resolved",
+        "archived"
+      ],
+      "default": "new"
+    }
+  },
+  "required": [
+    "type",
+    "message",
+    "submitted_by_name"
+  ]
+}

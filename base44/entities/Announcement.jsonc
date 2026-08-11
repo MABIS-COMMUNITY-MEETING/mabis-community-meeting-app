@@ -1,0 +1,43 @@
+{
+  "name": "Announcement",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Announcement title"
+    },
+    "body": {
+      "type": "string",
+      "description": "Announcement body text"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Name of person posting"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Optional image attachment URL"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "Optional video attachment URL"
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Pin to top"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Author profile picture URL snapshot"
+    },
+    "avatar_color": {
+      "type": "string",
+      "description": "Author avatar color"
+    }
+  },
+  "required": [
+    "title",
+    "author_name"
+  ]
+}

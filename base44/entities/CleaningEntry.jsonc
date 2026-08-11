@@ -1,0 +1,27 @@
+{
+  "name": "CleaningEntry",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Person's name"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Why they are on the list"
+    },
+    "date_added": {
+      "type": "string",
+      "format": "date"
+    },
+    "done": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "name",
+    "reason",
+    "date_added"
+  ]
+}

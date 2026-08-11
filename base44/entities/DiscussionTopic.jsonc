@@ -1,0 +1,42 @@
+{
+  "name": "DiscussionTopic",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "description": "Rich HTML description"
+    },
+    "submitted_by": {
+      "type": "string"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "week_label": {
+      "type": "string",
+      "description": "e.g. 2026-W24"
+    },
+    "archived": {
+      "type": "boolean",
+      "default": false
+    },
+    "priority": {
+      "type": "number",
+      "default": 3,
+      "description": "1=highest, 5=lowest"
+    },
+    "is_jobs_topic": {
+      "type": "boolean",
+      "default": false,
+      "description": "Auto-created jobs assignment topic"
+    }
+  },
+  "required": [
+    "title",
+    "submitted_by"
+  ]
+}

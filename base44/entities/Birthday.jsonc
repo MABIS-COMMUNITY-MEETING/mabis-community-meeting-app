@@ -1,0 +1,19 @@
+{
+  "name": "Birthday",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Person's name"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Birthday date (YYYY-MM-DD)"
+    }
+  },
+  "required": [
+    "name",
+    "date"
+  ]
+}

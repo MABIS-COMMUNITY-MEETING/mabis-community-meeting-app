@@ -1,0 +1,53 @@
+{
+  "name": "LunchMenu",
+  "type": "object",
+  "properties": {
+    "week_label": {
+      "type": "string",
+      "description": "e.g. 2026-W24"
+    },
+    "monday_snack": {
+      "type": "string",
+      "description": "Monday snack"
+    },
+    "monday_lunch": {
+      "type": "string",
+      "description": "Monday lunch"
+    },
+    "tuesday_snack": {
+      "type": "string",
+      "description": "Tuesday snack"
+    },
+    "tuesday_lunch": {
+      "type": "string",
+      "description": "Tuesday lunch"
+    },
+    "wednesday_snack": {
+      "type": "string",
+      "description": "Wednesday snack"
+    },
+    "wednesday_lunch": {
+      "type": "string",
+      "description": "Wednesday lunch"
+    },
+    "thursday_snack": {
+      "type": "string",
+      "description": "Thursday snack"
+    },
+    "thursday_lunch": {
+      "type": "string",
+      "description": "Thursday lunch"
+    },
+    "friday_snack": {
+      "type": "string",
+      "description": "Friday snack"
+    },
+    "friday_lunch": {
+      "type": "string",
+      "description": "Friday lunch"
+    }
+  },
+  "required": [
+    "week_label"
+  ]
+}

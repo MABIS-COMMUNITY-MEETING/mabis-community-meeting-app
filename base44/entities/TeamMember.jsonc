@@ -1,0 +1,32 @@
+{
+  "name": "TeamMember",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Member name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Member email"
+    },
+    "avatar_color": {
+      "type": "string",
+      "description": "Avatar color hex"
+    },
+    "xp": {
+      "type": "number",
+      "default": 0,
+      "description": "Experience points earned"
+    },
+    "jobs_completed": {
+      "type": "number",
+      "default": 0,
+      "description": "Total jobs completed"
+    }
+  },
+  "required": [
+    "name",
+    "email"
+  ]
+}

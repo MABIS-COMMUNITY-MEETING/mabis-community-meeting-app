@@ -1,0 +1,40 @@
+{
+  "name": "MissingItem",
+  "type": "object",
+  "properties": {
+    "item_name": {
+      "type": "string",
+      "description": "Name of the lost item"
+    },
+    "colors": {
+      "type": "string",
+      "description": "Item colors"
+    },
+    "last_seen": {
+      "type": "string",
+      "description": "Where/when last seen"
+    },
+    "date_lost": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the item was lost"
+    },
+    "reported_by_name": {
+      "type": "string",
+      "description": "Who reported it"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Optional photo of the lost item"
+    },
+    "found": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether item was found"
+    }
+  },
+  "required": [
+    "item_name",
+    "reported_by_name"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "name": "Member",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nickname"
+    },
+    "email": {
+      "type": "string",
+      "description": "Member email"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "teacher",
+        "student",
+        "chair",
+        "minutes",
+        "admin",
+        "editor"
+      ],
+      "default": "student",
+      "description": "teacher = not on wheel, student = on wheel, chair = meeting chair, minutes = minutes taker, admin = app admin, editor = can edit content"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Avatar image URL"
+    },
+    "avatar_color": {
+      "type": "string",
+      "description": "Avatar border color hex",
+      "default": "#951E3A"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

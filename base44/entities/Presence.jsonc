@@ -1,0 +1,23 @@
+{
+  "name": "Presence",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user (lowercased key)"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Display name snapshot"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last heartbeat timestamp"
+    }
+  },
+  "required": [
+    "user_email",
+    "last_seen"
+  ]
+}

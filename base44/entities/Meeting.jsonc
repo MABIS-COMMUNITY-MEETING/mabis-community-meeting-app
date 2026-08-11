@@ -1,0 +1,32 @@
+{
+  "name": "Meeting",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Meeting title"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Meeting date and time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "in_progress",
+        "completed"
+      ],
+      "default": "upcoming"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Meeting notes"
+    }
+  },
+  "required": [
+    "title",
+    "date"
+  ]
+}
