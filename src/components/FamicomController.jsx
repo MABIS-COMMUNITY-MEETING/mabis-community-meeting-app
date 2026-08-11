@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { KONAMI } from "@/lib/hacker";
+import { playClick } from "@/lib/sound";
 
 const KEY_MAP = {
   ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
@@ -121,8 +122,10 @@ export default function FamicomController({ onUnlock }) {
           </div>
           <div className="absolute flex items-center justify-center gap-3"
             style={{ left: 118, top: 90, width: 104, height: 30, background: RED, borderRadius: 15, border: "2px solid #1b1b1b", boxSizing: "border-box" }}>
-            <span style={{ width: 34, height: 11, background: DARK, borderRadius: 6 }} />
-            <span style={{ width: 34, height: 11, background: DARK, borderRadius: 6 }} />
+            <button type="button" aria-label="SELECT" onClick={() => playClick()}
+              style={{ width: 34, height: 11, background: DARK, borderRadius: 6 }} />
+            <button type="button" aria-label="START" onClick={() => playClick()}
+              style={{ width: 34, height: 11, background: DARK, borderRadius: 6 }} />
           </div>
 
           {/* B / A */}
