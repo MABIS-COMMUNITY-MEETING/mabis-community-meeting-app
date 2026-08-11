@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
+import { playWheelTick, playWheelStart, playWheelWin } from "@/lib/wheel_sound";
 
 const WHEEL_COLORS = [
   "#8B5CF6", "#EC4899", "#3B82F6", "#10B981",
@@ -90,6 +91,7 @@ export default function SpinWheel({ members, onResult }) {
     if (spinning || members.length === 0) return;
     setSpinning(true);
     setWinner(null);
+    playWheelStart();
 
     const extraSpins = 5 + Math.random() * 5;
     const targetAngle = Math.random() * 360;
@@ -101,6 +103,9 @@ export default function SpinWheel({ members, onResult }) {
 
     const easeOut = (t) => 1 - Math.pow(1 - t, 4);
 
+    // one wooden knock each time a segment edge crosses the pointer
+    let lastSegment = Math.floor(startRotation / segmentAngle);
+
     const animate = (timestamp) => {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
@@ -110,6 +115,12 @@ export default function SpinWheel({ members, onResult }) {
       const currentRotation = startRotation + totalRotation * easedProgress;
       setRotation(currentRotation % 360);
 
+      const segment = Math.floor(currentRotation / segmentAngle);
+      if (segment !== lastSegment) {
+        lastSegment = segment;
+        playWheelTick(progress);
+      }
+
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
@@ -118,6 +129,7 @@ export default function SpinWheel({ members, onResult }) {
         const selectedMember = members[winnerIndex];
         setWinner(selectedMember);
         setSpinning(false);
+        playWheelWin();
 
         confetti({
           particleCount: 150,
