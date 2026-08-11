@@ -53,8 +53,9 @@ function onColor(hsl) {
   return l > 58 ? `${h} ${Math.min(s, 40)}% 14%` : "0 0% 100%";
 }
 
-// Pride flag theme: primary/secondary drive the UI; swatches show the full flag.
-function prideTheme(key, name, p, s, flagHexes) {
+/* Multi-colour brand theme: primary/secondary drive the UI tokens while the full
+   colour set (flag stripes, distro brand palette) feeds swatches and accents. */
+function paletteTheme(key, name, p, s, flagHexes) {
   const t = pastelTheme(key, name, p, s);
   t.swatches = flagHexes;
   t.flag = flagHexes;
@@ -104,6 +105,9 @@ function readableHex(hex) {
   if (s < 8) return l > 55 ? "#4a4a4a" : hslToHex(`${h} 0% ${Math.max(l, 18)}%`); // white/grey → graphite
   return hslToHex(`${h} ${Math.max(s, 62)}% ${Math.min(Math.max(l, 38), 52)}%`);
 }
+
+const prideTheme = paletteTheme;
+const distroTheme = paletteTheme;
 
 export const THEMES = {
   default: {
@@ -187,6 +191,22 @@ export const THEMES = {
   demisexual:  prideTheme("demisexual",  "Demisexual",  "285 78% 40%", "0 0% 36%",    ["#FFFFFF","#6E0070","#D3D3D3","#000000"]),
   femboy:      prideTheme("femboy",      "Femboy",      "330 72% 50%", "199 78% 45%", ["#5BC8F5","#9EE1F7","#FFFFFF","#F7A8C4","#F26FA8"]),
   twink:       prideTheme("twink",       "Twink",       "340 78% 52%", "48 92% 48%",  ["#F9A8D4","#FFFFFF","#FCE36B","#FFFFFF","#F26FA8"]),
+
+  // ── Linux distro palettes ──
+  debian:    distroTheme("debian",    "Debian",     "341 79% 41%", "0 0% 20%",     ["#D70A53","#A80030","#333333","#FFFFFF"]),
+  arch:      distroTheme("arch",      "Arch",       "197 79% 44%", "205 12% 27%",  ["#1793D1","#0F94D2","#333F4C","#FFFFFF"]),
+  ubuntu:    distroTheme("ubuntu",    "Ubuntu",     "17 84% 47%",  "288 30% 30%",  ["#E95420","#772953","#AEA79F","#FFFFFF"]),
+  fedora:    distroTheme("fedora",    "Fedora",     "213 65% 42%", "204 74% 55%",  ["#294172","#3C6EB4","#79DBFF","#FFFFFF"]),
+  linuxmint: distroTheme("linuxmint", "Linux Mint", "111 45% 40%", "0 0% 25%",     ["#69B838","#3D8A28","#2E2E2E","#FFFFFF"]),
+  manjaro:   distroTheme("manjaro",   "Manjaro",    "160 100% 26%","162 40% 30%",  ["#35BF5C","#00846B","#2C3E45","#FFFFFF"]),
+  suse:      distroTheme("suse",      "openSUSE",   "111 44% 38%", "150 30% 30%",  ["#73BA25","#35A155","#173F4F","#FFFFFF"]),
+  gentoo:    distroTheme("gentoo",    "Gentoo",     "268 32% 44%", "265 25% 60%",  ["#54487A","#8B7FB5","#DDDAEC","#FFFFFF"]),
+  kali:      distroTheme("kali",      "Kali",       "202 100% 42%","210 25% 18%",  ["#367BF0","#00A8E8","#1A2530","#FFFFFF"]),
+  popos:     distroTheme("popos",     "Pop!_OS",    "184 79% 40%", "35 92% 52%",   ["#48B9C7","#FFA100","#333846","#FFFFFF"]),
+  redhat:    distroTheme("redhat",    "Red Hat",    "358 74% 45%", "0 0% 20%",     ["#EE0000","#A30000","#151515","#FFFFFF"]),
+  alpine:    distroTheme("alpine",    "Alpine",     "212 100% 33%","203 89% 45%",  ["#0D597F","#0F97D3","#2C3E50","#FFFFFF"]),
+  nixos:     distroTheme("nixos",     "NixOS",      "212 66% 45%", "199 79% 50%",  ["#5277C3","#7EBAE4","#293845","#FFFFFF"]),
+  elementary:distroTheme("elementary","elementary", "203 74% 42%", "38 90% 52%",   ["#2A97CD","#F9C440","#333333","#FFFFFF"]),
 };
 
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
