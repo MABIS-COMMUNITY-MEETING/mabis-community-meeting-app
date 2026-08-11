@@ -46,6 +46,22 @@ function getCtx() {
   return ctx;
 }
 
+/* Browsers keep a freshly-created AudioContext suspended until a real user
+   gesture. Hover/scroll don't count, so the first click, key or tap unlocks
+   it once — without this, sound only started after toggling it off and on. */
+if (typeof window !== "undefined") {
+  const unlock = () => {
+    const c = getCtx();
+    if (c && c.state === "suspended") c.resume().catch(() => {});
+    ["pointerdown", "keydown", "touchstart"].forEach((ev) =>
+      window.removeEventListener(ev, unlock, true)
+    );
+  };
+  ["pointerdown", "keydown", "touchstart"].forEach((ev) =>
+    window.addEventListener(ev, unlock, true)
+  );
+}
+
 function noiseBurst(c, t, dur, vol, filterType, freq, q = 1) {
   const len = Math.ceil(c.sampleRate * dur);
   const buf = c.createBuffer(1, len, c.sampleRate);
