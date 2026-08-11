@@ -409,10 +409,8 @@ export function applyTheme(themeKey) {
   // The editorial layer paints panels/labels with --ink and --bone. Themes never
   // set them, so every theme was drawing on the original maroon/bone pair — that
   // was the clash. Tie them to the theme's own foreground/background instead.
-  // On dark themes the roles flip: ink panels must stay the dark surface and
-  // bone the light one, otherwise header panels go light with light text.
-  root.style.setProperty("--ink", theme.dark ? (theme.vars["--card"] || theme.vars["--background"]) : theme.vars["--foreground"]);
-  root.style.setProperty("--bone", theme.dark ? theme.vars["--foreground"] : theme.vars["--background"]);
+  root.style.setProperty("--ink", theme.vars["--foreground"]);
+  root.style.setProperty("--bone", theme.vars["--background"]);
   document.body.classList.toggle("theme-is-dark", !!theme.dark);
   applyPalette(theme.swatches);
   applyCharacterTokens(theme.character);

@@ -253,6 +253,13 @@ body.theme-is-dark .text-gray-500,
 body.theme-is-dark .text-gray-400,
 body.theme-is-dark .text-gray-300 { color: hsl(var(--muted-foreground)) !important; }
 body.theme-is-dark .bg-blue-50 { background-color: hsl(var(--primary) / 0.22) !important; }
+/* legacy crimson panels resolve to --ink, which is light on a dark keyset —
+   keep those panels dark and their hardcoded white text readable */
+body.theme-is-dark div.bg-\[\#951E3A\] { background-color: hsl(var(--card)) !important; border: 1px solid hsl(var(--border)); }
+body.theme-is-dark div.bg-\[\#951E3A\] .text-white,
+body.theme-is-dark div.bg-\[\#951E3A\] .text-white\/60,
+body.theme-is-dark div.bg-\[\#951E3A\] .text-white\/80 { color: hsl(var(--foreground)) !important; }
+body.theme-is-dark div.bg-\[\#951E3A\] .bg-white { background-color: hsl(var(--foreground)) !important; color: hsl(var(--background)) !important; }
 
 /* range slider */
 input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 0; background: hsl(var(--primary)); border: none; cursor: pointer; }
