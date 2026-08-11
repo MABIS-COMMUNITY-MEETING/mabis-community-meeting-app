@@ -1,3 +1,5 @@
+import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
+
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
 // Pastel themes use 2 harmonious pastel colors + white background
@@ -111,7 +113,21 @@ const distroTheme = paletteTheme;
 const consoleTheme = paletteTheme;
 const touhouTheme = paletteTheme;
 const sonicTheme = paletteTheme;
-const bfdiTheme = paletteTheme;
+/* BFDI colourways are generated from the canonical character palettes so the
+   accent colours are the character's real colours, never eyeballed. */
+function bfdiTheme(key) {
+  const c = bfdi_colorways[key];
+  const t = paletteTheme(
+    key,
+    c.name,
+    hexToHsl(c.character_primary),
+    hexToHsl(c.character_secondary),
+    character_swatches(key)
+  );
+  // canonical colours exposed for glass edges, 3D accents and previews
+  t.character = c;
+  return t;
+}
 
 export const THEMES = {
   default: {
@@ -252,19 +268,21 @@ export const THEMES = {
   silver:    sonicTheme("silver",    "Silver",     "185 45% 45%", "150 40% 48%", ["#4FA6AE","#CFD6DA","#3C8A6E","#FFFFFF"]),
   rouge:     sonicTheme("rouge",     "Rouge",      "330 55% 45%", "285 40% 48%", ["#B8397A","#7A4499","#FFFFFF","#2E1F33"]),
 
-  // ── BFDI object colourways ──
-  firey:     bfdiTheme("firey",     "Firey",      "20 88% 48%",  "48 92% 52%",  ["#E85D0F","#F5C518","#FFF3D0","#9C3407"]),
-  leafy:     bfdiTheme("leafy",     "Leafy",      "104 48% 38%", "80 55% 45%",  ["#4FA82E","#9FD65B","#2C5E1A","#EAF6DF"]),
-  bubble:    bfdiTheme("bubble",    "Bubble",     "195 65% 48%", "205 45% 60%", ["#63C6E0","#D9F2F8","#2E7C93","#FFFFFF"]),
-  pencil:    bfdiTheme("pencil",    "Pencil",     "45 88% 48%",  "20 45% 45%",  ["#F0C022","#B07A38","#FFFFFF","#5A4020"]),
-  match:     bfdiTheme("match",     "Match",      "348 78% 52%", "320 60% 60%", ["#E63958","#F291AC","#FFF0F3","#8C1B30"]),
-  blocky:    bfdiTheme("blocky",    "Blocky",     "28 85% 48%",  "38 80% 52%",  ["#F08A1E","#F9B04A","#B85E0C","#FFF0DA"]),
-  four:      bfdiTheme("four",      "Four",       "145 65% 40%", "150 55% 52%", ["#25C46A","#0E7A45","#9BEFC2","#F0FFF6"]),
-  x:         bfdiTheme("x",         "X",          "48 92% 45%",  "40 70% 55%",  ["#EFC01E","#F7DE7C","#8A6B08","#FFF8DC"]),
-  icecube:   bfdiTheme("icecube",   "Ice Cube",   "195 55% 48%", "210 40% 62%", ["#7FCBE0","#FFFFFF","#3D8AA8","#DCF1F7"]),
-  flower:    bfdiTheme("flower",    "Flower",     "330 65% 55%", "285 45% 55%", ["#E86FAE","#A45BC4","#FFE4F0","#7A2A55"]),
-  coiny:     bfdiTheme("coiny",     "Coiny",      "35 60% 45%",  "45 55% 55%",  ["#C08A3C","#E8C87A","#7A5220","#FBF0DA"]),
-  gelatin:   bfdiTheme("gelatin",   "Gelatin",    "50 85% 48%",  "95 45% 50%",  ["#EBD022","#B7D95E","#7A6C0A","#FDF7C9"]),
+  // ── BFDI object colourways (canonical palettes, see lib/bfdi_palettes.js) ──
+  firey:     bfdiTheme("firey"),
+  leafy:     bfdiTheme("leafy"),
+  bubble:    bfdiTheme("bubble"),
+  pencil:    bfdiTheme("pencil"),
+  match:     bfdiTheme("match"),
+  blocky:    bfdiTheme("blocky"),
+  four:      bfdiTheme("four"),
+  x:         bfdiTheme("x"),
+  icecube:   bfdiTheme("icecube"),
+  flower:    bfdiTheme("flower"),
+  coiny:     bfdiTheme("coiny"),
+  gelatin:   bfdiTheme("gelatin"),
+  eraser:    bfdiTheme("eraser"),
+  pin:       bfdiTheme("pin"),
 };
 
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
@@ -283,6 +301,26 @@ function applyPalette(colors) {
   root.style.setProperty("--palette-gradient", `linear-gradient(90deg, ${list.join(", ")})`);
 }
 
+/* Canonical character colours are published as their own tokens so glass edges,
+   3D lighting and previews can use the real character colour while the general
+   UI keeps working off the derived theme tokens. */
+function applyCharacterTokens(character) {
+  const root = document.documentElement;
+  const keys = ["primary", "secondary", "highlight", "outline", "special"];
+  keys.forEach((k) => {
+    const v = character?.[`character_${k}`];
+    if (v) root.style.setProperty(`--character-${k}`, v);
+    else root.style.removeProperty(`--character-${k}`);
+  });
+  if (character) {
+    root.style.setProperty("--glass-edge", `${character.character_highlight}59`);
+    root.style.setProperty("--rim-light", character.character_primary);
+  } else {
+    root.style.removeProperty("--glass-edge");
+    root.style.removeProperty("--rim-light");
+  }
+}
+
 export function applyTheme(themeKey) {
   const theme = THEMES[themeKey] || THEMES.default;
   const root = document.documentElement;
@@ -295,6 +333,7 @@ export function applyTheme(themeKey) {
   root.style.setProperty("--ink", theme.vars["--foreground"]);
   root.style.setProperty("--bone", theme.vars["--background"]);
   applyPalette(theme.swatches);
+  applyCharacterTokens(theme.character);
   Object.values(THEMES).forEach(t => document.body.classList.remove(t.bodyClass));
   document.body.classList.add(theme.bodyClass);
   localStorage.setItem("mabis-theme", themeKey);
