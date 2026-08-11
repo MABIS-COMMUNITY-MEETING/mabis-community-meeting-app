@@ -109,6 +109,7 @@ function readableHex(hex) {
 const prideTheme = paletteTheme;
 const distroTheme = paletteTheme;
 const consoleTheme = paletteTheme;
+const touhouTheme = paletteTheme;
 
 export const THEMES = {
   default: {
@@ -222,6 +223,22 @@ export const THEMES = {
   threeds:   consoleTheme("threeds",   "Nintendo 3DS", "349 72% 48%", "197 70% 46%", ["#D62B4C","#22A0CE","#2C2C2C","#F2F2F2"]),
   wiiu:      consoleTheme("wiiu",      "Wii U",        "197 62% 42%", "150 45% 42%", ["#1E88B0","#38B08A","#5A6570","#EFF3F5"]),
   switch:    consoleTheme("switch",    "Switch",       "8 88% 50%",   "197 88% 45%", ["#EE2C21","#00C3E3","#414548","#FFFFFF"]),
+
+  // ── Touhou character colourways ──
+  reimu:     touhouTheme("reimu",     "Reimu",      "353 78% 46%", "0 0% 30%",    ["#D9304E","#FFFFFF","#2B2B2B","#E8B7C0"]),
+  marisa:    touhouTheme("marisa",    "Marisa",     "45 92% 45%",  "0 0% 24%",    ["#F2C230","#1E1E1E","#FFFFFF","#C99A2E"]),
+  sakuya:    touhouTheme("sakuya",    "Sakuya",     "210 30% 42%", "205 55% 55%", ["#5A6B80","#C9D6E3","#FFFFFF","#2E3947"]),
+  remilia:   touhouTheme("remilia",   "Remilia",    "255 45% 48%",  "340 70% 55%", ["#6C5BC4","#F06A9B","#2A2140","#E4DFF5"]),
+  flandre:   touhouTheme("flandre",   "Flandre",    "0 78% 48%",   "48 90% 50%",  ["#D42A2A","#F2C230","#FFF3D6","#7A1B1B"]),
+  youmu:     touhouTheme("youmu",     "Youmu",      "150 32% 42%", "0 0% 40%",    ["#4E9070","#E9F0EA","#3A4A44","#B9CFC2"]),
+  yuyuko:    touhouTheme("yuyuko",    "Yuyuko",     "330 45% 55%", "195 40% 55%", ["#E88BB4","#A9D8E0","#6E5A8C","#FDEFF4"]),
+  koishi:    touhouTheme("koishi",    "Koishi",     "150 45% 42%", "45 65% 55%",  ["#3FA86F","#F0D264","#2E5E45","#E6F2E8"]),
+  satori:    touhouTheme("satori",    "Satori",     "285 40% 50%", "330 55% 58%", ["#9B5DB8","#E877AC","#3A2A46","#EFE3F2"]),
+  sanae:     touhouTheme("sanae",     "Sanae",      "150 42% 44%", "215 55% 52%", ["#46A177","#3C74C6","#FFFFFF","#DDEBE3"]),
+  cirno:     touhouTheme("cirno",     "Cirno",      "199 78% 48%", "220 45% 55%", ["#3EB0E3","#0F4C81","#FFFFFF","#BFE6F7"]),
+  yukari:    touhouTheme("yukari",    "Yukari",     "275 42% 48%", "48 70% 55%",  ["#8A5EC0","#F0D264","#3B2C55","#EFE6F7"]),
+  patchouli: touhouTheme("patchouli", "Patchouli",  "285 35% 48%", "45 60% 55%",  ["#9A6BB8","#EBD98A","#4A3560","#F3ECF6"]),
+  aya:       touhouTheme("aya",       "Aya",        "0 0% 28%",    "10 75% 50%",  ["#3A3A3A","#D9522E","#FFFFFF","#B03A20"]),
 };
 
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
