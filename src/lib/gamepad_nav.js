@@ -1,28 +1,53 @@
 /*
  * Spatial focus navigation for gamepad input.
  *
- * Tab order is useless here — the editorial grid puts widgets side by side, so
- * pressing "right" must land on what is visually to the right. We score every
- * visible focusable by directional distance from the current rect.
+ * Navigation is two-level: at rest the stick moves between SECTIONS (the
+ * numbered editorial blocks), and only after the user confirms on a section
+ * does focus drop into that section's controls — so scrolling past 01 never
+ * silently lands you on a button inside 10.
+ *
+ * Tab order is useless for the inner level — the editorial grid puts widgets
+ * side by side, so "right" must land on what is visually to the right. Every
+ * candidate is scored by directional distance from the current rect.
  */
 
 const FOCUSABLE =
 	'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function collect_targets() {
+export const SECTION_SELECTOR = "[data-gp-section]";
+
+function visible(el, r) {
+	if (r.width < 4 || r.height < 4) return false;
+	if (el.closest("[aria-hidden='true']")) return false;
+	const s = getComputedStyle(el);
+	return !(s.visibility === "hidden" || s.display === "none" || s.opacity === "0");
+}
+
+/* focusable controls, optionally restricted to one section */
+export function collect_targets(scope) {
+	const root = scope || document;
 	const out = [];
 	const vh = window.innerHeight;
 	const vw = window.innerWidth;
-	for (const el of document.querySelectorAll(FOCUSABLE)) {
+	for (const el of root.querySelectorAll(FOCUSABLE)) {
+		if (el.hasAttribute("data-gp-section")) continue;
 		const r = el.getBoundingClientRect();
-		if (r.width < 4 || r.height < 4) continue;
-		/* only consider what is on (or just off) the current screen */
-		if (r.bottom < -vh || r.top > vh * 2) continue;
-		if (r.right < 0 || r.left > vw) continue;
-		if (el.closest("[aria-hidden='true']")) continue;
-		const s = getComputedStyle(el);
-		if (s.visibility === "hidden" || s.display === "none" || s.opacity === "0") continue;
+		if (!visible(el, r)) continue;
+		if (!scope) {
+			/* unscoped: only what is on (or just off) the current screen */
+			if (r.bottom < -vh || r.top > vh * 2) continue;
+			if (r.right < 0 || r.left > vw) continue;
+		}
 		out.push({ el, r });
+	}
+	return out;
+}
+
+export function collect_sections() {
+	const out = [];
+	for (const el of document.querySelectorAll(SECTION_SELECTOR)) {
+		const r = el.getBoundingClientRect();
+		if (visible(el, r)) out.push({ el, r });
 	}
 	return out;
 }
@@ -31,19 +56,16 @@ function center(r) {
 	return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }
 
-export function find_neighbour(current, dir) {
-	const targets = collect_targets();
+function pick(targets, current, dir) {
 	if (!targets.length) return null;
 
-	/* nothing focused (or the body is) — start from the element nearest the
-	   top of the viewport instead of measuring from the body's full-page rect */
-	const has_current = current && current !== document.body && current !== document.documentElement;
+	const has_current =
+		current && current !== document.body && current !== document.documentElement &&
+		targets.some((t) => t.el === current);
+
+	/* nothing focused yet — start from whatever sits nearest the top of the view */
 	if (!has_current) {
-		return targets.reduce((a, b) => {
-			const ay = Math.abs(a.r.top);
-			const by = Math.abs(b.r.top);
-			return by < ay ? b : a;
-		}).el;
+		return targets.reduce((a, b) => (Math.abs(b.r.top) < Math.abs(a.r.top) ? b : a)).el;
 	}
 
 	const from = center(current.getBoundingClientRect());
@@ -74,4 +96,28 @@ export function find_neighbour(current, dir) {
 		}
 	}
 	return best;
+}
+
+/* section level — up/down walks the numbered blocks in document order */
+export function find_section(current, dir) {
+	const sections = collect_sections();
+	if (!sections.length) return null;
+	const i = sections.findIndex((s) => s.el === current);
+	if (i === -1) {
+		/* enter the list at the section nearest the top of the viewport */
+		return sections.reduce((a, b) => (Math.abs(b.r.top) < Math.abs(a.r.top) ? b : a)).el;
+	}
+	if (dir === "down" || dir === "right") return sections[Math.min(i + 1, sections.length - 1)].el;
+	return sections[Math.max(i - 1, 0)].el;
+}
+
+/* control level — spatial, restricted to the entered section */
+export function find_neighbour(current, dir, scope) {
+	return pick(collect_targets(scope), current, dir);
+}
+
+export function first_in_section(section) {
+	const targets = collect_targets(section);
+	if (!targets.length) return null;
+	return targets.reduce((a, b) => (b.r.top < a.r.top ? b : a)).el;
 }

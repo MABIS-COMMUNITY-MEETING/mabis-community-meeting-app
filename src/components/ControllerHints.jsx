@@ -5,7 +5,7 @@ import { FAMILY_LABEL } from "@/lib/gamepad_profiles";
 import { MODE_LABEL } from "@/lib/gamepad_detect";
 
 /* Pinned input prompt bar — appears only while a controller is in use. */
-export default function ControllerHints({ profile }) {
+export default function ControllerHints({ profile, inside = false }) {
 	const family = profile.family;
 	return (
 		<motion.div
@@ -20,13 +20,13 @@ export default function ControllerHints({ profile }) {
 			</span>
 			<span className="flex-1 h-px bg-foreground/10" />
 			<span className="flex items-center gap-1.5 tech-label">
-				<span className="font-mono text-[10px]">✛</span> MOVE
+				<span className="font-mono text-[10px]">✛</span> {inside ? "MOVE" : "SECTION"}
 			</span>
 			<span className="flex items-center gap-1.5 tech-label">
-				<ControllerGlyph family={family} action="confirm" /> SELECT
+				<ControllerGlyph family={family} action="confirm" /> {inside ? "SELECT" : "ENTER"}
 			</span>
 			<span className="flex items-center gap-1.5 tech-label">
-				<ControllerGlyph family={family} action="cancel" /> BACK
+				<ControllerGlyph family={family} action="cancel" /> {inside ? "EXIT" : "BACK"}
 			</span>
 		</motion.div>
 	);

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { action_binding } from "@/lib/gamepad_profiles";
 import { resolve_profile, OVERRIDE_EVENT } from "@/lib/gamepad_detect";
-import { find_neighbour } from "@/lib/gamepad_nav";
+import { find_neighbour, find_section, first_in_section } from "@/lib/gamepad_nav";
 import { playHover, playClick, playMenuClose } from "@/lib/sound";
 import ControllerHints from "@/components/ControllerHints";
 
@@ -24,7 +24,10 @@ function pad_is_active(pad) {
 export default function GamepadNavigator() {
 	const [profile, setProfile] = useState(null);
 	const [active, setActive] = useState(false);
-	const state = useRef({ dir: null, next_at: 0, buttons: {}, pad_index: null });
+	const [inside, setInside] = useState(false);
+	/* `entered` holds the section whose controls are currently navigable —
+	   null means the stick is browsing sections, not buttons */
+	const state = useRef({ dir: null, next_at: 0, buttons: {}, pad_index: null, entered: null });
 
 	useEffect(() => {
 		if (typeof navigator === "undefined" || !navigator.getGamepads) return;
@@ -38,15 +41,40 @@ export default function GamepadNavigator() {
 			}).catch(() => {});
 		};
 
-		const move = (dir) => {
-			const el = find_neighbour(document.activeElement, dir);
-			if (!el) return;
+		const focus_el = (el, block) => {
 			el.focus({ preventScroll: true });
 			const r = el.getBoundingClientRect();
-			if (r.top < 80 || r.bottom > window.innerHeight - 80) {
-				el.scrollIntoView({ block: "center", behavior: "auto" });
+			if (block === "start" || r.top < 80 || r.bottom > window.innerHeight - 80) {
+				el.scrollIntoView({ block: block || "center", behavior: "auto" });
 			}
 			playHover();
+		};
+
+		const move = (dir) => {
+			const entered = state.current.entered;
+			/* section level: up/down walks the numbered blocks, nothing inside them */
+			if (!entered) {
+				const el = find_section(document.activeElement, dir);
+				if (el) focus_el(el, "start");
+				return;
+			}
+			const el = find_neighbour(document.activeElement, dir, entered);
+			if (el) focus_el(el);
+		};
+
+		const enter_section = (section) => {
+			const first = first_in_section(section);
+			if (!first) return;
+			state.current.entered = section;
+			setInside(true);
+			focus_el(first);
+		};
+
+		const exit_section = () => {
+			const section = state.current.entered;
+			state.current.entered = null;
+			setInside(false);
+			if (section) focus_el(section, "start");
 		};
 
 		const press = (pad, index, fn) => {
@@ -114,6 +142,9 @@ export default function GamepadNavigator() {
 				if (!el || el === document.body) return;
 				playClick();
 				rumble(p, 0.35);
+				/* confirming a section drops into it — widgets are never activated
+				   just by scrolling past them */
+				if (el.hasAttribute?.("data-gp-section")) { enter_section(el); return; }
 				/* text fields do nothing useful on click — checkboxes and radios must
 				   still toggle, so only skip the typing ones */
 				if (el.tagName === "TEXTAREA") return;
@@ -127,7 +158,9 @@ export default function GamepadNavigator() {
 				rumble(p, 0.18);
 				const target = document.activeElement || document;
 				target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-				document.activeElement?.blur?.();
+				/* back out to section level rather than dumping focus entirely */
+				if (state.current.entered) exit_section();
+				else document.activeElement?.blur?.();
 			});
 
 			/* right stick scrolls the page — eased so small tilts creep and full
@@ -175,5 +208,5 @@ export default function GamepadNavigator() {
 	}, [active]);
 
 	if (!profile || !active) return null;
-	return <ControllerHints profile={profile} />;
+	return <ControllerHints profile={profile} inside={inside} />;
 }
