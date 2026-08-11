@@ -177,9 +177,9 @@ export default function Splash() {
         {/* scroll cue */}
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: ready ? 1 : 0 }} transition={{ delay: 0.4, duration: 0.6 }}
-          className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          className="absolute bottom-16 right-5 sm:right-10 flex flex-col items-center gap-2"
         >
-          <span className="tech-label text-bone/45">SCROLL</span>
+          <span className="tech-label vert-text text-bone/45">SCROLL</span>
           <motion.span
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}

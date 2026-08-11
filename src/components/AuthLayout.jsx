@@ -30,14 +30,14 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, 
         <span className="tech-label text-muted-foreground">N° 00</span>
       </div>
 
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-5 py-20">
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1440px] items-center px-8 sm:px-14 py-24">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-md"
+          className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16"
         >
-          <div className="mb-10">
+          <div className="lg:col-span-6 lg:col-start-1">
             <div className="tech-label text-primary mb-4">／ IDENTITY</div>
             {logo ? (
               <div className="mb-6 inline-flex h-16 w-16 items-center justify-center border border-foreground/20 bg-card overflow-hidden">
@@ -48,19 +48,20 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, 
                 <Icon className="h-7 w-7 text-primary-foreground" aria-hidden="true" />
               </div>
             )}
-            <h1 className="font-display font-light tracking-ultra text-4xl sm:text-5xl">
+            <h1 className="font-display font-extralight tracking-ultra leading-[0.9] text-5xl sm:text-7xl lg:text-8xl">
               {title}
             </h1>
             {subtitle && <p className="mt-3 text-sm text-muted-foreground">{subtitle}</p>}
           </div>
 
-          <div className="border border-foreground/15 bg-card/80 p-7 backdrop-blur-sm">
-            {children}
+          <div className="lg:col-span-5 lg:col-start-8">
+            <div className="border-t border-foreground/20 pt-8 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10">
+              {children}
+              {footer && (
+                <p className="mt-8 text-xs tech-label text-muted-foreground">{footer}</p>
+              )}
+            </div>
           </div>
-
-          {footer && (
-            <p className="mt-6 text-center text-xs tech-label text-muted-foreground">{footer}</p>
-          )}
         </motion.div>
       </div>
     </div>
