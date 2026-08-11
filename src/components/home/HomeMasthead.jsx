@@ -21,22 +21,20 @@ export default function HomeMasthead({ week_label, date_label }) {
 				</motion.div>
 
 				<h1 className="font-display font-thin tracking-ultra leading-[0.8]">
-					{["COMMU", "NITY"].map((line, i) => (
-						<span key={line} className="reveal-mask">
-							<motion.span
-								initial={{ y: "110%" }} animate={{ y: 0 }}
-								transition={{ duration: 1, ease: EASE, delay: 0.1 + i * 0.08 }}
-								className="block text-[19vw] lg:text-[13vw] -ml-[0.06em]"
-							>
-								{line}
-							</motion.span>
-						</span>
-					))}
 					<span className="reveal-mask">
 						<motion.span
 							initial={{ y: "110%" }} animate={{ y: 0 }}
-							transition={{ duration: 1, ease: EASE, delay: 0.26 }}
-							className="block text-[19vw] lg:text-[13vw] -ml-[0.06em] text-stroke"
+							transition={{ duration: 1, ease: EASE, delay: 0.1 }}
+							className="block text-[12vw] lg:text-[8.5vw] -ml-[0.06em]"
+						>
+							COMMUNITY
+						</motion.span>
+					</span>
+					<span className="reveal-mask">
+						<motion.span
+							initial={{ y: "110%" }} animate={{ y: 0 }}
+							transition={{ duration: 1, ease: EASE, delay: 0.2 }}
+							className="block text-[12vw] lg:text-[8.5vw] -ml-[0.06em] text-stroke"
 						>
 							MEETING
 						</motion.span>
