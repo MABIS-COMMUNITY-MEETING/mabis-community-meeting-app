@@ -47,23 +47,52 @@ function pastelTheme(key, name, p, s) {
   };
 }
 
+// Text colour that actually reads on a given "H S% L%" fill.
+function onColor(hsl) {
+  const [h, s, l] = hsl.split(" ").map((v) => parseInt(v));
+  return l > 58 ? `${h} ${Math.min(s, 40)}% 14%` : "0 0% 100%";
+}
+
 // Pride flag theme: primary/secondary drive the UI; swatches show the full flag.
 function prideTheme(key, name, p, s, flagHexes) {
   const t = pastelTheme(key, name, p, s);
   t.swatches = flagHexes;
   t.flag = flagHexes;
-  // Pride palettes are vivid by nature — the derived pastel background and
-  // muted greys wash them out, so keep the canvas clean and let the flag talk.
-  t.vars["--background"] = "0 0% 98%";
-  t.vars["--muted"] = "0 0% 95%";
-  t.vars["--border"] = "0 0% 88%";
-  t.vars["--input"] = "0 0% 88%";
-  t.vars["--secondary-foreground"] = "0 0% 100%";
-  t.vars["--accent-foreground"] = "0 0% 100%";
-  // roles pull straight from the flag instead of hue-shifting off primary
+  const [pH] = p.split(" ");
+  // Flags are already loud. The page underneath stays an almost-neutral sheet
+  // carrying a whisper of the flag's hue, so the colour reads as intentional
+  // rather than as UI chrome fighting the palette.
+  t.vars["--background"] = `${pH} 18% 97%`;
+  t.vars["--foreground"] = `${pH} 14% 12%`;
+  t.vars["--card"] = "0 0% 100%";
+  t.vars["--card-foreground"] = `${pH} 14% 12%`;
+  t.vars["--popover"] = "0 0% 100%";
+  t.vars["--popover-foreground"] = `${pH} 14% 12%`;
+  t.vars["--muted"] = `${pH} 12% 94%`;
+  t.vars["--muted-foreground"] = `${pH} 8% 42%`;
+  t.vars["--border"] = `${pH} 12% 88%`;
+  t.vars["--input"] = `${pH} 12% 88%`;
+  t.vars["--primary-foreground"] = onColor(p);
+  t.vars["--secondary-foreground"] = onColor(s);
+  t.vars["--accent-foreground"] = onColor(s);
+
+  // Roles pull from the flag, but only from its distinct hues — flags repeat
+  // stripes and carry white/black, which would otherwise hand several roles the
+  // same graphite badge.
   const roles = ["--role-student", "--role-teacher", "--role-chair", "--role-minutes", "--role-admin", "--role-editor"];
-  const usable = flagHexes.map(readableHex);
-  roles.forEach((r, i) => { t.vars[r] = hexToHsl(usable[i % usable.length]); });
+  const seen = new Set();
+  const usable = [];
+  const byVividness = flagHexes
+    .map(readableHex)
+    .sort((a, b) => parseInt(hexToHsl(b).split(" ")[1]) - parseInt(hexToHsl(a).split(" ")[1]));
+  byVividness.forEach((hex) => {
+    const hsl = hexToHsl(hex);
+    const bucket = Math.round(parseInt(hsl.split(" ")[0]) / 24);
+    if (seen.has(bucket)) return;
+    seen.add(bucket);
+    usable.push(hsl);
+  });
+  roles.forEach((r, i) => { t.vars[r] = usable[i % usable.length]; });
   return t;
 }
 
