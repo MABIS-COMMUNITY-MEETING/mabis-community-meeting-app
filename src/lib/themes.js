@@ -51,7 +51,29 @@ function pastelTheme(key, name, p, s) {
 function prideTheme(key, name, p, s, flagHexes) {
   const t = pastelTheme(key, name, p, s);
   t.swatches = flagHexes;
+  t.flag = flagHexes;
+  // Pride palettes are vivid by nature — the derived pastel background and
+  // muted greys wash them out, so keep the canvas clean and let the flag talk.
+  t.vars["--background"] = "0 0% 98%";
+  t.vars["--muted"] = "0 0% 95%";
+  t.vars["--border"] = "0 0% 88%";
+  t.vars["--input"] = "0 0% 88%";
+  t.vars["--secondary-foreground"] = "0 0% 100%";
+  t.vars["--accent-foreground"] = "0 0% 100%";
+  // roles pull straight from the flag instead of hue-shifting off primary
+  const roles = ["--role-student", "--role-teacher", "--role-chair", "--role-minutes", "--role-admin", "--role-editor"];
+  const usable = flagHexes.map(readableHex);
+  roles.forEach((r, i) => { t.vars[r] = hexToHsl(usable[i % usable.length]); });
   return t;
+}
+
+/* Flags contain white, black and pale pastels. Used raw as UI accents they
+   vanish on a light page (or blend into ink), so accent copies are pulled
+   into a legible lightness band while keeping the hue that identifies them. */
+function readableHex(hex) {
+  const [h, s, l] = hexToHsl(hex).split(" ").map((v) => parseInt(v));
+  if (s < 8) return l > 55 ? "#4a4a4a" : hslToHex(`${h} 0% ${Math.max(l, 18)}%`); // white/grey → graphite
+  return hslToHex(`${h} ${Math.max(s, 62)}% ${Math.min(Math.max(l, 38), 52)}%`);
 }
 
 export const THEMES = {
@@ -118,14 +140,22 @@ export const THEMES = {
   nebula:    pastelTheme("nebula",    "Nebula",    "290 35% 50%", "200 40% 62%"),
 
   // ── Pride flag palettes ──
-  pride:       prideTheme("pride",       "Pride",       "0 79% 47%",   "27 98% 47%",  ["#E40303","#FF8C00","#FFED00","#008026","#004DFF","#750787"]),
-  trans:       prideTheme("trans",       "Trans",       "197 74% 62%", "349 100% 78%",["#5BCEFA","#F5A9B8","#FFFFFF","#F5A9B8","#5BCEFA"]),
-  bi:          prideTheme("bi",          "Bisexual",    "330 65% 42%", "240 60% 45%", ["#D60270","#9B4F96","#0038A8"]),
-  lesbian:     prideTheme("lesbian",     "Lesbian",     "15 90% 45%",  "323 61% 47%", ["#D52D00","#FF9A56","#FFFFFF","#D362A4","#A30262"]),
-  pan:         prideTheme("pan",         "Pansexual",   "331 100% 45%",  "201 100% 45%",["#FF218C","#FFD800","#21B1FF"]),
-  nonbinary:   prideTheme("nonbinary",   "Nonbinary",   "60 80% 38%",  "271 42% 47%", ["#FCF434","#FFFFFF","#9C59D1","#2C2C2C"]),
-  ace:         prideTheme("ace",         "Asexual",     "270 43% 43%", "0 0% 40%",    ["#000000","#A3A3A3","#FFFFFF","#800080"]),
-  genderfluid: prideTheme("genderfluid", "Genderfluid", "323 88% 60%", "234 60% 45%", ["#FF75A2","#FFFFFF","#BE18D6","#000000","#333EBD"]),
+  pride:       prideTheme("pride",       "Pride",       "348 97% 42%", "33 100% 42%", ["#E40303","#FF8C00","#FFED00","#008026","#004DFF","#750787"]),
+  progress:    prideTheme("progress",    "Progress",    "265 82% 40%", "199 92% 45%", ["#E40303","#FF8C00","#FFED00","#008026","#004DFF","#750787","#5BCEFA","#F5A9B8"]),
+  trans:       prideTheme("trans",       "Trans",       "197 90% 42%", "349 85% 55%", ["#5BCEFA","#F5A9B8","#FFFFFF","#F5A9B8","#5BCEFA"]),
+  bi:          prideTheme("bi",          "Bisexual",    "324 97% 40%", "220 100% 38%",["#D60270","#9B4F96","#0038A8"]),
+  lesbian:     prideTheme("lesbian",     "Lesbian",     "13 100% 40%", "322 92% 36%", ["#D52D00","#FF9A56","#FFFFFF","#D362A4","#A30262"]),
+  pan:         prideTheme("pan",         "Pansexual",   "330 100% 44%","199 100% 42%",["#FF218C","#FFD800","#21B1FF"]),
+  nonbinary:   prideTheme("nonbinary",   "Nonbinary",   "277 61% 48%", "56 90% 40%",  ["#FCF434","#FFFFFF","#9C59D1","#2C2C2C"]),
+  ace:         prideTheme("ace",         "Asexual",     "300 90% 30%", "0 0% 38%",    ["#000000","#A3A3A3","#FFFFFF","#800080"]),
+  genderfluid: prideTheme("genderfluid", "Genderfluid", "290 79% 44%", "236 74% 46%", ["#FF75A2","#FFFFFF","#BE18D6","#000000","#333EBD"]),
+  agender:     prideTheme("agender",     "Agender",     "0 0% 32%",    "104 45% 45%", ["#000000","#BABABA","#FFFFFF","#B8F483","#FFFFFF","#BABABA","#000000"]),
+  aromantic:   prideTheme("aromantic",   "Aromantic",   "104 45% 38%", "0 0% 34%",    ["#3DA542","#A7D379","#FFFFFF","#A9A9A9","#000000"]),
+  intersex:    prideTheme("intersex",    "Intersex",    "48 100% 42%", "285 78% 44%", ["#FFD800","#7902AA"]),
+  genderqueer: prideTheme("genderqueer", "Genderqueer", "285 45% 48%", "104 60% 36%", ["#B57EDC","#FFFFFF","#4A8123"]),
+  polysexual:  prideTheme("polysexual",  "Polysexual",  "327 100% 44%","210 100% 44%",["#F61CB9","#07D569","#1C92F6"]),
+  omnisexual:  prideTheme("omnisexual",  "Omnisexual",  "316 90% 44%", "266 70% 44%", ["#FE9ACE","#FF53BF","#20063B","#6B02B0","#8EA3FF"]),
+  demisexual:  prideTheme("demisexual",  "Demisexual",  "285 78% 40%", "0 0% 36%",    ["#FFFFFF","#6E0070","#D3D3D3","#000000"]),
 };
 
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
@@ -133,8 +163,10 @@ export const THEMES = {
 function applyPalette(colors) {
   const root = document.documentElement;
   const list = colors.filter(Boolean);
+  // accents get the legible copy, the stripe below keeps the true flag
+  const accents = list.map((c) => (c.startsWith("#") ? readableHex(c) : c));
   for (let i = 0; i < 8; i++) {
-    root.style.setProperty(`--flag-${i + 1}`, list[i % list.length]);
+    root.style.setProperty(`--flag-${i + 1}`, accents[i % accents.length]);
   }
   root.style.setProperty("--palette-count", String(list.length));
   const stops = list.map((c, i) => `${c} ${(i / list.length) * 100}% ${((i + 1) / list.length) * 100}%`);
