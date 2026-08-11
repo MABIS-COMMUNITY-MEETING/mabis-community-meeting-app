@@ -66,13 +66,13 @@ export default function ProfileEditor({ open, onClose }) {
     <AnimatePresence>
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={onClose} />
+          <div className="fixed inset-0 z-[60] bg-ink/30" onClick={onClose} />
           <motion.div
             initial={{ opacity: 0, y: -8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 z-50 w-80 max-h-[80vh] overflow-y-auto"
+            className="fixed top-24 right-4 sm:right-6 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 z-[61] w-80 max-h-[75vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
