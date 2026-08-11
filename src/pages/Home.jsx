@@ -180,10 +180,11 @@ export default function Home() {
             <span className="block">COMMUNITY</span>
             <span className="block text-stroke">MEETING</span>
           </h1>
+          <p lang="ja" className="font-jp mt-4 text-xl sm:text-2xl text-foreground/60">コミュニティ・ミーティング</p>
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 tech-label text-muted-foreground">
             <span className="tabular-nums">WEEK {weekLabel}</span>
             <Plus className="h-3 w-3 text-primary/60" />
-            <span>FRIDAY ／ WEEKLY RITUAL</span>
+            <span>FRIDAY ／ WEEKLY RITUAL <span lang="ja" className="font-jp normal-case tracking-normal text-foreground/60">毎週金曜日</span></span>
             <Plus className="h-3 w-3 text-primary/60" />
             <span>MABIS ／ BANGKOK</span>
           </div>
@@ -192,6 +193,7 @@ export default function Home() {
         {/* kinetic scroll-reactive divider */}
         <section className="py-2 -mx-4 sm:-mx-6 px-4 sm:px-6 overflow-hidden">
           <KineticHeading text="WEEKLY RITUAL" className="text-[15vw] sm:text-[11vw] text-foreground/85" />
+          <p lang="ja" className="font-jp mt-1 text-base sm:text-xl text-foreground/50">週の儀式</p>
         </section>
 
         {/* velocity-driven typographic band */}
@@ -220,45 +222,45 @@ export default function Home() {
 
         <BirthdayBanner />
 
-        <SectionReveal index="01" label="MEETING MODE">
+        <SectionReveal index="01" label="MEETING MODE" jp="会議モード">
           <MeetingModeWidget canStart={canStartMeeting} onStartMeeting={() => {
             window.dispatchEvent(new CustomEvent("startMeetingMode"));
           }} />
         </SectionReveal>
 
-        <SectionReveal index="02" label="ANNOUNCEMENTS">
+        <SectionReveal index="02" label="ANNOUNCEMENTS" jp="お知らせ">
           <AnnouncementsWidget members={members} isAdmin={canManage} />
         </SectionReveal>
 
-        <SectionReveal index="03" label="DISCUSSION">
+        <SectionReveal index="03" label="DISCUSSION" jp="議題">
           <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
         </SectionReveal>
 
-        <SectionReveal index="04" label="JOBS ／ ROTATION">
+        <SectionReveal index="04" label="JOBS ／ ROTATION" jp="当番">
           <JobsWidget members={members} isAdmin={canManage} compact={false} />
         </SectionReveal>
 
-        <SectionReveal index="05" label="CALENDAR">
+        <SectionReveal index="05" label="CALENDAR" jp="カレンダー">
           <CalendarWidget />
         </SectionReveal>
 
-        <SectionReveal index="06" label="SCHEDULE">
+        <SectionReveal index="06" label="SCHEDULE" jp="時間割">
           <ScheduleWidget isAdmin={canManage} />
         </SectionReveal>
 
-        <SectionReveal index="07" label="LOST ／ FOUND">
+        <SectionReveal index="07" label="LOST ／ FOUND" jp="落とし物">
           <MissingItemsWidget members={members} />
         </SectionReveal>
 
-        <SectionReveal index="08" label="LUNCH MENU">
+        <SectionReveal index="08" label="LUNCH MENU" jp="給食の献立">
           <LunchMenuWidget isAdmin={canManage} />
         </SectionReveal>
 
-        <SectionReveal index="09" label="NEWS">
+        <SectionReveal index="09" label="NEWS" jp="ニュース">
           <NewsWidget members={members} isAdmin={canManage} />
         </SectionReveal>
 
-        <SectionReveal index="10" label="MEMBERS">
+        <SectionReveal index="10" label="MEMBERS" jp="メンバー">
           <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
         </SectionReveal>
 

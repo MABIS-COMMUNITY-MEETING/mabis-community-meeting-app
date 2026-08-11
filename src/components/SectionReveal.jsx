@@ -9,7 +9,7 @@ const EASE = [0.16, 1, 0.3, 1];
  * draws itself across, then the panel clips upward into place. Pieces react
  * together rather than fading independently.
  */
-export default function SectionReveal({ index = "00", label = "", children, className = "" }) {
+export default function SectionReveal({ index = "00", label = "", jp = "", children, className = "" }) {
   return (
     <motion.section
       initial="hidden"
@@ -34,6 +34,15 @@ export default function SectionReveal({ index = "00", label = "", children, clas
         >
           {label}
         </motion.span>
+        {jp && (
+          <motion.span
+            variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.4, delay: 0.1 } } }}
+            className="font-jp text-sm text-foreground/55 hidden sm:block"
+            lang="ja"
+          >
+            {jp}
+          </motion.span>
+        )}
         <motion.span
           variants={{ hidden: { scaleX: 0 }, show: { scaleX: 1, transition: { duration: 0.7, ease: EASE, delay: 0.08 } } }}
           className="flex-1 h-px bg-foreground/15 origin-left"

@@ -85,6 +85,7 @@ export default function Splash() {
             <img src={LOGO} alt="MABIS" className="h-5 w-5 object-contain" />
           </span>
           <span className="tech-label text-bone/60">MABIS ／ COMMUNITY MEETING</span>
+          <span lang="ja" className="font-jp text-xs text-bone/45 hidden sm:inline">共同体の集い</span>
         </div>
         <span className="tech-label hidden sm:block text-bone/50">EST. BANGKOK ／ TH</span>
       </motion.div>
@@ -132,6 +133,14 @@ export default function Splash() {
           </h1>
         </motion.div>
 
+        <motion.p
+          lang="ja"
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.45, duration: 0.8, ease: EASE }}
+          className="font-jp mt-6 text-left sm:text-center text-xl sm:text-3xl text-bone/70"
+        >
+          コミュニティ・ミーティング
+        </motion.p>
+
         <motion.div
           initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 1.6, duration: 0.8, ease: EASE }}
           className="h-px w-40 bg-bone/40 my-8 sm:my-10 origin-left sm:origin-center"
@@ -143,6 +152,7 @@ export default function Splash() {
         >
           A weekly ritual of voice, presence, and shared decision —
           recorded, remembered, and refined by the secondary community.
+          <span lang="ja" className="font-jp mt-3 block text-bone/50">声と存在と、共に決めることの、週ごとの儀式。</span>
         </motion.p>
 
         <AnimatePresence>

@@ -8,11 +8,11 @@ import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 const NAV = [
-  { label: "Home", to: "/home", n: "01" },
-  { label: "Meeting History", to: "/history", n: "02" },
-  { label: "Announcements", to: "/history/announcements", n: "03" },
-  { label: "News", to: "/history/news", n: "04" },
-  { label: "Feedback Inbox", to: "/feedback", n: "05" },
+  { label: "Home", jp: "ホーム", to: "/home", n: "01" },
+  { label: "Meeting History", jp: "会議の記録", to: "/history", n: "02" },
+  { label: "Announcements", jp: "お知らせ", to: "/history/announcements", n: "03" },
+  { label: "News", jp: "ニュース", to: "/history/news", n: "04" },
+  { label: "Feedback Inbox", jp: "ご意見箱", to: "/feedback", n: "05" },
 ];
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -55,6 +55,7 @@ export default function SiteHeader({ rightSlot }) {
             <span className="hidden sm:flex flex-col leading-none">
               <span className="tech-label text-foreground">MABIS</span>
               <span className="tech-label text-muted-foreground">COMMUNITY ／ MEETING</span>
+              <span lang="ja" className="font-jp text-[11px] text-muted-foreground/80 mt-0.5">共同体の集い</span>
             </span>
           </Link>
 
@@ -104,6 +105,7 @@ export default function SiteHeader({ rightSlot }) {
                 <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="flex items-center gap-3">
                   <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.15, duration: 0.6, ease: EASE }} className="block h-px w-10 bg-secondary origin-left" />
                   <span className="tech-label text-bone/50">SELECTED ／ NAVIGATION</span>
+                  <span lang="ja" className="font-jp text-sm text-bone/45">目次</span>
                 </motion.div>
                 <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="tech-label vert-text text-bone/50 sm:hidden">MENU</motion.span>
               </div>
@@ -136,6 +138,7 @@ export default function SiteHeader({ rightSlot }) {
                             {item.label}
                           </span>
                         </span>
+                        <span lang="ja" className="font-jp text-base sm:text-2xl text-bone/45 self-end pb-1 sm:pb-2">{item.jp}</span>
                         <ArrowUpRight className="ml-auto h-6 w-6 sm:h-10 sm:w-10 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" />
                       </span>
                     </motion.button>

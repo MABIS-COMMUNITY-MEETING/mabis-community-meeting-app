@@ -54,6 +54,8 @@
        url(https://cdn.jsdelivr.net/fontsource/fonts/iosevka@5.3.0/latin-400-italic.woff) format('woff');
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Hina+Mincho&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

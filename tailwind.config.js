@@ -31,7 +31,8 @@ module.exports = {
                 heading: ['Iosevka', 'ui-monospace', 'monospace'],
                 body: ['Iosevka', 'ui-monospace', 'monospace'],
                 display: ['Iosevka', 'ui-monospace', 'monospace'],
-                mono: ['Iosevka', 'ui-monospace', 'monospace']
+                mono: ['Iosevka', 'ui-monospace', 'monospace'],
+                jp: ['Hina Mincho', 'serif']
             },
             letterSpacing: { ultra: '-0.06em', tightest: '-0.05em' },
             keyframes: {
