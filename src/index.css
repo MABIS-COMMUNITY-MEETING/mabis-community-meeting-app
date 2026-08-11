@@ -151,6 +151,8 @@
   /* hide native cursor only on fine pointers w/ motion allowed — keep caret for text fields */
   @media (hover: hover) and (pointer: fine) {
     body.cursor-ready, body.cursor-ready * { cursor: none !important; }
+    body.cursor-ready [data-native-cursor], body.cursor-ready [data-native-cursor] * { cursor: auto !important; }
+    body.cursor-ready [data-native-cursor] button, body.cursor-ready [data-native-cursor] a, body.cursor-ready [data-native-cursor] [role="button"] { cursor: pointer !important; }
     body.cursor-ready input, body.cursor-ready textarea, body.cursor-ready [contenteditable=""], body.cursor-ready [contenteditable="true"], body.cursor-ready select { cursor: text !important; }
   }
 }

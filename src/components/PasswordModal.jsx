@@ -32,6 +32,7 @@ export default function PasswordModal({ open, onClose, onSuccess, title = "Enter
         <>
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            data-native-cursor
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
             onClick={handleClose}>
             <motion.div

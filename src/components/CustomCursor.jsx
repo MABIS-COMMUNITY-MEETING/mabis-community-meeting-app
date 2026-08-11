@@ -36,6 +36,9 @@ export default function CustomCursor() {
       if (dotRef.current) {
         dotRef.current.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%,-50%)`;
       }
+      const native = !!e.target.closest?.("[data-native-cursor]");
+      if (dotRef.current) dotRef.current.style.opacity = native ? "0" : "1";
+      if (ringRef.current) ringRef.current.style.opacity = native ? "0" : "1";
       const t = e.target.closest?.("a, button, [role='button'], [data-cursor], input, textarea, select, label");
       const label = t?.getAttribute?.("data-cursor");
       const r = ringRef.current; if (!r) return;
