@@ -14,6 +14,7 @@ import GamepadNavigator from '@/components/GamepadNavigator';
 import GrainOverlay from '@/components/GrainOverlay';
 import SmoothScroll from '@/components/SmoothScroll';
 import ScrollProgress from '@/components/ScrollProgress';
+import PaletteStripe from '@/components/PaletteStripe';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PageTransition from '@/components/PageTransition';
 import Login from '@/pages/Login';
@@ -77,6 +78,7 @@ function App() {
           <SmoothScroll />
           <GrainOverlay />
           <CustomCursor />
+          <PaletteStripe />
           <ScrollProgress />
           <GamepadNavigator />
           <AuthenticatedApp />

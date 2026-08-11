@@ -128,12 +128,27 @@ export const THEMES = {
   genderfluid: prideTheme("genderfluid", "Genderfluid", "323 88% 60%", "234 60% 45%", ["#FF75A2","#FFFFFF","#BE18D6","#000000","#333EBD"]),
 };
 
+// Multi-colour themes (pride flags, presets) carry more colours than the two the
+// UI tokens can hold. Expose the whole set so accents can use the full palette.
+function applyPalette(colors) {
+  const root = document.documentElement;
+  const list = colors.filter(Boolean);
+  for (let i = 0; i < 8; i++) {
+    root.style.setProperty(`--flag-${i + 1}`, list[i % list.length]);
+  }
+  root.style.setProperty("--palette-count", String(list.length));
+  const stops = list.map((c, i) => `${c} ${(i / list.length) * 100}% ${((i + 1) / list.length) * 100}%`);
+  root.style.setProperty("--palette-stripes", `linear-gradient(90deg, ${stops.join(", ")})`);
+  root.style.setProperty("--palette-gradient", `linear-gradient(90deg, ${list.join(", ")})`);
+}
+
 export function applyTheme(themeKey) {
   const theme = THEMES[themeKey] || THEMES.default;
   const root = document.documentElement;
   Object.entries(theme.vars).forEach(([key, value]) => {
     root.style.setProperty(key, value);
   });
+  applyPalette(theme.swatches);
   Object.values(THEMES).forEach(t => document.body.classList.remove(t.bodyClass));
   document.body.classList.add(theme.bodyClass);
   localStorage.setItem("mabis-theme", themeKey);
@@ -196,6 +211,7 @@ export function applyCustomColors(primaryHex, secondaryHex) {
   root.style.setProperty("--secondary", hexToHsl(secondaryHex));
   root.style.setProperty("--accent", hexToHsl(secondaryHex));
   root.style.setProperty("--ring", hexToHsl(primaryHex));
+  applyPalette([primaryHex, secondaryHex]);
   localStorage.setItem("mabis-custom-colors", JSON.stringify({ primary: primaryHex, secondary: secondaryHex }));
   window.dispatchEvent(new Event("themeChanged"));
 }

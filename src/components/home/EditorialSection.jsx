@@ -13,6 +13,9 @@ const EASE = [0.16, 1, 0.3, 1];
  * column so the page reads as an editorial index rather than a widget stack.
  */
 export default function EditorialSection({ index = "00", label = "", jp = "", children }) {
+	/* each section takes the next colour of the active theme's palette, so
+	   multi-colour themes (pride flags) show up beyond primary/secondary */
+	const flag = `var(--flag-${((parseInt(index, 10) || 1) % 8) + 1}, hsl(var(--primary)))`;
 	return (
 		<motion.section
 			id={`sec-${index}`}
@@ -38,7 +41,8 @@ export default function EditorialSection({ index = "00", label = "", jp = "", ch
 				</Tilt3D>
 				<motion.span
 					variants={{ hidden: { scaleY: 0 }, show: { scaleY: 1, transition: { duration: 0.8, ease: EASE } } }}
-					className="mt-4 w-px flex-1 min-h-[3rem] bg-foreground/15 origin-top"
+					style={{ background: flag }}
+					className="mt-4 w-px flex-1 min-h-[3rem] origin-top opacity-70"
 				/>
 				{jp && (
 					<motion.span
@@ -58,10 +62,16 @@ export default function EditorialSection({ index = "00", label = "", jp = "", ch
 				>
 					<motion.span
 						variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.4 } } }}
-						className="lg:hidden tech-label text-primary tabular-nums"
+						style={{ color: flag }}
+						className="lg:hidden tech-label tabular-nums"
 					>
 						{index}
 					</motion.span>
+					<motion.span
+						variants={{ hidden: { scale: 0 }, show: { scale: 1, transition: { duration: 0.4, ease: EASE } } }}
+						style={{ background: flag }}
+						className="hidden lg:block h-2 w-2 shrink-0 self-center"
+					/>
 					<motion.h2
 						variants={{ hidden: { y: "110%" }, show: { y: 0, transition: { duration: 0.8, ease: EASE } } }}
 						className="font-display font-extralight tracking-ultra text-2xl sm:text-4xl leading-none"
@@ -70,7 +80,8 @@ export default function EditorialSection({ index = "00", label = "", jp = "", ch
 					</motion.h2>
 					<motion.span
 						variants={{ hidden: { scaleX: 0 }, show: { scaleX: 1, transition: { duration: 0.9, ease: EASE } } }}
-						className="flex-1 h-px bg-foreground/20 origin-left"
+						style={{ backgroundImage: `linear-gradient(90deg, ${flag}, hsl(var(--foreground)/0.18))` }}
+						className="flex-1 h-px origin-left"
 					/>
 				</motion.div>
 

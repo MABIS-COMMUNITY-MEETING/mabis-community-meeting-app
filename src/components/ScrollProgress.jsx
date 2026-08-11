@@ -6,9 +6,9 @@ export default function ScrollProgress() {
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
   return (
     <motion.div
-      style={{ scaleX }}
+      style={{ scaleX, backgroundImage: "var(--palette-gradient, none)" }}
       aria-hidden
-      className="fixed left-0 top-0 z-[60] h-[2px] w-full origin-left bg-primary"
+      className="fixed left-0 top-[3px] z-[60] h-[2px] w-full origin-left bg-primary"
     />
   );
 }
