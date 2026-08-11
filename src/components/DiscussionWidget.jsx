@@ -205,7 +205,7 @@ function AttendancePanel({ members, weekLabel }) {
       <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50">
         <div className="flex items-center gap-2">
           <UserCheck className="w-4 h-4 text-[#951E3A]" />
-          <span className="font-semibold text-sm text-gray-800">Attendance</span>
+          <span className="font-semibold text-sm text-gray-800">Attendance <span lang="ja" className="font-jp font-normal text-gray-400">出席</span></span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500 font-medium">{present} / {allPeople.length} present</span>
@@ -513,7 +513,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="fixed inset-0 bg-[#f7f7f8] z-50 flex flex-col">
         <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between shrink-0">
           <div>
-            <p className="text-white/60 text-xs uppercase tracking-widest mb-0.5">Meeting Mode</p>
+            <p className="text-white/60 text-xs uppercase tracking-widest mb-0.5">Meeting Mode <span lang="ja" className="font-jp normal-case tracking-normal">会議モード</span></p>
             <h2 className="font-display font-bold text-white text-2xl">{
               (() => {
                 const md = localStorage.getItem("mabis_meeting_date");
@@ -607,7 +607,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             <section>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
-                <h3 className="font-display font-bold text-gray-800 text-xl">Announcements</h3>
+                <h3 className="font-display font-bold text-gray-800 text-xl">Announcements <span lang="ja" className="font-jp font-normal text-gray-400 text-base">お知らせ</span></h3>
               </div>
               <AnnouncementsWidget members={members} isAdmin={isAdmin} />
             </section>
@@ -616,7 +616,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             <section>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
-                <h3 className="font-display font-bold text-gray-800 text-xl">Discussion Topics</h3>
+                <h3 className="font-display font-bold text-gray-800 text-xl">Discussion Topics <span lang="ja" className="font-jp font-normal text-gray-400 text-base">議題</span></h3>
                 <span className="text-sm text-gray-400">{viewedTopics.filter(t => t.completed).length}/{viewedTopics.length} done</span>
                 <Button size="sm" variant="outline"
                   className="ml-auto border-[#951E3A]/40 text-[#951E3A] hover:bg-[#951E3A]/5 text-xs gap-1"
@@ -680,7 +680,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             <section>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
-                <h3 className="font-display font-bold text-gray-800 text-xl">Meeting Notes</h3>
+                <h3 className="font-display font-bold text-gray-800 text-xl">Meeting Notes <span lang="ja" className="font-jp font-normal text-gray-400 text-base">議事録</span></h3>
                 <span className="text-xs text-gray-400">{formatWeekLabel(viewedWeek)}</span>
               </div>
               <MeetingNotesEditor weekLabel={viewedWeek} />
@@ -690,7 +690,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             <section>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
-                <h3 className="font-display font-bold text-gray-800 text-xl">Jobs Assignment</h3>
+                <h3 className="font-display font-bold text-gray-800 text-xl">Jobs Assignment <span lang="ja" className="font-jp font-normal text-gray-400 text-base">当番の割り当て</span></h3>
               </div>
               <JobsWidget members={members} isAdmin={isAdmin} />
             </section>
@@ -699,7 +699,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             <section>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
-                <h3 className="font-display font-bold text-gray-800 text-xl">Calendar</h3>
+                <h3 className="font-display font-bold text-gray-800 text-xl">Calendar <span lang="ja" className="font-jp font-normal text-gray-400 text-base">カレンダー</span></h3>
               </div>
               <CalendarWidget />
             </section>
@@ -709,7 +709,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               <button
                 onClick={() => { actionRef.current = "end"; setMeetingMode(false); setMeetingPaused(false); }}
                 className="flex items-center justify-center gap-3 bg-[#951E3A] hover:bg-[#7a1830] text-white font-bold text-2xl px-20 py-6 rounded-2xl shadow-lg transition-all hover:scale-105 w-full max-w-md">
-                <Square className="w-7 h-7" /> End Meeting
+                <Square className="w-7 h-7" /> End Meeting <span lang="ja" className="font-jp font-normal text-white/70 text-lg">会議を終了</span>
               </button>
             </div>
 
@@ -727,7 +727,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
         <div className="flex items-center gap-3">
           <MessagesSquare className="w-5 h-5 text-white" />
           <div>
-            <h2 className="font-display font-bold text-white text-xl">Discussions</h2>
+            <h2 className="font-display font-bold text-white text-xl">Discussions <span lang="ja" className="font-jp font-normal text-white/60 text-base">議題</span></h2>
             <p className="text-white/60 text-xs mt-0.5">{formatWeekLabel(viewedWeek)}</p>
           </div>
         </div>

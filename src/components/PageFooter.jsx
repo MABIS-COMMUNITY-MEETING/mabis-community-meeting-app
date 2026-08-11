@@ -18,6 +18,7 @@ export default function PageFooter() {
           <h2 className="max-w-md font-display font-light tracking-ultra text-2xl sm:text-3xl">
             Secondary Community<br />Meeting App
           </h2>
+          <p lang="ja" className="font-jp text-base text-muted-foreground">中等部 コミュニティ・ミーティング</p>
           <div className="flex items-center gap-3 tech-label text-muted-foreground">
             <span>MABIS</span>
             <Plus className="h-3 w-3 text-primary/60" />

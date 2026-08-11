@@ -76,7 +76,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
       <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between">
         <div>
           <h2 className="font-display font-bold text-white text-xl flex items-center gap-2">
-            <Newspaper className="w-5 h-5" /> News
+            <Newspaper className="w-5 h-5" /> News <span lang="ja" className="font-jp font-normal text-white/60 text-base">ニュース</span>
           </h2>
           <p className="text-white/60 text-xs mt-0.5">{news.length} articles</p>
         </div>

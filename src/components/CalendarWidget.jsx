@@ -368,7 +368,7 @@ export default function CalendarWidget() {
       <div className="bg-[#951E3A] px-4 py-3 flex items-center gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <Calendar className="w-5 h-5 text-white" />
-          <h2 className="font-display font-bold text-white text-lg">{headerTitle()}</h2>
+          <h2 className="font-display font-bold text-white text-lg">{headerTitle()} <span lang="ja" className="font-jp font-normal text-white/60 text-sm">カレンダー</span></h2>
         </div>
         <div className="flex items-center gap-1 ml-2">
           <button onClick={goBack} className="p-1.5 rounded-lg hover:bg-white/20 text-white transition-colors">

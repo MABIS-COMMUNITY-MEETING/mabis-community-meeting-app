@@ -153,7 +153,7 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
       <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between">
         <div>
           <h2 className="font-display font-bold text-white text-xl flex items-center gap-2">
-            <Users className="w-5 h-5" /> Community Members
+            <Users className="w-5 h-5" /> Community Members <span lang="ja" className="font-jp font-normal text-white/60 text-base">メンバー</span>
           </h2>
           <p className="text-white/60 text-xs mt-0.5">{members.length} members</p>
         </div>

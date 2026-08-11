@@ -122,6 +122,9 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
             <h2 className="font-display font-black text-white text-2xl leading-none">
               {meetingEnded ? "Meeting Ended for the Week" : !canStart ? "Meeting Mode" : "Start Meeting"}
             </h2>
+            <p lang="ja" className="font-jp text-white/70 text-sm mt-1">
+              {meetingEnded ? "今週の会議は終了しました" : !canStart ? "会議モード" : "会議を始める"}
+            </p>
             <div className="flex items-center gap-2 mt-1.5">
               <p className="text-white text-sm font-semibold">
                 {isToday ? format(meetingDate, "EEEE — 'Today'") : format(meetingDate, "EEEE, d MMMM yyyy")}

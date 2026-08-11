@@ -58,7 +58,7 @@ export default function LunchMenuWidget({ isAdmin }) {
       <div className="bg-[#951E3A] px-6 py-4 flex items-center gap-3">
         <UtensilsCrossed className="w-5 h-5 text-white" />
         <div>
-          <h2 className="font-display font-bold text-white text-xl">Snacks &amp; Lunch</h2>
+          <h2 className="font-display font-bold text-white text-xl">Snacks &amp; Lunch <span lang="ja" className="font-jp font-normal text-white/60 text-base">おやつと給食</span></h2>
           <p className="text-white/60 text-xs mt-0.5">Week of {format(fridayOfCurrentWeek(), "d MMMM yyyy")}</p>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function LunchMenuWidget({ isAdmin }) {
                   </div>
                   <div className="p-2.5 space-y-2">
                     <div>
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Snack</p>
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Snack <span lang="ja" className="font-jp normal-case">おやつ</span></p>
                       {isAdmin ? (
                         <textarea value={draft[`${key}_snack`] || ""} onChange={(e) => setVal(`${key}_snack`, e.target.value)} rows={2}
                           placeholder="—" className="w-full text-xs rounded-lg border border-gray-200 px-2 py-1.5 resize-none focus:outline-none focus:border-[#951E3A]/50" />
@@ -87,7 +87,7 @@ export default function LunchMenuWidget({ isAdmin }) {
                       )}
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Lunch</p>
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Lunch <span lang="ja" className="font-jp normal-case">給食</span></p>
                       {isAdmin ? (
                         <textarea value={draft[`${key}_lunch`] || ""} onChange={(e) => setVal(`${key}_lunch`, e.target.value)} rows={2}
                           placeholder="—" className="w-full text-xs rounded-lg border border-gray-200 px-2 py-1.5 resize-none focus:outline-none focus:border-[#951E3A]/50" />
