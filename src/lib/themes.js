@@ -108,6 +108,7 @@ function readableHex(hex) {
 
 const prideTheme = paletteTheme;
 const distroTheme = paletteTheme;
+const consoleTheme = paletteTheme;
 
 export const THEMES = {
   default: {
@@ -207,6 +208,20 @@ export const THEMES = {
   alpine:    distroTheme("alpine",    "Alpine",     "212 100% 33%","203 89% 45%",  ["#0D597F","#0F97D3","#2C3E50","#FFFFFF"]),
   nixos:     distroTheme("nixos",     "NixOS",      "212 66% 45%", "199 79% 50%",  ["#5277C3","#7EBAE4","#293845","#FFFFFF"]),
   elementary:distroTheme("elementary","elementary", "203 74% 42%", "38 90% 52%",   ["#2A97CD","#F9C440","#333333","#FFFFFF"]),
+
+  // ── Nintendo consoles, retro → modern ──
+  famicom:   consoleTheme("famicom",   "Famicom",      "353 72% 45%", "35 70% 55%",  ["#C6273C","#E8C88C","#8B1E2D","#FFFFFF"]),
+  nes:       consoleTheme("nes",       "NES",          "0 0% 28%",    "353 72% 45%", ["#3C3C3C","#B8B4A8","#C6273C","#E6E2D8"]),
+  gameboy:   consoleTheme("gameboy",   "Game Boy",     "104 33% 34%", "80 32% 45%",  ["#0F380F","#306230","#8BAC0F","#9BBC0F"]),
+  snes:      consoleTheme("snes",      "Super NES",    "265 45% 48%", "0 0% 40%",    ["#7B68B6","#544C9B","#B5B5C4","#605F63"]),
+  n64:       consoleTheme("n64",       "Nintendo 64",  "215 62% 42%", "88 60% 40%",  ["#2B63B0","#E4A93C","#5FA130","#CB3B3B"]),
+  gamecube:  consoleTheme("gamecube",  "GameCube",     "265 52% 46%", "180 45% 45%", ["#6A4FBB","#3EB6B6","#2E2A45","#E4E2ED"]),
+  gba:       consoleTheme("gba",       "Game Boy Adv", "265 60% 50%", "195 70% 48%", ["#5C3FCB","#28A9D6","#B7A9F0","#E9E6F5"]),
+  ds:        consoleTheme("ds",        "Nintendo DS",  "0 0% 35%",    "205 65% 48%", ["#4A4A4A","#2E8FCF","#C9C9C9","#FFFFFF"]),
+  wii:       consoleTheme("wii",       "Wii",          "197 70% 45%", "0 0% 45%",    ["#22A5D6","#E9EDF0","#8A8F96","#FFFFFF"]),
+  threeds:   consoleTheme("threeds",   "Nintendo 3DS", "349 72% 48%", "197 70% 46%", ["#D62B4C","#22A0CE","#2C2C2C","#F2F2F2"]),
+  wiiu:      consoleTheme("wiiu",      "Wii U",        "197 62% 42%", "150 45% 42%", ["#1E88B0","#38B08A","#5A6570","#EFF3F5"]),
+  switch:    consoleTheme("switch",    "Switch",       "8 88% 50%",   "197 88% 45%", ["#EE2C21","#00C3E3","#414548","#FFFFFF"]),
 };
 
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
