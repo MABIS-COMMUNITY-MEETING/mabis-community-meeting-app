@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { isLinux } from "@/lib/perf";
 
 /**
  * Inertial smooth scrolling. Intercepts wheel input and eases the window
@@ -10,7 +11,7 @@ export default function SmoothScroll() {
   useEffect(() => {
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!fine || reduced) return;
+    if (!fine || reduced || isLinux) return; // native scroll is far cheaper on Linux
 
     let target = window.scrollY;
     let current = target;

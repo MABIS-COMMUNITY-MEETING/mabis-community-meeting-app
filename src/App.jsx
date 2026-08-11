@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import SoundEffects from '@/components/SoundEffects';
+import PerfMode from '@/components/PerfMode';
 import CustomCursor from '@/components/CustomCursor';
 import GrainOverlay from '@/components/GrainOverlay';
 import SmoothScroll from '@/components/SmoothScroll';
@@ -70,6 +71,7 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
+          <PerfMode />
           <SoundEffects />
           <SmoothScroll />
           <GrainOverlay />
