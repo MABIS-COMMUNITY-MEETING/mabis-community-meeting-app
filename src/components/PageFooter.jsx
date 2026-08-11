@@ -1,27 +1,35 @@
 import React from "react";
+import { Plus } from "lucide-react";
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
-// 🔖 Update this version after each change
 export const APP_VERSION = "v2.0.0";
 
 export default function PageFooter() {
   return (
     <>
-      <div className="mt-4 rounded-2xl overflow-hidden shadow-xl" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--ring)))" }}>
-        <div className="p-4">
-          <div className="bg-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-inner">
-            <img src={MABIS_LOGO} alt="MABIS" className="w-16 h-16 object-contain drop-shadow-sm" />
-            <div className="h-px w-16 bg-gray-200" />
-            <h2 className="font-display font-black text-xl tracking-tight text-center" style={{ color: "hsl(var(--primary))" }}>
-              Secondary Community Meeting App
-            </h2>
+      <div className="mt-10 border-t border-foreground/15 pt-8">
+        <div className="flex flex-col items-center gap-5 text-center">
+          <div className="relative flex h-16 w-16 items-center justify-center border border-foreground/20 bg-card overflow-hidden">
+            <Plus className="absolute -top-1 -left-1 h-3 w-3 text-foreground/30" />
+            <img src={MABIS_LOGO} alt="MABIS" className="h-11 w-11 object-contain" />
+          </div>
+          <div className="tech-label text-muted-foreground">／ COLOPHON</div>
+          <h2 className="max-w-md font-display font-light tracking-ultra text-2xl sm:text-3xl">
+            Secondary Community<br />Meeting App
+          </h2>
+          <div className="flex items-center gap-3 tech-label text-muted-foreground">
+            <span>MABIS</span>
+            <Plus className="h-3 w-3 text-primary/60" />
+            <span>BANGKOK ／ TH</span>
+            <Plus className="h-3 w-3 text-primary/60" />
+            <span>2026</span>
           </div>
         </div>
       </div>
-      <div className="mt-3 mb-5 flex justify-center">
-        <div className="inline-flex items-center px-4 py-1.5 rounded-2xl text-white text-sm font-display font-bold tracking-wide shadow-md bg-[#951E3A]">
-          Version: {APP_VERSION}
+      <div className="mt-6 mb-8 flex justify-center">
+        <div className="inline-flex items-center border border-foreground/20 px-4 py-1.5 tech-label text-muted-foreground">
+          ／ VERSION {APP_VERSION}
         </div>
       </div>
     </>

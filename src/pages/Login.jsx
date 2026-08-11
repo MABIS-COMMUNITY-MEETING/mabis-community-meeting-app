@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, ArrowUpRight } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 
@@ -39,43 +39,39 @@ export default function Login() {
     <AuthLayout
       logo={<img src={LOGO} alt="MABIS" className="w-12 h-12 object-contain" />}
       title="Log in"
-      subtitle="Log in to your account"
+      subtitle="／ authenticate to enter the community meeting"
       footer={
         <>
-          Don't have an account?{" "}
-          <Link to="/register" className="text-primary font-medium hover:underline">
-            Create one
-          </Link>
+          NO ACCOUNT?{" "}
+          <Link to="/register" className="text-primary ul-grow">CREATE ONE</Link>
         </>
       }
     >
       <button
         type="button"
         onClick={handleGoogle}
-        className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-white border border-gray-200 shadow-sm text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-[#951E3A]/30 transition-all mb-6"
+        data-cursor="GOOGLE"
+        className="group w-full h-12 flex items-center justify-center gap-2 border border-foreground/20 bg-card text-xs tech-label text-foreground hover:bg-foreground hover:text-bone transition-colors mb-6"
       >
-        <GoogleIcon className="w-5 h-5" />
-        Continue with Google
+        <GoogleIcon className="w-4 h-4" />
+        CONTINUE WITH GOOGLE
       </button>
 
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
-        </div>
+      <div className="relative mb-6 flex items-center">
+        <div className="h-px flex-1 bg-foreground/15" />
+        <span className="px-3 tech-label text-muted-foreground">OR</span>
+        <div className="h-px flex-1 bg-foreground/15" />
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {error}
+        <div className="mb-4 p-3 border border-destructive/40 bg-destructive/10 text-destructive text-xs tech-label">
+          ／ {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="tech-label text-muted-foreground">EMAIL ／ N°01</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -86,18 +82,16 @@ export default function Login() {
               placeholder="you"
               value={emailPrefix}
               onChange={(e) => setEmailPrefix(e.target.value)}
-              className="pl-10 pr-[150px] h-12"
+              className="pl-10 pr-[160px] h-12 border-foreground/20 bg-transparent"
               required
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none select-none">@montessoribkk.com</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">@montessoribkk.com</span>
           </div>
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-              Forgot password?
-            </Link>
+            <Label htmlFor="password" className="tech-label text-muted-foreground">PASSWORD ／ N°02</Label>
+            <Link to="/forgot-password" className="tech-label text-primary ul-grow">RESET?</Link>
           </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
@@ -108,19 +102,21 @@ export default function Login() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12"
+              className="pl-10 h-12 border-foreground/20 bg-transparent"
               required
             />
           </div>
         </div>
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+        <Button
+          type="submit"
+          data-cursor="ENTER"
+          className="group w-full h-12 tech-label bg-foreground text-bone hover:bg-primary hover:text-primary-foreground transition-colors"
+          disabled={loading}
+        >
           {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Logging in...
-            </>
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> AUTHENTICATING…</>
           ) : (
-            "Log in"
+            <span className="flex items-center gap-2">LOG IN <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></span>
           )}
         </Button>
       </form>

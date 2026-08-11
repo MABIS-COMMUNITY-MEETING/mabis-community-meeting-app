@@ -1,126 +1,177 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowUpRight, Plus } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import MagneticButton from "@/components/MagneticButton";
+import Marquee from "@/components/Marquee";
 
-const MAROON = "#951E3A";
-const GOLD = "#EACE54";
+const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
-const DOTS = Array.from({ length: 216 }, (_, i) => ({
-  id: i,
-  left: Math.random() * 100,
-  top: Math.random() * 100,
-  size: 3 + Math.random() * 10,
-  duration: 4 + Math.random() * 5,
-  delay: Math.random() * 3,
-  drift: 30 + Math.random() * 70,
-  gold: Math.random() > 0.4,
-}));
+// staggered character container helpers
+const charParent = (stagger, delay) => ({
+  hidden: {},
+  show: { transition: { staggerChildren: stagger, delayChildren: delay } },
+});
+const charChild = {
+  hidden: { y: "115%", opacity: 0 },
+  show: { y: "0%", opacity: 1, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
+};
+
+function SplitChars({ text, stagger = 0.04, delay = 0, className = "" }) {
+  return (
+    <motion.span
+      className={`reveal-mask ${className}`}
+      variants={charParent(stagger, delay)}
+      initial="hidden"
+      animate="show"
+      style={{ display: "inline-block" }}
+    >
+      {Array.from(text).map((c, i) => (
+        <span key={i} style={{ display: "inline-block", overflow: "hidden", verticalAlign: "top" }}>
+          <motion.span variants={charChild} style={{ display: "inline-block" }}>{c === " " ? "\u00A0" : c}</motion.span>
+        </span>
+      ))}
+    </motion.span>
+  );
+}
 
 export default function Splash() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const [phase, setPhase] = useState(0);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase(1), 200);
-    const t2 = setTimeout(() => setPhase(2), 500);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    const t = setTimeout(() => setReady(true), 1800);
+    return () => clearTimeout(t);
   }, []);
 
+  const enter = () => navigate(isAuthenticated ? "/home" : "/login");
+
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: `linear-gradient(150deg, ${MAROON}, #6e1729)` }}>
-
-      {DOTS.map(d => (
-        <motion.div
-          key={d.id}
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            left: `${d.left}%`, top: `${d.top}%`,
-            width: d.size, height: d.size,
-            background: d.gold ? GOLD : "rgba(255,255,255,0.9)",
-            boxShadow: d.gold ? `0 0 ${d.size * 1.8}px ${GOLD}88` : `0 0 ${d.size}px rgba(255,255,255,0.6)`,
-          }}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{
-            opacity: [0, 0.9, 0],
-            scale: [0, 1, 0.5],
-            y: [0, -d.drift],
-            x: [0, (d.id % 2 ? 1 : -1) * d.drift * 0.4],
-          }}
-          transition={{ duration: d.duration, delay: d.delay, repeat: Infinity, ease: "easeOut" }}
-        />
-      ))}
-
-      {/* Glow */}
+    <div className="relative min-h-screen w-full overflow-hidden bg-ink text-bone">
+      {/* animated grid */}
       <motion.div
-        className="absolute rounded-full pointer-events-none"
-        style={{ width: 480, height: 480, background: "radial-gradient(circle, rgba(234,206,84,0.18) 0%, transparent 65%)" }}
-        animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0.9, 0.6] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.5 }}
+        transition={{ duration: 1.4 }}
+        className="absolute inset-0 grid-bg"
+      />
+      {/* radial glow */}
+      <motion.div
+        initial={{ scale: 0.6, opacity: 0 }}
+        animate={{ scale: 1, opacity: 0.5 }}
+        transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[80vw] w-[80vw] max-w-[820px] max-h-[820px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{ background: "radial-gradient(circle, hsl(var(--primary)/0.35) 0%, transparent 60%)" }}
       />
 
-      <div className="relative z-10 flex flex-col items-center text-center px-8 max-w-2xl w-full">
-        {/* Logo — bouncy */}
+      {/* top bar */}
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-5 sm:px-8 py-5"
+      >
+        <div className="flex items-center gap-3">
+          <span className="flex h-8 w-8 items-center justify-center border border-bone/30">
+            <img src={LOGO} alt="MABIS" className="h-5 w-5 object-contain" />
+          </span>
+          <span className="tech-label text-bone/60">MABIS ／ COMMUNITY MEETING</span>
+        </div>
+        <span className="tech-label hidden sm:block text-bone/50">EST. BANGKOK ／ TH</span>
+      </motion.div>
+
+      {/* vertical side labels */}
+      <motion.span
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.8 }}
+        className="vert-text tech-label absolute left-5 sm:left-8 top-1/2 -translate-y-1/2 text-bone/45 z-10 hidden md:block"
+      >SECONDARY ／ COMMUNITY</motion.span>
+      <motion.span
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1, duration: 0.8 }}
+        className="vert-text tech-label absolute right-5 sm:right-8 top-1/2 -translate-y-1/2 text-bone/45 z-10 hidden md:block"
+      >N° 2026 ／ EDITION</motion.span>
+
+      {/* crosshair decorations */}
+      <Plus className="absolute top-24 left-6 h-3 w-3 text-bone/30" />
+      <Plus className="absolute bottom-24 right-6 h-3 w-3 text-bone/30" />
+      <Plus className="absolute top-1/3 right-1/4 h-2.5 w-2.5 text-primary/60" />
+
+      {/* center stage */}
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 sm:px-8">
         <motion.div
-          initial={{ scale: 0, rotate: -30, opacity: 0 }}
-          animate={{ scale: 1, rotate: 0, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 260, damping: 12 }}
-          className="mb-6"
+          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}
+          className="tech-label text-primary mb-6"
         >
-          <div
-            className="w-32 h-32 rounded-3xl bg-white shadow-2xl overflow-hidden flex items-center justify-center"
-            style={{ boxShadow: "0 16px 50px rgba(0,0,0,0.3), 0 0 40px rgba(234,206,84,0.4)" }}
-          >
-            <img src="https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png"
-              alt="MABIS" className="w-28 h-28 object-contain rounded-3xl" />
-          </div>
+          ／ 01 — SECONDARY COMMUNITY MEETING APP
         </motion.div>
 
-        {/* Title */}
-        <motion.h1
-          initial={{ opacity: 0, y: 16, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ delay: 0.15, duration: 0.4, type: "spring", stiffness: 200 }}
-          className="font-display font-black text-white text-2xl sm:text-4xl md:text-5xl leading-tight mb-3 tracking-tight"
-        >
-          <span className="block whitespace-nowrap">SECONDARY COMMUNITY</span>
-          <span className="block whitespace-nowrap">MEETING APP</span>
-        </motion.h1>
+        <h1 className="text-center font-display font-extralight tracking-ultra leading-[0.9] text-6xl sm:text-8xl md:text-9xl lg:text-[11rem]">
+          <span className="block">
+            <SplitChars text="COMMUNITY" stagger={0.05} delay={0.6} />
+          </span>
+          <span className="block mt-2 sm:mt-3">
+            <SplitChars text="MEETING" stagger={0.05} delay={1.0} />
+          </span>
+        </h1>
 
         <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ delay: 0.3, duration: 0.3, ease: "easeOut" }}
-          className="w-20 h-[3px] rounded-full mb-6"
-          style={{ background: GOLD }}
+          initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 1.6, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="h-px w-40 bg-bone/40 my-8 sm:my-10"
         />
 
+        <motion.p
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.7, duration: 0.7 }}
+          className="max-w-md text-center text-sm sm:text-base text-bone/65 leading-relaxed"
+        >
+          A weekly ritual of voice, presence, and shared decision —
+          recorded, remembered, and refined by the secondary community.
+        </motion.p>
+
         <AnimatePresence>
-          {phase >= 2 && (
+          {ready && (
             <motion.div
-              initial={{ opacity: 0, y: 14, scale: 0.85 }}
+              initial={{ opacity: 0, y: 18, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ type: "spring", stiffness: 220, damping: 14 }}
-              className="w-full flex justify-center"
+              transition={{ type: "spring", stiffness: 180, damping: 18 }}
+              className="mt-10 sm:mt-12"
             >
-              <motion.button
-                whileHover={{ scale: 1.08, rotate: -1 }}
-                whileTap={{ scale: 0.92 }}
-                animate={{ boxShadow: ["0 0 0px rgba(234,206,84,0.4)", "0 0 25px rgba(234,206,84,0.7)", "0 0 0px rgba(234,206,84,0.4)"] }}
-                transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
-                onClick={() => navigate(isAuthenticated ? "/home" : "/login")}
-                className="flex items-center justify-center gap-3 font-display font-bold text-xl px-16 py-5 rounded-2xl"
-                style={{ background: "#ffffff", color: MAROON, border: `4px solid ${GOLD}` }}
-              >
-                <span>{isAuthenticated ? "Start" : "Log in"}</span>
-                <ArrowRight className="w-6 h-6" />
-              </motion.button>
+              <MagneticButton strength={0.4}>
+                <button
+                  onClick={enter}
+                  data-cursor="ENTER"
+                  className="group relative flex items-center gap-4 border border-bone/40 bg-bone/5 px-8 py-4 backdrop-blur-sm hover:bg-bone hover:text-ink transition-colors"
+                >
+                  <span className="tech-label">N° 02</span>
+                  <span className="text-lg sm:text-xl font-display font-normal tracking-tight">
+                    {isAuthenticated ? "ENTER ／ START" : "ENTER ／ LOG IN"}
+                  </span>
+                  <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden">
+                    <motion.span animate={{ y: ready ? 0 : -24 }} transition={{ duration: 0.5 }}>
+                      <ArrowUpRight className="h-6 w-6" />
+                    </motion.span>
+                  </span>
+                </button>
+              </MagneticButton>
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* bottom marquee */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-bone/15 py-3 bg-ink/80 backdrop-blur-sm">
+        <Marquee speed={32} className="text-bone/55">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <span key={i} className="flex items-center tech-label">
+              <span className="px-6">SECONDARY COMMUNITY MEETING</span>
+              <Plus className="h-3 w-3 text-primary/70" />
+              <span className="px-6">FRIDAY ／ WEEKLY</span>
+              <Plus className="h-3 w-3 text-primary/70" />
+              <span className="px-6">MABIS ／ BANGKOK</span>
+              <Plus className="h-3 w-3 text-primary/70" />
+            </span>
+          ))}
+        </Marquee>
       </div>
     </div>
   );

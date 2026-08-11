@@ -22,5 +22,9 @@
       "type": "string",
       "description": "Custom uploaded profile picture URL"
     }
-  }
+  },
+  "required": [
+    "avatar_color",
+    "avatar_url"
+  ]
 }

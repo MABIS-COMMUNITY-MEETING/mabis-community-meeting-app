@@ -1,50 +1,38 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { motion } from "react";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
-const DOTS = Array.from({ length: 8 });
 
+/** Editorial loader: framed mark + sweeping scan line + tiny status label. */
 export default function LoadingScreen() {
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden bg-white">
+    <div className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden bg-bone">
+      <div className="grid-bg absolute inset-0 opacity-50" />
       <div className="relative z-10 flex flex-col items-center">
-        {/* Logo */}
         <motion.div
-          initial={{ scale: 0.6, opacity: 0 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 240, damping: 14 }}
-          className="mb-8"
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-8 flex h-20 w-20 items-center justify-center border border-foreground/20 bg-card overflow-hidden"
         >
-          <div className="w-24 h-24 rounded-3xl bg-white shadow-xl ring-1 ring-gray-100 overflow-hidden flex items-center justify-center">
-            <img src={LOGO} alt="MABIS" className="w-20 h-20 object-contain" />
-          </div>
+          <img src={LOGO} alt="MABIS" className="h-14 w-14 object-contain" />
         </motion.div>
 
-        {/* Spinner dots — maroon to match brand */}
-        <div className="relative w-12 h-12">
-          {DOTS.map((_, i) => {
-            const angle = (i / DOTS.length) * Math.PI * 2;
-            const x = Math.cos(angle) * 18;
-            const y = Math.sin(angle) * 18;
-            return (
-              <motion.span
-                key={i}
-                className="absolute rounded-full"
-                style={{ left: "50%", top: "50%", width: 8, height: 8, marginLeft: -4, marginTop: -4, x, y, background: "#951E3A" }}
-                animate={{ opacity: [0.15, 1, 0.15], scale: [0.55, 1, 0.55] }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut", delay: (i / DOTS.length) * 1.2 }}
-              />
-            );
-          })}
+        {/* scan line */}
+        <div className="relative mb-6 h-px w-40 overflow-hidden bg-foreground/15">
+          <motion.div
+            className="absolute inset-y-0 left-0 w-1/3 bg-primary"
+            animate={{ x: ["-100%", "300%"] }}
+            transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+          />
         </div>
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mt-6 text-gray-400 text-[11px] font-semibold tracking-[0.28em] uppercase"
+          className="tech-label text-muted-foreground"
         >
-          Loading
+          ／ LOADING
         </motion.p>
       </div>
     </div>

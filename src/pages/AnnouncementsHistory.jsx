@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, ArrowLeft, Megaphone } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { formatWeekFull, groupByWeek } from "@/lib/weekHistory";
 import PageFooter from "@/components/PageFooter";
@@ -19,24 +19,29 @@ export default function AnnouncementsHistory() {
   const weeks = groupByWeek(allAnnouncements, "created_date");
 
   return (
-    <div className="min-h-screen bg-[#f7f7f8]">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <h1 className="font-display font-semibold text-gray-800 text-base leading-none flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-[#951E3A]" /> Announcements History
-              </h1>
-              <p className="text-gray-400 text-[11px] mt-0.5">{allAnnouncements.length} posts · Secondary Community Meeting App</p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-background">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-bone/90 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-5 sm:px-8 py-4">
+          <button onClick={() => navigate(-1)} data-cursor="BACK" className="group flex items-center gap-3">
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span className="tech-label text-muted-foreground">／ BACK</span>
+          </button>
+          <span className="hidden sm:block tech-label text-primary">／ N°03 — ANNOUNCEMENTS</span>
+          <Link to="/home" data-cursor="HOME" className="tech-label text-muted-foreground ul-grow">HOME</Link>
         </div>
+        <div className="h-px w-full bg-foreground/12" />
       </header>
 
-      <main className="max-w-7xl mx-auto px-5 py-8 pb-2">
+      <main className="max-w-7xl mx-auto px-5 sm:px-8 pt-28 sm:pt-32 pb-2">
+        <div className="mb-10 sm:mb-14">
+          <div className="tech-label text-primary mb-4">／ ARCHIVE — 03</div>
+          <h1 className="font-display font-light tracking-ultra text-5xl sm:text-7xl md:text-8xl leading-[0.9]">
+            ANNOUNCE-<br />MENTS
+          </h1>
+          <div className="mt-6 flex items-center gap-3 tech-label text-muted-foreground">
+            <span>{allAnnouncements.length} POSTS</span><span className="h-1 w-1 bg-primary" /><span>GROUPED BY WEEK</span><span className="h-1 w-1 bg-primary" /><span>MABIS</span>
+          </div>
+        </div>
         {weeks.length === 0 && (
           <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center">
             <p className="text-gray-400 text-lg">No announcements yet</p>

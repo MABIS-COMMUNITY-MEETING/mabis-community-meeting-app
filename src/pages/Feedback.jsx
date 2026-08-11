@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate, Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
-import { Inbox, Star, Bug, ArrowLeft, CheckCircle2, Eye, Loader2, BarChart3, Trash2, Archive } from "lucide-react";
+import { Star, Bug, ArrowLeft, CheckCircle2, Eye, Loader2, BarChart3, Trash2, Archive } from "lucide-react";
 import AnalyticsTab from "@/components/AnalyticsTab";
 import PasswordModal from "@/components/PasswordModal";
 
@@ -64,26 +64,35 @@ export default function Feedback() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f4f6]">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 hover:text-[#951E3A] transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-semibold">Back</span>
+    <div className="min-h-screen bg-background">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-bone/90 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-5 sm:px-8 py-4">
+          <button onClick={() => navigate(-1)} data-cursor="BACK" className="group flex items-center gap-3">
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span className="tech-label text-muted-foreground">／ BACK</span>
           </button>
-          <h1 className="font-display font-bold text-gray-800 text-base flex items-center gap-2">
-            <Inbox className="w-5 h-5 text-[#951E3A]" /> Feedback & Bug Reports
-          </h1>
-          <div className="w-16" />
+          <span className="hidden sm:block tech-label text-primary">／ N°05 — INBOX</span>
+          <Link to="/home" data-cursor="HOME" className="tech-label text-muted-foreground ul-grow">HOME</Link>
         </div>
+        <div className="h-px w-full bg-foreground/12" />
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex gap-1 mb-4 p-1 bg-white rounded-lg border border-gray-200 w-fit">
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 pt-28 sm:pt-32 pb-8">
+        <div className="mb-10 sm:mb-14">
+          <div className="tech-label text-primary mb-4">／ ARCHIVE — 05</div>
+          <h1 className="font-display font-light tracking-ultra text-5xl sm:text-7xl md:text-8xl leading-[0.9]">
+            FEEDBACK<br />& BUGS
+          </h1>
+          <div className="mt-6 flex items-center gap-3 tech-label text-muted-foreground">
+            <span>INBOX</span><span className="h-1 w-1 bg-primary" /><span>REPORTS</span><span className="h-1 w-1 bg-primary" /><span>ADMIN</span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-1 mb-6 border border-foreground/15 bg-card p-1 w-fit">
           {["all", "feedback", "bug", "archived", "analytics"].map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 rounded-md text-xs font-bold transition-colors flex items-center gap-1.5 ${filter === f ? "bg-[#951E3A] text-white" : "text-gray-500 hover:bg-gray-100"}`}>
-              {f === "all" ? "All" : f === "feedback" ? "Feedback" : f === "bug" ? "Bugs" : f === "archived" ? "Archived" : <><BarChart3 className="w-3.5 h-3.5" /> Analytics</>}
+              className={`px-4 py-2 tech-label transition-colors flex items-center gap-1.5 ${filter === f ? "bg-foreground text-bone" : "text-muted-foreground hover:bg-foreground/5"}`}>
+              {f === "all" ? "ALL" : f === "feedback" ? "FEEDBACK" : f === "bug" ? "BUGS" : f === "archived" ? "ARCHIVED" : <><BarChart3 className="w-3.5 h-3.5" /> ANALYTICS</>}
             </button>
           ))}
         </div>

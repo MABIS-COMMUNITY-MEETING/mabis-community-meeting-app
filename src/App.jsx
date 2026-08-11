@@ -8,6 +8,9 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import SoundEffects from '@/components/SoundEffects';
+import CustomCursor from '@/components/CustomCursor';
+import GrainOverlay from '@/components/GrainOverlay';
+import ScrollProgress from '@/components/ScrollProgress';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PageTransition from '@/components/PageTransition';
 import Login from '@/pages/Login';
@@ -67,6 +70,9 @@ function App() {
         <Router>
           <ScrollToTop />
           <SoundEffects />
+          <GrainOverlay />
+          <CustomCursor />
+          <ScrollProgress />
           <AuthenticatedApp />
         </Router>
         <Toaster />
