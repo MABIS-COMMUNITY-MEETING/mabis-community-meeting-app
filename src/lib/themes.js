@@ -1,4 +1,5 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
+import { gmk_ui } from "@/lib/gmk_palettes";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
@@ -126,6 +127,62 @@ function bfdiTheme(key) {
   );
   // canonical colours exposed for glass edges, 3D accents and previews
   t.character = c;
+  return t;
+}
+
+/* GMK keysets. The canonical hexes in lib/gmk_palettes.js are authoritative:
+   they go into the theme untouched, and only supporting surfaces (cards,
+   muted fills, borders) are derived from them by moving lightness while the
+   hue stays put. */
+function nudgeL(hex, delta) {
+  const [h, s, l] = hexToHsl(hex).split(" ").map((v) => parseInt(v));
+  return `${h} ${s}% ${Math.max(0, Math.min(100, l + delta))}%`;
+}
+
+function gmkTheme(key) {
+  const u = gmk_ui[key];
+  const bg = hexToHsl(u.background);
+  const fg = hexToHsl(u.foreground);
+  const acc = hexToHsl(u.accent);
+  const acc2 = hexToHsl(u.accent_secondary);
+  const d = u.dark;
+
+  const t = {
+    name: u.name,
+    vars: {
+      "--primary": acc,
+      "--primary-foreground": onColor(acc),
+      "--secondary": acc2,
+      "--secondary-foreground": onColor(acc2),
+      "--accent": acc2,
+      "--accent-foreground": onColor(acc2),
+      "--background": bg,
+      "--foreground": fg,
+      "--card": d ? nudgeL(u.surface, 5) : nudgeL(u.background, 5),
+      "--card-foreground": fg,
+      "--popover": d ? nudgeL(u.surface, 5) : nudgeL(u.background, 5),
+      "--popover-foreground": fg,
+      "--muted": d ? nudgeL(u.surface, 9) : nudgeL(u.background, -5),
+      "--muted-foreground": d ? nudgeL(u.foreground, -22) : nudgeL(u.foreground, 24),
+      "--border": d ? nudgeL(u.surface, 14) : nudgeL(u.background, -12),
+      "--input": d ? nudgeL(u.surface, 14) : nudgeL(u.background, -12),
+      "--ring": acc,
+    },
+    bodyClass: `theme-${key}`,
+    swatches: u.swatches,
+    flag: u.swatches,
+    dark: d,
+    // canonical colours for glass edges, rim lights and 3D accents
+    character: {
+      character_primary: u.accent,
+      character_secondary: u.accent_secondary,
+      character_highlight: u.accent_tertiary || u.accent,
+    },
+  };
+
+  const roles = ["--role-student", "--role-teacher", "--role-chair", "--role-minutes", "--role-admin", "--role-editor"];
+  const usable = u.swatches.map(readableHex).map(hexToHsl);
+  roles.forEach((r, i) => { t.vars[r] = usable[i % usable.length]; });
   return t;
 }
 
@@ -284,6 +341,21 @@ export const THEMES = {
   eraser:    bfdiTheme("eraser"),
   pin:       bfdiTheme("pin"),
   book:      bfdiTheme("book"),
+
+  // ── GMK keyset colourways (canonical web hexes, see lib/gmk_palettes.js) ──
+  gmk_olivia:      gmkTheme("olivia"),
+  gmk_olivia_dark: gmkTheme("olivia_dark"),
+  gmk_red_alert:   gmkTheme("red_alert"),
+  gmk_8008:        gmkTheme("gmk_8008"),
+  gmk_hyperfuse:   gmkTheme("hyperfuse"),
+  gmk_darling:     gmkTheme("darling"),
+  gmk_metropolis:  gmkTheme("metropolis"),
+  gmk_shinseiki:   gmkTheme("shinseiki"),
+  gmk_nord:        gmkTheme("nord"),
+  gmk_camping:     gmkTheme("camping"),
+  gmk_wob:         gmkTheme("wob"),
+  gmk_monochrome:  gmkTheme("monochrome"),
+  gmk_prussian:    gmkTheme("prussian_alert"),
 };
 
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
