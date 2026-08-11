@@ -22,12 +22,14 @@ export default function HomeMasthead({ week_label, date_label }) {
 				</motion.div>
 
 				<Tilt3D max={7}>
-				<h1 className="font-display font-thin tracking-ultra leading-[0.8]">
+				{/* leading-[0.8] cropped ascenders inside the reveal masks — give the
+				    line box room so C/G/M read whole */}
+				<h1 className="font-display font-thin tracking-ultra leading-[1.02]">
 					<span className="reveal-mask">
 						<motion.span
 							initial={{ y: "110%" }} animate={{ y: 0 }}
 							transition={{ duration: 1, ease: EASE, delay: 0.1 }}
-							className="block text-[12vw] lg:text-[8.5vw] -ml-[0.06em]"
+							className="block text-[12vw] lg:text-[8.5vw] -ml-[0.06em] pb-[0.06em]"
 						>
 							COMMUNITY
 						</motion.span>
@@ -36,7 +38,7 @@ export default function HomeMasthead({ week_label, date_label }) {
 						<motion.span
 							initial={{ y: "110%" }} animate={{ y: 0 }}
 							transition={{ duration: 1, ease: EASE, delay: 0.2 }}
-							className="block text-[12vw] lg:text-[8.5vw] -ml-[0.06em] text-stroke"
+							className="block text-[12vw] lg:text-[8.5vw] -ml-[0.06em] pb-[0.06em] text-stroke"
 						>
 							MEETING
 						</motion.span>

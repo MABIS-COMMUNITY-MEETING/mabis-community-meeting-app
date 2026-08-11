@@ -11,6 +11,7 @@ import SiteHeader from "@/components/SiteHeader";
 import EditorialSection from "@/components/home/EditorialSection";
 import HomeMasthead from "@/components/home/HomeMasthead";
 import ScrollVelocity from "@/components/ScrollVelocity";
+import ScrollScaleRitual from "@/components/home/ScrollScaleRitual";
 import ScrollSectionIndicator from "@/components/ScrollSectionIndicator";
 import DiscussionWidget from "@/components/DiscussionWidget";
 import MembersWidget from "@/components/MembersWidget";
@@ -169,6 +170,8 @@ export default function Home() {
             className="font-display font-thin tracking-ultra text-foreground/25 text-[8vw] sm:text-[5vw]"
           />
         </div>
+
+        <ScrollScaleRitual />
 
         <div className="pt-2 pb-12">
           <BirthdayBanner />
