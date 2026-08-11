@@ -7,11 +7,16 @@ const KEY_MAP = {
   b: "b", B: "b", a: "a", A: "a",
 };
 
-const RED = "#cf3441";
-const CREAM = "#ece2cd";
-const DARK = "#3b3b3b";
+const RED = "#b81f2a";
+const RED_DARK = "#7d1119";
+const CREAM = "#d9d2c2";
+const DARK = "#333333";
+const DARK_2 = "#4a4a4a";
 
-/** Famicom-style controller (flat illustration). Konami code (pad or keyboard) unlocks. */
+/**
+ * Famicom controller illustration. Body 360x160, panel inset 14px.
+ * Row centerline sits at y=105; d-pad, pill and A/B all align to it.
+ */
 export default function FamicomController({ onUnlock }) {
   const seq = useRef([]);
   const [flash, setFlash] = useState(null);
@@ -36,18 +41,19 @@ export default function FamicomController({ onUnlock }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const pad = (dir, cls) => (
+  // d-pad arm = 22px, cross 66x66 at (25,72)
+  const arm = (dir, style) => (
     <button type="button" aria-label={dir} onClick={() => push(dir)}
-      className={`absolute rounded-[2px] transition-colors ${cls}`}
-      style={{ background: flash === dir ? RED : DARK }} />
+      className="absolute transition-colors"
+      style={{ background: flash === dir ? RED : DARK_2, ...style }} />
   );
 
-  const round = (label, left) => (
+  const roundBtn = (label, cx) => (
     <button type="button" aria-label={label.toUpperCase()} onClick={() => push(label)}
-      className="absolute bottom-[16px] h-[46px] w-[46px] rounded-full transition-transform active:scale-95"
-      style={{ left, background: RED, padding: "5px" }}>
+      className="absolute rounded-full transition-transform active:scale-95"
+      style={{ left: cx - 23, top: 82, width: 46, height: 46, background: RED, padding: 5 }}>
       <span className="block h-full w-full rounded-full transition-colors"
-        style={{ background: flash === label ? "#111" : DARK }} />
+        style={{ background: flash === label ? "#111" : DARK_2 }} />
     </button>
   );
 
@@ -55,37 +61,51 @@ export default function FamicomController({ onUnlock }) {
     <div className="mt-8 flex justify-center">
       <motion.div
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-        className="relative"
-        style={{ width: 340, height: 150, background: RED, borderRadius: 10, boxShadow: "8px 8px 0 rgba(0,0,0,0.35)" }}
+        className="relative select-none"
+        style={{ width: 360, height: 160, background: RED, borderRadius: 14, border: `3px solid ${RED_DARK}`, boxShadow: "6px 6px 0 rgba(0,0,0,0.3)" }}
       >
-        {/* cream inner panel — notched top-left step */}
+        {/* cream panel with top-right red step */}
         <div className="absolute" style={{
-          left: 12, top: 10, right: 12, bottom: 10, background: CREAM, borderRadius: 8,
-          clipPath: "polygon(0 0, 44% 0, 44% 34%, 100% 34%, 100% 100%, 0 100%)"
+          left: 14, top: 14, width: 332, height: 132, background: CREAM, borderRadius: 4,
+          clipPath: "polygon(0 0, 140px 0, 140px 48px, 332px 48px, 332px 132px, 0 132px)"
         }} />
 
-        {/* horizontal black bar */}
-        <div className="absolute" style={{ left: 12, right: 12, top: 96, height: 4, background: "#1e1e1e" }} />
+        {/* player badge */}
+        <div className="absolute flex items-center justify-center"
+          style={{ left: 24, top: 22, width: 26, height: 26, background: "#111", color: CREAM, fontSize: 13 }}>I</div>
 
-        {/* D-pad */}
-        <div className="absolute" style={{ left: 26, top: 46, width: 72, height: 72 }}>
-          {pad("up", "left-[24px] top-0 w-6 h-6")}
-          {pad("left", "left-0 top-[24px] w-6 h-6")}
-          <div className="absolute left-[24px] top-[24px] w-6 h-6" style={{ background: DARK }} />
-          {pad("right", "left-[48px] top-[24px] w-6 h-6")}
-          {pad("down", "left-[24px] top-[48px] w-6 h-6")}
+        {/* twin black lines through the control row */}
+        <div className="absolute" style={{ left: 14, right: 14, top: 100, height: 3, background: "#1c1c1c" }} />
+        <div className="absolute" style={{ left: 14, right: 14, top: 110, height: 3, background: "#1c1c1c" }} />
+
+        {/* D-pad: 66x66 at (25,72), arms 22px */}
+        <div className="absolute" style={{ left: 28, top: 75, width: 60, height: 60, background: RED, borderRadius: 4,
+          clipPath: "polygon(20px 0, 40px 0, 40px 20px, 60px 20px, 60px 40px, 40px 40px, 40px 60px, 20px 60px, 20px 40px, 0 40px, 0 20px, 20px 20px)" }}>
+          {arm("up", { left: 24, top: 4, width: 12, height: 16 })}
+          {arm("left", { left: 4, top: 24, width: 16, height: 12 })}
+          {arm("right", { left: 40, top: 24, width: 16, height: 12 })}
+          {arm("down", { left: 24, top: 40, width: 12, height: 16 })}
+          <div className="absolute" style={{ left: 20, top: 20, width: 20, height: 20, background: DARK_2 }} />
         </div>
 
-        {/* select / start pill */}
-        <div className="absolute flex items-center justify-center gap-2"
-          style={{ left: 122, top: 82, width: 76, height: 32, background: RED, borderRadius: 8 }}>
-          <span style={{ width: 22, height: 8, background: DARK, borderRadius: 3 }} />
-          <span style={{ width: 22, height: 8, background: DARK, borderRadius: 3 }} />
+        {/* SELECT / START */}
+        <div className="absolute flex gap-3" style={{ left: 122, top: 78, width: 96, justifyContent: "center" }}>
+          <span style={{ fontSize: 8, letterSpacing: "0.08em", color: "#333" }}>SELECT</span>
+          <span style={{ fontSize: 8, letterSpacing: "0.08em", color: "#333" }}>START</span>
+        </div>
+        <div className="absolute flex items-center justify-center gap-3"
+          style={{ left: 122, top: 90, width: 96, height: 30, background: RED, borderRadius: 15 }}>
+          <span style={{ width: 30, height: 10, background: DARK, borderRadius: 5 }} />
+          <span style={{ width: 30, height: 10, background: DARK, borderRadius: 5 }} />
         </div>
 
-        {/* A / B buttons */}
-        {round("b", 212)}
-        {round("a", 264)}
+        {/* B / A labels + buttons, centered at x=256 and x=310 */}
+        <div className="absolute flex items-center justify-center"
+          style={{ left: 244, top: 66, width: 24, height: 14, background: "#111", color: CREAM, fontSize: 9, borderRadius: 7 }}>B</div>
+        <div className="absolute flex items-center justify-center"
+          style={{ left: 298, top: 66, width: 24, height: 14, background: "#111", color: CREAM, fontSize: 9, borderRadius: 7 }}>A</div>
+        {roundBtn("b", 256)}
+        {roundBtn("a", 310)}
       </motion.div>
     </div>
   );
