@@ -104,7 +104,7 @@ export default function Splash() {
       <Plus className="absolute top-1/3 right-1/4 h-2.5 w-2.5 text-primary/60 z-20" />
 
       {/* center stage with pointer parallax */}
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 sm:px-8">
+      <div className="relative z-10 flex min-h-screen flex-col items-start sm:items-center justify-center px-5 sm:px-8">
         {/* giant cropped background word */}
         <motion.span
           initial={{ opacity: 0 }} animate={{ opacity: 0.05 }} transition={{ delay: 0.4, duration: 1.2 }}
@@ -122,7 +122,7 @@ export default function Splash() {
         </motion.div>
 
         <motion.div style={{ x: titleX, y: titleY }} className="will-change-transform">
-          <h1 className="text-center font-display font-extralight tracking-ultra leading-[0.88] text-6xl sm:text-8xl md:text-9xl lg:text-[11rem]">
+          <h1 className="text-left sm:text-center font-display font-extralight tracking-ultra leading-[0.88] text-6xl sm:text-8xl md:text-9xl lg:text-[11rem]">
             <span className="block">
               <SplitChars text="COMMUNITY" stagger={0.05} delay={0.6} />
             </span>
@@ -134,12 +134,12 @@ export default function Splash() {
 
         <motion.div
           initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 1.6, duration: 0.8, ease: EASE }}
-          className="h-px w-40 bg-bone/40 my-8 sm:my-10 origin-center"
+          className="h-px w-40 bg-bone/40 my-8 sm:my-10 origin-left sm:origin-center"
         />
 
         <motion.p
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.7, duration: 0.7 }}
-          className="max-w-md text-center text-sm sm:text-base text-bone/65 leading-relaxed"
+          className="max-w-md text-left sm:text-center text-sm sm:text-base text-bone/65 leading-relaxed"
         >
           A weekly ritual of voice, presence, and shared decision —
           recorded, remembered, and refined by the secondary community.
