@@ -20,6 +20,8 @@ const JOBS = [
   { id: "everywhere2", label: "Clean Everywhere (2)" },
   { id: "ac1", label: "Check AC Temp (1)" },
   { id: "ac2", label: "Check AC Temp (2)" },
+  { id: "time1", label: "Time Taker (1)" },
+  { id: "time2", label: "Time Taker (2)" },
 ];
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
