@@ -41,18 +41,11 @@ export default function SmoothScroll() {
       raf = requestAnimationFrame(loop);
     };
 
-    // Firefox reports deltaMode in lines (1) or pages (2) — normalize to pixels.
-    const toPixels = (e) => {
-      if (e.deltaMode === 1) return e.deltaY * 16;
-      if (e.deltaMode === 2) return e.deltaY * window.innerHeight;
-      return e.deltaY;
-    };
-
     const onWheel = (e) => {
       if (e.ctrlKey) return;
       if (scrollableParent(e.target)) return;
       e.preventDefault();
-      target = Math.max(0, Math.min(target + toPixels(e), maxScroll()));
+      target = Math.max(0, Math.min(target + e.deltaY, maxScroll()));
       if (!running) {
         running = true;
         current = window.scrollY;

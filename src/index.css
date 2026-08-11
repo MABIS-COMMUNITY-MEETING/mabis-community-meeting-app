@@ -325,21 +325,6 @@ input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius
 .ring-draw { stroke-dasharray: 1; stroke-dashoffset: 1; pathLength: 1; transition: stroke-dashoffset .9s cubic-bezier(.16,1,.3,1); }
 .ring-draw.in { stroke-dashoffset: 0; }
 
-/* ── perf-lite: Firefox / Linux / low-core machines ──
-   Blur + mix-blend + huge animated layers are the expensive parts on these
-   platforms, so they are traded for cheap flat equivalents. */
-.perf-lite .grain-layer { animation: none; opacity: 0.03; mix-blend-mode: normal; }
-.perf-lite [class*="backdrop-blur"] { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-color: rgba(0,0,0,0.55); }
-.perf-lite .blob-drift, .perf-lite .blob-drift-2, .perf-lite .float-y, .perf-lite .spin-slow { animation: none; }
-.perf-lite [class*="blur-2xl"], .perf-lite [class*="blur-3xl"] { filter: none !important; opacity: 0.25; }
-.perf-lite .cursor-dot, .perf-lite .cursor-ring { mix-blend-mode: normal; }
-.perf-lite .marquee-track { will-change: transform; }
-.perf-lite .bg-white.rounded-2xl.shadow-sm:hover,
-.perf-lite .bg-card.rounded-2xl.shadow-sm:hover { transform: none; }
-
-/* Firefox: text-stroke on JP glyphs and difference blending are costly */
-.is-firefox .font-jp { -webkit-text-stroke: 0; text-shadow: 0.35px 0 currentColor, -0.35px 0 currentColor; }
-
 /* ── reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
