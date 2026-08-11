@@ -93,29 +93,31 @@ export default function GamepadNavigator() {
 				if (!el || el === document.body) return;
 				playClick();
 				rumble(p, 0.35);
-				const tag = el.tagName;
-				/* clicking a text field just re-focuses it — typing is the OS keyboard's
-				   job, so leave inputs alone and only activate real controls */
-				if (tag === "INPUT" || tag === "TEXTAREA") return;
+				/* text fields do nothing useful on click — but checkboxes, radios and
+				   file inputs must still toggle, so only skip the typing ones */
+				const TEXTY = ["text", "email", "password", "search", "url", "tel", "number", "date", "time"];
+				if (el.tagName === "TEXTAREA") return;
+				if (el.tagName === "INPUT" && TEXTY.includes((el.type || "text").toLowerCase())) return;
 				el.click();
 			});
 			press(pad, cancel, (p) => {
 				setActive(true);
 				playMenuClose();
 				rumble(p, 0.18);
-				/* dispatch on the focused node first so component-level key handlers
-				   (dialogs, popovers) see it, then let it bubble to document */
+				/* one dispatch only — it bubbles from the focused node to document,
+				   so dialogs and popovers close once instead of twice */
 				const target = document.activeElement || document;
 				target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-				document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
 				document.activeElement?.blur?.();
 			});
 
-			/* right stick scrolls the page — the grid is taller than one screen */
+			/* right stick scrolls the page — eased so small tilts creep and full
+			   tilt travels fast, written straight to the scroller so the smooth-
+			   scroll wheel handler has nothing to fight */
 			const ry = pad.axes[3] || 0;
-			if (Math.abs(ry) > 0.2) {
-				setActive(true);
-				window.scrollBy(0, ry * 26);
+			if (Math.abs(ry) > 0.12) {
+				const eased = Math.sign(ry) * Math.pow((Math.abs(ry) - 0.12) / 0.88, 2) * 30;
+				document.scrollingElement.scrollTop += eased;
 			}
 
 			raf = requestAnimationFrame(poll);
