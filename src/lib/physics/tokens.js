@@ -13,7 +13,7 @@ export const MATERIAL = {
   /** cursor centre, tiny controls — essentially no overshoot */
   precision: { omega: 34, zeta: 1.0 },
   /** outer cursor ring — a whisper of inertial tail */
-  glass: { omega: 19, zeta: 0.86 },
+  glass: { omega: 13, zeta: 0.62 },
   /** contextual label — settles last, softest */
   paper: { omega: 12, zeta: 0.95 },
   /** large typography / panels — apparent mass */
@@ -22,14 +22,14 @@ export const MATERIAL = {
 
 export const CURSOR = {
   /** anisotropy: the ring is looser along travel, stiffer across it */
-  tangentScale: 0.78,
-  normalScale: 1.22,
+  tangentScale: 0.62,
+  normalScale: 1.35,
   /** prediction horizon bounds, seconds */
   tauMin: 0,
   tauMax: 0.045,
   /** deformation */
-  shearMax: 0.30,     // max |s| in the area-preserving matrix
-  shearAlpha: 0.00042, // speed → shear gain, fed through tanh
+  shearMax: 0.44,     // max |s| in the area-preserving matrix
+  shearAlpha: 0.00060, // speed → shear gain, fed through tanh
   /** trail */
   trailNodes: 5,
   trailLink: 9,
