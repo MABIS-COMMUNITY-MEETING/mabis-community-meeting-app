@@ -2,6 +2,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { secrets } from 'base44:runtime';
 import { buildBoardText } from '../../shared/board.js';
 import { resolveActor, checkWrite, isMeetingGated } from '../../shared/perms.js';
+import { labelFor } from '../../shared/cliLabels.js';
+
+const plain = (s: string, status = 200) =>
+  new Response(s.endsWith('\n') ? s : s + '\n', {
+    status, headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  });
 
 // Entities the terminal client is allowed to read/write.
 const ALLOWED = [
@@ -35,9 +41,13 @@ export default async function (req: Request): Promise<Response> {
     let body: any = {};
     if (req.method === 'POST') { try { body = await req.json(); } catch { body = {}; } }
     const key = url.searchParams.get('key') || req.headers.get('x-mabis-key') || body.key;
+    // the shell client asks for plain text so it never has to parse JSON
+    const wantText = (body.format || url.searchParams.get('format')) === 'text';
+    const fail = (msg: string, status: number) =>
+      wantText ? plain('ERR: ' + msg, status) : Response.json({ error: msg }, { status });
 
     if (key !== secrets.get('MABIS_TEXT_KEY')) {
-      return Response.json({ error: 'invalid or missing key' }, { status: 403 });
+      return fail('invalid or missing key', 403);
     }
 
     const action = body.action || url.searchParams.get('action') || 'board';
@@ -47,11 +57,11 @@ export default async function (req: Request): Promise<Response> {
 
     if (action === 'board') {
       const text = await buildBoardText(sr);
-      return Response.json({ text });
+      return wantText ? plain(text) : Response.json({ text });
     }
 
     if (!entity || !ALLOWED.includes(entity)) {
-      return Response.json({ error: 'unknown or not-allowed entity: ' + entity }, { status: 400 });
+      return fail('unknown or not-allowed entity: ' + entity, 400);
     }
     const store = sr.entities[entity];
     const isWrite = ['create', 'update', 'delete'].includes(action);
@@ -59,36 +69,56 @@ export default async function (req: Request): Promise<Response> {
     if (isWrite) {
       const actor = await resolveActor(sr, body.email);
       const denied = checkWrite(actor, entity, action, body.data);
-      if (denied) return Response.json({ error: denied }, { status: 403 });
+      if (denied) return fail(denied, 403);
       if (isMeetingGated(entity) && !(await meetingIsOn(sr))) {
-        return Response.json(
-          { error: 'meeting mode is off — ' + entity + ' changes are only allowed during a meeting' },
-          { status: 403 },
-        );
+        return fail('meeting mode is off — ' + entity + ' changes are only allowed during a meeting', 403);
       }
     }
 
     if (action === 'list') {
-      const items = await store.list(body.sort || '-created_date', body.limit || 100);
-      return Response.json({ items });
+      let items = await store.list(body.sort || '-created_date', body.limit || 100);
+      if (entity === 'DiscussionTopic') items = items.filter((t: any) => !t.archived);
+      if (entity === 'JobAssignment') {
+        const latest = items.map((j: any) => j.week_label || '').sort().reverse()[0];
+        items = items.filter((j: any) => (j.week_label || '') === latest);
+      }
+      if (!wantText) return Response.json({ items });
+      // "id<TAB>label" per line — trivially parseable in shell
+      return plain(items.map((it: any) => it.id + '\t' + labelFor(entity, it)).join('\n'));
     }
     if (action === 'create') {
       const created = await store.create(body.data || {});
-      return Response.json({ item: created });
+      return wantText ? plain('OK ' + created.id) : Response.json({ item: created });
     }
     if (action === 'update') {
-      if (!body.id) return Response.json({ error: 'id required' }, { status: 400 });
-      const updated = await store.update(body.id, body.data || {});
-      return Response.json({ item: updated });
+      if (!body.id) return fail('id required', 400);
+      let data = body.data || {};
+      // marking a job day: the server recomputes the arrays so the client
+      // never has to send them back
+      if (entity === 'JobAssignment' && body.mark_day) {
+        const cur = await store.get(body.id);
+        const day = body.mark_day;
+        const done = (cur.days_completed || []).filter((d: string) => d !== day);
+        const miss = (cur.not_done_days || []).filter((d: string) => d !== day);
+        if (body.mark_status === 'y') done.push(day);
+        if (body.mark_status === 'n') miss.push(day);
+        data = { days_completed: done, not_done_days: miss, not_done: miss.length > 0 };
+      }
+      if (body.toggle) {
+        const cur = await store.get(body.id);
+        data = { ...data, [body.toggle]: !cur[body.toggle] };
+      }
+      const updated = await store.update(body.id, data);
+      return wantText ? plain('OK ' + body.id) : Response.json({ item: updated });
     }
     if (action === 'delete') {
-      if (!body.id) return Response.json({ error: 'id required' }, { status: 400 });
+      if (!body.id) return fail('id required', 400);
       await store.delete(body.id);
-      return Response.json({ ok: true });
+      return wantText ? plain('OK') : Response.json({ ok: true });
     }
 
-    return Response.json({ error: 'unknown action: ' + action }, { status: 400 });
+    return fail('unknown action: ' + action, 400);
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return plain('ERR: ' + error.message, 500);
   }
 }

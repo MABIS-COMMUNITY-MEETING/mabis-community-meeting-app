@@ -1,269 +1,216 @@
-// Serves the interactive terminal client:
-//   curl -o mabis "<app-url>/api/functions/cliScript" && chmod +x mabis && ./mabis
+// Serves the interactive terminal client (pure bash + curl, no install):
+//   bash -c "$(curl -fsSL <app-url>/api/functions/cliScript)"
+// or save it:  curl -fsSL <app-url>/api/functions/cliScript -o mabis && chmod +x mabis
 import { secrets } from 'base44:runtime';
 
-const SCRIPT = `#!/usr/bin/env python3
-"""MABIS Community Meeting — interactive terminal client."""
-import json, os, sys, urllib.request, urllib.error
+// Written with @{...} where bash needs ${...}, so this file's own template
+// literal never tries to interpolate the shell's variables.
+const RAW = String.raw`#!/usr/bin/env bash
+# MABIS Community Meeting — interactive terminal client.
+set -uo pipefail
 
-BASE = os.environ.get("MABIS_URL", "https://mabis-community-meeting.base44.app").rstrip("/")
-KEY = os.environ.get("MABIS_KEY", "")
-EMAIL = os.environ.get("MABIS_EMAIL", "")
-DOMAIN = "@montessoribkk.com"
+BASE="@{MABIS_URL:-https://mabis-community-meeting.base44.app}"
+BASE="@{BASE%/}"
+KEY="@{MABIS_KEY:-}"
+EMAIL="@{MABIS_EMAIL:-}"
+DOMAIN="@montessoribkk.com"
 
-C = {"h": "\\033[1;35m", "d": "\\033[2m", "g": "\\033[32m", "r": "\\033[31m",
-     "y": "\\033[33m", "b": "\\033[1m", "x": "\\033[0m"}
+H=$'\e[1;35m'; D=$'\e[2m'; G=$'\e[32m'; R=$'\e[31m'; Y=$'\e[33m'; B=$'\e[1m'; X=$'\e[0m'
 
-def ask(p, default=""):
-    try:
-        v = input(p).strip()
-    except (EOFError, KeyboardInterrupt):
-        print()
-        sys.exit(0)
-    return v or default
+# read from the terminal, so running straight from curl still accepts input
+if [ -t 0 ]; then TTY=/dev/stdin; else TTY=/dev/tty; fi
+ask() { local __v; printf '%s' "$1" >&2; IFS= read -r __v <"$TTY" || { echo; exit 0; }; printf '%s' "$__v"; }
 
-def api(action, **kw):
-    payload = {"key": KEY, "action": action, "email": EMAIL}
-    payload.update(kw)
-    req = urllib.request.Request(BASE + "/api/functions/cliApi",
-                                 data=json.dumps(payload).encode(),
-                                 headers={"Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req) as r:
-            return json.loads(r.read().decode())
-    except urllib.error.HTTPError as e:
-        body = e.read().decode()
-        print(C["r"] + "error " + str(e.code) + ": " + body + C["x"])
-        return {}
-    except Exception as e:
-        print(C["r"] + "connection error: " + str(e) + C["x"])
-        return {}
+command -v curl >/dev/null 2>&1 || { echo "curl is required"; exit 1; }
 
-def header(title):
-    os.system("clear")
-    print(C["h"] + "═" * 62 + C["x"])
-    print(C["h"] + "  MABIS  ·  " + title + C["x"])
-    print(C["h"] + "═" * 62 + C["x"] + "\\n")
+# minimal JSON string escaper
+esc() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e ':a;N;$!ba;s/\n/\\n/g'; }
 
-def pause():
-    ask("\\n" + C["d"] + "[enter] back" + C["x"] + " ")
+# api <action> <entity> <extra-json-fields...>
+api() {
+  local action="$1"; shift
+  local entity="@{1:-}"; shift || true
+  local extra="$*"
+  local payload="{\"key\":\"$(esc "$KEY")\",\"email\":\"$(esc "$EMAIL")\",\"format\":\"text\",\"action\":\"$(esc "$action")\""
+  [ -n "$entity" ] && payload="$payload,\"entity\":\"$(esc "$entity")\""
+  [ -n "$extra" ] && payload="$payload,$extra"
+  payload="$payload}"
+  curl -sS --max-time 30 -X POST "$BASE/api/functions/cliApi" \
+    -H 'Content-Type: application/json' -d "$payload" 2>/dev/null \
+    || echo "ERR: could not reach $BASE"
+}
 
-def show_board():
-    header("BOARD")
-    res = api("board")
-    print(res.get("text", ""))
-    pause()
+check() { case "$1" in ERR:*) echo "@{R}$1@{X}"; sleep 2 ;; esac; }
 
-def pick(items, label):
-    if not items:
-        print(C["d"] + "  (none)" + C["x"])
-        return None
-    for i, it in enumerate(items, 1):
-        print("  " + C["b"] + str(i).rjust(2) + C["x"] + "  " + label(it))
-    c = ask("\\n  number (blank = cancel): ")
-    if not c.isdigit() or not (1 <= int(c) <= len(items)):
-        return None
-    return items[int(c) - 1]
+line62() { printf '═%.0s' $(seq 62); echo; }
+header() { clear; printf '%s' "$H"; line62; echo "  MABIS  ·  $1"; line62; printf '%s' "$X"; echo; }
+pause() { ask $'\n'"@{D}[enter] back@{X} " >/dev/null; }
 
-def manage(entity, title, label, fields, sort="-created_date"):
-    while True:
-        header(title)
-        items = api("list", entity=entity, sort=sort).get("items", [])
-        for i, it in enumerate(items, 1):
-            print("  " + C["b"] + str(i).rjust(2) + C["x"] + "  " + label(it))
-        if not items:
-            print(C["d"] + "  (none yet)" + C["x"])
-        print("\\n  " + C["g"] + "a" + C["x"] + " add   "
-              + C["y"] + "e" + C["x"] + " edit   "
-              + C["r"] + "d" + C["x"] + " delete   "
-              + C["d"] + "b back" + C["x"])
-        c = ask("\\n  > ").lower()
-        if c in ("b", "q", ""):
-            return
-        if c == "a":
-            data = {}
-            for f, prompt in fields:
-                v = ask("  " + prompt + ": ")
-                if v:
-                    data[f] = v
-            if data:
-                api("create", entity=entity, data=data)
-        elif c == "e":
-            it = pick(items, label)
-            if it:
-                data = {}
-                for f, prompt in fields:
-                    cur = str(it.get(f, "") or "")
-                    v = ask("  " + prompt + " [" + cur + "]: ")
-                    if v:
-                        data[f] = v
-                if data:
-                    api("update", entity=entity, id=it["id"], data=data)
-        elif c == "d":
-            it = pick(items, label)
-            if it and ask("  delete? (y/N): ").lower() == "y":
-                api("delete", entity=entity, id=it["id"])
+IDS=(); LABELS=()
+load() { # load <entity> [sort]
+  IDS=(); LABELS=()
+  local out line id label
+  out="$(api list "$1" "\"sort\":\"@{2:--created_date}\"")"
+  case "$out" in ERR:*) echo "@{R}$out@{X}"; return 1 ;; esac
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    id="@{line%%$'\t'*}"; label="@{line#*$'\t'}"
+    IDS+=("$id"); LABELS+=("$label")
+  done <<<"$out"
+  return 0
+}
 
-def topics():
-    while True:
-        header("DISCUSSION TOPICS")
-        items = [t for t in api("list", entity="DiscussionTopic").get("items", []) if not t.get("archived")]
-        for i, t in enumerate(items, 1):
-            mark = C["g"] + "[x]" + C["x"] if t.get("completed") else "[ ]"
-            print("  " + C["b"] + str(i).rjust(2) + C["x"] + "  " + mark + " " + str(t.get("title"))
-                  + C["d"] + "  — " + str(t.get("submitted_by", "?")) + C["x"])
-        if not items:
-            print(C["d"] + "  (none yet)" + C["x"])
-        print("\\n  " + C["g"] + "a" + C["x"] + " add   "
-              + C["y"] + "t" + C["x"] + " toggle done   "
-              + C["r"] + "d" + C["x"] + " delete   "
-              + C["d"] + "b back" + C["x"])
-        c = ask("\\n  > ").lower()
-        if c in ("b", "q", ""):
-            return
-        if c == "a":
-            title = ask("  title: ")
-            if not title:
-                continue
-            api("create", entity="DiscussionTopic", data={
-                "title": title,
-                "description": ask("  description: "),
-                "submitted_by": ask("  your name: ", "CLI")})
-        elif c == "t":
-            t = pick(items, lambda x: str(x.get("title")))
-            if t:
-                api("update", entity="DiscussionTopic", id=t["id"],
-                    data={"completed": not t.get("completed")})
-        elif c == "d":
-            t = pick(items, lambda x: str(x.get("title")))
-            if t and ask("  delete? (y/N): ").lower() == "y":
-                api("delete", entity="DiscussionTopic", id=t["id"])
+show_list() {
+  local i
+  if [ "@{#IDS[@]}" -eq 0 ]; then echo "@{D}  (none yet)@{X}"; return; fi
+  for i in "@{!IDS[@]}"; do printf '  %s%2d%s  %s\n' "$B" "$((i+1))" "$X" "@{LABELS[$i]}"; done
+}
 
-DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+pick() { # echoes an id, or empty
+  local c; c="$(ask $'\n'"  number (blank = cancel): ")"
+  case "$c" in ''|*[!0-9]*) printf ''; return ;; esac
+  if [ "$c" -ge 1 ] && [ "$c" -le "@{#IDS[@]}" ]; then printf '%s' "@{IDS[$((c-1))]}"; fi
+}
 
-def jobs():
-    while True:
-        header("JOBS")
-        items = api("list", entity="JobAssignment").get("items", [])
-        weeks = sorted({j.get("week_label", "") for j in items}, reverse=True)[:1]
-        items = [j for j in items if j.get("week_label") in weeks]
-        for i, j in enumerate(items, 1):
-            done = ",".join(d[:3] for d in (j.get("days_completed") or [])) or "-"
-            miss = ",".join(d[:3] for d in (j.get("not_done_days") or [])) or "-"
-            print("  " + C["b"] + str(i).rjust(2) + C["x"] + "  " + str(j.get("job_title", "")).ljust(26)
-                  + str(j.get("assigned_to_name", "?")).ljust(16)
-                  + C["g"] + " done:" + done + C["x"] + C["r"] + "  missed:" + miss + C["x"])
-        if not items:
-            print(C["d"] + "  (no assignments this week)" + C["x"])
-        print("\\n  " + C["g"] + "m" + C["x"] + " mark a day   "
-              + C["r"] + "d" + C["x"] + " delete   "
-              + C["d"] + "b back" + C["x"])
-        c = ask("\\n  > ").lower()
-        if c in ("b", "q", ""):
-            return
-        if c == "m":
-            j = pick(items, lambda x: str(x.get("job_title")) + " — " + str(x.get("assigned_to_name")))
-            if not j:
-                continue
-            for i, d in enumerate(DAYS, 1):
-                print("   " + str(i) + " " + d)
-            di = ask("  day number: ")
-            if not di.isdigit() or not (1 <= int(di) <= 5):
-                continue
-            day = DAYS[int(di) - 1]
-            st = ask("  (y)done / (n)not done / (c)clear: ").lower()
-            done = [d for d in (j.get("days_completed") or []) if d != day]
-            miss = [d for d in (j.get("not_done_days") or []) if d != day]
-            if st == "y":
-                done.append(day)
-            elif st == "n":
-                miss.append(day)
-            api("update", entity="JobAssignment", id=j["id"],
-                data={"days_completed": done, "not_done_days": miss,
-                      "not_done": len(miss) > 0})
-        elif c == "d":
-            j = pick(items, lambda x: str(x.get("job_title")))
-            if j and ask("  delete? (y/N): ").lower() == "y":
-                api("delete", entity="JobAssignment", id=j["id"])
+confirm() { local yn; yn="$(ask "  delete? (y/N): ")"; [ "$yn" = y ] || [ "$yn" = Y ]; }
 
-def main():
-    global BASE, KEY, EMAIL
-    if not BASE:
-        BASE = ask("App URL (e.g. https://myapp.base44.app): ").rstrip("/")
-    if not KEY:
-        KEY = ask("Access key: ")
-    while not EMAIL.lower().endswith(DOMAIN):
-        EMAIL = ask("Sign in with your " + DOMAIN + " account: ").lower()
-        if EMAIL and not EMAIL.endswith(DOMAIN):
-            print(C["r"] + "  only " + DOMAIN + " accounts can make changes" + C["x"])
-    while True:
-        header("COMMUNITY MEETING")
-        print("  " + C["b"] + "1" + C["x"] + "  Board (full read-only view)")
-        print("  " + C["b"] + "2" + C["x"] + "  Announcements")
-        print("  " + C["b"] + "3" + C["x"] + "  News")
-        print("  " + C["b"] + "4" + C["x"] + "  Discussion topics")
-        print("  " + C["b"] + "5" + C["x"] + "  Jobs")
-        print("  " + C["b"] + "6" + C["x"] + "  Calendar events")
-        print("  " + C["b"] + "7" + C["x"] + "  Members")
-        print("  " + C["b"] + "8" + C["x"] + "  Lost & found")
-        print("\\n  " + C["d"] + "q  quit" + C["x"])
-        c = ask("\\n  > ").lower()
-        if c == "q":
-            print()
-            return
-        elif c == "1":
-            show_board()
-        elif c == "2":
-            manage("Announcement", "ANNOUNCEMENTS",
-                   lambda a: ("[PIN] " if a.get("pinned") else "") + str(a.get("title"))
-                             + C["d"] + "  — " + str(a.get("author_name", "?")) + C["x"],
-                   [("title", "title"), ("body", "body"), ("author_name", "author")])
-        elif c == "3":
-            manage("NewsItem", "NEWS",
-                   lambda n: str(n.get("title")) + C["d"] + "  — " + str(n.get("author_name", "?")) + C["x"],
-                   [("title", "title"), ("body", "body"), ("author_name", "author")])
-        elif c == "4":
-            topics()
-        elif c == "5":
-            jobs()
-        elif c == "6":
-            manage("CalendarEvent", "CALENDAR",
-                   lambda e: str(e.get("date")) + "  " + str(e.get("title"))
-                             + C["d"] + "  [" + str(e.get("type", "event")) + "]" + C["x"],
-                   [("title", "title"), ("date", "date YYYY-MM-DD"), ("time", "time HH:mm"),
-                    ("type", "type (event/holiday/meeting/birthday/other)"),
-                    ("description", "description")], sort="date")
-        elif c == "7":
-            manage("Member", "MEMBERS",
-                   lambda m: str(m.get("name")).ljust(22)
-                             + C["d"] + str(m.get("role", "student")) + "  " + str(m.get("email", "")) + C["x"],
-                   [("name", "name"), ("email", "email"),
-                    ("role", "role (student/teacher/chair/minutes/admin/editor)")], sort="name")
-        elif c == "8":
-            manage("MissingItem", "LOST & FOUND",
-                   lambda i: str(i.get("item_name")) + C["d"] + "  " + str(i.get("colors", ""))
-                             + " — " + str(i.get("reported_by_name", "?")) + C["x"],
-                   [("item_name", "item"), ("colors", "colours"), ("last_seen", "last seen"),
-                    ("date_lost", "date lost YYYY-MM-DD"), ("reported_by_name", "your name")])
+show_board() { header "BOARD"; api board; pause; }
 
-if __name__ == "__main__":
-    main()
+# manage <entity> <title> <sort> <field:prompt> ...
+manage() {
+  local entity="$1" title="$2" sort="$3"; shift 3
+  local fields=("$@")
+  while true; do
+    header "$title"
+    load "$entity" "$sort" || { pause; return; }
+    show_list
+    echo
+    echo "  @{G}a@{X} add   @{Y}e@{X} edit   @{R}d@{X} delete   @{D}b back@{X}"
+    local c; c="$(ask $'\n'"  > ")"
+    case "$c" in
+      b|q|'') return ;;
+      a|e)
+        local id=""
+        if [ "$c" = e ]; then id="$(pick)"; [ -z "$id" ] && continue; fi
+        local data="" f prompt v
+        for f in "@{fields[@]}"; do
+          prompt="@{f#*:}"; f="@{f%%:*}"
+          v="$(ask "  $prompt: ")"
+          [ -z "$v" ] && continue
+          [ -n "$data" ] && data="$data,"
+          data="$data\"$(esc "$f")\":\"$(esc "$v")\""
+        done
+        [ -z "$data" ] && continue
+        if [ "$c" = a ]; then
+          check "$(api create "$entity" "\"data\":{$data}")"
+        else
+          check "$(api update "$entity" "\"id\":\"$id\",\"data\":{$data}")"
+        fi ;;
+      d)
+        local id; id="$(pick)"; [ -z "$id" ] && continue
+        if confirm; then check "$(api delete "$entity" "\"id\":\"$id\"")"; fi ;;
+    esac
+  done
+}
+
+topics() {
+  while true; do
+    header "DISCUSSION TOPICS"
+    load DiscussionTopic || { pause; return; }
+    show_list
+    echo
+    echo "  @{G}a@{X} add   @{Y}t@{X} toggle done   @{R}d@{X} delete   @{D}b back@{X}"
+    local c; c="$(ask $'\n'"  > ")"
+    case "$c" in
+      b|q|'') return ;;
+      a)
+        local t desc who
+        t="$(ask "  title: ")"; [ -z "$t" ] && continue
+        desc="$(ask "  description: ")"; who="$(ask "  your name: ")"
+        check "$(api create DiscussionTopic "\"data\":{\"title\":\"$(esc "$t")\",\"description\":\"$(esc "$desc")\",\"submitted_by\":\"$(esc "@{who:-CLI}")\"}")" ;;
+      t)
+        local id; id="$(pick)"; [ -z "$id" ] && continue
+        check "$(api update DiscussionTopic "\"id\":\"$id\",\"toggle\":\"completed\"")" ;;
+      d)
+        local id; id="$(pick)"; [ -z "$id" ] && continue
+        if confirm; then check "$(api delete DiscussionTopic "\"id\":\"$id\"")"; fi ;;
+    esac
+  done
+}
+
+DAYS=(Monday Tuesday Wednesday Thursday Friday)
+
+jobs() {
+  while true; do
+    header "JOBS — THIS WEEK"
+    load JobAssignment || { pause; return; }
+    show_list
+    echo
+    echo "  @{G}m@{X} mark a day   @{R}d@{X} delete   @{D}b back@{X}"
+    local c; c="$(ask $'\n'"  > ")"
+    case "$c" in
+      b|q|'') return ;;
+      m)
+        local id; id="$(pick)"; [ -z "$id" ] && continue
+        local i; for i in "@{!DAYS[@]}"; do echo "   $((i+1)) @{DAYS[$i]}"; done
+        local di; di="$(ask "  day number: ")"
+        case "$di" in ''|*[!0-9]*) continue ;; esac
+        if [ "$di" -lt 1 ] || [ "$di" -gt 5 ]; then continue; fi
+        local st; st="$(ask "  (y)done / (n)not done / (c)clear: ")"
+        check "$(api update JobAssignment "\"id\":\"$id\",\"mark_day\":\"@{DAYS[$((di-1))]}\",\"mark_status\":\"$(esc "$st")\"")" ;;
+      d)
+        local id; id="$(pick)"; [ -z "$id" ] && continue
+        if confirm; then check "$(api delete JobAssignment "\"id\":\"$id\"")"; fi ;;
+    esac
+  done
+}
+
+if [ -z "$KEY" ]; then KEY="$(ask "Access key: ")"; fi
+while :; do
+  case "$EMAIL" in
+    *"$DOMAIN") break ;;
+    *) if [ -n "$EMAIL" ]; then echo "@{R}  only $DOMAIN accounts can make changes@{X}"; fi
+       EMAIL="$(ask "Sign in with your $DOMAIN account: ")" ;;
+  esac
+done
+
+while true; do
+  header "COMMUNITY MEETING"
+  echo "  @{B}1@{X}  Board (full read-only view)"
+  echo "  @{B}2@{X}  Announcements"
+  echo "  @{B}3@{X}  News"
+  echo "  @{B}4@{X}  Discussion topics"
+  echo "  @{B}5@{X}  Jobs"
+  echo "  @{B}6@{X}  Calendar events"
+  echo "  @{B}7@{X}  Members"
+  echo "  @{B}8@{X}  Lost & found"
+  echo
+  echo "  @{D}q  quit@{X}"
+  c="$(ask $'\n'"  > ")"
+  case "$c" in
+    q|Q) echo; exit 0 ;;
+    1) show_board ;;
+    2) manage Announcement "ANNOUNCEMENTS" "-created_date" "title:title" "body:body" "author_name:author" ;;
+    3) manage NewsItem "NEWS" "-created_date" "title:title" "body:body" "author_name:author" ;;
+    4) topics ;;
+    5) jobs ;;
+    6) manage CalendarEvent "CALENDAR" "date" "title:title" "date:date YYYY-MM-DD" "time:time HH:mm" "type:type (event/holiday/meeting/birthday/other)" "description:description" ;;
+    7) manage Member "MEMBERS" "name" "name:name" "email:email" "role:role (student/teacher/chair/minutes/admin/editor)" ;;
+    8) manage MissingItem "LOST & FOUND" "-created_date" "item_name:item" "colors:colours" "last_seen:last seen" "date_lost:date lost YYYY-MM-DD" "reported_by_name:your name" ;;
+  esac
+done
 `;
 
+const SCRIPT = RAW.split('@{').join('$' + '{');
+
 export default async function (req: Request): Promise<Response> {
-  try {
-    // the script itself is not secret — it asks for the key at runtime
-    void secrets;
-    return new Response(SCRIPT, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Content-Disposition': 'attachment; filename=mabis',
-      },
-    });
-  } catch (error) {
-    return new Response('error: ' + error.message + '\n', {
-      status: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-    });
-  }
+  // the script itself is not secret — it asks for the key at runtime
+  void secrets;
+  return new Response(SCRIPT, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Content-Disposition': 'inline; filename=mabis.sh',
+    },
+  });
 }
