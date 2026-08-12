@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { action_binding } from "@/lib/gamepad_profiles";
 import { resolve_profile, OVERRIDE_EVENT } from "@/lib/gamepad_detect";
-import { find_neighbour, find_section, first_in_section } from "@/lib/gamepad_nav";
+import { find_ordered_target } from "@/lib/gamepad_nav";
 import { playHover, playClick, playMenuClose } from "@/lib/sound";
 import ControllerHints from "@/components/ControllerHints";
 
-const DEADZONE = 0.45;
-const REPEAT_FIRST = 380;
-const REPEAT_NEXT = 130;
+const DEADZONE = 0.3;
+const REPEAT_FIRST = 300;
+const REPEAT_NEXT = 110;
 const TEXTY = ["text", "email", "password", "search", "url", "tel", "number", "date", "time"];
 
 /* Any meaningful intent from a pad — used to pick the active controller. */
@@ -24,10 +24,7 @@ function pad_is_active(pad) {
 export default function GamepadNavigator() {
 	const [profile, setProfile] = useState(null);
 	const [active, setActive] = useState(false);
-	const [inside, setInside] = useState(false);
-	/* `entered` holds the section whose controls are currently navigable —
-	   null means the stick is browsing sections, not buttons */
-	const state = useRef({ dir: null, next_at: 0, buttons: {}, pad_index: null, entered: null });
+	const state = useRef({ dir: null, next_at: 0, buttons: {}, pad_index: null });
 
 	useEffect(() => {
 		if (typeof navigator === "undefined" || !navigator.getGamepads) return;
@@ -51,30 +48,8 @@ export default function GamepadNavigator() {
 		};
 
 		const move = (dir) => {
-			const entered = state.current.entered;
-			/* section level: up/down walks the numbered blocks, nothing inside them */
-			if (!entered) {
-				const el = find_section(document.activeElement, dir);
-				if (el) focus_el(el, "start");
-				return;
-			}
-			const el = find_neighbour(document.activeElement, dir, entered);
-			if (el) focus_el(el);
-		};
-
-		const enter_section = (section) => {
-			const first = first_in_section(section);
-			if (!first) return;
-			state.current.entered = section;
-			setInside(true);
-			focus_el(first);
-		};
-
-		const exit_section = () => {
-			const section = state.current.entered;
-			state.current.entered = null;
-			setInside(false);
-			if (section) focus_el(section, "start");
+			const el = find_ordered_target(document.activeElement, dir);
+			if (el && el !== document.activeElement) focus_el(el);
 		};
 
 		const press = (pad, index, fn) => {
@@ -115,10 +90,15 @@ export default function GamepadNavigator() {
 			const ax = pad.axes[0] || 0;
 			const ay = pad.axes[1] || 0;
 			let dir = null;
-			if (pad.buttons[12]?.pressed || ay < -DEADZONE) dir = "up";
-			else if (pad.buttons[13]?.pressed || ay > DEADZONE) dir = "down";
-			else if (pad.buttons[14]?.pressed || ax < -DEADZONE) dir = "left";
-			else if (pad.buttons[15]?.pressed || ax > DEADZONE) dir = "right";
+			if (pad.buttons[12]?.pressed) dir = "up";
+			else if (pad.buttons[13]?.pressed) dir = "down";
+			else if (pad.buttons[14]?.pressed) dir = "left";
+			else if (pad.buttons[15]?.pressed) dir = "right";
+			else if (Math.max(Math.abs(ax), Math.abs(ay)) > DEADZONE) {
+				/* Lock diagonals to their dominant axis so one tilt is one movement. */
+				if (Math.abs(ay) >= Math.abs(ax)) dir = ay < 0 ? "up" : "down";
+				else dir = ax < 0 ? "left" : "right";
+			}
 
 			const now = performance.now();
 			const s = state.current;
@@ -142,9 +122,6 @@ export default function GamepadNavigator() {
 				if (!el || el === document.body) return;
 				playClick();
 				rumble(p, 0.35);
-				/* confirming a section drops into it — widgets are never activated
-				   just by scrolling past them */
-				if (el.hasAttribute?.("data-gp-section")) { enter_section(el); return; }
 				/* text fields do nothing useful on click — checkboxes and radios must
 				   still toggle, so only skip the typing ones */
 				if (el.tagName === "TEXTAREA") return;
@@ -158,9 +135,7 @@ export default function GamepadNavigator() {
 				rumble(p, 0.18);
 				const target = document.activeElement || document;
 				target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-				/* back out to section level rather than dumping focus entirely */
-				if (state.current.entered) exit_section();
-				else document.activeElement?.blur?.();
+				document.activeElement?.blur?.();
 			});
 
 			/* right stick scrolls the page — eased so small tilts creep and full
@@ -190,7 +165,7 @@ export default function GamepadNavigator() {
 
 		window.addEventListener("gamepadconnected", on_connect);
 		window.addEventListener("gamepaddisconnected", on_disconnect);
-		window.addEventListener("mousemove", on_pointer, { passive: true });
+		window.addEventListener("pointerdown", on_pointer, { passive: true });
 		window.addEventListener(OVERRIDE_EVENT, on_override);
 		if (Array.from(navigator.getGamepads?.() || []).some(Boolean)) on_connect();
 
@@ -198,7 +173,7 @@ export default function GamepadNavigator() {
 			if (raf) cancelAnimationFrame(raf);
 			window.removeEventListener("gamepadconnected", on_connect);
 			window.removeEventListener("gamepaddisconnected", on_disconnect);
-			window.removeEventListener("mousemove", on_pointer);
+			window.removeEventListener("pointerdown", on_pointer);
 			window.removeEventListener(OVERRIDE_EVENT, on_override);
 		};
 	}, []);
@@ -208,5 +183,5 @@ export default function GamepadNavigator() {
 	}, [active]);
 
 	if (!profile || !active) return null;
-	return <ControllerHints profile={profile} inside={inside} />;
+	return <ControllerHints profile={profile} />;
 }

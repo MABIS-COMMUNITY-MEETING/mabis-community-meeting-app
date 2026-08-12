@@ -7,7 +7,7 @@ import { MODE_LABEL } from "@/lib/gamepad_detect";
 
 /* Pinned input prompt bar — a thin floating optical strip. The material
    stays put when the controller family changes; only the glyphs swap. */
-export default function ControllerHints({ profile, inside = false }) {
+export default function ControllerHints({ profile }) {
 	const family = profile.family;
 	return (
 		<motion.div
@@ -27,13 +27,13 @@ export default function ControllerHints({ profile, inside = false }) {
 				</span>
 				<span className="flex-1 h-px bg-foreground/15" />
 				<span className="flex items-center gap-1.5 tech-label">
-					<span className="font-mono text-[10px]">✛</span> {inside ? "MOVE" : "SECTION"}
+					<span className="font-mono text-[10px]">✛</span> PREV / NEXT
 				</span>
 				<span className="flex items-center gap-1.5 tech-label">
-					<ControllerGlyph family={family} action="confirm" /> {inside ? "SELECT" : "ENTER"}
+					<ControllerGlyph family={family} action="confirm" /> SELECT
 				</span>
 				<span className="flex items-center gap-1.5 tech-label">
-					<ControllerGlyph family={family} action="cancel" /> {inside ? "EXIT" : "BACK"}
+					<ControllerGlyph family={family} action="cancel" /> BACK
 				</span>
 			</Glass>
 		</motion.div>

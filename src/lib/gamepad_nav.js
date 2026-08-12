@@ -121,3 +121,15 @@ export function first_in_section(section) {
 	if (!targets.length) return null;
 	return targets.reduce((a, b) => (b.r.top < a.r.top ? b : a)).el;
 }
+
+/* Predictable controller navigation: follow the same DOM order as keyboard Tab.
+   Both down/right advance; up/left go back. The list is rebuilt on each move so
+   dialogs, menus, and disabled controls are handled immediately. */
+export function find_ordered_target(current, dir) {
+	const targets = collect_targets().map(({ el }) => el);
+	if (!targets.length) return null;
+	const index = targets.indexOf(current);
+	if (index === -1) return targets[0];
+	const step = dir === "down" || dir === "right" ? 1 : -1;
+	return targets[Math.max(0, Math.min(targets.length - 1, index + step))];
+}
