@@ -320,6 +320,27 @@ body .text-amber-600, body .text-amber-700,
 body .text-yellow-600, body .text-yellow-700,
 body .text-orange-600, body .text-orange-700 { color: hsl(var(--secondary-foreground)) !important; }
 
+/* ── readability guard ───────────────────────────────────────────────
+   Widgets hardcode white text on what used to be a dark maroon fill. Those
+   fills now resolve to the active theme's primary/secondary, which in many
+   palettes is light — white on light is the "messed up" case. Wherever text
+   sits on a themed fill, it uses that fill's own foreground token instead. */
+body .bg-red-400.text-white, body .bg-red-500.text-white,
+body .bg-red-600.text-white, body .bg-red-700.text-white, body .bg-red-800.text-white,
+body .bg-red-400 .text-white, body .bg-red-500 .text-white,
+body .bg-red-600 .text-white, body .bg-red-700 .text-white, body .bg-red-800 .text-white,
+body .bg-primary .text-white, body .bg-primary.text-white {
+  color: hsl(var(--primary-foreground)) !important;
+}
+body .bg-red-600 .text-white\/60, body .bg-red-700 .text-white\/60,
+body .bg-primary .text-white\/60 { color: hsl(var(--primary-foreground) / 0.6) !important; }
+body .bg-red-600 .text-white\/80, body .bg-red-700 .text-white\/80,
+body .bg-primary .text-white\/80 { color: hsl(var(--primary-foreground) / 0.8) !important; }
+body .bg-secondary .text-white, body .bg-secondary.text-white,
+body .bg-\[\#EACE54\] .text-white, body .bg-\[\#EACE54\].text-white {
+  color: hsl(var(--secondary-foreground)) !important;
+}
+
 /* neutral surfaces follow the theme's own paper, in light themes too */
 body .bg-white { background-color: hsl(var(--card)) !important; }
 body .bg-gray-50, body .bg-gray-50\/50, body .bg-gray-100 { background-color: hsl(var(--muted)) !important; }

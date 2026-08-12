@@ -284,9 +284,10 @@ function buildTheme(s) {
   const roleL = s.mode === "dark" ? 0.76 : 0.5;
   const mk = (mode) => {
     const vars = mode === "dark" ? darkVars(s) : lightVars(s);
-    const L = mode === "dark" ? 0.76 : 0.5;
-    // roles are generated from the flag itself, but pulled to a legible band —
-    // raw flag hexes are never used for text
+    // Role colours are used two ways: as small text on a surface, and as a
+    // filled badge with white text on top. Only a mid band satisfies both, so
+    // every role sits at the same lightness regardless of the palette's mode.
+    const L = 0.54;
     ROLES.forEach((r, i) => { vars[r] = tone(s.flag[i % s.flag.length], L, 1.05, 0.17); });
     return vars;
   };
