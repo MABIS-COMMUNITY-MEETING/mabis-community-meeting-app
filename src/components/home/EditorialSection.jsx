@@ -26,8 +26,6 @@ export default function EditorialSection({ index = "00", label = "", jp = "", ch
 			whileInView="show"
 			viewport={{ once: true, margin: "-10% 0px" }}
 			variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
-			/* off-screen sections skip layout/paint entirely until scrolled near */
-			style={{ contentVisibility: "auto", containIntrinsicSize: "1px 900px" }}
 			className="relative outline-none grid grid-cols-1 lg:grid-cols-[7rem_1fr] gap-x-8"
 		>
 			{/* gutter: giant index + vertical japanese label */}
@@ -78,11 +76,12 @@ export default function EditorialSection({ index = "00", label = "", jp = "", ch
 					/>
 				</motion.div>
 
+				{/* no transform / clip / containment stays on this wrapper once revealed —
+				    those create a containing block that broke widgets' full-screen mode */}
 				<motion.div
-					style={{ perspective: 1400, transformStyle: "preserve-3d" }}
 					variants={{
-						hidden: { y: 26, opacity: 0, rotateX: 9, clipPath: "inset(0 0 100% 0)" },
-						show: { y: 0, opacity: 1, rotateX: 0, clipPath: "inset(0 0 0 0)", transition: { duration: 0.9, ease: EASE } },
+						hidden: { opacity: 0 },
+						show: { opacity: 1, transition: { duration: 0.7, ease: EASE } },
 					}}
 				>
 					{children}
