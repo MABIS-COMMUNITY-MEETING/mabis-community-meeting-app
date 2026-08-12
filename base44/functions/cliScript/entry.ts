@@ -6,7 +6,7 @@ const SCRIPT = `#!/usr/bin/env python3
 """MABIS Community Meeting — interactive terminal client."""
 import json, os, sys, urllib.request, urllib.error
 
-BASE = os.environ.get("MABIS_URL", "").rstrip("/")
+BASE = os.environ.get("MABIS_URL", "https://mabis-community-meeting.base44.app").rstrip("/")
 KEY = os.environ.get("MABIS_KEY", "")
 EMAIL = os.environ.get("MABIS_EMAIL", "")
 DOMAIN = "@montessoribkk.com"
