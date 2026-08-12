@@ -411,6 +411,10 @@ export function applyTheme(themeKey) {
   // was the clash. Tie them to the theme's own foreground/background instead.
   root.style.setProperty("--ink", theme.vars["--foreground"]);
   root.style.setProperty("--bone", theme.vars["--background"]);
+  // --destructive was the last fixed red in the app: shadcn destructive buttons,
+  // badges and alerts all read it, so every theme kept a red no matter its palette.
+  root.style.setProperty("--destructive", theme.vars["--primary"]);
+  root.style.setProperty("--destructive-foreground", theme.vars["--primary-foreground"]);
   document.body.classList.toggle("theme-is-dark", !!theme.dark);
   applyPalette(theme.swatches);
   applyCharacterTokens(theme.character);
@@ -476,6 +480,7 @@ export function applyCustomColors(primaryHex, secondaryHex) {
   root.style.setProperty("--secondary", hexToHsl(secondaryHex));
   root.style.setProperty("--accent", hexToHsl(secondaryHex));
   root.style.setProperty("--ring", hexToHsl(primaryHex));
+  root.style.setProperty("--destructive", hexToHsl(primaryHex));
   applyPalette([primaryHex, secondaryHex]);
   localStorage.setItem("mabis-custom-colors", JSON.stringify({ primary: primaryHex, secondary: secondaryHex }));
   window.dispatchEvent(new Event("themeChanged"));
