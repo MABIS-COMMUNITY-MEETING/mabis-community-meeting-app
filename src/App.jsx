@@ -17,16 +17,19 @@ import ScrollProgress from '@/components/ScrollProgress';
 import PaletteStripe from '@/components/PaletteStripe';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PageTransition from '@/components/PageTransition';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import Home from '@/pages/Home';
-import History from '@/pages/History';
-import AnnouncementsHistory from '@/pages/AnnouncementsHistory';
-import NewsHistory from '@/pages/NewsHistory';
-import Feedback from '@/pages/Feedback';
+import { lazy, Suspense } from 'react';
 import Splash from '@/pages/Splash';
+// Everything past the splash is code-split: the first paint no longer carries
+// the editor, widgets or archive pages in its bundle.
+const Login = lazy(() => import('@/pages/Login'));
+const Register = lazy(() => import('@/pages/Register'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const Home = lazy(() => import('@/pages/Home'));
+const History = lazy(() => import('@/pages/History'));
+const AnnouncementsHistory = lazy(() => import('@/pages/AnnouncementsHistory'));
+const NewsHistory = lazy(() => import('@/pages/NewsHistory'));
+const Feedback = lazy(() => import('@/pages/Feedback'));
 import LoadingScreen from '@/components/LoadingScreen';
 import MotionPreference from '@/components/MotionPreference';
 import PrefsSync from '@/components/PrefsSync';
@@ -35,21 +38,23 @@ const AnimatedRoutes = () => {
   const location = useLocation();
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Splash />} />
-        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-        <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
-        <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
-        <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
-        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-          <Route path="/home" element={<PageTransition><Home /></PageTransition>} />
-          <Route path="/history" element={<PageTransition><History /></PageTransition>} />
-          <Route path="/history/announcements" element={<PageTransition><AnnouncementsHistory /></PageTransition>} />
-          <Route path="/history/news" element={<PageTransition><NewsHistory /></PageTransition>} />
-          <Route path="/feedback" element={<PageTransition><Feedback /></PageTransition>} />
-        </Route>
-        <Route path="*" element={<PageTransition><PageNotFound /></PageTransition>} />
-      </Routes>
+      <Suspense fallback={<LoadingScreen />}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Splash />} />
+          <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+          <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+          <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
+          <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+          <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+            <Route path="/home" element={<PageTransition><Home /></PageTransition>} />
+            <Route path="/history" element={<PageTransition><History /></PageTransition>} />
+            <Route path="/history/announcements" element={<PageTransition><AnnouncementsHistory /></PageTransition>} />
+            <Route path="/history/news" element={<PageTransition><NewsHistory /></PageTransition>} />
+            <Route path="/feedback" element={<PageTransition><Feedback /></PageTransition>} />
+          </Route>
+          <Route path="*" element={<PageTransition><PageNotFound /></PageTransition>} />
+        </Routes>
+      </Suspense>
     </AnimatePresence>
   );
 };

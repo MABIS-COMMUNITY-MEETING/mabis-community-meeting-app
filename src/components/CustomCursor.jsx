@@ -23,7 +23,10 @@ export default function CustomCursor() {
     const ring = { x: pos.x, y: pos.y };
     let prev = { x: ring.x, y: ring.y, t: performance.now() };
     let scaleX = 1;
-    let raf;
+    let raf = null;
+    // render-on-demand: the loop sleeps once the ring has settled on the
+    // pointer, and wakes on the next movement / press.
+    const wake = () => { if (raf === null && !document.hidden) raf = requestAnimationFrame(loop); };
 
     let seen = false;
     const onMove = (e) => {
@@ -43,9 +46,11 @@ export default function CustomCursor() {
       r.classList.toggle("is-hover", !!t && !label);
       r.classList.toggle("is-label", !!label);
       r.textContent = label || "";
+      wake();
     };
-    const onDown = () => ringRef.current && (ringRef.current.style.opacity = "0.5");
-    const onUp = () => ringRef.current && (ringRef.current.style.opacity = "1");
+    const onDown = () => { ringRef.current && (ringRef.current.style.opacity = "0.5"); wake(); };
+    const onUp = () => { ringRef.current && (ringRef.current.style.opacity = "1"); wake(); };
+    const onVisibility = () => { if (document.hidden) { cancelAnimationFrame(raf); raf = null; } else wake(); };
 
     const loop = () => {
       const dx = pos.x - ring.x, dy = pos.y - ring.y;
@@ -64,15 +69,23 @@ export default function CustomCursor() {
         r.style.transform = `translate(${ring.x}px, ${ring.y}px) translate(-50%,-50%) rotate(${angle}deg) scale(${scaleX}, ${1 / Math.max(scaleX, 1)})`;
       }
       prev = { x: ring.x, y: ring.y, t: now };
+      // settled: nothing left to interpolate — stop burning frames
+      if (Math.abs(dx) < 0.05 && Math.abs(dy) < 0.05 && Math.abs(scaleX - 1) < 0.005) {
+        if (r) r.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%,-50%)`;
+        raf = null;
+        return;
+      }
       raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
+    wake();
 
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mousedown", onDown);
-    window.addEventListener("mouseup", onUp);
+    window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("mousedown", onDown, { passive: true });
+    window.addEventListener("mouseup", onUp, { passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       cancelAnimationFrame(raf);
+      document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("mouseup", onUp);
