@@ -171,7 +171,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
                     <span className="text-[10px] text-gray-400 ml-auto">{formatDate(n.created_date)}</span>
                     {isAdmin && (
                       <button onClick={() => deleteMutation.mutate(n.id)}
-                        className="p-1 rounded text-gray-300 hover:text-red-500 transition-colors">
+                        className="p-1 rounded text-gray-300 hover:text-destructive transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -181,7 +181,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
                     [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2
                     [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1
                     [&_li]:my-0.5 [&_h1]:text-base [&_h1]:font-bold [&_h2]:text-sm [&_h2]:font-semibold [&_p]:my-1
-                    [&_a]:text-blue-600 [&_a]:underline"
+                    [&_a]:text-primary [&_a]:underline"
                     dangerouslySetInnerHTML={{ __html: n.body }} />
                 </div>
               </motion.div>

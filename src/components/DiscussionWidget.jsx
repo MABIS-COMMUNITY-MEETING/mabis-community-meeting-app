@@ -46,12 +46,13 @@ function getNextWeekLabelFrom(weekLabel) {
   return `${getYear(d)}-W${String(getISOWeek(d)).padStart(2, "0")}`;
 }
 
+// Priority reads as intensity of the active theme's own colour, never a fixed red.
 const PRIORITY_COLORS = {
-  1: "bg-red-800 text-white",
-  2: "bg-red-600 text-white",
-  3: "bg-red-400 text-white",
-  4: "bg-red-300 text-red-900",
-  5: "bg-red-200 text-red-800",
+  1: "bg-primary text-primary-foreground",
+  2: "bg-primary/80 text-primary-foreground",
+  3: "bg-primary/60 text-primary-foreground",
+  4: "bg-primary/35 text-foreground",
+  5: "bg-primary/20 text-foreground",
 };
 
 const PRIORITY_LABELS = {
@@ -63,11 +64,11 @@ const PRIORITY_LABELS = {
 };
 
 const PRIORITY_DOT = {
-  1: "bg-red-800",
-  2: "bg-red-600",
-  3: "bg-red-400",
-  4: "bg-red-300",
-  5: "bg-red-200",
+  1: "bg-primary",
+  2: "bg-primary/80",
+  3: "bg-primary/60",
+  4: "bg-primary/35",
+  5: "bg-primary/20",
 };
 
 function TopicItem({ topic, compact, isAdmin, onToggle, onDelete, onEdit }) {
