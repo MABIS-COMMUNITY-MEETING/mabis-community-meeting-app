@@ -218,6 +218,13 @@ export default function GamepadNavigator() {
 				focus_el(first);
 			});
 
+			/* + / Menu / Options opens the site navigation overlay */
+			press(pad, action_binding(family, "start").index, (p) => {
+				setActive(true);
+				rumble(p, 0.22);
+				window.dispatchEvent(new CustomEvent("gamepadMenu"));
+			});
+
 			/* right stick scrolls the page — eased so small tilts creep and full
 			   tilt travels fast */
 			const ry = pad.axes[3] || 0;
