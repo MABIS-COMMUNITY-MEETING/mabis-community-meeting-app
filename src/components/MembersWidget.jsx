@@ -39,7 +39,7 @@ function MemberRow({ m, currentRole, canChangeRoles, isActive, onRoleChange, onD
         {m.email && <p className="text-[11px] text-gray-400 truncate">{m.email}</p>}
       </div>
       {canChangeRoles && (
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1">
           <Select onValueChange={(role) => onRoleChange(m.id, role)}>
             <SelectTrigger className="h-6 text-[10px] w-20 rounded border-gray-300 px-1.5 py-0">
               <SelectValue placeholder="Move →" />
@@ -50,9 +50,10 @@ function MemberRow({ m, currentRole, canChangeRoles, isActive, onRoleChange, onD
               ))}
             </SelectContent>
           </Select>
-          <button title="Remove" onClick={() => onDelete(m.id)}
-            className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors">
-            <UserMinus className="w-3.5 h-3.5" />
+          <button title={`Remove ${displayName(m)}`}
+            onClick={() => { if (window.confirm(`Remove ${displayName(m)} from members?`)) onDelete(m.id); }}
+            className="p-1.5 rounded-lg text-red-500 bg-red-50 hover:bg-red-100 transition-colors shrink-0">
+            <UserMinus className="w-4 h-4" />
           </button>
         </div>
       )}
