@@ -62,11 +62,13 @@ export default function FamicomController({ onUnlock }) {
   );
 
   return (
-    <div className="mt-8 flex justify-center">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-        className="relative select-none" style={{ width: 396, height: 168 }}
-      >
+    <div className="mt-8 flex justify-center overflow-hidden h-[126px] sm:h-[168px]">
+      <div className="shrink-0 scale-[0.75] origin-top sm:scale-100">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+          className="relative select-none"
+          style={{ width: 396, height: 168 }}
+        >
         {/* cable */}
         <div className="absolute" style={{ left: 0, top: 58, width: 40, height: 9, background: "#3a3a3a", borderRadius: 5 }} />
 
@@ -91,19 +93,16 @@ export default function FamicomController({ onUnlock }) {
           <div className="absolute" style={{ left: 12, right: 12, top: 99, height: 3, background: "#1c1c1c" }} />
           <div className="absolute" style={{ left: 12, right: 12, top: 109, height: 3, background: "#1c1c1c" }} />
 
-          {/* D-pad: red square recess 92x92 at (22,59) with black cross plate */}
-          {/* black outline cross */}
+          {/* D-pad */}
           <div className="absolute" style={{
             left: 18, top: 51, width: 94, height: 94, background: "#1b1b1b",
             clipPath: "polygon(32px 0, 62px 0, 62px 32px, 94px 32px, 94px 62px, 62px 62px, 62px 94px, 32px 94px, 32px 62px, 0 62px, 0 32px, 32px 32px)"
           }} />
-          {/* red cross plate */}
           <div className="absolute" style={{
             left: 20, top: 53, width: 90, height: 90, background: RED,
             clipPath: "polygon(30px 0, 60px 0, 60px 30px, 90px 30px, 90px 60px, 60px 60px, 60px 90px, 30px 90px, 30px 60px, 0 60px, 0 30px, 30px 30px)"
           }} />
           <div className="absolute" style={{ left: 23, top: 56, width: 84, height: 84 }}>
-            {/* black cross plate — arms 24px */}
             <div className="absolute" style={{
               left: 0, top: 0, width: 84, height: 84, background: "#1b1b1b",
               clipPath: "polygon(30px 0, 54px 0, 54px 30px, 84px 30px, 84px 54px, 54px 54px, 54px 84px, 30px 84px, 30px 54px, 0 54px, 0 30px, 30px 30px)"
@@ -136,7 +135,8 @@ export default function FamicomController({ onUnlock }) {
           {roundBtn("b", 253)}
           {roundBtn("a", 309)}
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }

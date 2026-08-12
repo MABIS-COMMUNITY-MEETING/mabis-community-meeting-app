@@ -29,10 +29,7 @@ export default function ForgotPassword() {
     <AuthLayout
       icon={Mail}
       title="Reset password"
-      titleJp="パスワード再設定"
       subtitle="We'll send you a link to reset it"
-      subtitleJp="再設定用のリンクをお送りします"
-      footerJp="ログイン画面に戻る"
       footer={
         <Link to="/login" className="text-primary font-medium hover:underline">
           <ArrowLeft className="w-3 h-3 inline mr-1" />Back to log in
@@ -42,12 +39,11 @@ export default function ForgotPassword() {
       {sent ? (
         <p className="text-sm text-foreground text-center">
           If an account exists with that email, you'll receive a password reset link shortly.
-          <span lang="ja" className="font-jp block mt-2 text-muted-foreground">そのメールアドレスのアカウントが存在する場合、まもなく再設定リンクが届きます。</span>
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email address <span lang="ja" className="font-jp text-muted-foreground">メールアドレス</span></Label>
+            <Label htmlFor="email">Email address</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
               <Input
@@ -67,10 +63,10 @@ export default function ForgotPassword() {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Sending... <span lang="ja" className="font-jp ml-1">送信中</span>
+                Sending...
               </>
             ) : (
-              <span className="flex items-center gap-2">Send reset link <span lang="ja" className="font-jp">再設定リンクを送信</span></span>
+              "Send reset link"
             )}
           </Button>
         </form>

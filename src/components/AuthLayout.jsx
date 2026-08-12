@@ -7,7 +7,7 @@ import { Plus } from "lucide-react";
  * crosshair decorations, and a glass content card. Preserves the same
  * { logo, title, subtitle, footer, children } contract used by all auth pages.
  */
-export default function AuthLayout({ icon: Icon, title, titleJp, subtitle, subtitleJp, footer, footerJp, logo, children }) {
+export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, children }) {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-bone text-foreground">
       <div className="grid-bg absolute inset-0 opacity-60" />
