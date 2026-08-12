@@ -578,9 +578,9 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
 
       {/* Top row: Wheel (left, centred) + Spinning For (right) — admin only */}
       {isAdmin && (
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
+        <div className="flex flex-col xl:flex-row gap-6 xl:gap-8 items-start">
           {/* Wheel — centred, bigger */}
-          <div className="flex flex-col items-center gap-4 flex-1">
+          <div className="flex flex-col items-center gap-4 flex-1 min-w-0 w-full">
 
             {/* Manage Students — admin only, popup over wheel */}
             <div className="w-full flex justify-center mb-2">
@@ -595,9 +595,9 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
               </p>
             )}
             {wheelMembers.length > 0 ? (
-              <div className="relative">
+              <div className="relative w-full flex flex-col items-center gap-4">
                 {showStudentMgr && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 bg-white rounded-xl shadow-xl border border-gray-200 p-2.5 max-h-[85%] overflow-y-auto w-full max-w-[280px]">
+                  <div className="w-full max-w-[420px] bg-white rounded-xl shadow-sm border border-gray-200 p-2.5 max-h-64 overflow-y-auto">
                     <div className="flex items-center justify-between mb-1.5">
                       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">{studentMembers.length} Students</p>
                       <button onClick={() => setShowStudentMgr(false)} className="text-gray-400 hover:text-gray-600">
@@ -642,7 +642,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
           </div>
 
           {/* Spinning For — right side, admin only */}
-          <div className="lg:w-64 shrink-0 w-full">
+          <div className="xl:w-72 shrink-0 w-full">
             <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Spinning for:</p>
             <SpinningForTable
               jobs={JOBS}

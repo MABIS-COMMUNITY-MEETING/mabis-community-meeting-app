@@ -29,18 +29,18 @@ function MemberRow({ m, currentRole, canChangeRoles, isActive, onRoleChange, onD
   return (
     <motion.div key={m.id}
       initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9, height: 0 }}
-      className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
+      className="flex flex-wrap items-center gap-x-2.5 gap-y-2 p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
       <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-white" style={{ border: `3px solid hsl(var(${cfg.roleVar}))`, boxSizing: "border-box" }}>
         {m.avatar_url
           ? <img src={m.avatar_url} alt="" className="w-full h-full object-cover" />
           : <img src={MABIS_LOGO} alt="" className="w-full h-full object-contain p-0.5" />}
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-[6rem]">
         <p className="text-sm font-medium text-gray-800 truncate">{displayName(m)}</p>
         {m.email && <p className="text-[11px] text-gray-400 truncate">{m.email}</p>}
       </div>
       {canChangeRoles && (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 ml-auto shrink-0">
           <Select onValueChange={(role) => onRoleChange(m.id, role)}>
             <SelectTrigger className="h-6 text-[10px] w-20 rounded border-gray-300 px-1.5 py-0">
               <SelectValue placeholder="Move →" />
@@ -59,7 +59,7 @@ function MemberRow({ m, currentRole, canChangeRoles, isActive, onRoleChange, onD
         </div>
       )}
       {isActive && (
-        <span className="shrink-0 relative inline-flex items-center justify-center w-2.5 h-2.5 mr-2" title="Active">
+        <span className="shrink-0 relative inline-flex items-center justify-center w-2.5 h-2.5" title="Active">
           <span className="absolute inset-0 rounded-full bg-[#951E3A] animate-soft-ping" />
           <span className="relative w-2.5 h-2.5 rounded-full bg-[#951E3A] shadow-sm" />
         </span>
@@ -205,7 +205,7 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
         {/* Students — 2 columns */}
         <div>
           <SectionHeader role="student" count={grouped.student.length} />
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-1.5">
             {grouped.student.length === 0 && <p className="text-gray-400 text-xs py-1.5 col-span-2">None yet</p>}
             <AnimatePresence>
               {grouped.student.map(m => <MemberRow key={m.id} m={m} currentRole="student" canChangeRoles={canChangeRoles} isActive={activeEmails.has((m.email || "").toLowerCase())} onRoleChange={handleRoleChange} onDelete={handleDelete} />)}
@@ -216,7 +216,7 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
         {/* Teachers — 2 columns */}
         <div>
           <SectionHeader role="teacher" count={grouped.teacher.length} />
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-1.5">
             {grouped.teacher.length === 0 && <p className="text-gray-400 text-xs py-1.5 col-span-2">None yet</p>}
             <AnimatePresence>
               {grouped.teacher.map(m => <MemberRow key={m.id} m={m} currentRole="teacher" canChangeRoles={canChangeRoles} isActive={activeEmails.has((m.email || "").toLowerCase())} onRoleChange={handleRoleChange} onDelete={handleDelete} />)}
