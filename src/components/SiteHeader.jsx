@@ -111,6 +111,9 @@ export default function SiteHeader({ rightSlot }) {
               <nav className="flex flex-col gap-1 sm:gap-2">
                 {NAV.map((item, i) => {
                   const active = location.pathname === item.to;
+                  // long labels ("Meeting History", "Feedback Inbox") would run
+                  // past the rule on narrow phones — scale them down to fit
+                  const size = item.label.length > 12 ? "text-[6vw]" : "text-[7.5vw]";
                   return (
                     <motion.button
                       key={item.to}
@@ -129,10 +132,10 @@ export default function SiteHeader({ rightSlot }) {
                           <motion.span layoutId="nav-active" className="absolute left-0 top-0 bottom-0 w-[3px] bg-secondary" />
                         )}
                         <span className="relative block overflow-hidden">
-                          <span className="block whitespace-nowrap text-[7.5vw] sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-none transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:-translate-y-full">
+                          <span className={`block whitespace-nowrap ${size} sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-none transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:-translate-y-full`}>
                             {item.label}
                           </span>
-                          <span className="absolute inset-0 block whitespace-nowrap text-[7.5vw] sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-none text-secondary translate-y-full transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0">
+                          <span className={`absolute inset-0 block whitespace-nowrap ${size} sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-none text-secondary translate-y-full transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0`}>
                             {item.label}
                           </span>
                         </span>
