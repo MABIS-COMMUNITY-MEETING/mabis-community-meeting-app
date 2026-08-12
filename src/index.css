@@ -392,16 +392,14 @@ body.gamepad-active [data-gp-section]:focus {
    Hover/focus/open-close transitions still respond, so the app never feels
    dead — only the looping, attention-grabbing layers stop. */
 html.animations-disabled { scroll-behavior: auto !important; }
-html.animations-disabled .grain-layer,
-html.animations-disabled .cursor-dot,
-html.animations-disabled .cursor-ring { display: none !important; }
-html.animations-disabled .marquee-track,
-html.animations-disabled .float-y,
-html.animations-disabled .spin-slow,
-html.animations-disabled .blob-drift,
-html.animations-disabled .blob-drift-2,
-html.animations-disabled .pulse-dot,
-html.animations-disabled .grid-bg { animation: none !important; }
+html.animations-disabled *:not(.cursor-dot):not(.cursor-ring),
+html.animations-disabled *:not(.cursor-dot):not(.cursor-ring)::before,
+html.animations-disabled *:not(.cursor-dot):not(.cursor-ring)::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+html.animations-disabled .grain-layer { display: none !important; }
 
 /* ── reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

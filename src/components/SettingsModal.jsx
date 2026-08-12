@@ -91,7 +91,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   <Accessibility className="w-4 h-4 text-[#951E3A]" />
                   <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Animations</h3>
                 </div>
-                <p className="text-xs text-gray-400 mb-3">Turns off distracting background motion — grain, floating shapes, scrolling text and the custom cursor. Buttons and menus keep working normally.</p>
+                <p className="text-xs text-gray-400 mb-3">Stops all motion across the app. The custom cursor stays.</p>
                 <button
                   onClick={() => { const value = !animationsOff; setAnimationsOff(value); setAnimationsDisabled(value); }}
                   className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${animationsOff ? "border-[#951E3A]/40 bg-[#951E3A]/5" : "border-gray-200"}`}
