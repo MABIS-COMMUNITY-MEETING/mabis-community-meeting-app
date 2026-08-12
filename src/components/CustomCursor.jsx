@@ -97,7 +97,7 @@ export default function CustomCursor() {
       // hard constraint: the dot can never leave the ring's interior
       const ox = ringX.x - dotX.x, oy = ringY.x - dotY.x;
       const od = Math.hypot(ox, oy);
-      const maxOffset = 13;
+      const maxOffset = 14;
       if (od > maxOffset) {
         const k = maxOffset / od;
         ringX.x = dotX.x + ox * k;
