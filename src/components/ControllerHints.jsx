@@ -27,7 +27,7 @@ export default function ControllerHints({ profile }) {
 				</span>
 				<span className="flex-1 h-px bg-foreground/15" />
 				<span className="flex items-center gap-1.5 tech-label">
-					<span className="font-mono text-[10px]">✛</span> PREV / NEXT
+					<span className="font-mono text-[10px]">✛</span> MOVE
 				</span>
 				<span className="flex items-center gap-1.5 tech-label">
 					<ControllerGlyph family={family} action="confirm" /> SELECT

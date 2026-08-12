@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { action_binding } from "@/lib/gamepad_profiles";
 import { resolve_profile, OVERRIDE_EVENT } from "@/lib/gamepad_detect";
-import { find_ordered_target } from "@/lib/gamepad_nav";
+import { find_neighbour } from "@/lib/gamepad_nav";
 import { playHover, playClick, playMenuClose } from "@/lib/sound";
 import ControllerHints from "@/components/ControllerHints";
 
@@ -48,7 +48,7 @@ export default function GamepadNavigator() {
 		};
 
 		const move = (dir) => {
-			const el = find_ordered_target(document.activeElement, dir);
+			const el = find_neighbour(document.activeElement, dir);
 			if (el && el !== document.activeElement) focus_el(el);
 		};
 
