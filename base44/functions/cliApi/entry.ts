@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { secrets } from 'base44:runtime';
 import { buildBoardText } from '../../shared/board.js';
+import { resolveActor, checkWrite, isMeetingGated } from '../../shared/perms.js';
 
 // Entities the terminal client is allowed to read/write.
 const ALLOWED = [
@@ -8,10 +9,7 @@ const ALLOWED = [
   'CalendarEvent', 'Member', 'LunchMenu', 'MissingItem', 'Birthday', 'CleaningEntry',
 ];
 
-// Adding/editing students and running the meeting is only possible while a
-// meeting is actually happening.
-const MEETING_ONLY = ['Member', 'JobAssignment'];
-const SCHOOL_DOMAIN = '@montessoribkk.com';
+// Permission model lives in shared/perms.js so it mirrors the site exactly.
 
 function isoWeekLabel(d: Date) {
   const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
@@ -59,14 +57,10 @@ export default async function (req: Request): Promise<Response> {
     const isWrite = ['create', 'update', 'delete'].includes(action);
 
     if (isWrite) {
-      const email = String(body.email || '').trim().toLowerCase();
-      if (!email.endsWith(SCHOOL_DOMAIN)) {
-        return Response.json(
-          { error: 'you must sign in with your ' + SCHOOL_DOMAIN + ' account to make changes' },
-          { status: 403 },
-        );
-      }
-      if (MEETING_ONLY.includes(entity) && !(await meetingIsOn(sr))) {
+      const actor = await resolveActor(sr, body.email);
+      const denied = checkWrite(actor, entity, action, body.data);
+      if (denied) return Response.json({ error: denied }, { status: 403 });
+      if (isMeetingGated(entity) && !(await meetingIsOn(sr))) {
         return Response.json(
           { error: 'meeting mode is off — ' + entity + ' changes are only allowed during a meeting' },
           { status: 403 },
