@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { action_binding } from "@/lib/gamepad_profiles";
 import { resolve_profile, OVERRIDE_EVENT } from "@/lib/gamepad_detect";
-import { find_neighbour, find_section, first_in_section } from "@/lib/gamepad_nav";
+import { collect_targets, find_neighbour, find_section, first_in_section } from "@/lib/gamepad_nav";
 import { gamepad_back, top_overlay } from "@/lib/gamepad_back";
 import { useNavigate, useLocation } from "react-router-dom";
 import { playHover, playClick, playMenuClose } from "@/lib/sound";
@@ -80,12 +80,21 @@ export default function GamepadNavigator() {
 				return;
 			}
 			const control = find_neighbour(document.activeElement, dir, entered);
-			if (control && control !== document.activeElement) focus_el(control);
+			if (control && control !== document.activeElement) { focus_el(control); return; }
+			/* dead end inside a section — step back out rather than trapping focus */
+			if (dir === "up" || dir === "down") {
+				exit_section();
+				const section = find_section(document.activeElement, dir);
+				if (section) focus_el(section);
+			}
 		};
 
 		const enter_section = (section) => {
 			const first = first_in_section(section);
 			if (!first) return;
+			/* a section holding a single control (e.g. Start Meeting) is that
+			   control — press it and stay at section level, never trap focus */
+			if (collect_targets(section).length === 1) { first.click(); return; }
 			state.current.entered = section;
 			setInside(true);
 			focus_el(first);
