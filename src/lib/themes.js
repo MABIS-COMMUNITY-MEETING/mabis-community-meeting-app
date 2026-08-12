@@ -255,7 +255,9 @@ export const THEMES = {
   // ── Pride flag palettes ──
   pride:       prideTheme("pride",       "Pride",       "348 97% 42%", "33 100% 42%", ["#E40303","#FF8C00","#FFED00","#008026","#004DFF","#750787"]),
   progress:    prideTheme("progress",    "Progress",    "265 82% 40%", "199 92% 45%", ["#E40303","#FF8C00","#FFED00","#008026","#004DFF","#750787","#5BCEFA","#F5A9B8"]),
-  trans:       prideTheme("trans",       "Trans",       "197 90% 42%", "349 85% 55%", ["#5BCEFA","#F5A9B8","#FFFFFF","#F5A9B8","#5BCEFA"]),
+  // the old secondary sat at 349° 85% — that read as red, not the flag's pink.
+  // Trans now leads with a true flag pink and answers with the flag's sky blue.
+  trans:       prideTheme("trans",       "Trans",       "338 72% 52%", "197 85% 48%", ["#5BCEFA","#F5A9B8","#FFFFFF","#F5A9B8","#5BCEFA"]),
   bi:          prideTheme("bi",          "Bisexual",    "324 97% 40%", "220 100% 38%",["#D60270","#9B4F96","#0038A8"]),
   lesbian:     prideTheme("lesbian",     "Lesbian",     "13 100% 40%", "322 92% 36%", ["#D52D00","#FF9A56","#FFFFFF","#D362A4","#A30262"]),
   pan:         prideTheme("pan",         "Pansexual",   "330 100% 44%","199 100% 42%",["#FF218C","#FFD800","#21B1FF"]),
