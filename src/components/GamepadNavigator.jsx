@@ -42,8 +42,8 @@ export default function GamepadNavigator() {
 		const focus_el = (el, block) => {
 			el.focus({ preventScroll: true });
 			const r = el.getBoundingClientRect();
-			if (block === "start" || r.top < 80 || r.bottom > window.innerHeight - 80) {
-				el.scrollIntoView({ block: block || "center", behavior: "auto" });
+			if (block === "start" || r.top < 104 || r.bottom > window.innerHeight - 104) {
+				el.scrollIntoView({ block: block || "center", behavior: "auto", inline: "nearest" });
 			}
 			playHover();
 		};

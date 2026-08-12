@@ -379,11 +379,15 @@ body.gamepad-active :focus::after {
     linear-gradient(hsl(var(--primary)), hsl(var(--primary))) right bottom / 1px 9px no-repeat;
 }
 /* whole-section focus reads as a soft field, not a button */
+body.gamepad-active [data-gp-section] {
+  scroll-margin-top: 6.5rem;
+  scroll-margin-bottom: 6rem;
+}
 body.gamepad-active [data-gp-section]:focus {
   outline: 2px solid hsl(var(--primary) / 0.9);
-  outline-offset: 8px;
+  outline-offset: 3px;
   background: hsl(var(--primary) / 0.035);
-  box-shadow: 0 0 0 1px hsl(var(--background)), 0 0 0 10px hsl(var(--primary) / 0.08);
+  box-shadow: 0 0 0 1px hsl(var(--background)), 0 0 0 5px hsl(var(--primary) / 0.08);
 }
 
 /* ── reduced motion ── */
