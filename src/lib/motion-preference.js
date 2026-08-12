@@ -2,7 +2,11 @@ const STORAGE_KEY = "mabis_animations_disabled";
 export const MOTION_EVENT = "mabis-motion-change";
 
 export function animationsDisabled() {
-  return localStorage.getItem(STORAGE_KEY) === "true";
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
 }
 
 export function applyAnimationPreference(disabled = animationsDisabled()) {
@@ -11,7 +15,11 @@ export function applyAnimationPreference(disabled = animationsDisabled()) {
 }
 
 export function setAnimationsDisabled(disabled) {
-  localStorage.setItem(STORAGE_KEY, String(disabled));
+  try {
+    localStorage.setItem(STORAGE_KEY, String(disabled));
+  } catch {
+    /* storage blocked — preference still applies for this session */
+  }
   applyAnimationPreference(disabled);
   window.dispatchEvent(new CustomEvent(MOTION_EVENT, { detail: disabled }));
 }
