@@ -9,9 +9,16 @@ import { integrateSpring } from "@/lib/physics/math";
  * Simple two-part cursor: a precise dot on the pointer and a soft ring
  * trailing it on a spring. No glass, no filters.
  */
+const TRAIL = [
+  { omega: 7.2, zeta: 0.72, size: 5, op: 0.5 },
+  { omega: 5.6, zeta: 0.7, size: 4, op: 0.34 },
+  { omega: 4.4, zeta: 0.68, size: 3, op: 0.2 },
+];
+
 export default function CustomCursor() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
+  const trailRefs = useRef([]);
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -27,6 +34,7 @@ export default function CustomCursor() {
     const cy = window.innerHeight / 2;
     const dotX = { x: cx, v: 0 }, dotY = { x: cy, v: 0 };
     const ringX = { x: cx, v: 0 }, ringY = { x: cy, v: 0 };
+    const trail = TRAIL.map(() => ({ x: { x: cx, v: 0 }, y: { x: cy, v: 0 } }));
     let visible = false;
 
     const step = (dt) => {
@@ -35,12 +43,20 @@ export default function CustomCursor() {
         visible = true;
         dotX.x = ringX.x = pointer.x;
         dotY.x = ringY.x = pointer.y;
+        trail.forEach((t) => { t.x.x = pointer.x; t.y.x = pointer.y; });
       }
       const P = MATERIAL.precision;
       integrateSpring(dotX, pointer.tx, P.omega, P.zeta, dt);
       integrateSpring(dotY, pointer.ty, P.omega, P.zeta, dt);
-      integrateSpring(ringX, dotX.x, 9.4, 0.82, dt);
-      integrateSpring(ringY, dotY.x, 9.4, 0.82, dt);
+      integrateSpring(ringX, dotX.x, 6.6, 0.66, dt);
+      integrateSpring(ringY, dotY.x, 6.6, 0.66, dt);
+      let px = dotX.x, py = dotY.x;
+      trail.forEach((t, i) => {
+        const c = TRAIL[i];
+        integrateSpring(t.x, px, c.omega, c.zeta, dt);
+        integrateSpring(t.y, py, c.omega, c.zeta, dt);
+        px = t.x.x; py = t.y.x;
+      });
     };
 
     const render = () => {
@@ -56,6 +72,12 @@ export default function CustomCursor() {
         r.style.opacity = op;
         r.style.transform = `translate3d(${ringX.x.toFixed(2)}px, ${ringY.x.toFixed(2)}px, 0) translate(-50%,-50%) scale(${s})`;
       }
+      trail.forEach((t, i) => {
+        const el = trailRefs.current[i];
+        if (!el) return;
+        el.style.opacity = pointer.inside ? String(TRAIL[i].op) : "0";
+        el.style.transform = `translate3d(${t.x.x.toFixed(2)}px, ${t.y.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
+      });
     };
 
     const settled = () => {
@@ -77,6 +99,15 @@ export default function CustomCursor() {
 
   return createPortal(
     <>
+      {TRAIL.map((c, i) => (
+        <div
+          key={i}
+          ref={(el) => { trailRefs.current[i] = el; }}
+          className="cursor-trail"
+          style={{ opacity: 0, width: c.size, height: c.size }}
+          aria-hidden
+        />
+      ))}
       <div ref={dotRef} className="cursor-dot" style={{ opacity: 0 }} aria-hidden />
       <div ref={ringRef} className="cursor-ring" style={{ opacity: 0 }} aria-hidden />
     </>,
