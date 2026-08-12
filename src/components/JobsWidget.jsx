@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
 import { getISOWeek, getYear, nextFriday, isFriday, format, addWeeks } from "date-fns";
 import { displayName } from "@/lib/names";
+import { playWheelTick, playWheelStart, playWheelWin } from "@/lib/wheel_sound";
 
 const JOBS = [
   { id: "water1", label: "Water Plants (1)" },
@@ -160,6 +161,7 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
     if (spinningRef.current || members.length === 0 || disabled) return;
     spinningRef.current = true;
     setIsSpinning(true);
+    playWheelStart();
 
     const fullRotations = 5 + Math.random() * 3;
     const totalRot = Math.PI * 2 * fullRotations;
@@ -177,15 +179,24 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
       return Math.floor(diff / arc) % members.length;
     };
 
+    // one wooden knock each time a segment edge passes the pointer
+    let lastSeg = segmentAt(startRot);
+
     const animate = (now) => {
       const p = Math.min((now - start) / duration, 1);
       rotationRef.current = startRot + totalRot * easeOut(p);
       drawWheel(rotationRef.current);
+      const seg = segmentAt(rotationRef.current);
+      if (seg !== lastSeg) {
+        lastSeg = seg;
+        playWheelTick(p);
+      }
       if (p < 1) {
         rafRef.current = requestAnimationFrame(animate);
       } else {
         spinningRef.current = false;
         setIsSpinning(false);
+        playWheelWin();
         onSpinComplete(members[segmentAt(rotationRef.current)]);
       }
     };
