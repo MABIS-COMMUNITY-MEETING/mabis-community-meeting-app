@@ -400,6 +400,12 @@ html.animations-disabled *:not(.cursor-dot):not(.cursor-ring)::after {
   scroll-behavior: auto !important;
 }
 html.animations-disabled .grain-layer { display: none !important; }
+/* the custom cursor stays fully alive in quiet mode */
+html.animations-disabled .cursor-dot,
+html.animations-disabled .cursor-ring {
+  animation: revert !important;
+  transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease !important;
+}
 
 /* ── reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
