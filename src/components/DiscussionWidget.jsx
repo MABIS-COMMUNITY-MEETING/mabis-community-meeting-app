@@ -512,8 +512,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   // ── MEETING MODE ──────────────────────────────────────────────────────────
   if (meetingMode) {
     return createPortal(
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="fixed inset-0 bg-[#f7f7f8] z-[80] flex flex-col">
-        <div className="bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3 shrink-0">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="fixed inset-0 bg-background text-foreground z-[80] flex flex-col overflow-x-hidden">
+        <div className="bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col items-start gap-3 shrink-0 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="text-white/60 text-xs uppercase tracking-widest mb-0.5">Meeting Mode</p>
             <h2 className="font-display font-bold text-white text-lg sm:text-2xl">{
@@ -523,13 +523,13 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               })()
             }</h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
             <button onClick={() => { actionRef.current = "pause"; setMeetingPaused(true); setMeetingMode(false); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/30 transition-colors">
+              className="flex min-h-11 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/30 transition-colors">
               <Pause className="w-3.5 h-3.5" /> Pause
             </button>
             <button onClick={() => { actionRef.current = "end"; setMeetingMode(false); setMeetingPaused(false); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/30 transition-colors">
+              className="flex min-h-11 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/30 transition-colors">
               <Square className="w-3.5 h-3.5" /> End
             </button>
           </div>
@@ -542,8 +542,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto px-6 py-6 space-y-8">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="w-full max-w-7xl mx-auto px-3 py-5 space-y-6 sm:px-6 sm:py-6 sm:space-y-8">
 
             {/* Attendance + Role Change */}
             <section className="space-y-3">
@@ -616,7 +616,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
 
             {/* Topics */}
             <section>
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex flex-wrap items-center gap-3 mb-4">
                 <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
                 <h3 className="font-display font-bold text-gray-800 text-xl">Discussion Topics</h3>
                 <span className="text-sm text-gray-400">{viewedTopics.filter(t => t.completed).length}/{viewedTopics.length} done</span>
