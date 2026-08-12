@@ -31,9 +31,9 @@ export const CURSOR = {
   shearMax: 0.72,     // max |s| in the area-preserving matrix
   shearAlpha: 0.00110, // speed → shear gain, fed through tanh
   /** trail */
-  trailNodes: 5,
-  trailLink: 9,
-  trailRetain: 0.82,
+  trailNodes: 12,
+  trailLink: 7,
+  trailRetain: 0.90,
 };
 
 export const MAGNET = {

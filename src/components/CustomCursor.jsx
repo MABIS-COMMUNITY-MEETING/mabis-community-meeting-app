@@ -175,9 +175,11 @@ export default function CustomCursor() {
       for (let i = 0; i < rope.length; i++) {
         const el = trailRefs.current[i];
         if (!el) continue;
-        const fall = 1 - i / (rope.length + 1);
-        el.style.opacity = (intensity * 0.42 * fall).toFixed(3);
-        el.style.transform = `translate3d(${rope[i].x.toFixed(2)}px, ${rope[i].y.toFixed(2)}px, 0) translate(-50%,-50%) scale(${fall.toFixed(3)})`;
+        // tadpole tail: always present, tapering to a fine point
+        const fall = 1 - i / rope.length;
+        const taper = Math.pow(fall, 1.6);
+        el.style.opacity = ((0.30 + intensity * 0.55) * taper).toFixed(3);
+        el.style.transform = `translate3d(${rope[i].x.toFixed(2)}px, ${rope[i].y.toFixed(2)}px, 0) translate(-50%,-50%) scale(${(taper * 1.5).toFixed(3)})`;
       }
     };
 
