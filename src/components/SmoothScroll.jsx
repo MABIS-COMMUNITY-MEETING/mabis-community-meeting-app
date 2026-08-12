@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { animationsDisabled } from "@/lib/motion-preference";
 /**
  * Inertial smooth scrolling, tuned per input device:
  * - Mouse wheels (Windows/Linux/Mac mice) get the rAF-eased inertial scroll.
@@ -12,7 +13,7 @@ export default function SmoothScroll() {
   useEffect(() => {
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!fine || reduced) return;
+    if (!fine || reduced || animationsDisabled()) return;
 
     let target = window.scrollY;
     let current = target;

@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { MotionConfig } from "framer-motion";
 import { animationsDisabled, applyAnimationPreference, MOTION_EVENT } from "@/lib/motion-preference";
 
+/* When motion is off we force every framer animation to zero duration (so
+   reveals, page transitions and staggers land instantly) on top of the CSS
+   rules that stop keyframes and transitions. */
 export default function MotionPreference({ children }) {
   const [disabled, setDisabled] = useState(animationsDisabled);
 
@@ -12,5 +15,13 @@ export default function MotionPreference({ children }) {
     return () => window.removeEventListener(MOTION_EVENT, update);
   }, [disabled]);
 
-  return <MotionConfig reducedMotion={disabled ? "always" : "user"}>{children}</MotionConfig>;
+  return (
+    <MotionConfig
+      key={disabled ? "static" : "motion"}
+      reducedMotion={disabled ? "always" : "user"}
+      transition={disabled ? { duration: 0, delay: 0 } : undefined}
+    >
+      {children}
+    </MotionConfig>
+  );
 }
