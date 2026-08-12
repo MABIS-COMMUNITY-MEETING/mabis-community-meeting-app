@@ -10,10 +10,10 @@
  */
 
 export const MATERIAL = {
-  /** cursor centre, tiny controls — essentially no overshoot */
-  precision: { omega: 19, zeta: 1.0 },
-  /** outer cursor ring — light, calm follow-through */
-  glass: { omega: 14, zeta: 0.96 },
+  /** cursor centre, tiny controls — immediate without snapping */
+  precision: { omega: 32, zeta: 1.0 },
+  /** outer cursor ring — close, fluid follow-through */
+  glass: { omega: 23, zeta: 0.92 },
   /** contextual label — settles last, softest */
   paper: { omega: 12, zeta: 0.95 },
   /** large typography / panels — apparent mass */
@@ -22,16 +22,16 @@ export const MATERIAL = {
 
 export const CURSOR = {
   /** anisotropy: the ring is looser along travel, stiffer across it */
-  tangentScale: 0.72,
-  normalScale: 1.2,
+  tangentScale: 0.9,
+  normalScale: 1.1,
   /** prediction horizon bounds, seconds */
-  tauMin: 0,
-  tauMax: 0.007,
+  tauMin: 0.004,
+  tauMax: 0.012,
   /** deformation */
-  shearMax: 0.24,      // max |s| in the area-preserving matrix
-  shearAlpha: 0.00028, // speed → shear gain, fed through tanh
+  shearMax: 0.16,      // max |s| in the area-preserving matrix
+  shearAlpha: 0.00022, // speed → shear gain, fed through tanh
   /** how far the body may lag behind the core, px */
-  maxLag: 14,
+  maxLag: 8,
   /** tail chain */
   trailNodes: 12,
   trailLink: 7,
