@@ -8,6 +8,8 @@ import json, os, sys, urllib.request, urllib.error
 
 BASE = os.environ.get("MABIS_URL", "").rstrip("/")
 KEY = os.environ.get("MABIS_KEY", "")
+EMAIL = os.environ.get("MABIS_EMAIL", "")
+DOMAIN = "@montessoribkk.com"
 
 C = {"h": "\\033[1;35m", "d": "\\033[2m", "g": "\\033[32m", "r": "\\033[31m",
      "y": "\\033[33m", "b": "\\033[1m", "x": "\\033[0m"}
@@ -21,7 +23,7 @@ def ask(p, default=""):
     return v or default
 
 def api(action, **kw):
-    payload = {"key": KEY, "action": action}
+    payload = {"key": KEY, "action": action, "email": EMAIL}
     payload.update(kw)
     req = urllib.request.Request(BASE + "/api/functions/cliApi",
                                  data=json.dumps(payload).encode(),
@@ -185,11 +187,15 @@ def jobs():
                 api("delete", entity="JobAssignment", id=j["id"])
 
 def main():
-    global BASE, KEY
+    global BASE, KEY, EMAIL
     if not BASE:
         BASE = ask("App URL (e.g. https://myapp.base44.app): ").rstrip("/")
     if not KEY:
         KEY = ask("Access key: ")
+    while not EMAIL.lower().endswith(DOMAIN):
+        EMAIL = ask("Sign in with your " + DOMAIN + " account: ").lower()
+        if EMAIL and not EMAIL.endswith(DOMAIN):
+            print(C["r"] + "  only " + DOMAIN + " accounts can make changes" + C["x"])
     while True:
         header("COMMUNITY MEETING")
         print("  " + C["b"] + "1" + C["x"] + "  Board (full read-only view)")
