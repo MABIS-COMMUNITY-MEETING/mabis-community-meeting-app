@@ -13,7 +13,7 @@ export const MATERIAL = {
   /** cursor centre, tiny controls — essentially no overshoot */
   precision: { omega: 26, zeta: 1.0 },
   /** outer cursor ring — a whisper of inertial tail */
-  glass: { omega: 10, zeta: 0.62 },
+  glass: { omega: 8.21, zeta: 0.62 },
   /** contextual label — settles last, softest */
   paper: { omega: 12, zeta: 0.95 },
   /** large typography / panels — apparent mass */
