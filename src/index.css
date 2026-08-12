@@ -177,63 +177,42 @@
 /* ── custom cursor ── */
 .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; mix-blend-mode: difference; }
 .cursor-dot { width: 6px; height: 6px; background: #fff; transform: translate(-50%,-50%); }
-/* ── liquid-glass body ──────────────────────────────────────────────
-   The ring is no longer a stroked circle: it is a small optical volume.
-   The page behind it is resampled through a thin-lens displacement field
-   (#lg-lens), so content bends through the thick centre; a Fresnel-style
-   rim (grazing-angle bright edge + inner shading) defines the silhouette,
-   and a soft specular cap reads as the curved top surface. No opacity
-   fills, no frosted panel. */
-.cursor-ring {
-  width: 38px; height: 38px;
-  transform: translate(-50%,-50%);
-  mix-blend-mode: normal;
-  border: none;
-  display:flex; align-items:center; justify-content:center;
-  font-family:'Iosevka',monospace; font-size:9px; letter-spacing:0.08em;
-  color: hsl(var(--foreground)); text-transform:uppercase;
-  -webkit-backdrop-filter: url(#lg-lens) saturate(1.06);
-  backdrop-filter: url(#lg-lens) saturate(1.06);
-  background:
-    radial-gradient(120% 90% at 32% 22%, hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.06) 42%, transparent 62%),
-    radial-gradient(100% 100% at 50% 50%, transparent 58%, var(--glass-tint, hsl(var(--primary) / 0.16)) 100%);
-  box-shadow:
-    inset 0 0 0 0.6px hsl(0 0% 100% / 0.55),
-    inset 0 1.5px 2px hsl(0 0% 100% / 0.35),
-    inset 0 -2px 3px var(--glass-rim, hsl(var(--primary) / 0.5)),
-    0 1px 2px hsl(var(--foreground) / 0.16),
-    0 6px 16px -6px hsl(var(--foreground) / 0.22);
-  transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), box-shadow .25s ease, opacity .2s ease, background .3s ease;
+/* ── TADPOLE LIQUID GLASS ────────────────────────────────────────────
+   The cursor is a swimming body of clear glass. The page beneath it is
+   resampled through a displacement map baked from the tadpole's own
+   silhouette (#tad-lens), so the fat head bends type strongly and the tail
+   barely at all. Near-neutral tint, almost no blur: refraction and optical
+   depth do the work, not frosting. */
+.cursor-tad {
+  position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 9999;
+  transform-origin: 0 0;
+  transition: opacity .2s ease;
+  filter: drop-shadow(0 1px 1px hsl(var(--foreground) / 0.18))
+          drop-shadow(0 6px 14px hsl(var(--foreground) / 0.16));
 }
-/* click: the volume flexes and light gathers inside it, then settles */
-.cursor-ring.is-press {
-  box-shadow:
-    inset 0 0 0 0.8px hsl(0 0% 100% / 0.7),
-    inset 0 0 10px 2px var(--glass-tint, hsl(var(--primary) / 0.35)),
-    inset 0 -3px 6px var(--glass-rim, hsl(var(--primary) / 0.7)),
-    0 1px 2px hsl(var(--foreground) / 0.24),
-    0 4px 10px -6px hsl(var(--foreground) / 0.3);
+.cursor-tad-glass {
+  position: absolute; inset: 0;
+  -webkit-backdrop-filter: url(#tad-lens) saturate(1.05) brightness(1.02);
+  backdrop-filter: url(#tad-lens) saturate(1.05) brightness(1.02);
+  background: linear-gradient(180deg, hsl(0 0% 100% / 0.1), hsl(0 0% 100% / 0.02) 55%, var(--glass-tint, hsl(var(--primary) / 0.07)));
 }
+.cursor-tad-ink { position: absolute; inset: 0; overflow: visible; }
+.cursor-tad-ink path { fill: none; }
+/* hairline silhouette — thin, dark, always legible */
+.tad-line { stroke: hsl(var(--foreground) / 0.62); stroke-width: 1; }
+.tad-spec { stroke: hsl(0 0% 100% / 0.9); stroke-width: 1.5; }
+.tad-rim { stroke: var(--pride-edge, hsl(var(--primary))); stroke-width: 1.2; opacity: .5; mix-blend-mode: screen; }
+.tad-glint { fill: hsl(0 0% 100% / 0.55); }
+.cursor-tad.is-hover .tad-rim { opacity: .78; }
+.cursor-tad.is-press .tad-spec { stroke: hsl(0 0% 100% / 1); }
+.cursor-tad.is-press .tad-glint { fill: hsl(0 0% 100% / 0.85); }
 .cursor-label { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; font-family: 'Iosevka', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; white-space: nowrap; }
 .cursor-trail { position: fixed; top: 0; left: 0; width: 5px; height: 5px; pointer-events: none; z-index: 9999; border-radius: 999px; background: #fff; mix-blend-mode: difference; transform: translate(-50%,-50%); }
-/* larger states are not the same thin glass scaled up — they read as a
-   materially THICKER volume: stronger lensing, deeper rim, deeper shadow */
-.cursor-ring.is-hover { width: 46px; height: 46px; }
-.cursor-ring.is-label {
-  width: 62px; height: 62px;
-  -webkit-backdrop-filter: url(#lg-lens-thick) saturate(1.12);
-  backdrop-filter: url(#lg-lens-thick) saturate(1.12);
-  box-shadow:
-    inset 0 0 0 0.7px hsl(0 0% 100% / 0.62),
-    inset 0 2px 3px hsl(0 0% 100% / 0.4),
-    inset 0 -3px 5px var(--glass-rim, hsl(var(--primary) / 0.6)),
-    0 2px 4px hsl(var(--foreground) / 0.2),
-    0 12px 28px -10px hsl(var(--foreground) / 0.3);
-}
 body.gamepad-active .cursor-dot,
 body.gamepad-active .cursor-trail,
 body.gamepad-active .cursor-label,
-body.gamepad-active .cursor-ring { display: none !important; }
+body.gamepad-active .cursor-tad { display: none !important; }
 
 /* ── japanese (Hina Mincho ships at one weight — thicken optically) ── */
 .font-jp { -webkit-text-stroke: 0.45px currentColor; paint-order: stroke fill; }
@@ -419,7 +398,7 @@ body .text-gray-300, body .text-gray-400, body .text-gray-500 { color: hsl(var(-
 
 /* palette transition — colour travels through the interface instead of snapping */
 body.theme-shifting,
-body.theme-shifting *:not(.cursor-dot):not(.cursor-ring):not(.cursor-trail) {
+body.theme-shifting *:not(.cursor-dot):not(.cursor-tad):not(.cursor-tad-glass):not(.cursor-trail) {
   transition: background-color .62s cubic-bezier(.16,1,.3,1),
               border-color .62s cubic-bezier(.16,1,.3,1),
               color .5s cubic-bezier(.16,1,.3,1),
@@ -427,11 +406,9 @@ body.theme-shifting *:not(.cursor-dot):not(.cursor-ring):not(.cursor-trail) {
 }
 
 body.pride-active .cursor-dot { background: var(--pride-glow); mix-blend-mode: normal; }
-/* the palette enters the glass as absorption tint and edge refraction colour,
-   never as a painted fill */
-body.pride-active .cursor-ring {
-  --glass-rim: color-mix(in oklab, var(--pride-edge) 72%, transparent);
-  --glass-tint: color-mix(in oklab, var(--pride-highlight) 26%, transparent);
+/* the palette enters the glass as faint absorption tint and rim light only */
+body.pride-active .cursor-tad {
+  --glass-tint: color-mix(in oklab, var(--pride-highlight) 12%, transparent);
 }
 body.pride-active .cursor-trail { background: var(--pride-highlight); mix-blend-mode: normal; }
 
@@ -589,9 +566,9 @@ body.gamepad-active [data-gp-section]:focus {
    Hover/focus/open-close transitions still respond, so the app never feels
    dead — only the looping, attention-grabbing layers stop. */
 html.animations-disabled { scroll-behavior: auto !important; }
-html.animations-disabled *:not(.cursor-dot):not(.cursor-ring),
-html.animations-disabled *:not(.cursor-dot):not(.cursor-ring)::before,
-html.animations-disabled *:not(.cursor-dot):not(.cursor-ring)::after {
+html.animations-disabled *:not(.cursor-dot):not(.cursor-tad),
+html.animations-disabled *:not(.cursor-dot):not(.cursor-tad)::before,
+html.animations-disabled *:not(.cursor-dot):not(.cursor-tad)::after {
   animation: none !important;
   transition: none !important;
   scroll-behavior: auto !important;
@@ -601,9 +578,9 @@ html.animations-disabled .grain-layer { display: none !important; }
 html.animations-disabled .cursor-dot,
 html.animations-disabled .cursor-trail,
 html.animations-disabled .cursor-label,
-html.animations-disabled .cursor-ring {
+html.animations-disabled .cursor-tad {
   animation: revert !important;
-  transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease !important;
+  transition: opacity .2s ease !important;
 }
 
 /* ── touch devices: reliable, comfortably sized tap targets ── */
@@ -640,5 +617,5 @@ html.animations-disabled .cursor-ring {
   .grain-layer { animation: none; }
   .marquee-track { animation: none; }
   body.cursor-ready, body.cursor-ready * { cursor: auto !important; }
-  .cursor-dot, .cursor-trail, .cursor-label, .cursor-ring { display: none !important; }
+  .cursor-dot, .cursor-trail, .cursor-label, .cursor-tad { display: none !important; }
 }

@@ -10,7 +10,6 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import SoundEffects from '@/components/SoundEffects';
 import CustomCursor from '@/components/CustomCursor';
-import GlassRefraction from '@/components/GlassRefraction';
 import GamepadNavigator from '@/components/GamepadNavigator';
 import GrainOverlay from '@/components/GrainOverlay';
 import SmoothScroll from '@/components/SmoothScroll';
@@ -88,7 +87,6 @@ function App() {
             <SmoothScroll />
             <GrainOverlay />
             <PrideAmbience />
-            <GlassRefraction />
             <CustomCursor />
             <PaletteStripe />
             <ScrollProgress />
