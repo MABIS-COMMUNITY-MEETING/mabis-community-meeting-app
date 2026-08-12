@@ -253,8 +253,11 @@ function hexToHslStr(hex) {
 
 function applyExact(vars, s) {
   if (!s.exact) return vars;
-  const ink = vars["--foreground"];
-  const on = (hex) => (parseInt(hexToHslStr(hex).split(" ")[2]) > 58 ? ink : "0 0% 100%");
+  // Text on an exact flag fill must contrast with THAT fill, never with the
+  // page. In dark mode --foreground is near-white, so using it on a light flag
+  // colour (the ADMIN badge on lesbian orange) washed the label out.
+  const darkInk = surface(s.dominant, 0.20, 0.03);
+  const on = (hex) => (parseInt(hexToHslStr(hex).split(" ")[2]) > 58 ? darkInk : "0 0% 100%");
   vars["--primary"] = hexToHslStr(s.dominant);
   vars["--primary-foreground"] = on(s.dominant);
   vars["--secondary"] = hexToHslStr(s.secondary);

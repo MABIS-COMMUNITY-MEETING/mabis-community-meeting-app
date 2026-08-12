@@ -405,7 +405,9 @@ body.pride-active a:hover { text-decoration-color: var(--pride-glow); }
 body.pride-active input:focus,
 body.pride-active textarea:focus,
 body.pride-active select:focus { box-shadow: 0 0 0 1px var(--pride-edge), 0 0 12px -4px var(--pride-glow); }
-body.pride-active .tech-label { color: hsl(var(--muted-foreground)); }
+/* quiet by default — but never repaint a label that sits on its own fill
+   (the ADMIN / EDITOR badges), or it washes out against the colour */
+body.pride-active .tech-label:not([class*="bg-"]):not([style*="background"]) { color: hsl(var(--muted-foreground)); }
 body.pride-active .bg-card.rounded-2xl.shadow-sm:hover,
 body.pride-active .bg-white.rounded-2xl.shadow-sm:hover {
   border-color: var(--pride-edge);
