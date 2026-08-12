@@ -30,12 +30,19 @@ export default function CustomCursor() {
     const stopPointer = startPointerEngine();
     const root = document.getElementById("root");
 
+    // the defs host must exist before the engine is built — the portal only
+    // mounts on the next render, so it is created imperatively here
+    const defsHost = document.createElement("div");
+    defsHost.style.cssText = "position:fixed;width:0;height:0;overflow:hidden";
+    document.body.appendChild(defsHost);
+    defsRef.current = defsHost;
+
     let engine = null;
     try {
       engine = new LiquidGlassEngine({
         container: root,
         filtered: root,
-        defsHost: defsRef.current,
+        defsHost,
       });
       engine.setOptions({
         width: 54,
@@ -47,7 +54,6 @@ export default function CustomCursor() {
         depth: 12,
         glow: 0.18,
         edgeHighlight: 0.35,
-        shadow: false,
       });
     } catch {
       engine = null;
@@ -97,6 +103,7 @@ export default function CustomCursor() {
       unsubscribe();
       stopPointer();
       engine?.destroy?.();
+      defsHost.remove();
       document.body.classList.remove("cursor-ready");
     };
   }, []);
@@ -105,7 +112,6 @@ export default function CustomCursor() {
 
   return createPortal(
     <>
-      <svg ref={defsRef} width="0" height="0" aria-hidden style={{ position: "fixed" }} />
       <div ref={dotRef} className="cursor-dot" style={{ opacity: 0 }} aria-hidden />
     </>,
     document.body
