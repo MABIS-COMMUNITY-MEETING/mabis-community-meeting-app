@@ -180,6 +180,8 @@
 .cursor-ring { width: 38px; height: 38px; border: 1px solid #fff; transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:'Iosevka',monospace; font-size:9px; letter-spacing:0.08em; color:#fff; text-transform:uppercase; }
 .cursor-ring.is-hover { width: 46px; height: 46px; background:transparent; }
 .cursor-ring.is-label { width: 62px; height: 62px; background:rgba(255,255,255,0.14); }
+body.gamepad-active .cursor-dot,
+body.gamepad-active .cursor-ring { display: none !important; }
 
 /* ── japanese (Hina Mincho ships at one weight — thicken optically) ── */
 .font-jp { -webkit-text-stroke: 0.45px currentColor; paint-order: stroke fill; }

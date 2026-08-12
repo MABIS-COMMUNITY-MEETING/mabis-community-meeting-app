@@ -48,23 +48,13 @@ export default function GamepadNavigator() {
 		const move = (dir) => {
 			const entered = state.current.entered;
 			if (!entered) {
+				if (dir === "left" || dir === "right") return;
 				const section = find_section(document.activeElement, dir);
-				if (section && section !== document.activeElement) focus_el(section, "start");
+				if (section && section !== document.activeElement) focus_el(section);
 				return;
 			}
 			const control = find_neighbour(document.activeElement, dir, entered);
-			if (control && control !== document.activeElement) {
-				focus_el(control);
-				return;
-			}
-			if (dir === "up" || dir === "down") {
-				const section = find_section(entered, dir);
-				if (section && section !== entered) {
-					state.current.entered = null;
-					setInside(false);
-					focus_el(section);
-				}
-			}
+			if (control && control !== document.activeElement) focus_el(control);
 		};
 
 		const enter_section = (section) => {
@@ -200,7 +190,7 @@ export default function GamepadNavigator() {
 
 		window.addEventListener("gamepadconnected", on_connect);
 		window.addEventListener("gamepaddisconnected", on_disconnect);
-		window.addEventListener("pointerdown", on_pointer, { passive: true });
+		window.addEventListener("pointermove", on_pointer, { passive: true });
 		window.addEventListener(OVERRIDE_EVENT, on_override);
 		if (Array.from(navigator.getGamepads?.() || []).some(Boolean)) on_connect();
 
@@ -208,7 +198,7 @@ export default function GamepadNavigator() {
 			if (raf) cancelAnimationFrame(raf);
 			window.removeEventListener("gamepadconnected", on_connect);
 			window.removeEventListener("gamepaddisconnected", on_disconnect);
-			window.removeEventListener("pointerdown", on_pointer);
+			window.removeEventListener("pointermove", on_pointer);
 			window.removeEventListener(OVERRIDE_EVENT, on_override);
 		};
 	}, []);
