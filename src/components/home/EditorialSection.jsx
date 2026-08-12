@@ -26,7 +26,7 @@ export default function EditorialSection({ index = "00", label = "", jp = "", ch
 			whileInView="show"
 			viewport={{ once: true, margin: "-10% 0px" }}
 			variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
-			className="relative outline-none grid grid-cols-1 lg:grid-cols-[7rem_1fr] gap-x-8 px-3 py-4 sm:px-5 sm:py-6"
+			className="relative outline-none grid grid-cols-1 lg:grid-cols-[7rem_1fr] gap-x-8"
 		>
 			{/* gutter: giant index + vertical japanese label */}
 			<div className="hidden lg:flex flex-col items-end pt-1 select-none">

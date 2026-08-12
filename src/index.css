@@ -379,10 +379,6 @@ body.gamepad-active :focus::after {
     linear-gradient(hsl(var(--primary)), hsl(var(--primary))) right bottom / 1px 9px no-repeat;
 }
 /* whole-section focus reads as a soft field, not a button */
-body.gamepad-active [data-gp-section] {
-  scroll-margin-top: 6.5rem;
-  scroll-margin-bottom: 6rem;
-}
 body.gamepad-active [data-gp-section]:focus {
   outline: 2px solid hsl(var(--primary) / 0.9);
   outline-offset: 3px;

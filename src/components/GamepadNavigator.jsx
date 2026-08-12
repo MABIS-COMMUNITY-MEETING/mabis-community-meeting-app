@@ -39,13 +39,10 @@ export default function GamepadNavigator() {
 			}).catch(() => {});
 		};
 
-		const focus_el = (el, block) => {
+		const focus_el = (el) => {
+			if (!el) return;
 			el.focus({ preventScroll: true });
-			const r = el.getBoundingClientRect();
-			if (block === "start" || r.top < 104 || r.bottom > window.innerHeight - 104) {
-				el.scrollIntoView({ block: block || "center", behavior: "auto", inline: "nearest" });
-			}
-			playHover();
+			el.scrollIntoView({ block: "center", behavior: "auto", inline: "nearest" });
 		};
 
 		const move = (dir) => {
