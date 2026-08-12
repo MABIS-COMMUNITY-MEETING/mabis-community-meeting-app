@@ -665,7 +665,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
       <div className="fixed inset-0 bg-white z-50 flex flex-col">
         <div className="bg-[#951E3A] px-8 py-4 flex items-center justify-between shrink-0">
           <div>
-            <h2 className="font-display font-bold text-white text-2xl">Jobs Assignment <span lang="ja" className="font-jp font-normal text-white/60 text-lg">当番の割り当て</span></h2>
+            <h2 className="font-display font-bold text-white text-2xl">Jobs Assignment</h2>
             <p className="text-white/60 text-sm">{formatWeekLabel(currentWeek)}</p>
           </div>
           <div className="flex items-center gap-3">
@@ -710,7 +710,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between">
         <div>
-          <h2 className="font-display font-bold text-white text-xl">Jobs <span lang="ja" className="font-jp font-normal text-white/60 text-base">当番</span></h2>
+          <h2 className="font-display font-bold text-white text-xl">Jobs</h2>
           <p className="text-white/60 text-xs mt-0.5">{formatWeekLabel(currentWeek)} — {currentAssignments.length}/{JOBS.length} assigned</p>
         </div>
         <div className="flex items-center gap-2">
