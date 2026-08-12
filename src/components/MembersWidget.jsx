@@ -150,14 +150,14 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
 
   return (
     <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
-      <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between">
-        <div>
+      <div className="bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+        <div className="min-w-0">
           <h2 className="font-display font-bold text-white text-xl flex items-center gap-2">
             <Users className="w-5 h-5" /> Community Members
           </h2>
           <p className="text-white/60 text-xs mt-0.5">{members.length} members</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center flex-wrap gap-2 shrink-0">
           {fullscreen ? (
             <Button size="sm" variant="outline"
               className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
