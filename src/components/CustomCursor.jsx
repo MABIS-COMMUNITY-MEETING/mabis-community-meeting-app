@@ -108,19 +108,19 @@ export default function CustomCursor() {
       }
 
       // ── deformation: speed + lag, saturated, then softly sprung ─────
-      const effort = tanhSat(CURSOR.shearAlpha * s + lag / 24);
-      integrateSpring(swim, effort, 7, 0.9, dt);
-      integrateSpring(shear, pointer.label ? 0 : CURSOR.shearMax * effort, 9, 0.8, dt);
+      const effort = tanhSat(CURSOR.shearAlpha * s + lag / 46);
+      integrateSpring(swim, effort, 5.5, 1.0, dt);
+      integrateSpring(shear, pointer.label ? 0 : CURSOR.shearMax * effort, 7, 1.0, dt);
       integrateSpring(glow, pointer.label ? 1 : 0, 22, 1.0, dt);
 
       if (s > 50) {
         const want = (Math.atan2(pointer.vy, pointer.vx) * 180) / Math.PI;
-        theta += angleDelta(want, theta) * clamp(dt * 12, 0, 1);
+        theta += angleDelta(want, theta) * clamp(dt * 7, 0, 1);
       }
 
       // ── TAIL ────────────────────────────────────────────────────────
       // wave frequency rises with effort — a resting tadpole barely stirs
-      phase += dt * (4 + 16 * swim.x);
+      phase += dt * (3 + 9 * swim.x);
       const amp = CURSOR.waveAmp * swim.x;
 
       // Verlet integration with velocity retention

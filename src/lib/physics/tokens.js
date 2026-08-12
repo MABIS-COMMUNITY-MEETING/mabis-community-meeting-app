@@ -13,7 +13,7 @@ export const MATERIAL = {
   /** cursor centre, tiny controls — essentially no overshoot */
   precision: { omega: 26, zeta: 1.0 },
   /** outer cursor ring — a whisper of inertial tail */
-  glass: { omega: 8.5, zeta: 0.5 },
+  glass: { omega: 10, zeta: 0.78 },
   /** contextual label — settles last, softest */
   paper: { omega: 12, zeta: 0.95 },
   /** large typography / panels — apparent mass */
@@ -26,10 +26,10 @@ export const CURSOR = {
   normalScale: 1.15,
   /** prediction horizon bounds, seconds */
   tauMin: 0,
-  tauMax: 0.045,
+  tauMax: 0.018,
   /** deformation */
-  shearMax: 0.72,     // max |s| in the area-preserving matrix
-  shearAlpha: 0.00110, // speed → shear gain, fed through tanh
+  shearMax: 0.44,      // max |s| in the area-preserving matrix
+  shearAlpha: 0.00042, // speed → shear gain, fed through tanh
   /** how far the body may lag behind the core, px */
   maxLag: 14,
   /** tail chain */
@@ -38,7 +38,7 @@ export const CURSOR = {
   trailRetain: 0.90,
   bendStiffness: 0.28,
   /** undulation: amplitude px/frame at full effort, and phase per link */
-  waveAmp: 0.9,
+  waveAmp: 0.55,
   waveLength: 0.85,
 };
 
@@ -47,7 +47,7 @@ export const MAGNET = {
   sigmaMin: 26,
   sigmaMax: 90,
   /** maximum displacement the field may impose on the pointer target, px */
-  maxPull: 14,
+  maxPull: 9,
   /** a new candidate must beat the incumbent by this factor to take over */
   hysteresis: 1.35,
   /** per-role well depth — CTAs pull harder than metadata */
