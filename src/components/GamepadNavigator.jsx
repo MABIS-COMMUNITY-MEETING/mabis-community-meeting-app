@@ -56,43 +56,7 @@ export default function GamepadNavigator() {
 			el.scrollIntoView({ block: "center", behavior: "auto", inline: "nearest" });
 		};
 
-		/* focus can silently die: React re-renders a widget, a modal closes, a
-		   list re-orders. Anything detached or hidden counts as "nothing focused". */
-		const alive = (el) =>
-			!!el && el !== document.body && el.isConnected &&
-			!!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
-
-		const current_focus = () => {
-			const el = document.activeElement;
-			return alive(el) ? el : null;
-		};
-
-		/* what confirm should act on when focus was lost */
-		const recover_focus = () => {
-			const overlay = top_overlay();
-			if (overlay) {
-				const el = first_in_section(overlay);
-				if (el) { focus_el(el); return el; }
-				return null;
-			}
-			const entered = alive(state.current.entered) ? state.current.entered : null;
-			if (!entered) state.current.entered = null;
-			const scope = entered || (alive(state.current.section) ? state.current.section : null);
-			if (scope) {
-				const el = first_in_section(scope);
-				if (el) { focus_el(el); return el; }
-			}
-			const section = find_section(null, "down");
-			if (section) { state.current.section = section; focus_el(section); return section; }
-			return null;
-		};
-
 		const move = (dir) => {
-			/* a stale entered section (its DOM was replaced) traps every input */
-			if (state.current.entered && !state.current.entered.isConnected) {
-				state.current.entered = null;
-				setInside(false);
-			}
 			const entered = state.current.entered;
 			/* a dialog or full-screen widget owns input while it is open */
 			const overlay = top_overlay();
@@ -212,8 +176,8 @@ export default function GamepadNavigator() {
 
 			press(pad, action_binding(family, "confirm").index, (p) => {
 				setActive(true);
-				const el = current_focus() || recover_focus();
-				if (!el) return;
+				const el = document.activeElement;
+				if (!el || el === document.body) return;
 				playClick();
 				rumble(p, 0.35);
 				if (el.hasAttribute?.("data-gp-section")) {
