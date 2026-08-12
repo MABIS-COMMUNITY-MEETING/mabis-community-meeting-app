@@ -8,7 +8,7 @@ export default function PaletteStripe() {
 	return (
 		<div
 			aria-hidden
-			className="fixed left-0 top-0 z-[61] h-[3px] w-full"
+			className="pointer-events-none fixed left-0 top-0 z-[61] h-[3px] w-full"
 			style={{ backgroundImage: "var(--palette-stripes, none)" }}
 		/>
 	);
