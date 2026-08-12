@@ -108,8 +108,12 @@ export default function CustomCursor() {
       integrateSpring(labelOpacity, pointer.label ? 1 : 0, 22, 1.0, dt);
 
       // ── deformation: s = s_max·tanh(α|v|), suppressed while labelled ──
-      const targetShear = pointer.label ? 0 : CURSOR.shearMax * tanhSat(CURSOR.shearAlpha * s);
-      integrateSpring(shear, targetShear, 13, 0.9, dt);
+      // stretch responds to BOTH speed and how far the ring lags behind the dot,
+      // so it keeps flowing while it catches up instead of snapping back
+      const targetShear = pointer.label
+        ? 0
+        : CURSOR.shearMax * tanhSat(CURSOR.shearAlpha * s + od / 26);
+      integrateSpring(shear, targetShear, 9, 0.8, dt);
       if (s > 60) {
         const want = (Math.atan2(pointer.vy, pointer.vx) * 180) / Math.PI;
         theta += angleDelta(want, theta) * clamp(dt * 14, 0, 1);
