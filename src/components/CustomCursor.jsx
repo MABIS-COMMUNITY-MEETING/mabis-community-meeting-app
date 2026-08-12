@@ -24,7 +24,6 @@ import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math"
 export default function CustomCursor() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
-  const labelRef = useRef(null);
   const trailRefs = useRef([]);
   const [enabled, setEnabled] = useState(false);
 
@@ -41,7 +40,6 @@ export default function CustomCursor() {
     // each body holds two 1-D spring states {x, v}
     const dotX = { x: cx, v: 0 }, dotY = { x: cy, v: 0 };
     const ringX = { x: cx, v: 0 }, ringY = { x: cy, v: 0 };
-    const labX = { x: cx, v: 0 }, labY = { x: cy, v: 0 };
     const rope = Array.from({ length: CURSOR.trailNodes }, () => ({ x: cx, y: cy, px: cx, py: cy }));
 
     // scalar spring states for continuous material parameters
@@ -60,8 +58,8 @@ export default function CustomCursor() {
       if (!pointer.seen) return;
       if (!visible) {
         visible = true;
-        dotX.x = ringX.x = labX.x = pointer.x;
-        dotY.x = ringY.x = labY.x = pointer.y;
+        dotX.x = ringX.x = pointer.x;
+        dotY.x = ringY.x = pointer.y;
         rope.forEach(n => { n.x = n.px = pointer.x; n.y = n.py = pointer.y; });
         if (dotRef.current) dotRef.current.style.opacity = "1";
         if (ringRef.current) ringRef.current.style.opacity = "1";
@@ -96,10 +94,7 @@ export default function CustomCursor() {
       ringX.v = st.v * tmp.tx + sn.v * tmp.nx;
       ringY.v = st.v * tmp.ty + sn.v * tmp.ny;
 
-      // ── BODY C: label, softest, follows the ring ──────────────────────
-      const A = MATERIAL.paper;
-      integrateSpring(labX, ringX.x, A.omega, A.zeta, dt);
-      integrateSpring(labY, ringY.x, A.omega, A.zeta, dt);
+      // label text lives inside the ring — only its opacity is a body
       integrateSpring(labelOpacity, pointer.label ? 1 : 0, 22, 1.0, dt);
 
       // ── deformation: s = s_max·tanh(α|v|), suppressed while labelled ──
@@ -137,7 +132,7 @@ export default function CustomCursor() {
 
     const render = () => {
       if (!visible) return;
-      const d = dotRef.current, r = ringRef.current, l = labelRef.current;
+      const d = dotRef.current, r = ringRef.current;
       if (d) d.style.transform = `translate3d(${dotX.x.toFixed(2)}px, ${dotY.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
 
       if (r) {
@@ -153,14 +148,12 @@ export default function CustomCursor() {
         r.classList.toggle("is-hover", hovering);
         r.classList.toggle("is-label", !!pointer.label);
         r.style.opacity = pointer.down ? "0.5" : pointer.inside ? "1" : "0";
-      }
 
-      if (l) {
+        // label text sits inside the ring, as originally
         const text = pointer.label || lastLabel;
-        if (l.textContent !== text) l.textContent = text;
+        if (r.textContent !== text) r.textContent = text;
         if (pointer.label) lastLabel = pointer.label;
-        l.style.opacity = labelOpacity.x.toFixed(3);
-        l.style.transform = `translate3d(${labX.x.toFixed(2)}px, ${labY.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
+        r.style.color = `rgba(255,255,255,${labelOpacity.x.toFixed(3)})`;
       }
 
       // trail intensity from compressed kinetic energy — invisible when slow
@@ -203,7 +196,6 @@ export default function CustomCursor() {
       ))}
       <div ref={dotRef} className="cursor-dot" style={{ opacity: 0 }} aria-hidden />
       <div ref={ringRef} className="cursor-ring" style={{ opacity: 0 }} aria-hidden />
-      <div ref={labelRef} className="cursor-label" style={{ opacity: 0 }} aria-hidden />
     </>,
     document.body
   );
