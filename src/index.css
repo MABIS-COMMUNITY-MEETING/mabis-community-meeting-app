@@ -336,6 +336,21 @@ body .bg-red-600 .text-white\/60, body .bg-red-700 .text-white\/60,
 body .bg-primary .text-white\/60 { color: hsl(var(--primary-foreground) / 0.6) !important; }
 body .bg-red-600 .text-white\/80, body .bg-red-700 .text-white\/80,
 body .bg-primary .text-white\/80 { color: hsl(var(--primary-foreground) / 0.8) !important; }
+/* legacy crimson header bars now paint with --primary; their hardcoded white
+   copy, icons and hairlines must follow the fill's own foreground */
+body div.bg-\[\#951E3A\] .text-white,
+body div.bg-\[\#951E3A\] .text-white\/90,
+body div.bg-\[\#951E3A\] h1, body div.bg-\[\#951E3A\] h2, body div.bg-\[\#951E3A\] h3,
+body div.bg-\[\#951E3A\] p, body div.bg-\[\#951E3A\] span,
+body div.bg-\[\#951E3A\] button, body div.bg-\[\#951E3A\] svg { color: hsl(var(--primary-foreground)) !important; }
+body div.bg-\[\#951E3A\] .text-white\/80 { color: hsl(var(--primary-foreground) / 0.8) !important; }
+body div.bg-\[\#951E3A\] .text-white\/70 { color: hsl(var(--primary-foreground) / 0.7) !important; }
+body div.bg-\[\#951E3A\] .text-white\/60 { color: hsl(var(--primary-foreground) / 0.6) !important; }
+body div.bg-\[\#951E3A\] .border-white\/20,
+body div.bg-\[\#951E3A\] .border-white\/30 { border-color: hsl(var(--primary-foreground) / 0.3) !important; }
+body div.bg-\[\#951E3A\] .bg-white\/10 { background-color: hsl(var(--primary-foreground) / 0.1) !important; }
+body div.bg-\[\#951E3A\] .bg-white\/20 { background-color: hsl(var(--primary-foreground) / 0.2) !important; }
+
 body .bg-secondary .text-white, body .bg-secondary.text-white,
 body .bg-\[\#EACE54\] .text-white, body .bg-\[\#EACE54\].text-white {
   color: hsl(var(--secondary-foreground)) !important;
