@@ -6,25 +6,29 @@ import { MATERIAL, CURSOR, SLEEP } from "@/lib/physics/tokens";
 import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math";
 
 /**
- * Coupled multi-body cursor driven by the global physics engine.
+ * The cursor is simulated as a small swimming organism.
  *
- *  BODY A — dot   : precision material, chases the predicted pointer target
- *  BODY B — ring  : glass material, chases the dot (coupling, not the pointer)
- *  BODY C — label : paper material, chases the ring — settles last
- *  BODY D — trail : Verlet rope constrained to the dot
+ *   CORE  — the dot. A critically damped spring on the predicted pointer
+ *           target: exact, never overshoots, defines "where you are".
+ *   BODY  — the ring. A soft viscous membrane coupled to the core, integrated
+ *           in the travel frame so it is loose along its path and tight across
+ *           it, and deformed by an area-preserving matrix (det = 1) so it
+ *           stretches without ever gaining or losing visual mass.
+ *   TAIL  — an inextensible chain behind the core. Each link is a Verlet
+ *           particle with distance constraints (length is conserved) plus a
+ *           bending constraint that resists sharp kinks, so the chain reads as
+ *           one continuous curve. A travelling sine wave, whose amplitude and
+ *           frequency scale with swimming speed, is injected along the chain
+ *           normals — that is what produces the tadpole's undulation instead of
+ *           a lifeless trail.
  *
- * Because B follows A and C follows B, the visible lag ordering emerges from
- * the coupling itself rather than from staggered delays.
- *
- * The ring integrates in a frame aligned to travel direction, with different
- * stiffness along the tangent and normal — it flows along its path while
- * staying tight across it. Deformation uses an area-preserving matrix
- * R(θ)·diag(eˢ,e⁻ˢ)·R(−θ), so the ring never gains or loses visual mass.
+ * Everything integrates on the shared fixed-timestep scheduler, so behaviour is
+ * identical at 60Hz and 240Hz, and the whole system sleeps when it settles.
  */
 export default function CustomCursor() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
-  const trailRefs = useRef([]);
+  const tailRefs = useRef([]);
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -36,110 +40,123 @@ export default function CustomCursor() {
 
     const stopPointer = startPointerEngine();
 
-    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
-    // each body holds two 1-D spring states {x, v}
-    const dotX = { x: cx, v: 0 }, dotY = { x: cy, v: 0 };
-    const ringX = { x: cx, v: 0 }, ringY = { x: cy, v: 0 };
-    const rope = Array.from({ length: CURSOR.trailNodes }, () => ({ x: cx, y: cy, px: cx, py: cy }));
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const N = CURSOR.trailNodes;
 
-    // scalar spring states for continuous material parameters
+    // ── state ─────────────────────────────────────────────────────────
+    const coreX = { x: cx, v: 0 }, coreY = { x: cy, v: 0 };
+    const bodyX = { x: cx, v: 0 }, bodyY = { x: cy, v: 0 };
     const shear = { x: 0, v: 0 };
-    const labelOpacity = { x: 0, v: 0 };
-    let theta = 0;             // deformation orientation, degrees
-    let trailEnergy = 0;
+    const glow = { x: 0, v: 0 };            // label opacity
+    const swim = { x: 0, v: 0 };            // 0..1 swimming effort
+    const tail = Array.from({ length: N }, () => ({ x: cx, y: cy, px: cx, py: cy }));
+
+    let theta = 0;     // deformation orientation (deg)
+    let phase = 0;     // tail wave phase (rad)
     let visible = false;
     let lastLabel = "";
+    let tailEnergy = 0;
 
-    // reusable frame vectors — no allocation in the hot loop
-    const tmp = { tx: 0, ty: 0, nx: 0, ny: 0 };
+    // scratch — the hot loop allocates nothing
+    const f = { tx: 1, ty: 0, nx: 0, ny: 1 };
     const st = { x: 0, v: 0 }, sn = { x: 0, v: 0 };
 
     const step = (dt) => {
       if (!pointer.seen) return;
+
       if (!visible) {
         visible = true;
-        dotX.x = ringX.x = pointer.x;
-        dotY.x = ringY.x = pointer.y;
-        rope.forEach(n => { n.x = n.px = pointer.x; n.y = n.py = pointer.y; });
-        if (dotRef.current) dotRef.current.style.opacity = "1";
-        if (ringRef.current) ringRef.current.style.opacity = "1";
+        coreX.x = bodyX.x = pointer.x;
+        coreY.x = bodyY.x = pointer.y;
+        for (const n of tail) { n.x = n.px = pointer.x; n.y = n.py = pointer.y; }
       }
 
-      // ── BODY A: precision spring on the predicted target ──────────────
+      // ── CORE ────────────────────────────────────────────────────────
       const P = MATERIAL.precision;
-      integrateSpring(dotX, pointer.tx, P.omega, P.zeta, dt);
-      integrateSpring(dotY, pointer.ty, P.omega, P.zeta, dt);
+      integrateSpring(coreX, pointer.tx, P.omega, P.zeta, dt);
+      integrateSpring(coreY, pointer.ty, P.omega, P.zeta, dt);
 
-      // ── BODY B: anisotropic glass spring coupled to the dot ───────────
-      const G = MATERIAL.glass;
+      // travel frame (tangent / normal)
       const s = pointer.speed;
-      if (s > 30) { tmp.tx = pointer.vx / s; tmp.ty = pointer.vy / s; }
-      else { tmp.tx = 1; tmp.ty = 0; }
-      tmp.nx = -tmp.ty; tmp.ny = tmp.tx;
+      if (s > 25) { f.tx = pointer.vx / s; f.ty = pointer.vy / s; }
+      f.nx = -f.ty; f.ny = f.tx;
 
-      // project (error, velocity) into the travel frame
-      const erx = ringX.x - dotX.x, ery = ringY.x - dotY.x;
-      const et = erx * tmp.tx + ery * tmp.ty;
-      const en = erx * tmp.nx + ery * tmp.ny;
-      const vt = ringX.v * tmp.tx + ringY.v * tmp.ty;
-      const vn = ringX.v * tmp.nx + ringY.v * tmp.ny;
+      // ── BODY: anisotropic viscous spring coupled to the core ────────
+      const G = MATERIAL.glass;
+      const ex = bodyX.x - coreX.x, ey = bodyY.x - coreY.x;
+      st.x = ex * f.tx + ey * f.ty;
+      sn.x = ex * f.nx + ey * f.ny;
+      st.v = bodyX.v * f.tx + bodyY.v * f.ty;
+      sn.v = bodyX.v * f.nx + bodyY.v * f.ny;
 
-      st.x = et; st.v = vt; sn.x = en; sn.v = vn;
       integrateSpring(st, 0, G.omega * CURSOR.tangentScale, G.zeta, dt);
       integrateSpring(sn, 0, G.omega * CURSOR.normalScale, G.zeta, dt);
 
-      // recompose into world coordinates (Rᵀ)
-      ringX.x = dotX.x + st.x * tmp.tx + sn.x * tmp.nx;
-      ringY.x = dotY.x + st.x * tmp.ty + sn.x * tmp.ny;
-      ringX.v = st.v * tmp.tx + sn.v * tmp.nx;
-      ringY.v = st.v * tmp.ty + sn.v * tmp.ny;
+      bodyX.x = coreX.x + st.x * f.tx + sn.x * f.nx;
+      bodyY.x = coreY.x + st.x * f.ty + sn.x * f.ny;
+      bodyX.v = st.v * f.tx + sn.v * f.nx;
+      bodyY.v = st.v * f.ty + sn.v * f.ny;
 
-      // hard constraint: the dot can never leave the ring's interior
-      const ox = ringX.x - dotX.x, oy = ringY.x - dotY.x;
-      const od = Math.hypot(ox, oy);
-      const maxOffset = 14;
-      if (od > maxOffset) {
-        const k = maxOffset / od;
-        ringX.x = dotX.x + ox * k;
-        ringY.x = dotY.x + oy * k;
+      // the core must stay enclosed by the body
+      const ox = bodyX.x - coreX.x, oy = bodyY.x - coreY.x;
+      const lag = Math.hypot(ox, oy);
+      if (lag > CURSOR.maxLag) {
+        const k = CURSOR.maxLag / lag;
+        bodyX.x = coreX.x + ox * k;
+        bodyY.x = coreY.x + oy * k;
       }
 
-      // label text lives inside the ring — only its opacity is a body
-      integrateSpring(labelOpacity, pointer.label ? 1 : 0, 22, 1.0, dt);
+      // ── deformation: speed + lag, saturated, then softly sprung ─────
+      const effort = tanhSat(CURSOR.shearAlpha * s + lag / 24);
+      integrateSpring(swim, effort, 7, 0.9, dt);
+      integrateSpring(shear, pointer.label ? 0 : CURSOR.shearMax * effort, 9, 0.8, dt);
+      integrateSpring(glow, pointer.label ? 1 : 0, 22, 1.0, dt);
 
-      // ── deformation: s = s_max·tanh(α|v|), suppressed while labelled ──
-      // stretch responds to BOTH speed and how far the ring lags behind the dot,
-      // so it keeps flowing while it catches up instead of snapping back
-      const targetShear = pointer.label
-        ? 0
-        : CURSOR.shearMax * tanhSat(CURSOR.shearAlpha * s + od / 26);
-      integrateSpring(shear, targetShear, 9, 0.8, dt);
-      if (s > 60) {
+      if (s > 50) {
         const want = (Math.atan2(pointer.vy, pointer.vx) * 180) / Math.PI;
-        theta += angleDelta(want, theta) * clamp(dt * 14, 0, 1);
+        theta += angleDelta(want, theta) * clamp(dt * 12, 0, 1);
       }
 
-      // ── BODY D: Verlet rope, Gauss–Seidel distance constraints ────────
+      // ── TAIL ────────────────────────────────────────────────────────
+      // wave frequency rises with effort — a resting tadpole barely stirs
+      phase += dt * (4 + 16 * swim.x);
+      const amp = CURSOR.waveAmp * swim.x;
+
+      // Verlet integration with velocity retention
       const retain = Math.pow(CURSOR.trailRetain, dt * 60);
-      trailEnergy = 0;
-      for (let i = 0; i < rope.length; i++) {
-        const n = rope[i];
+      tailEnergy = 0;
+      for (let i = 0; i < N; i++) {
+        const n = tail[i];
         const vx = (n.x - n.px) * retain, vy = (n.y - n.py) * retain;
         n.px = n.x; n.py = n.y;
         n.x += vx; n.y += vy;
-        trailEnergy += vx * vx + vy * vy;
+        // travelling wave, growing toward the tip
+        const grow = (i + 1) / N;
+        const w = Math.sin(phase - i * CURSOR.waveLength) * amp * grow * dt * 60;
+        n.x += f.nx * w;
+        n.y += f.ny * w;
+        tailEnergy += vx * vx + vy * vy;
       }
+
+      // constraints — two relaxation passes keep the chain taut and smooth
       for (let pass = 0; pass < 2; pass++) {
-        for (let i = 0; i < rope.length; i++) {
-          const n = rope[i];
-          const ax = i === 0 ? dotX.x : rope[i - 1].x;
-          const ay = i === 0 ? dotY.x : rope[i - 1].y;
+        // distance: each link holds its rest length from its parent
+        for (let i = 0; i < N; i++) {
+          const n = tail[i];
+          const ax = i === 0 ? coreX.x : tail[i - 1].x;
+          const ay = i === 0 ? coreY.x : tail[i - 1].y;
           const dx = n.x - ax, dy = n.y - ay;
-          const d = Math.hypot(dx, dy);
-          if (d > CURSOR.trailLink) {
-            const k = (d - CURSOR.trailLink) / d;
-            n.x -= dx * k; n.y -= dy * k;
-          }
+          const d = Math.hypot(dx, dy) || 1;
+          const k = (d - CURSOR.trailLink) / d;
+          n.x -= dx * k; n.y -= dy * k;
+        }
+        // bending: pull each node toward the midpoint of its neighbours,
+        // which penalises curvature and removes kinks
+        for (let i = 1; i < N - 1; i++) {
+          const a = tail[i - 1], n = tail[i], b = tail[i + 1];
+          n.x += ((a.x + b.x) * 0.5 - n.x) * CURSOR.bendStiffness;
+          n.y += ((a.y + b.y) * 0.5 - n.y) * CURSOR.bendStiffness;
         }
       }
     };
@@ -147,52 +164,52 @@ export default function CustomCursor() {
     const render = () => {
       if (!visible) return;
       const d = dotRef.current, r = ringRef.current;
-      if (d) d.style.transform = `translate3d(${dotX.x.toFixed(2)}px, ${dotY.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
+
+      if (d) {
+        d.style.opacity = pointer.inside ? "1" : "0";
+        d.style.transform = `translate3d(${coreX.x.toFixed(2)}px, ${coreY.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
+      }
 
       if (r) {
-        // R(θ)·diag(eˢ, e⁻ˢ)·R(−θ) → det = 1, area preserved
+        // R(θ)·diag(eˢ, e⁻ˢ)·R(−θ) — determinant 1, so area is preserved
         const rad = (theta * Math.PI) / 180;
         const c = Math.cos(rad), sn2 = Math.sin(rad);
         const ep = Math.exp(shear.x), em = Math.exp(-shear.x);
-        const a = ep * c * c + em * sn2 * sn2;
-        const b = (ep - em) * c * sn2;
-        const dd = ep * sn2 * sn2 + em * c * c;
-        r.style.transform = `translate3d(${ringX.x.toFixed(2)}px, ${ringY.x.toFixed(2)}px, 0) translate(-50%,-50%) matrix(${a.toFixed(4)}, ${b.toFixed(4)}, ${b.toFixed(4)}, ${dd.toFixed(4)}, 0, 0)`;
-        const hovering = !!pointer.target && !pointer.label;
-        r.classList.toggle("is-hover", hovering);
+        const m11 = ep * c * c + em * sn2 * sn2;
+        const m12 = (ep - em) * c * sn2;
+        const m22 = ep * sn2 * sn2 + em * c * c;
+        r.style.transform = `translate3d(${bodyX.x.toFixed(2)}px, ${bodyY.x.toFixed(2)}px, 0) translate(-50%,-50%) matrix(${m11.toFixed(4)}, ${m12.toFixed(4)}, ${m12.toFixed(4)}, ${m22.toFixed(4)}, 0, 0)`;
+        r.classList.toggle("is-hover", !!pointer.target && !pointer.label);
         r.classList.toggle("is-label", !!pointer.label);
         r.style.opacity = pointer.down ? "0.5" : pointer.inside ? "1" : "0";
 
-        // label text sits inside the ring, as originally
         const text = pointer.label || lastLabel;
         if (r.textContent !== text) r.textContent = text;
         if (pointer.label) lastLabel = pointer.label;
-        r.style.color = `rgba(255,255,255,${labelOpacity.x.toFixed(3)})`;
+        r.style.color = `rgba(255,255,255,${glow.x.toFixed(3)})`;
       }
 
-      // trail intensity from compressed kinetic energy — invisible when slow
       const intensity = kinetic();
-      for (let i = 0; i < rope.length; i++) {
-        const el = trailRefs.current[i];
+      for (let i = 0; i < N; i++) {
+        const el = tailRefs.current[i];
         if (!el) continue;
-        // tadpole tail: always present, tapering to a fine point
-        const fall = 1 - i / rope.length;
-        const taper = Math.pow(fall, 1.6);
-        el.style.opacity = ((0.30 + intensity * 0.55) * taper).toFixed(3);
-        el.style.transform = `translate3d(${rope[i].x.toFixed(2)}px, ${rope[i].y.toFixed(2)}px, 0) translate(-50%,-50%) scale(${(taper * 1.5).toFixed(3)})`;
+        const taper = Math.pow(1 - i / N, 1.5);
+        el.style.opacity = pointer.inside ? ((0.26 + intensity * 0.5) * taper).toFixed(3) : "0";
+        el.style.transform = `translate3d(${tail[i].x.toFixed(2)}px, ${tail[i].y.toFixed(2)}px, 0) translate(-50%,-50%) scale(${(taper * 1.6).toFixed(3)})`;
       }
     };
 
     const settled = () => {
       if (!visible) return true;
-      const perr = Math.hypot(ringX.x - pointer.tx, ringY.x - pointer.ty);
-      const vel = Math.hypot(ringX.v, ringY.v) + Math.hypot(dotX.v, dotY.v);
+      const err = Math.hypot(bodyX.x - pointer.tx, bodyY.x - pointer.ty);
+      const vel = Math.hypot(bodyX.v, bodyY.v) + Math.hypot(coreX.v, coreY.v);
       return (
-        perr < SLEEP.pos &&
+        err < SLEEP.pos &&
         vel < SLEEP.vel &&
-        trailEnergy < 0.02 &&
+        tailEnergy < 0.02 &&
+        swim.x < 0.01 &&
         Math.abs(shear.x) < 0.004 &&
-        Math.abs(labelOpacity.v) < 0.01
+        Math.abs(glow.v) < 0.01
       );
     };
 
@@ -208,7 +225,7 @@ export default function CustomCursor() {
   return createPortal(
     <>
       {Array.from({ length: CURSOR.trailNodes }).map((_, i) => (
-        <div key={i} ref={(el) => (trailRefs.current[i] = el)} className="cursor-trail" style={{ opacity: 0 }} aria-hidden />
+        <div key={i} ref={(el) => (tailRefs.current[i] = el)} className="cursor-trail" style={{ opacity: 0 }} aria-hidden />
       ))}
       <div ref={dotRef} className="cursor-dot" style={{ opacity: 0 }} aria-hidden />
       <div ref={ringRef} className="cursor-ring" style={{ opacity: 0 }} aria-hidden />

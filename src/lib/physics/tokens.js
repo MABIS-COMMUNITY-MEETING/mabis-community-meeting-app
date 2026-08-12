@@ -30,10 +30,16 @@ export const CURSOR = {
   /** deformation */
   shearMax: 0.72,     // max |s| in the area-preserving matrix
   shearAlpha: 0.00110, // speed → shear gain, fed through tanh
-  /** trail */
+  /** how far the body may lag behind the core, px */
+  maxLag: 14,
+  /** tail chain */
   trailNodes: 12,
   trailLink: 7,
   trailRetain: 0.90,
+  bendStiffness: 0.28,
+  /** undulation: amplitude px/frame at full effort, and phase per link */
+  waveAmp: 0.9,
+  waveLength: 0.85,
 };
 
 export const MAGNET = {
