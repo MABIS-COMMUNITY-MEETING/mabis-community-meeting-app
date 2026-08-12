@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Maximize2, X, ChevronLeft, ChevronRight, History, Pause, Play, Square, Loader2, UserCheck, RefreshCw, Pencil, UserPlus, MessagesSquare } from "lucide-react";
@@ -510,12 +511,12 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
 
   // ── MEETING MODE ──────────────────────────────────────────────────────────
   if (meetingMode) {
-    return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="fixed inset-0 bg-[#f7f7f8] z-50 flex flex-col">
-        <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between shrink-0">
-          <div>
+    return createPortal(
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="fixed inset-0 bg-[#f7f7f8] z-[80] flex flex-col">
+        <div className="bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <div className="min-w-0">
             <p className="text-white/60 text-xs uppercase tracking-widest mb-0.5">Meeting Mode</p>
-            <h2 className="font-display font-bold text-white text-2xl">{
+            <h2 className="font-display font-bold text-white text-lg sm:text-2xl">{
               (() => {
                 const md = localStorage.getItem("mabis_meeting_date");
                 return md ? format(new Date(md), "EEEE, d MMMM yyyy") : formatWeekFull(viewedWeek);
@@ -709,7 +710,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             <div className="flex justify-center pt-4 pb-8">
               <button
                 onClick={() => { actionRef.current = "end"; setMeetingMode(false); setMeetingPaused(false); }}
-                className="flex items-center justify-center gap-3 bg-[#951E3A] hover:bg-[#7a1830] text-white font-bold text-2xl px-20 py-6 rounded-2xl shadow-lg transition-all hover:scale-105 w-full max-w-md">
+                className="flex items-center justify-center gap-3 bg-[#951E3A] hover:bg-[#7a1830] text-white font-bold text-xl sm:text-2xl px-6 py-5 sm:py-6 rounded-2xl shadow-lg transition-all hover:scale-105 w-full max-w-md">
                 <Square className="w-7 h-7" /> End Meeting
               </button>
             </div>
@@ -717,7 +718,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           </div>
         </div>
         <MabisAIAssistant />
-      </motion.div>
+      </motion.div>,
+      document.body
     );
   }
 

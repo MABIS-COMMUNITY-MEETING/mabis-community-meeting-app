@@ -137,11 +137,11 @@ export default function SiteHeader({ rightSlot }) {
                         {active && (
                           <motion.span layoutId="nav-active" className="absolute left-0 top-0 bottom-0 w-[3px] bg-secondary" />
                         )}
-                        <span className="relative block overflow-hidden">
-                          <span className={`block whitespace-nowrap ${size} sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-[1.15] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:-translate-y-full`}>
+                        <span className="relative block overflow-hidden py-[0.12em]">
+                          <span className={`block whitespace-nowrap ${size} sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-[1.35] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:-translate-y-full`}>
                             {item.label}
                           </span>
-                          <span className={`absolute inset-0 block whitespace-nowrap ${size} sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-[1.15] text-secondary translate-y-full transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0`}>
+                          <span className={`absolute inset-0 block whitespace-nowrap ${size} sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-[1.35] text-secondary translate-y-full transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0`}>
                             {item.label}
                           </span>
                         </span>
