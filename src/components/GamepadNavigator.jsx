@@ -190,6 +190,13 @@ export default function GamepadNavigator() {
 				});
 			});
 
+			/* Menu / Options / + opens the site navigation */
+			press(pad, action_binding(family, "menu").index, (p) => {
+				setActive(true);
+				rumble(p, 0.22);
+				window.dispatchEvent(new CustomEvent("gamepadMenu"));
+			});
+
 			/* right stick scrolls the page — eased so small tilts creep and full
 			   tilt travels fast */
 			const ry = pad.axes[3] || 0;

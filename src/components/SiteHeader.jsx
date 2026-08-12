@@ -43,6 +43,18 @@ export default function SiteHeader({ rightSlot }) {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
+  /* controller: Menu/Options/+ toggles the overlay, Escape (B) closes it */
+  useEffect(() => {
+    const toggle = () => setOpen(v => { const next = !v; (next ? playMenuOpen : playMenuClose)(); return next; });
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("gamepadMenu", toggle);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("gamepadMenu", toggle);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
   const go = (to) => { setOpen(false); navigate(to); };
 
   return (
