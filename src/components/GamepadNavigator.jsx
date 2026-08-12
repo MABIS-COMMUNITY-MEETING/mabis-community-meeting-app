@@ -206,11 +206,16 @@ export default function GamepadNavigator() {
 				});
 			});
 
-			/* Menu / Options / + opens the site navigation */
+			/* Menu / Options / + jumps focus up into the site header bar */
 			press(pad, action_binding(family, "menu").index, (p) => {
 				setActive(true);
 				rumble(p, 0.22);
-				window.dispatchEvent(new CustomEvent("gamepadMenu"));
+				const header = document.querySelector("header");
+				const first = header && first_in_section(header);
+				if (!first) return;
+				state.current.entered = header;
+				setInside(true);
+				focus_el(first);
 			});
 
 			/* right stick scrolls the page — eased so small tilts creep and full
