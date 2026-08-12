@@ -178,9 +178,11 @@
 .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; mix-blend-mode: difference; }
 .cursor-dot { width: 6px; height: 6px; background: #fff; transform: translate(-50%,-50%); }
 .cursor-ring { width: 38px; height: 38px; border: 1px solid #fff; transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:'Iosevka',monospace; font-size:9px; letter-spacing:0.08em; color:#fff; text-transform:uppercase; }
+.cursor-trail { position: fixed; top: 0; left: 0; width: 5px; height: 5px; pointer-events: none; z-index: 9999; border-radius: 999px; background: #fff; mix-blend-mode: difference; transform: translate(-50%,-50%); }
 .cursor-ring.is-hover { width: 46px; height: 46px; background:transparent; }
 .cursor-ring.is-label { width: 62px; height: 62px; background:rgba(255,255,255,0.14); }
 body.gamepad-active .cursor-dot,
+body.gamepad-active .cursor-trail,
 body.gamepad-active .cursor-ring { display: none !important; }
 
 /* ── japanese (Hina Mincho ships at one weight — thicken optically) ── */
@@ -402,6 +404,7 @@ html.animations-disabled *:not(.cursor-dot):not(.cursor-ring)::after {
 html.animations-disabled .grain-layer { display: none !important; }
 /* the custom cursor stays fully alive in quiet mode */
 html.animations-disabled .cursor-dot,
+html.animations-disabled .cursor-trail,
 html.animations-disabled .cursor-ring {
   animation: revert !important;
   transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease !important;
@@ -441,5 +444,5 @@ html.animations-disabled .cursor-ring {
   .grain-layer { animation: none; }
   .marquee-track { animation: none; }
   body.cursor-ready, body.cursor-ready * { cursor: auto !important; }
-  .cursor-dot, .cursor-ring { display: none !important; }
+  .cursor-dot, .cursor-trail, .cursor-ring { display: none !important; }
 }
