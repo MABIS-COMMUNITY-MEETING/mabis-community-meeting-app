@@ -98,11 +98,14 @@ function pick(targets, current, dir) {
 	return best;
 }
 
-/* section level — up/down walks the numbered blocks in document order */
-export function find_section(current, dir) {
+/* section level — up/down walks the numbered blocks in document order.
+   `fallback_index` keeps the walk stable when the previously focused section
+   was replaced by a re-render (otherwise focus jumps to whatever is on screen). */
+export function find_section(current, dir, fallback_index = -1) {
 	const sections = collect_sections();
 	if (!sections.length) return null;
-	const i = sections.findIndex((s) => s.el === current);
+	let i = sections.findIndex((s) => s.el === current);
+	if (i === -1 && fallback_index >= 0) i = Math.min(fallback_index, sections.length - 1);
 	if (i === -1) {
 		/* enter the list at the section nearest the top of the viewport */
 		return sections.reduce((a, b) => (Math.abs(b.r.top) < Math.abs(a.r.top) ? b : a)).el;
@@ -114,6 +117,10 @@ export function find_section(current, dir) {
 /* control level — spatial, restricted to the entered section */
 export function find_neighbour(current, dir, scope) {
 	return pick(collect_targets(scope), current, dir);
+}
+
+export function section_index(el) {
+	return collect_sections().findIndex((s) => s.el === el);
 }
 
 export function first_in_section(section) {

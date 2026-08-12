@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { action_binding } from "@/lib/gamepad_profiles";
 import { resolve_profile, OVERRIDE_EVENT } from "@/lib/gamepad_detect";
-import { SECTION_SELECTOR, collect_targets, find_neighbour, find_section, first_in_section } from "@/lib/gamepad_nav";
+import { SECTION_SELECTOR, collect_targets, find_neighbour, find_section, first_in_section, section_index } from "@/lib/gamepad_nav";
 import { gamepad_back, top_overlay } from "@/lib/gamepad_back";
 import { useNavigate, useLocation } from "react-router-dom";
 import { playHover, playClick, playMenuClose } from "@/lib/sound";
@@ -76,10 +76,15 @@ export default function GamepadNavigator() {
 				}
 				if (dir === "left" || dir === "right") return;
 				/* focus can be lost (a modal closed, an element re-rendered) — remember
-				   the last section so movement continues instead of snapping back */
-				const cur = document.activeElement?.closest?.(SECTION_SELECTOR) || state.current.section;
-				const section = find_section(cur, dir);
-				if (section) { state.current.section = section; focus_el(section); }
+				   both the last section and its position so the walk stays in order */
+				const remembered = state.current.section?.isConnected ? state.current.section : null;
+				const cur = document.activeElement?.closest?.(SECTION_SELECTOR) || remembered;
+				const section = find_section(cur, dir, state.current.section_i ?? -1);
+				if (section) {
+					state.current.section = section;
+					state.current.section_i = section_index(section);
+					focus_el(section);
+				}
 				return;
 			}
 			const control = find_neighbour(document.activeElement, dir, entered);
@@ -87,8 +92,12 @@ export default function GamepadNavigator() {
 			/* dead end inside a section — step back out rather than trapping focus */
 			if (dir === "up" || dir === "down") {
 				exit_section();
-				const section = find_section(document.activeElement, dir);
-				if (section) { state.current.section = section; focus_el(section); }
+				const section = find_section(document.activeElement, dir, state.current.section_i ?? -1);
+				if (section) {
+					state.current.section = section;
+					state.current.section_i = section_index(section);
+					focus_el(section);
+				}
 			}
 		};
 
@@ -107,6 +116,10 @@ export default function GamepadNavigator() {
 			const section = state.current.entered;
 			state.current.entered = null;
 			setInside(false);
+			if (section?.hasAttribute?.("data-gp-section")) {
+				state.current.section = section;
+				state.current.section_i = section_index(section);
+			}
 			if (section) focus_el(section, "start");
 		};
 
