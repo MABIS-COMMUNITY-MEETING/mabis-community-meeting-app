@@ -512,7 +512,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   // ── MEETING MODE ──────────────────────────────────────────────────────────
   if (meetingMode) {
     return createPortal(
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="fixed inset-0 bg-background text-foreground z-[30] pt-[69px] flex flex-col overflow-x-hidden sm:z-[80] sm:pt-0">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="fixed inset-0 bg-background text-foreground z-[80] flex flex-col overflow-x-hidden">
         <div className="bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col items-start gap-3 shrink-0 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="text-white/60 text-xs uppercase tracking-widest mb-0.5">Meeting Mode</p>
