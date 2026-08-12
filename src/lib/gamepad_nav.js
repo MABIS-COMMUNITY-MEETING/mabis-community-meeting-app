@@ -12,7 +12,7 @@
  */
 
 const FOCUSABLE =
-	'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+	'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"]), [role="button"], [role="link"], [role="checkbox"], [role="tab"], [data-gp-click]';
 
 export const SECTION_SELECTOR = "[data-gp-section]";
 

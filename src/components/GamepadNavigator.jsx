@@ -48,6 +48,10 @@ export default function GamepadNavigator() {
 
 		const focus_el = (el) => {
 			if (!el) return;
+			/* clickable divs (role="button") aren't focusable by default */
+			if (!el.hasAttribute("tabindex") && !/^(A|BUTTON|INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) {
+				el.setAttribute("tabindex", "-1");
+			}
 			el.focus({ preventScroll: true });
 			el.scrollIntoView({ block: "center", behavior: "auto", inline: "nearest" });
 		};

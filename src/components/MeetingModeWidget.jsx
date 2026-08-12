@@ -107,6 +107,9 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
       whileHover={{ scale: (meetingEnded || !canStart) ? 1 : 1.01 }}
       whileTap={{ scale: (meetingEnded || !canStart) ? 1 : 0.99 }}
       onClick={handleWidgetClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleWidgetClick(); } }}
       className={`relative bg-ink text-bone border border-ink overflow-hidden select-none ${(meetingEnded || !canStart) ? "" : "cursor-pointer"}`}
     >
       <div className="p-6 sm:p-8 flex flex-wrap items-center justify-between gap-6">
