@@ -421,10 +421,10 @@ html.animations-disabled .cursor-ring {
   button:has(> svg:only-child),
   a:has(> svg:only-child),
   [role="button"]:has(> svg:only-child) {
-    min-width: 69px;
-    min-height: 69px;
+    min-width: 40px;
+    min-height: 40px;
   }
-  header button, header a { min-height: 69px; }
+  header button, header a { min-height: 40px; }
 }
 
 /* ── reduced motion ── */
