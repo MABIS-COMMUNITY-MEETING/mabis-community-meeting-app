@@ -53,7 +53,18 @@ export default function GamepadNavigator() {
 				return;
 			}
 			const control = find_neighbour(document.activeElement, dir, entered);
-			if (control && control !== document.activeElement) focus_el(control);
+			if (control && control !== document.activeElement) {
+				focus_el(control);
+				return;
+			}
+			if (dir === "up" || dir === "down") {
+				const section = find_section(entered, dir);
+				if (section && section !== entered) {
+					state.current.entered = null;
+					setInside(false);
+					focus_el(section);
+				}
+			}
 		};
 
 		const enter_section = (section) => {
