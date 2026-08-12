@@ -363,6 +363,14 @@ export function setPrideMode(mode) {
 export function prideTokens(theme, dark) {
   const s = theme.pride;
   const L = dark ? 0.74 : 0.54;
+  // exact palettes keep their published flag hexes — no OKLCh derivation
+  if (s.exact) {
+    return {
+      "--pride-glow": s.accent,
+      "--pride-edge": s.dominant,
+      "--pride-highlight": s.secondary,
+    };
+  }
   return {
     "--pride-glow": toneHex(s.accent, L + 0.1, 1, 0.19),
     "--pride-edge": toneHex(s.dominant, L, 1, 0.19),
