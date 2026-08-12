@@ -450,11 +450,11 @@ export function applyTheme(themeKey) {
   } else {
     ["--pride-glow", "--pride-edge", "--pride-highlight"].forEach((k) => root.style.removeProperty(k));
   }
-  // The editorial layer paints panels/labels with --ink and --bone. Themes never
-  // set them, so every theme was drawing on the original maroon/bone pair — that
-  // was the clash. Tie them to the theme's own foreground/background instead.
-  root.style.setProperty("--ink", vars["--foreground"]);
-  root.style.setProperty("--bone", vars["--background"]);
+  // Editorial ink always stays the darker theme surface and bone the lighter
+  // text/paper tone. Dark keysets reverse foreground/background, so preserve
+  // those visual roles instead of accidentally turning the menu cream-on-dark.
+  root.style.setProperty("--ink", isDark ? vars["--background"] : vars["--foreground"]);
+  root.style.setProperty("--bone", isDark ? vars["--foreground"] : vars["--background"]);
   // --destructive was the last fixed red in the app: shadcn destructive buttons,
   // badges and alerts all read it, so every theme kept a red no matter its palette.
   root.style.setProperty("--destructive", vars["--primary"]);
