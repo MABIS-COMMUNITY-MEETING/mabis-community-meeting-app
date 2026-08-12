@@ -1,40 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { subscribe } from "@/lib/physics/scheduler";
+import { pointer, startPointerEngine, kinetic } from "@/lib/physics/pointer";
+import { MATERIAL, CURSOR, SLEEP } from "@/lib/physics/tokens";
+import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math";
 
 /**
- * Physics-driven custom cursor.
+ * Coupled multi-body cursor driven by the global physics engine.
  *
- * Integration model (per frame, dt normalised to a 60Hz step):
- *  · Dot   — critically-damped analytic spring (ω, ζ) toward the raw pointer.
- *  · Ring  — a damped harmonic oscillator with mass, integrated semi-implicit
- *            Euler, plus a magnetic force field: nearby interactive elements
- *            pull the ring toward their centre with an inverse-square-ish
- *            falloff clamped by the element's own radius.
- *  · Shape — squash/stretch from the velocity magnitude, conserving area
- *            (sx * sy = 1), oriented along the velocity vector with angular
- *            smoothing across the ±π branch cut.
- *  · Trail — a 5-node Verlet rope: each node integrates x' = x + (x - x_prev)*d
- *            then is projected back to a max distance from its parent
- *            (Gauss–Seidel distance constraint, 2 relaxation passes).
+ *  BODY A — dot   : precision material, chases the predicted pointer target
+ *  BODY B — ring  : glass material, chases the dot (coupling, not the pointer)
+ *  BODY C — label : paper material, chases the ring — settles last
+ *  BODY D — trail : Verlet rope constrained to the dot
  *
- * Sleeps when the system's total kinetic energy falls below a threshold, and
- * while the tab is hidden. Touch + reduced-motion safe.
+ * Because B follows A and C follows B, the visible lag ordering emerges from
+ * the coupling itself rather than from staggered delays.
+ *
+ * The ring integrates in a frame aligned to travel direction, with different
+ * stiffness along the tangent and normal — it flows along its path while
+ * staying tight across it. Deformation uses an area-preserving matrix
+ * R(θ)·diag(eˢ,e⁻ˢ)·R(−θ), so the ring never gains or loses visual mass.
  */
-
-const TRAIL = 5;
-
-// spring constants
-const RING_K = 0.052;      // stiffness
-const RING_D = 0.76;       // damping (velocity retention per step)
-const DOT_K = 0.42;
-const DOT_D = 0.55;
-const MAG_RADIUS = 110;    // magnetic field radius (px beyond element bounds)
-const MAG_STRENGTH = 0.30; // max fraction of the gap the field can close
-const ROPE_LINK = 9;       // max distance between trail nodes
-
 export default function CustomCursor() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
+  const labelRef = useRef(null);
   const trailRefs = useRef([]);
   const [enabled, setEnabled] = useState(false);
 
@@ -45,156 +35,162 @@ export default function CustomCursor() {
     setEnabled(true);
     document.body.classList.add("cursor-ready");
 
+    const stopPointer = startPointerEngine();
+
     const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
-    const pointer = { x: cx, y: cy };
-    const dot = { x: cx, y: cy, vx: 0, vy: 0 };
-    const ring = { x: cx, y: cy, vx: 0, vy: 0 };
-    const rope = Array.from({ length: TRAIL }, () => ({ x: cx, y: cy, px: cx, py: cy }));
+    // each body holds two 1-D spring states {x, v}
+    const dotX = { x: cx, v: 0 }, dotY = { x: cy, v: 0 };
+    const ringX = { x: cx, v: 0 }, ringY = { x: cy, v: 0 };
+    const labX = { x: cx, v: 0 }, labY = { x: cy, v: 0 };
+    const rope = Array.from({ length: CURSOR.trailNodes }, () => ({ x: cx, y: cy, px: cx, py: cy }));
 
-    let scaleX = 1, angle = 0;
-    let magnet = null;          // { x, y, r } centre of the hovered target
-    let raf = null, last = performance.now();
+    // scalar spring states for continuous material parameters
+    const shear = { x: 0, v: 0 };
+    const labelOpacity = { x: 0, v: 0 };
+    let theta = 0;             // deformation orientation, degrees
+    let trailEnergy = 0;
+    let visible = false;
+    let lastLabel = "";
 
-    const wake = () => { if (raf === null && !document.hidden) { last = performance.now(); raf = requestAnimationFrame(loop); } };
+    // reusable frame vectors — no allocation in the hot loop
+    const tmp = { tx: 0, ty: 0, nx: 0, ny: 0 };
+    const st = { x: 0, v: 0 }, sn = { x: 0, v: 0 };
 
-    let seen = false;
-    const onMove = (e) => {
-      pointer.x = e.clientX; pointer.y = e.clientY;
-      if (!seen) {
-        seen = true;
-        dot.x = ring.x = pointer.x; dot.y = ring.y = pointer.y;
+    const step = (dt) => {
+      if (!pointer.seen) return;
+      if (!visible) {
+        visible = true;
+        dotX.x = ringX.x = labX.x = pointer.x;
+        dotY.x = ringY.x = labY.x = pointer.y;
         rope.forEach(n => { n.x = n.px = pointer.x; n.y = n.py = pointer.y; });
         if (dotRef.current) dotRef.current.style.opacity = "1";
         if (ringRef.current) ringRef.current.style.opacity = "1";
       }
 
-      const t = e.target.closest?.("a, button, [role='button'], [data-cursor], input, textarea, select, label");
-      const label = t?.getAttribute?.("data-cursor");
-      const r = ringRef.current;
-      if (r) {
-        r.classList.toggle("is-hover", !!t && !label);
-        r.classList.toggle("is-label", !!label);
-        if (r.textContent !== (label || "")) r.textContent = label || "";
+      // ── BODY A: precision spring on the predicted target ──────────────
+      const P = MATERIAL.precision;
+      integrateSpring(dotX, pointer.tx, P.omega, P.zeta, dt);
+      integrateSpring(dotY, pointer.ty, P.omega, P.zeta, dt);
+
+      // ── BODY B: anisotropic glass spring coupled to the dot ───────────
+      const G = MATERIAL.glass;
+      const s = pointer.speed;
+      if (s > 30) { tmp.tx = pointer.vx / s; tmp.ty = pointer.vy / s; }
+      else { tmp.tx = 1; tmp.ty = 0; }
+      tmp.nx = -tmp.ty; tmp.ny = tmp.tx;
+
+      // project (error, velocity) into the travel frame
+      const erx = ringX.x - dotX.x, ery = ringY.x - dotY.x;
+      const et = erx * tmp.tx + ery * tmp.ty;
+      const en = erx * tmp.nx + ery * tmp.ny;
+      const vt = ringX.v * tmp.tx + ringY.v * tmp.ty;
+      const vn = ringX.v * tmp.nx + ringY.v * tmp.ny;
+
+      st.x = et; st.v = vt; sn.x = en; sn.v = vn;
+      integrateSpring(st, 0, G.omega * CURSOR.tangentScale, G.zeta, dt);
+      integrateSpring(sn, 0, G.omega * CURSOR.normalScale, G.zeta, dt);
+
+      // recompose into world coordinates (Rᵀ)
+      ringX.x = dotX.x + st.x * tmp.tx + sn.x * tmp.nx;
+      ringY.x = dotY.x + st.x * tmp.ty + sn.x * tmp.ny;
+      ringX.v = st.v * tmp.tx + sn.v * tmp.nx;
+      ringY.v = st.v * tmp.ty + sn.v * tmp.ny;
+
+      // ── BODY C: label, softest, follows the ring ──────────────────────
+      const A = MATERIAL.paper;
+      integrateSpring(labX, ringX.x, A.omega, A.zeta, dt);
+      integrateSpring(labY, ringY.x, A.omega, A.zeta, dt);
+      integrateSpring(labelOpacity, pointer.label ? 1 : 0, 22, 1.0, dt);
+
+      // ── deformation: s = s_max·tanh(α|v|), suppressed while labelled ──
+      const targetShear = pointer.label ? 0 : CURSOR.shearMax * tanhSat(CURSOR.shearAlpha * s);
+      integrateSpring(shear, targetShear, 26, 1.0, dt);
+      if (s > 60) {
+        const want = (Math.atan2(pointer.vy, pointer.vx) * 180) / Math.PI;
+        theta += angleDelta(want, theta) * clamp(dt * 14, 0, 1);
       }
 
-      // build the magnetic attractor from the hovered element's box
-      if (t) {
-        const b = t.getBoundingClientRect();
-        magnet = { x: b.left + b.width / 2, y: b.top + b.height / 2, r: Math.max(b.width, b.height) / 2 };
-      } else {
-        magnet = null;
-      }
-      wake();
-    };
-
-    const onDown = () => { ringRef.current && (ringRef.current.style.opacity = "0.5"); wake(); };
-    const onUp = () => { ringRef.current && (ringRef.current.style.opacity = "1"); wake(); };
-    const onVisibility = () => { if (document.hidden) { cancelAnimationFrame(raf); raf = null; } else wake(); };
-
-    const loop = (now) => {
-      // dt in 60Hz units, clamped so a stalled tab can't explode the integrator
-      const dt = Math.min((now - last) / 16.667, 3);
-      last = now;
-
-      // ── target: pointer, bent by the magnetic field ──────────────────
-      let tx = pointer.x, ty = pointer.y;
-      if (magnet) {
-        const mx = magnet.x - pointer.x, my = magnet.y - pointer.y;
-        const d = Math.hypot(mx, my);
-        const reach = magnet.r + MAG_RADIUS;
-        if (d < reach && d > 0.001) {
-          // smoothstep falloff: 1 at the centre → 0 at the field edge
-          const u = 1 - d / reach;
-          const fall = u * u * (3 - 2 * u);
-          tx += mx * fall * MAG_STRENGTH;
-          ty += my * fall * MAG_STRENGTH;
-        }
-      }
-
-      // ── dot: stiff spring, semi-implicit Euler ───────────────────────
-      dot.vx = (dot.vx + (pointer.x - dot.x) * DOT_K * dt) * Math.pow(DOT_D, dt);
-      dot.vy = (dot.vy + (pointer.y - dot.y) * DOT_K * dt) * Math.pow(DOT_D, dt);
-      dot.x += dot.vx * dt; dot.y += dot.vy * dt;
-
-      // ── ring: soft damped oscillator toward the magnet-bent target ───
-      ring.vx = (ring.vx + (tx - ring.x) * RING_K * dt) * Math.pow(RING_D, dt);
-      ring.vy = (ring.vy + (ty - ring.y) * RING_K * dt) * Math.pow(RING_D, dt);
-      ring.x += ring.vx * dt; ring.y += ring.vy * dt;
-
-      // ── shape: area-conserving squash/stretch along velocity ─────────
-      const r = ringRef.current;
-      const hasLabel = r && r.classList.contains("is-label");
-      const speed = Math.hypot(ring.vx, ring.vy);
-      const target = hasLabel ? 1 : 1 + Math.min(speed * 0.055, 1.1);
-      scaleX += (target - scaleX) * Math.min(0.16 * dt, 1);
-      if (!hasLabel && speed > 0.35) {
-        // shortest-arc angular interpolation across the ±180° seam
-        const want = (Math.atan2(ring.vy, ring.vx) * 180) / Math.PI;
-        let delta = ((want - angle + 540) % 360) - 180;
-        angle += delta * Math.min(0.25 * dt, 1);
-      }
-      if (r) {
-        r.style.transform = `translate(${ring.x}px, ${ring.y}px) translate(-50%,-50%) rotate(${angle}deg) scale(${scaleX.toFixed(4)}, ${(1 / Math.max(scaleX, 1)).toFixed(4)})`;
-      }
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${dot.x}px, ${dot.y}px) translate(-50%,-50%)`;
-      }
-
-      // ── trail: Verlet rope with distance constraints ─────────────────
-      let ropeEnergy = 0;
-      for (let i = 0; i < TRAIL; i++) {
+      // ── BODY D: Verlet rope, Gauss–Seidel distance constraints ────────
+      const retain = Math.pow(CURSOR.trailRetain, dt * 60);
+      trailEnergy = 0;
+      for (let i = 0; i < rope.length; i++) {
         const n = rope[i];
-        const vx = (n.x - n.px) * 0.82, vy = (n.y - n.py) * 0.82;
+        const vx = (n.x - n.px) * retain, vy = (n.y - n.py) * retain;
         n.px = n.x; n.py = n.y;
-        n.x += vx * dt; n.y += vy * dt;
-        ropeEnergy += vx * vx + vy * vy;
+        n.x += vx; n.y += vy;
+        trailEnergy += vx * vx + vy * vy;
       }
       for (let pass = 0; pass < 2; pass++) {
-        for (let i = 0; i < TRAIL; i++) {
+        for (let i = 0; i < rope.length; i++) {
           const n = rope[i];
-          const ax = i === 0 ? dot.x : rope[i - 1].x;
-          const ay = i === 0 ? dot.y : rope[i - 1].y;
+          const ax = i === 0 ? dotX.x : rope[i - 1].x;
+          const ay = i === 0 ? dotY.x : rope[i - 1].y;
           const dx = n.x - ax, dy = n.y - ay;
           const d = Math.hypot(dx, dy);
-          if (d > ROPE_LINK) {
-            const k = (d - ROPE_LINK) / d;
+          if (d > CURSOR.trailLink) {
+            const k = (d - CURSOR.trailLink) / d;
             n.x -= dx * k; n.y -= dy * k;
           }
         }
       }
-      for (let i = 0; i < TRAIL; i++) {
-        const el = trailRefs.current[i];
-        if (el) {
-          const s = 1 - i / (TRAIL + 1);
-          el.style.transform = `translate(${rope[i].x}px, ${rope[i].y}px) translate(-50%,-50%) scale(${s.toFixed(3)})`;
-        }
-      }
-
-      // ── sleep when the whole system is at rest ───────────────────────
-      const energy =
-        ring.vx * ring.vx + ring.vy * ring.vy +
-        dot.vx * dot.vx + dot.vy * dot.vy +
-        ropeEnergy;
-      const settled =
-        energy < 0.004 &&
-        Math.abs(tx - ring.x) < 0.2 && Math.abs(ty - ring.y) < 0.2 &&
-        Math.abs(scaleX - 1) < 0.004;
-      if (settled) { raf = null; return; }
-
-      raf = requestAnimationFrame(loop);
     };
 
-    wake();
-    window.addEventListener("mousemove", onMove, { passive: true });
-    window.addEventListener("mousedown", onDown, { passive: true });
-    window.addEventListener("mouseup", onUp, { passive: true });
-    document.addEventListener("visibilitychange", onVisibility);
+    const render = () => {
+      if (!visible) return;
+      const d = dotRef.current, r = ringRef.current, l = labelRef.current;
+      if (d) d.style.transform = `translate3d(${dotX.x.toFixed(2)}px, ${dotY.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
+
+      if (r) {
+        // R(θ)·diag(eˢ, e⁻ˢ)·R(−θ) → det = 1, area preserved
+        const rad = (theta * Math.PI) / 180;
+        const c = Math.cos(rad), sn2 = Math.sin(rad);
+        const ep = Math.exp(shear.x), em = Math.exp(-shear.x);
+        const a = ep * c * c + em * sn2 * sn2;
+        const b = (ep - em) * c * sn2;
+        const dd = ep * sn2 * sn2 + em * c * c;
+        r.style.transform = `translate3d(${ringX.x.toFixed(2)}px, ${ringY.x.toFixed(2)}px, 0) translate(-50%,-50%) matrix(${a.toFixed(4)}, ${b.toFixed(4)}, ${b.toFixed(4)}, ${dd.toFixed(4)}, 0, 0)`;
+        const hovering = !!pointer.target && !pointer.label;
+        r.classList.toggle("is-hover", hovering);
+        r.classList.toggle("is-label", !!pointer.label);
+        r.style.opacity = pointer.down ? "0.5" : pointer.inside ? "1" : "0";
+      }
+
+      if (l) {
+        const text = pointer.label || lastLabel;
+        if (l.textContent !== text) l.textContent = text;
+        if (pointer.label) lastLabel = pointer.label;
+        l.style.opacity = labelOpacity.x.toFixed(3);
+        l.style.transform = `translate3d(${labX.x.toFixed(2)}px, ${labY.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
+      }
+
+      // trail intensity from compressed kinetic energy — invisible when slow
+      const intensity = kinetic();
+      for (let i = 0; i < rope.length; i++) {
+        const el = trailRefs.current[i];
+        if (!el) continue;
+        const fall = 1 - i / (rope.length + 1);
+        el.style.opacity = (intensity * 0.42 * fall).toFixed(3);
+        el.style.transform = `translate3d(${rope[i].x.toFixed(2)}px, ${rope[i].y.toFixed(2)}px, 0) translate(-50%,-50%) scale(${fall.toFixed(3)})`;
+      }
+    };
+
+    const settled = () => {
+      if (!visible) return true;
+      const perr = Math.hypot(ringX.x - pointer.tx, ringY.x - pointer.ty);
+      const vel = Math.hypot(ringX.v, ringY.v) + Math.hypot(dotX.v, dotY.v);
+      return (
+        perr < SLEEP.pos &&
+        vel < SLEEP.vel &&
+        trailEnergy < 0.02 &&
+        Math.abs(shear.x) < 0.004 &&
+        Math.abs(labelOpacity.v) < 0.01
+      );
+    };
+
+    const unsubscribe = subscribe({ step, render, settled });
     return () => {
-      cancelAnimationFrame(raf);
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mousedown", onDown);
-      window.removeEventListener("mouseup", onUp);
+      unsubscribe();
+      stopPointer();
       document.body.classList.remove("cursor-ready");
     };
   }, []);
@@ -202,17 +198,12 @@ export default function CustomCursor() {
   if (!enabled) return null;
   return createPortal(
     <>
-      {Array.from({ length: TRAIL }).map((_, i) => (
-        <div
-          key={i}
-          ref={(el) => (trailRefs.current[i] = el)}
-          className="cursor-trail"
-          style={{ opacity: 0.5 - i * 0.09 }}
-          aria-hidden
-        />
+      {Array.from({ length: CURSOR.trailNodes }).map((_, i) => (
+        <div key={i} ref={(el) => (trailRefs.current[i] = el)} className="cursor-trail" style={{ opacity: 0 }} aria-hidden />
       ))}
       <div ref={dotRef} className="cursor-dot" style={{ opacity: 0 }} aria-hidden />
       <div ref={ringRef} className="cursor-ring" style={{ opacity: 0 }} aria-hidden />
+      <div ref={labelRef} className="cursor-label" style={{ opacity: 0 }} aria-hidden />
     </>,
     document.body
   );
