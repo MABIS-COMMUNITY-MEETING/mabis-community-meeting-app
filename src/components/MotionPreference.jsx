@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
-import { MotionConfig } from "framer-motion";
+import { MotionConfig, MotionGlobalConfig } from "framer-motion";
 import { animationsDisabled, applyAnimationPreference, MOTION_EVENT } from "@/lib/motion-preference";
 
-/* When motion is off we force every framer animation to zero duration (so
-   reveals, page transitions and staggers land instantly) on top of the CSS
-   rules that stop keyframes and transitions. */
+/* Motion off = everything simply exists: framer skips every animation
+   (including ones with their own explicit transition, like the section
+   reveals), and CSS keyframes/transitions are stopped alongside it. */
+if (typeof window !== "undefined") {
+  MotionGlobalConfig.skipAnimations = animationsDisabled();
+}
+
 export default function MotionPreference({ children }) {
   const [disabled, setDisabled] = useState(animationsDisabled);
 
   useEffect(() => {
+    MotionGlobalConfig.skipAnimations = disabled;
     applyAnimationPreference(disabled);
     const update = (event) => setDisabled(event.detail);
     window.addEventListener(MOTION_EVENT, update);
