@@ -156,7 +156,20 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
                 </motion.button>
               )}
             </>
-          ) : isLocked || !canStart ? (
+          ) : isLocked && canStart ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPendingDate(todayStr);
+                setShowUnlockPassword(true);
+              }}
+              className="min-h-11 flex items-center gap-2 px-4 bg-bone/10 text-bone border border-bone/30 tech-label touch-manipulation"
+              aria-label="Unlock Meeting Mode"
+            >
+              <Lock className="w-4 h-4 text-bone/70" /> Unlock
+            </button>
+          ) : !canStart ? (
             <div className="w-10 h-10 bg-bone/10 flex items-center justify-center shrink-0 border border-bone/30">
               <Lock className="w-4 h-4 text-bone/70" />
             </div>
