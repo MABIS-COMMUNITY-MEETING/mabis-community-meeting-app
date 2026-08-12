@@ -43,9 +43,15 @@ export function collect_targets(scope) {
 /* every section, in document order */
 export function collect_sections() {
 	const out = [];
+	/* sections are NOT filtered by opacity — scroll-reveal keeps the ones below
+	   the fold at opacity 0 until they animate in, and skipping them would pin
+	   the walk to section 01 */
 	for (const el of document.querySelectorAll(SECTION_SELECTOR)) {
 		const r = el.getBoundingClientRect();
-		if (visible(el, r)) out.push(el);
+		if (r.width < 4 || r.height < 4) continue;
+		const s = getComputedStyle(el);
+		if (s.visibility === "hidden" || s.display === "none") continue;
+		out.push(el);
 	}
 	return out;
 }
