@@ -109,7 +109,7 @@ export default function CustomCursor() {
 
       // ── deformation: s = s_max·tanh(α|v|), suppressed while labelled ──
       const targetShear = pointer.label ? 0 : CURSOR.shearMax * tanhSat(CURSOR.shearAlpha * s);
-      integrateSpring(shear, targetShear, 26, 1.0, dt);
+      integrateSpring(shear, targetShear, 13, 0.9, dt);
       if (s > 60) {
         const want = (Math.atan2(pointer.vy, pointer.vx) * 180) / Math.PI;
         theta += angleDelta(want, theta) * clamp(dt * 14, 0, 1);
