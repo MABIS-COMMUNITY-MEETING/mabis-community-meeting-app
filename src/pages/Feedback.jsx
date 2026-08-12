@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, Navigate, Link } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import PageNav from "@/components/PageNav";
 import { useAuth } from "@/lib/AuthContext";
-import { Star, Bug, ArrowLeft, CheckCircle2, Eye, Loader2, BarChart3, Trash2, Archive } from "lucide-react";
+import { Star, Bug, CheckCircle2, Eye, Loader2, BarChart3, Trash2, Archive } from "lucide-react";
 import AnalyticsTab from "@/components/AnalyticsTab";
 import PasswordModal from "@/components/PasswordModal";
 
 export default function Feedback() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const isSummerOrBenjamin = user?.email === "summer@montessoribkk.com" || /benjamin/i.test(user?.full_name || "") || /benjamin/i.test(user?.email || "");
   const userRole = user?.role_override || user?.role;
@@ -65,17 +65,7 @@ export default function Feedback() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="fixed top-0 left-0 right-0 z-40 bg-bone/90 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-5 sm:px-8 py-4">
-          <button onClick={() => navigate(-1)} data-cursor="BACK" className="group flex items-center gap-3">
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span className="tech-label text-muted-foreground">／ BACK</span>
-          </button>
-          <span className="hidden sm:block tech-label text-primary">／ N°05 — INBOX</span>
-          <Link to="/home" data-cursor="HOME" className="tech-label text-muted-foreground ul-grow">HOME</Link>
-        </div>
-        <div className="h-px w-full bg-foreground/12" />
-      </header>
+      <PageNav label="／ N°05 — INBOX" />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-8 pt-28 sm:pt-32 pb-8">
         <div className="mb-10 sm:mb-14">

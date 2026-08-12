@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import PageNav from "@/components/PageNav";
 import { format } from "date-fns";
 import { formatWeekFull, groupByWeek } from "@/lib/weekHistory";
 import PageFooter from "@/components/PageFooter";
 
 export default function AnnouncementsHistory() {
-  const navigate = useNavigate();
   const [openWeeks, setOpenWeeks] = useState({});
 
   const { data: allAnnouncements = [] } = useQuery({
@@ -20,17 +19,7 @@ export default function AnnouncementsHistory() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="fixed top-0 left-0 right-0 z-40 bg-bone/90 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-5 sm:px-8 py-4">
-          <button onClick={() => navigate(-1)} data-cursor="BACK" className="group flex items-center gap-3">
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span className="tech-label text-muted-foreground">／ BACK</span>
-          </button>
-          <span className="hidden sm:block tech-label text-primary">／ N°03 — ANNOUNCEMENTS</span>
-          <Link to="/home" data-cursor="HOME" className="tech-label text-muted-foreground ul-grow">HOME</Link>
-        </div>
-        <div className="h-px w-full bg-foreground/12" />
-      </header>
+      <PageNav label="／ N°03 — ANNOUNCEMENTS" />
 
       <main className="max-w-7xl mx-auto px-5 sm:px-8 pt-28 sm:pt-32 pb-2">
         <div className="mb-10 sm:mb-14">
