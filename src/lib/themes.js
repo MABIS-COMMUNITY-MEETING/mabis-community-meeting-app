@@ -1,6 +1,6 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
-import { PRIDE_THEMES, getPrideMode, prideTokens } from "@/lib/pride";
+import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
@@ -412,15 +412,8 @@ export function applyTheme(themeKey) {
   const theme = THEMES[themeKey] || THEMES.default;
   const root = document.documentElement;
 
-  // Pride palettes ship both a light and a dark art direction — neither is an
-  // inversion of the other — and the reader chooses which one they're in.
-  let vars = theme.vars;
-  let isDark = !!theme.dark;
-  if (theme.pride) {
-    const mode = getPrideMode();
-    if (mode === "light") { vars = theme.varsLight; isDark = false; }
-    else if (mode === "dark") { vars = theme.varsDark; isDark = true; }
-  }
+  const vars = theme.vars;
+  const isDark = !!theme.dark;
 
   // Colours travel rather than snap: for the length of the change every surface,
   // border and accent interpolates, so switching palettes reads as one continuous
