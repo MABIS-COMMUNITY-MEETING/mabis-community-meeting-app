@@ -13,7 +13,7 @@ export const MATERIAL = {
   /** cursor centre, tiny controls — essentially no overshoot */
   precision: { omega: 19, zeta: 1.0 },
   /** outer cursor ring — a whisper of inertial tail */
-  glass: { omega: 9.4, zeta: 0.82 },
+  glass: { omega: 14, zeta: 0.9 },
   /** contextual label — settles last, softest */
   paper: { omega: 12, zeta: 0.95 },
   /** large typography / panels — apparent mass */
@@ -31,7 +31,7 @@ export const CURSOR = {
   shearMax: 0.44,      // max |s| in the area-preserving matrix
   shearAlpha: 0.00042, // speed → shear gain, fed through tanh
   /** how far the body may lag behind the core, px */
-  maxLag: 14,
+  maxLag: 8,
   /** tail chain */
   trailNodes: 12,
   trailLink: 7,
