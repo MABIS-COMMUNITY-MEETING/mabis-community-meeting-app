@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { action_binding } from "@/lib/gamepad_profiles";
 import { resolve_profile, OVERRIDE_EVENT } from "@/lib/gamepad_detect";
 import { find_neighbour, find_section, first_in_section } from "@/lib/gamepad_nav";
+import { gamepad_back, top_overlay } from "@/lib/gamepad_back";
+import { useNavigate, useLocation } from "react-router-dom";
 import { playHover, playClick, playMenuClose } from "@/lib/sound";
 import ControllerHints from "@/components/ControllerHints";
 
@@ -26,6 +28,11 @@ export default function GamepadNavigator() {
 	const [active, setActive] = useState(false);
 	const [inside, setInside] = useState(false);
 	const state = useRef({ dir: null, next_at: 0, buttons: {}, pad_index: null, entered: null });
+	const navigate = useNavigate();
+	const location = useLocation();
+	/* the poll loop is created once — keep routing info fresh through a ref */
+	const nav = useRef({ navigate, pathname: location.pathname });
+	nav.current = { navigate, pathname: location.pathname };
 
 	useEffect(() => {
 		if (typeof navigator === "undefined" || !navigator.getGamepads) return;
@@ -47,7 +54,22 @@ export default function GamepadNavigator() {
 
 		const move = (dir) => {
 			const entered = state.current.entered;
+			/* a dialog or full-screen widget owns input while it is open */
+			const overlay = top_overlay();
+			if (overlay) {
+				const el = find_neighbour(document.activeElement, dir, overlay);
+				if (el && el !== document.activeElement) focus_el(el);
+				return;
+			}
 			if (!entered) {
+				/* pages without editorial sections (history, feedback, auth, modals
+				   over them) navigate their controls directly */
+				const has_sections = document.querySelector("[data-gp-section]");
+				if (!has_sections) {
+					const el = find_neighbour(document.activeElement, dir, null);
+					if (el && el !== document.activeElement) focus_el(el);
+					return;
+				}
 				if (dir === "left" || dir === "right") return;
 				const section = find_section(document.activeElement, dir);
 				if (section && section !== document.activeElement) focus_el(section);
@@ -157,10 +179,15 @@ export default function GamepadNavigator() {
 				setActive(true);
 				playMenuClose();
 				rumble(p, 0.18);
-				const target = document.activeElement || document;
-				target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-				if (state.current.entered) exit_section();
-				else document.activeElement?.blur?.();
+				gamepad_back({
+					entered: state.current.entered,
+					exit_section,
+					leave_page: () => {
+						const { navigate: go, pathname } = nav.current;
+						if (pathname === "/" || pathname === "/home") return;
+						go(-1);
+					},
+				});
 			});
 
 			/* right stick scrolls the page — eased so small tilts creep and full
