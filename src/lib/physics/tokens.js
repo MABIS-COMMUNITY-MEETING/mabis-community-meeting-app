@@ -11,7 +11,7 @@
 
 export const MATERIAL = {
   /** cursor centre, tiny controls — essentially no overshoot */
-  precision: { omega: 26, zeta: 1.0 },
+  precision: { omega: 19, zeta: 1.0 },
   /** outer cursor ring — a whisper of inertial tail */
   glass: { omega: 8.21, zeta: 0.62 },
   /** contextual label — settles last, softest */
@@ -26,7 +26,7 @@ export const CURSOR = {
   normalScale: 1.15,
   /** prediction horizon bounds, seconds */
   tauMin: 0,
-  tauMax: 0.018,
+  tauMax: 0.007,
   /** deformation */
   shearMax: 0.44,      // max |s| in the area-preserving matrix
   shearAlpha: 0.00042, // speed → shear gain, fed through tanh
