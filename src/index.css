@@ -424,7 +424,15 @@ html.animations-disabled .cursor-ring {
     min-width: 40px;
     min-height: 40px;
   }
-  header button, header a { min-height: 40px; }
+  header button, header a { min-height: 40px; display: inline-flex; align-items: center; }
+  /* iOS/Android spend the first tap "hovering" any element with hover styling,
+     which is why Back/Home needed two taps — neutralise those hover states. */
+  .ul-grow:hover { background-size: 0% 1px !important; }
+  .liquid-btn:hover::before { transform: translateY(101%) !important; }
+  .liquid-btn:hover { color: inherit !important; }
+  .group:hover .stretch-x,
+  .group:hover .rotate-on-hover { transform: none !important; }
+  .group:hover .group-hover\:-translate-x-1 { transform: none !important; }
 }
 
 /* ── reduced motion ── */
