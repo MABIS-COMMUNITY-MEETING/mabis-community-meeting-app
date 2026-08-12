@@ -338,11 +338,13 @@ function buildTheme(s) {
     dark: s.mode === "dark",
     pride: s,
     /* cursor + glass material, expressed as light rather than flag stripes */
-    character: {
-      character_primary: toneHex(s.dominant, roleL, 1, 0.19),
-      character_secondary: toneHex(s.secondary, roleL + 0.08, 0.95, 0.17),
-      character_highlight: toneHex(s.accent, roleL + 0.12, 1, 0.19),
-    },
+    character: s.exact
+      ? { character_primary: s.dominant, character_secondary: s.secondary, character_highlight: s.accent }
+      : {
+        character_primary: toneHex(s.dominant, roleL, 1, 0.19),
+        character_secondary: toneHex(s.secondary, roleL + 0.08, 0.95, 0.17),
+        character_highlight: toneHex(s.accent, roleL + 0.12, 1, 0.19),
+      },
   };
 }
 
@@ -363,6 +365,14 @@ export function setPrideMode(mode) {
 export function prideTokens(theme, dark) {
   const s = theme.pride;
   const L = dark ? 0.74 : 0.54;
+  // exact palettes keep their published flag hexes in the cursor + light layer
+  if (s.exact) {
+    return {
+      "--pride-glow": s.accent,
+      "--pride-edge": s.dominant,
+      "--pride-highlight": s.secondary,
+    };
+  }
   return {
     "--pride-glow": toneHex(s.accent, L + 0.1, 1, 0.19),
     "--pride-edge": toneHex(s.dominant, L, 1, 0.19),

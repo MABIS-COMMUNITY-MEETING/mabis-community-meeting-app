@@ -378,10 +378,16 @@ body.theme-shifting *:not(.cursor-dot):not(.cursor-ring):not(.cursor-trail) {
               fill .5s ease, stroke .5s ease, box-shadow .62s ease !important;
 }
 
-body.pride-active .cursor-dot { background: var(--pride-glow); mix-blend-mode: normal; }
+body.pride-active .cursor-dot {
+  background: var(--pride-glow);
+  mix-blend-mode: normal;
+  box-shadow: 0 0 10px 3px color-mix(in srgb, var(--pride-glow) 55%, transparent);
+}
 body.pride-active .cursor-ring {
   border-color: var(--pride-edge);
-  box-shadow: 0 0 14px -2px var(--pride-glow);
+  box-shadow: 0 0 18px 4px color-mix(in srgb, var(--pride-highlight) 40%, transparent),
+              inset 0 0 12px color-mix(in srgb, var(--pride-highlight) 22%, transparent);
+  backdrop-filter: blur(2px);
   mix-blend-mode: normal;
   color: var(--pride-highlight);
 }
