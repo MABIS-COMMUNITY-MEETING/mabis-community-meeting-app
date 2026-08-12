@@ -371,11 +371,17 @@ Object.assign(THEMES, PRIDE_THEMES);
 
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
 // UI tokens can hold. Expose the whole set so accents can use the full palette.
-function applyPalette(colors) {
+function applyPalette(colors, exact = false) {
   const root = document.documentElement;
   const list = colors.filter(Boolean);
-  // accents get the legible copy, the stripe below keeps the true flag
-  const accents = list.map((c) => (c.startsWith("#") ? readableHex(c) : c));
+  // accents get the legible copy, the stripe below keeps the true flag.
+  // `exact` palettes (the art-directed Pride collection) keep their published
+  // hexes — only white/grey stripes are darkened so they stay visible.
+  const accents = list.map((c) => {
+    if (!c.startsWith("#")) return c;
+    if (!exact) return readableHex(c);
+    return parseInt(hexToHsl(c).split(" ")[1]) < 8 ? readableHex(c) : c;
+  });
   for (let i = 0; i < 8; i++) {
     root.style.setProperty(`--flag-${i + 1}`, accents[i % accents.length]);
   }
@@ -441,7 +447,7 @@ export function applyTheme(themeKey) {
   root.style.setProperty("--destructive", vars["--primary"]);
   root.style.setProperty("--destructive-foreground", vars["--primary-foreground"]);
   document.body.classList.toggle("theme-is-dark", isDark);
-  applyPalette(theme.swatches);
+  applyPalette(theme.swatches, !!theme.pride);
   applyCharacterTokens(theme.character);
   Object.values(THEMES).forEach(t => document.body.classList.remove(t.bodyClass));
   document.body.classList.add(theme.bodyClass);
