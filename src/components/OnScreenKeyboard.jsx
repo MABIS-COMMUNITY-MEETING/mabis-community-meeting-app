@@ -18,8 +18,6 @@ const ROWS_UPPER = [
   ["Z", "X", "C", "V", "B", "N", "M", "<", ">", "[", "]"],
 ];
 
-const TEXTY = ["text", "email", "password", "search", "url", "tel", "number"];
-
 function setValue(el, value) {
   const proto = el.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
   const setter = Object.getOwnPropertyDescriptor(proto, "value").set;
@@ -31,16 +29,16 @@ export default function OnScreenKeyboard() {
   const [target, setTarget] = useState(null);
   const [shift, setShift] = useState(false);
   const firstKey = useRef(null);
+  const skip = useRef(null);
 
   useEffect(() => {
     const onFocus = (e) => {
       if (!document.body.classList.contains("gamepad-active")) return;
       const el = e.target;
-      if (!el || el.dataset?.oskKey) return;
-      const isText =
-        el.tagName === "TEXTAREA" ||
-        (el.tagName === "INPUT" && TEXTY.includes((el.type || "text").toLowerCase()));
-      if (isText) setTarget(el);
+      /* only fields that opt in (the unlock meeting code) */
+      if (!el?.dataset?.osk) return;
+      if (skip.current === el) { skip.current = null; return; }
+      setTarget(el);
     };
     document.addEventListener("focusin", onFocus);
     return () => document.removeEventListener("focusin", onFocus);
@@ -52,6 +50,7 @@ export default function OnScreenKeyboard() {
 
   const close = () => {
     const el = target;
+    skip.current = el;
     setTarget(null);
     setShift(false);
     requestAnimationFrame(() => el?.focus({ preventScroll: true }));
