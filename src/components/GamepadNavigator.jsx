@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { action_binding } from "@/lib/gamepad_profiles";
 import { resolve_profile, OVERRIDE_EVENT } from "@/lib/gamepad_detect";
-import { collect_targets, find_neighbour, find_section, first_in_section } from "@/lib/gamepad_nav";
+import { SECTION_SELECTOR, collect_targets, find_neighbour, find_section, first_in_section } from "@/lib/gamepad_nav";
 import { gamepad_back, top_overlay } from "@/lib/gamepad_back";
 import { useNavigate, useLocation } from "react-router-dom";
 import { playHover, playClick, playMenuClose } from "@/lib/sound";
@@ -75,8 +75,11 @@ export default function GamepadNavigator() {
 					return;
 				}
 				if (dir === "left" || dir === "right") return;
-				const section = find_section(document.activeElement, dir);
-				if (section && section !== document.activeElement) focus_el(section);
+				/* focus can be lost (a modal closed, an element re-rendered) — remember
+				   the last section so movement continues instead of snapping back */
+				const cur = document.activeElement?.closest?.(SECTION_SELECTOR) || state.current.section;
+				const section = find_section(cur, dir);
+				if (section) { state.current.section = section; focus_el(section); }
 				return;
 			}
 			const control = find_neighbour(document.activeElement, dir, entered);
@@ -85,7 +88,7 @@ export default function GamepadNavigator() {
 			if (dir === "up" || dir === "down") {
 				exit_section();
 				const section = find_section(document.activeElement, dir);
-				if (section) focus_el(section);
+				if (section) { state.current.section = section; focus_el(section); }
 			}
 		};
 
