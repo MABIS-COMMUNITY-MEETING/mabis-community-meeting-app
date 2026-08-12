@@ -66,7 +66,9 @@ export default function CustomCursor() {
 
       // travel frame (tangent / normal)
       const s = pointer.speed;
-      if (s > 25) { f.tx = pointer.vx / s; f.ty = pointer.vy / s; }
+      // only trust the travel direction once the movement is clearly intentional —
+      // below that, a sensitive mouse's noise flips the frame and shakes the ring
+      if (s > 90) { f.tx = pointer.vx / s; f.ty = pointer.vy / s; }
       f.nx = -f.ty; f.ny = f.tx;
 
       // ── BODY: anisotropic viscous spring coupled to the core ────────
@@ -97,10 +99,11 @@ export default function CustomCursor() {
       // ── deformation: speed + lag, saturated, then softly sprung ─────
       const effort = tanhSat(CURSOR.shearAlpha * s + lag / 46);
       integrateSpring(swim, effort, 5.5, 1.0, dt);
-      integrateSpring(shear, pointer.label ? 0 : CURSOR.shearMax * effort, 7, 1.0, dt);
+      // drive deformation from the smoothed effort, never the raw sample
+      integrateSpring(shear, pointer.label ? 0 : CURSOR.shearMax * swim.x, 7, 1.0, dt);
       integrateSpring(glow, pointer.label ? 1 : 0, 22, 1.0, dt);
 
-      if (s > 50) {
+      if (s > 140) {
         const want = (Math.atan2(pointer.vy, pointer.vx) * 180) / Math.PI;
         theta += angleDelta(want, theta) * clamp(dt * 7, 0, 1);
       }
