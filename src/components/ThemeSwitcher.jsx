@@ -5,6 +5,8 @@ import {
   getStoredTheme, getStoredCustomColors, hslToHex,
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
 } from "@/lib/themes";
+import { isPrideTheme } from "@/lib/pride";
+import PrideGallery from "@/components/pride/PrideGallery";
 
 export default function ThemeSwitcher() {
   const [open, setOpen] = useState(false);
@@ -83,9 +85,12 @@ export default function ThemeSwitcher() {
               <h3 className="text-sm font-bold text-gray-800">Themes</h3>
             </div>
 
+            {/* The Pride collection gets its own gallery, above the ordinary presets */}
+            <PrideGallery current={currentTheme} onSelect={handleSelectTheme} />
+
             {/* Theme presets */}
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {Object.entries(THEMES).map(([key, theme]) => (
+              {Object.entries(THEMES).filter(([key]) => !isPrideTheme(key)).map(([key, theme]) => (
                 <button key={key} onClick={() => handleSelectTheme(key)}
                   className={`relative p-2.5 rounded-xl border-2 transition-all text-left ${
                     currentTheme === key && !customActive

@@ -1,5 +1,6 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
+import { PRIDE_THEMES, getPrideMode, prideTokens } from "@/lib/pride";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
@@ -363,6 +364,11 @@ export const THEMES = {
   gmk_prussian:    gmkTheme("prussian_alert"),
 };
 
+/* The Pride palettes are the app's flagship collection: they are art-directed in
+   OKLCh with their own lighting geometry, light AND dark treatments and cursor
+   materials (see lib/pride.js), and replace the earlier three-variable versions. */
+Object.assign(THEMES, PRIDE_THEMES);
+
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
 // UI tokens can hold. Expose the whole set so accents can use the full palette.
 function applyPalette(colors) {
@@ -405,19 +411,43 @@ function applyCharacterTokens(character) {
 export function applyTheme(themeKey) {
   const theme = THEMES[themeKey] || THEMES.default;
   const root = document.documentElement;
-  Object.entries(theme.vars).forEach(([key, value]) => {
+
+  // Pride palettes ship both a light and a dark art direction — neither is an
+  // inversion of the other — and the reader chooses which one they're in.
+  let vars = theme.vars;
+  let isDark = !!theme.dark;
+  if (theme.pride) {
+    const mode = getPrideMode();
+    if (mode === "light") { vars = theme.varsLight; isDark = false; }
+    else if (mode === "dark") { vars = theme.varsDark; isDark = true; }
+  }
+
+  // Colours travel rather than snap: for the length of the change every surface,
+  // border and accent interpolates, so switching palettes reads as one continuous
+  // shift instead of a hard repaint.
+  document.body.classList.add("theme-shifting");
+  clearTimeout(applyTheme._t);
+  applyTheme._t = setTimeout(() => document.body.classList.remove("theme-shifting"), 760);
+
+  Object.entries(vars).forEach(([key, value]) => {
     root.style.setProperty(key, value);
   });
+  document.body.classList.toggle("pride-active", !!theme.pride);
+  if (theme.pride) {
+    Object.entries(prideTokens(theme, isDark)).forEach(([k, v]) => root.style.setProperty(k, v));
+  } else {
+    ["--pride-glow", "--pride-edge", "--pride-highlight"].forEach((k) => root.style.removeProperty(k));
+  }
   // The editorial layer paints panels/labels with --ink and --bone. Themes never
   // set them, so every theme was drawing on the original maroon/bone pair — that
   // was the clash. Tie them to the theme's own foreground/background instead.
-  root.style.setProperty("--ink", theme.vars["--foreground"]);
-  root.style.setProperty("--bone", theme.vars["--background"]);
+  root.style.setProperty("--ink", vars["--foreground"]);
+  root.style.setProperty("--bone", vars["--background"]);
   // --destructive was the last fixed red in the app: shadcn destructive buttons,
   // badges and alerts all read it, so every theme kept a red no matter its palette.
-  root.style.setProperty("--destructive", theme.vars["--primary"]);
-  root.style.setProperty("--destructive-foreground", theme.vars["--primary-foreground"]);
-  document.body.classList.toggle("theme-is-dark", !!theme.dark);
+  root.style.setProperty("--destructive", vars["--primary"]);
+  root.style.setProperty("--destructive-foreground", vars["--primary-foreground"]);
+  document.body.classList.toggle("theme-is-dark", isDark);
   applyPalette(theme.swatches);
   applyCharacterTokens(theme.character);
   Object.values(THEMES).forEach(t => document.body.classList.remove(t.bodyClass));

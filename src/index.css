@@ -328,6 +328,55 @@ body .border-gray-100, body .border-gray-200, body .border-gray-300 { border-col
 body .text-gray-600, body .text-gray-700, body .text-gray-800, body .text-gray-900 { color: hsl(var(--foreground)) !important; }
 body .text-gray-300, body .text-gray-400, body .text-gray-500 { color: hsl(var(--muted-foreground)) !important; }
 
+/* ── THE PRIDE COLLECTION ─────────────────────────────────────────────
+   Flagship palettes. Their advantage is art direction, not saturation: the
+   colour arrives as edge light, hairlines and tiny details on interactive
+   parts, while surfaces stay neutral and the page keeps its whitespace. */
+
+/* palette transition — colour travels through the interface instead of snapping */
+body.theme-shifting,
+body.theme-shifting *:not(.cursor-dot):not(.cursor-ring):not(.cursor-trail) {
+  transition: background-color .62s cubic-bezier(.16,1,.3,1),
+              border-color .62s cubic-bezier(.16,1,.3,1),
+              color .5s cubic-bezier(.16,1,.3,1),
+              fill .5s ease, stroke .5s ease, box-shadow .62s ease !important;
+}
+
+body.pride-active .cursor-dot { background: var(--pride-glow); mix-blend-mode: normal; }
+body.pride-active .cursor-ring {
+  border-color: var(--pride-edge);
+  box-shadow: 0 0 14px -2px var(--pride-glow);
+  mix-blend-mode: normal;
+  color: var(--pride-highlight);
+}
+body.pride-active .cursor-trail { background: var(--pride-highlight); mix-blend-mode: normal; }
+
+/* selection, focus and scroll: theme light rather than theme fill */
+body.pride-active ::selection { background: var(--pride-glow); color: hsl(var(--background)); }
+body.pride-active :focus-visible { outline-color: var(--pride-edge); }
+body.pride-active ::-webkit-scrollbar-thumb { background: var(--pride-edge); }
+
+/* micro-details — a hairline of theme light on the things you touch */
+body.pride-active button:not(:disabled):hover,
+body.pride-active [role="button"]:hover { box-shadow: 0 1px 0 var(--pride-glow); }
+body.pride-active a:hover { text-decoration-color: var(--pride-glow); }
+body.pride-active input:focus,
+body.pride-active textarea:focus,
+body.pride-active select:focus { box-shadow: 0 0 0 1px var(--pride-edge), 0 0 12px -4px var(--pride-glow); }
+body.pride-active .tech-label { color: hsl(var(--muted-foreground)); }
+body.pride-active .bg-card.rounded-2xl.shadow-sm:hover,
+body.pride-active .bg-white.rounded-2xl.shadow-sm:hover {
+  border-color: var(--pride-edge);
+  box-shadow: 0 1px 0 var(--pride-glow), 0 18px 40px -32px var(--pride-glow);
+}
+
+/* wide-gamut accents where the display supports them, sRGB everywhere else */
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    body.pride-active .cursor-ring { box-shadow: 0 0 16px -2px color-mix(in oklab, var(--pride-glow) 92%, white); }
+  }
+}
+
 /* range slider */
 input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 0; background: hsl(var(--primary)); border: none; cursor: pointer; }
 input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 0; background: hsl(var(--primary)); border: none; cursor: pointer; }
