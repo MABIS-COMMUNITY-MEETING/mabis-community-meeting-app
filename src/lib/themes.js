@@ -185,9 +185,22 @@ function gmkTheme(key) {
   };
 
   const roles = ["--role-student", "--role-teacher", "--role-chair", "--role-minutes", "--role-admin", "--role-editor"];
-  const usable = u.swatches.map(readableHex).map(hexToHsl);
+  // keysets are two/three-colour sets: keep each swatch's own hue AND saturation,
+  // only move lightness into a legible band. Boosting saturation turned Olivia's
+  // pink/cream into red and yellow.
+  const usable = u.swatches.map(keepHueLegible);
   roles.forEach((r, i) => { t.vars[r] = usable[i % usable.length]; });
+  // canonical keyset hexes go into --flag-* untouched (only near-greys darkened)
+  t.exact = true;
   return t;
+}
+
+/* Legible copy of a swatch that never invents a new hue: saturation is left
+   alone, lightness is pulled into a band that reads on both light and dark. */
+function keepHueLegible(hex) {
+  const [h, s, l] = hexToHsl(hex).split(" ").map((v) => parseInt(v));
+  if (s < 8) return `${h} 0% ${Math.min(Math.max(l, 22), 45)}%`;
+  return `${h} ${s}% ${Math.min(Math.max(l, 34), 54)}%`;
 }
 
 export const THEMES = {
@@ -447,7 +460,7 @@ export function applyTheme(themeKey) {
   root.style.setProperty("--destructive", vars["--primary"]);
   root.style.setProperty("--destructive-foreground", vars["--primary-foreground"]);
   document.body.classList.toggle("theme-is-dark", isDark);
-  applyPalette(theme.swatches, !!theme.pride);
+  applyPalette(theme.swatches, !!theme.pride || !!theme.exact);
   applyCharacterTokens(theme.character);
   Object.values(THEMES).forEach(t => document.body.classList.remove(t.bodyClass));
   document.body.classList.add(theme.bodyClass);
