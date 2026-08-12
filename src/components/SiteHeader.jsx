@@ -114,7 +114,7 @@ export default function SiteHeader({ rightSlot }) {
                 <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="tech-label vert-text text-bone/50 sm:hidden">MENU</motion.span>
               </div>
 
-              <nav className="flex flex-col gap-1 sm:gap-2">
+              <nav className="flex flex-col gap-1 sm:gap-2 shrink-0">
                 {NAV.map((item, i) => {
                   const active = location.pathname === item.to;
                   // long labels ("Meeting History", "Feedback Inbox") would run
@@ -130,7 +130,7 @@ export default function SiteHeader({ rightSlot }) {
                       transition={{ delay: 0.12 + i * 0.07, duration: 0.55, ease: EASE }}
                       data-cursor="OPEN"
                       onMouseEnter={playHover}
-                      className="group relative flex items-baseline gap-4 sm:gap-8 text-left"
+                      className="group relative flex shrink-0 items-baseline gap-4 sm:gap-8 text-left"
                     >
                       <span className="tech-label text-bone/40 pt-3 sm:pt-4 w-8 sm:w-10">{item.n}</span>
                       <span className="relative flex-1 flex items-center gap-3 border-b border-bone/15 py-2 sm:py-3 overflow-hidden">
@@ -138,10 +138,10 @@ export default function SiteHeader({ rightSlot }) {
                           <motion.span layoutId="nav-active" className="absolute left-0 top-0 bottom-0 w-[3px] bg-secondary" />
                         )}
                         <span className="relative block overflow-hidden">
-                          <span className={`block whitespace-nowrap ${size} sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-[1.6] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:-translate-y-full`}>
+                          <span className={`block whitespace-nowrap ${size} sm:text-6xl md:text-7xl font-display font-light tracking-ultra leading-[1.6] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:-translate-y-full`}>
                             {item.label}
                           </span>
-                          <span className={`absolute inset-0 block whitespace-nowrap ${size} sm:text-7xl md:text-8xl font-display font-light tracking-ultra leading-[1.6] text-secondary translate-y-full transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0`}>
+                          <span className={`absolute inset-0 block whitespace-nowrap ${size} sm:text-6xl md:text-7xl font-display font-light tracking-ultra leading-[1.6] text-secondary translate-y-full transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0`}>
                             {item.label}
                           </span>
                         </span>
