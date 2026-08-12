@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
-export const APP_VERSION = "v2.0.0";
+export const APP_VERSION = "v6.9.9";
 
 export default function PageFooter() {
   return (
