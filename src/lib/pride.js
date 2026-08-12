@@ -27,7 +27,7 @@ const SPECS = [
   {
     key: "trans", name: "Trans", no: "01", mode: "light",
     flag: ["#5BCEFA", "#F5A9B8", "#FFFFFF", "#F5A9B8", "#5BCEFA"],
-    dominant: "#5BCEFA", secondary: "#F5A9B8", accent: "#F5A9B8",
+    dominant: "#5BCEFA", secondary: "#F5A9B8", accent: "#F5A9B8", exact: true,
     note: "glassy blue light, soft pink highlight, white separation",
     field: [
       { c: 0, x: 12, y: 8, r: 46, a: 0.20, d: 5, s: 46 },
@@ -229,6 +229,42 @@ const SPECS = [
   },
 ];
 
+/* Some palettes must show their flag colours exactly as published, not as
+   OKLCh derivatives. `exact: true` pins primary/secondary/accent to the spec
+   hexes and picks a text colour that actually reads on them. */
+function hexToHslStr(hex) {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let hue = 0, s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) hue = (g - b) / d + (g < b ? 6 : 0);
+    else if (max === g) hue = (b - r) / d + 2;
+    else hue = (r - g) / d + 4;
+    hue *= 60;
+  }
+  return `${Math.round(hue)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
+function applyExact(vars, s) {
+  if (!s.exact) return vars;
+  const ink = vars["--foreground"];
+  const on = (hex) => (parseInt(hexToHslStr(hex).split(" ")[2]) > 58 ? ink : "0 0% 100%");
+  vars["--primary"] = hexToHslStr(s.dominant);
+  vars["--primary-foreground"] = on(s.dominant);
+  vars["--secondary"] = hexToHslStr(s.secondary);
+  vars["--secondary-foreground"] = on(s.secondary);
+  vars["--accent"] = hexToHslStr(s.accent);
+  vars["--accent-foreground"] = on(s.accent);
+  vars["--ring"] = hexToHslStr(s.dominant);
+  return vars;
+}
+
 /* Light art direction: white breathing room, colour as placed accents. */
 function lightVars(s) {
   const d = s.dominant, a = s.accent, sec = s.secondary;
@@ -283,7 +319,7 @@ const ROLES = ["--role-student", "--role-teacher", "--role-chair", "--role-minut
 function buildTheme(s) {
   const roleL = s.mode === "dark" ? 0.76 : 0.5;
   const mk = (mode) => {
-    const vars = mode === "dark" ? darkVars(s) : lightVars(s);
+    const vars = applyExact(mode === "dark" ? darkVars(s) : lightVars(s), s);
     // Role colours are used two ways: as small text on a surface, and as a
     // filled badge with white text on top. Only a mid band satisfies both, so
     // every role sits at the same lightness regardless of the palette's mode.
