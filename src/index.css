@@ -177,9 +177,11 @@
 /* ── custom cursor ── */
 .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; mix-blend-mode: difference; }
 .cursor-dot { width: 6px; height: 6px; background: #fff; transform: translate(-50%,-50%); }
-.cursor-ring { width: 30px; height: 30px; border: 1px solid #fff; transition: opacity .2s ease, width .2s ease, height .2s ease; }
+.cursor-ring { width: 38px; height: 38px; border: 1px solid #fff; transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:'Iosevka',monospace; font-size:9px; letter-spacing:0.08em; color:#fff; text-transform:uppercase; }
 .cursor-label { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; font-family: 'Iosevka', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; white-space: nowrap; }
 .cursor-trail { position: fixed; top: 0; left: 0; width: 5px; height: 5px; pointer-events: none; z-index: 9999; border-radius: 999px; background: #fff; mix-blend-mode: difference; transform: translate(-50%,-50%); }
+.cursor-ring.is-hover { width: 46px; height: 46px; background:transparent; }
+.cursor-ring.is-label { width: 62px; height: 62px; background:rgba(255,255,255,0.14); }
 body.gamepad-active .cursor-dot,
 body.gamepad-active .cursor-trail,
 body.gamepad-active .cursor-label,
@@ -377,7 +379,12 @@ body.theme-shifting *:not(.cursor-dot):not(.cursor-ring):not(.cursor-trail) {
 }
 
 body.pride-active .cursor-dot { background: var(--pride-glow); mix-blend-mode: normal; }
-body.pride-active .cursor-ring { border-color: var(--pride-edge); mix-blend-mode: normal; }
+body.pride-active .cursor-ring {
+  border-color: var(--pride-edge);
+  box-shadow: 0 0 14px -2px var(--pride-glow);
+  mix-blend-mode: normal;
+  color: var(--pride-highlight);
+}
 body.pride-active .cursor-trail { background: var(--pride-highlight); mix-blend-mode: normal; }
 
 /* selection, focus and scroll: theme light rather than theme fill */
@@ -548,7 +555,7 @@ html.animations-disabled .cursor-trail,
 html.animations-disabled .cursor-label,
 html.animations-disabled .cursor-ring {
   animation: revert !important;
-  transition: opacity .2s ease !important;
+  transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease !important;
 }
 
 /* ── touch devices: reliable, comfortably sized tap targets ── */

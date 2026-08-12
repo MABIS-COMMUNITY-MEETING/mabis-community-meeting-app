@@ -2,23 +2,25 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { subscribe } from "@/lib/physics/scheduler";
 import { pointer, startPointerEngine } from "@/lib/physics/pointer";
-import { MATERIAL, SLEEP } from "@/lib/physics/tokens";
-import { integrateSpring } from "@/lib/physics/math";
+import { MATERIAL, CURSOR, SLEEP } from "@/lib/physics/tokens";
+import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math";
 
 /**
- * Simple two-part cursor: a precise dot on the pointer and a soft ring
- * trailing it on a spring. No glass, no filters.
+ * The cursor is simulated as a small swimming organism.
+ *
+ *   CORE  — the dot. A critically damped spring on the predicted pointer
+ *           target: exact, never overshoots, defines "where you are".
+ *   BODY  — the ring. A soft viscous membrane coupled to the core, integrated
+ *           in the travel frame so it is loose along its path and tight across
+ *           it, and deformed by an area-preserving matrix (det = 1) so it
+ *           stretches without ever gaining or losing visual mass.
+ *
+ * Everything integrates on the shared fixed-timestep scheduler, so behaviour is
+ * identical at 60Hz and 240Hz, and the whole system sleeps when it settles.
  */
-const TRAIL = [
-  { omega: 7.2, zeta: 0.72, size: 5, op: 0.5 },
-  { omega: 5.6, zeta: 0.7, size: 4, op: 0.34 },
-  { omega: 4.4, zeta: 0.68, size: 3, op: 0.2 },
-];
-
 export default function CustomCursor() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
-  const trailRefs = useRef([]);
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -32,59 +34,121 @@ export default function CustomCursor() {
 
     const cx = window.innerWidth / 2;
     const cy = window.innerHeight / 2;
-    const dotX = { x: cx, v: 0 }, dotY = { x: cy, v: 0 };
-    const ringX = { x: cx, v: 0 }, ringY = { x: cy, v: 0 };
-    const trail = TRAIL.map(() => ({ x: { x: cx, v: 0 }, y: { x: cy, v: 0 } }));
+
+    // ── state ─────────────────────────────────────────────────────────
+    const coreX = { x: cx, v: 0 }, coreY = { x: cy, v: 0 };
+    const bodyX = { x: cx, v: 0 }, bodyY = { x: cy, v: 0 };
+    const shear = { x: 0, v: 0 };
+    const glow = { x: 0, v: 0 };            // label opacity
+    const swim = { x: 0, v: 0 };            // 0..1 travel effort
+
+    let theta = 0;     // deformation orientation (deg)
     let visible = false;
+    let lastLabel = "";
+
+    // scratch — the hot loop allocates nothing
+    const f = { tx: 1, ty: 0, nx: 0, ny: 1 };
+    const st = { x: 0, v: 0 }, sn = { x: 0, v: 0 };
 
     const step = (dt) => {
       if (!pointer.seen) return;
+
       if (!visible) {
         visible = true;
-        dotX.x = ringX.x = pointer.x;
-        dotY.x = ringY.x = pointer.y;
-        trail.forEach((t) => { t.x.x = pointer.x; t.y.x = pointer.y; });
+        coreX.x = bodyX.x = pointer.x;
+        coreY.x = bodyY.x = pointer.y;
       }
+
+      // ── CORE ────────────────────────────────────────────────────────
       const P = MATERIAL.precision;
-      integrateSpring(dotX, pointer.tx, P.omega, P.zeta, dt);
-      integrateSpring(dotY, pointer.ty, P.omega, P.zeta, dt);
-      integrateSpring(ringX, dotX.x, 6.6, 0.66, dt);
-      integrateSpring(ringY, dotY.x, 6.6, 0.66, dt);
-      let px = dotX.x, py = dotY.x;
-      trail.forEach((t, i) => {
-        const c = TRAIL[i];
-        integrateSpring(t.x, px, c.omega, c.zeta, dt);
-        integrateSpring(t.y, py, c.omega, c.zeta, dt);
-        px = t.x.x; py = t.y.x;
-      });
+      integrateSpring(coreX, pointer.tx, P.omega, P.zeta, dt);
+      integrateSpring(coreY, pointer.ty, P.omega, P.zeta, dt);
+
+      // travel frame (tangent / normal)
+      const s = pointer.speed;
+      // only trust the travel direction once the movement is clearly intentional —
+      // below that, a sensitive mouse's noise flips the frame and shakes the ring
+      if (s > 90) { f.tx = pointer.vx / s; f.ty = pointer.vy / s; }
+      f.nx = -f.ty; f.ny = f.tx;
+
+      // ── BODY: anisotropic viscous spring coupled to the core ────────
+      const G = MATERIAL.glass;
+      const ex = bodyX.x - coreX.x, ey = bodyY.x - coreY.x;
+      st.x = ex * f.tx + ey * f.ty;
+      sn.x = ex * f.nx + ey * f.ny;
+      st.v = bodyX.v * f.tx + bodyY.v * f.ty;
+      sn.v = bodyX.v * f.nx + bodyY.v * f.ny;
+
+      integrateSpring(st, 0, G.omega * CURSOR.tangentScale, G.zeta, dt);
+      integrateSpring(sn, 0, G.omega * CURSOR.normalScale, G.zeta, dt);
+
+      bodyX.x = coreX.x + st.x * f.tx + sn.x * f.nx;
+      bodyY.x = coreY.x + st.x * f.ty + sn.x * f.ny;
+      bodyX.v = st.v * f.tx + sn.v * f.nx;
+      bodyY.v = st.v * f.ty + sn.v * f.ny;
+
+      // the core must stay enclosed by the body
+      const ox = bodyX.x - coreX.x, oy = bodyY.x - coreY.x;
+      const lag = Math.hypot(ox, oy);
+      if (lag > CURSOR.maxLag) {
+        const k = CURSOR.maxLag / lag;
+        bodyX.x = coreX.x + ox * k;
+        bodyY.x = coreY.x + oy * k;
+      }
+
+      // ── deformation: speed + lag, saturated, then softly sprung ─────
+      const effort = tanhSat(CURSOR.shearAlpha * s + lag / 46);
+      integrateSpring(swim, effort, 5.5, 1.0, dt);
+      // drive deformation from the smoothed effort, never the raw sample
+      integrateSpring(shear, pointer.label ? 0 : CURSOR.shearMax * swim.x, 7, 1.0, dt);
+      integrateSpring(glow, pointer.label ? 1 : 0, 22, 1.0, dt);
+
+      if (s > 140) {
+        const want = (Math.atan2(pointer.vy, pointer.vx) * 180) / Math.PI;
+        theta += angleDelta(want, theta) * clamp(dt * 7, 0, 1);
+      }
     };
 
     const render = () => {
       if (!visible) return;
       const d = dotRef.current, r = ringRef.current;
-      const op = pointer.inside ? "1" : "0";
+
       if (d) {
-        d.style.opacity = op;
-        d.style.transform = `translate3d(${dotX.x.toFixed(2)}px, ${dotY.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
+        d.style.opacity = pointer.inside ? "1" : "0";
+        d.style.transform = `translate3d(${coreX.x.toFixed(2)}px, ${coreY.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
       }
+
       if (r) {
-        const s = pointer.down ? 0.82 : pointer.target ? 1.45 : 1;
-        r.style.opacity = op;
-        r.style.transform = `translate3d(${ringX.x.toFixed(2)}px, ${ringY.x.toFixed(2)}px, 0) translate(-50%,-50%) scale(${s})`;
+        // R(θ)·diag(eˢ, e⁻ˢ)·R(−θ) — determinant 1, so area is preserved
+        const rad = (theta * Math.PI) / 180;
+        const c = Math.cos(rad), sn2 = Math.sin(rad);
+        const ep = Math.exp(shear.x), em = Math.exp(-shear.x);
+        const m11 = ep * c * c + em * sn2 * sn2;
+        const m12 = (ep - em) * c * sn2;
+        const m22 = ep * sn2 * sn2 + em * c * c;
+        r.style.transform = `translate3d(${bodyX.x.toFixed(2)}px, ${bodyY.x.toFixed(2)}px, 0) translate(-50%,-50%) matrix(${m11.toFixed(4)}, ${m12.toFixed(4)}, ${m12.toFixed(4)}, ${m22.toFixed(4)}, 0, 0)`;
+        r.classList.toggle("is-hover", !!pointer.target && !pointer.label);
+        r.classList.toggle("is-label", !!pointer.label);
+        r.style.opacity = pointer.down ? "0.5" : pointer.inside ? "1" : "0";
+
+        const text = pointer.label || lastLabel;
+        if (r.textContent !== text) r.textContent = text;
+        if (pointer.label) lastLabel = pointer.label;
+        r.style.color = `rgba(255,255,255,${glow.x.toFixed(3)})`;
       }
-      trail.forEach((t, i) => {
-        const el = trailRefs.current[i];
-        if (!el) return;
-        el.style.opacity = pointer.inside ? String(TRAIL[i].op) : "0";
-        el.style.transform = `translate3d(${t.x.x.toFixed(2)}px, ${t.y.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
-      });
     };
 
     const settled = () => {
       if (!visible) return true;
-      const err = Math.hypot(ringX.x - pointer.tx, ringY.x - pointer.ty);
-      const vel = Math.hypot(ringX.v, ringY.v) + Math.hypot(dotX.v, dotY.v);
-      return err < SLEEP.pos && vel < SLEEP.vel;
+      const err = Math.hypot(bodyX.x - pointer.tx, bodyY.x - pointer.ty);
+      const vel = Math.hypot(bodyX.v, bodyY.v) + Math.hypot(coreX.v, coreY.v);
+      return (
+        err < SLEEP.pos &&
+        vel < SLEEP.vel &&
+        swim.x < 0.01 &&
+        Math.abs(shear.x) < 0.004 &&
+        Math.abs(glow.v) < 0.01
+      );
     };
 
     const unsubscribe = subscribe({ step, render, settled });
@@ -96,18 +160,8 @@ export default function CustomCursor() {
   }, []);
 
   if (!enabled) return null;
-
   return createPortal(
     <>
-      {TRAIL.map((c, i) => (
-        <div
-          key={i}
-          ref={(el) => { trailRefs.current[i] = el; }}
-          className="cursor-trail"
-          style={{ opacity: 0, width: c.size, height: c.size }}
-          aria-hidden
-        />
-      ))}
       <div ref={dotRef} className="cursor-dot" style={{ opacity: 0 }} aria-hidden />
       <div ref={ringRef} className="cursor-ring" style={{ opacity: 0 }} aria-hidden />
     </>,
