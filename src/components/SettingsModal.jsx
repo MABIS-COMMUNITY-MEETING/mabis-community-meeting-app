@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX } from "lucide-react";
+import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import ControllerSettings from "@/components/ControllerSettings";
+import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
 
 export default function SettingsModal({ open, onClose, isAdmin }) {
   const [currentCode, setCurrentCode] = useState("");
@@ -12,6 +13,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const [codeSaved, setCodeSaved] = useState(false);
   const [codeError, setCodeError] = useState(false);
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
+  const [animationsOff, setAnimationsOff] = useState(animationsDisabled());
 
   const handleSaveCode = () => {
     const existing = localStorage.getItem("mabis_admin_code") || "10260";
@@ -79,6 +81,24 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   <span className="text-sm font-semibold text-gray-700">{soundOn ? "On" : "Off"}</span>
                   <span className={`relative w-10 h-6 rounded-full transition-colors ${soundOn ? "bg-[#951E3A]" : "bg-gray-300"}`}>
                     <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${soundOn ? "left-[18px]" : "left-0.5"}`} />
+                  </span>
+                </button>
+              </div>
+
+              {/* Motion */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Accessibility className="w-4 h-4 text-[#951E3A]" />
+                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Animations</h3>
+                </div>
+                <button
+                  onClick={() => { const value = !animationsOff; setAnimationsOff(value); setAnimationsDisabled(value); }}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${animationsOff ? "border-[#951E3A]/40 bg-[#951E3A]/5" : "border-gray-200"}`}
+                  aria-pressed={animationsOff}
+                >
+                  <span className="text-sm font-semibold text-gray-700">{animationsOff ? "Disabled" : "Enabled"}</span>
+                  <span className={`relative w-10 h-6 rounded-full transition-colors ${animationsOff ? "bg-[#951E3A]" : "bg-gray-300"}`}>
+                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${animationsOff ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                 </button>
               </div>

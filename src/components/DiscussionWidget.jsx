@@ -723,7 +723,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   // ── NORMAL MODE ────────────────────────────────────────────────────────────
   return (
     <div className={fullscreen ? "fixed inset-0 z-50 bg-white overflow-y-auto" : "bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden"}>
-      <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+      <div className="bg-[#951E3A] px-4 py-4 flex flex-col items-stretch gap-3 sticky top-0 z-10 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <MessagesSquare className="w-5 h-5 text-white" />
           <div>
@@ -731,22 +731,22 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             <p className="text-white/60 text-xs mt-0.5">{formatWeekLabel(viewedWeek)}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Link to="/history">
+        <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center">
+          <Link to="/history" className="min-w-0">
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1">
+              className="w-full border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1 px-2 sm:w-auto sm:px-3">
               <History className="w-3.5 h-3.5" /> History
             </Button>
           </Link>
           {isCurrentWeek && (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1"
+              className="w-full border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
               onClick={() => showForm ? resetTopicForm() : (setEditingTopicId(null), setTitle(""), setDescription(""), setSubmittedBy(""), setPriority("3"), setShowForm(true))}>
               <Plus className="w-3.5 h-3.5" /> Add Topic
             </Button>
           )}
           <Button size="sm" variant="outline"
-            className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1"
+            className="w-full border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
             onClick={() => setFullscreen(f => !f)}>
             {fullscreen ? <X className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             {fullscreen ? "Close" : "Fullscreen"}

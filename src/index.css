@@ -388,6 +388,20 @@ body.gamepad-active [data-gp-section]:focus {
   box-shadow: 0 0 0 1px hsl(var(--background)), 0 0 0 5px hsl(var(--primary) / 0.08);
 }
 
+/* ── manually disabled motion ── */
+html.animations-disabled { scroll-behavior: auto !important; }
+html.animations-disabled *,
+html.animations-disabled *::before,
+html.animations-disabled *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+html.animations-disabled .grain-layer,
+html.animations-disabled .cursor-dot,
+html.animations-disabled .cursor-ring { display: none !important; }
+
 /* ── reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }

@@ -28,6 +28,7 @@ import NewsHistory from '@/pages/NewsHistory';
 import Feedback from '@/pages/Feedback';
 import Splash from '@/pages/Splash';
 import LoadingScreen from '@/components/LoadingScreen';
+import MotionPreference from '@/components/MotionPreference';
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -69,22 +70,24 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <ScrollToTop />
-          <SoundEffects />
-          <SmoothScroll />
-          <GrainOverlay />
-          <CustomCursor />
-          <PaletteStripe />
-          <ScrollProgress />
-          <GamepadNavigator />
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
-    </AuthProvider>
+    <MotionPreference>
+      <AuthProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <Router>
+            <ScrollToTop />
+            <SoundEffects />
+            <SmoothScroll />
+            <GrainOverlay />
+            <CustomCursor />
+            <PaletteStripe />
+            <ScrollProgress />
+            <GamepadNavigator />
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
+      </AuthProvider>
+    </MotionPreference>
   );
 }
 
