@@ -56,7 +56,7 @@ export default function SiteHeader({ rightSlot }) {
       <header className="fixed top-0 left-0 right-0 z-50">
         <Glass variant="navigation" tone="light" contentClassName="flex items-center justify-between px-5 sm:px-8 py-4">
           <Link to="/" data-cursor="HOME" className="group flex items-center gap-3">
-            <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden border border-foreground/30 bg-bone">
+            <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden border border-foreground/30 bg-background">
               <img src={LOGO} alt="MABIS" className="h-6 w-6 object-contain transition-transform duration-500 group-hover:scale-110" />
             </span>
             <span className="hidden sm:flex flex-col leading-none">
@@ -72,7 +72,7 @@ export default function SiteHeader({ rightSlot }) {
             <button
               onClick={() => setOpen(v => { const next = !v; (next ? playMenuOpen : playMenuClose)(); return next; })}
               data-cursor={open ? "CLOSE" : "MENU"}
-              className="relative flex h-9 items-center gap-2 border border-foreground/30 bg-bone px-3 tech-label text-foreground hover:bg-foreground hover:text-bone transition-colors"
+              className="relative flex h-9 items-center gap-2 border border-foreground/30 bg-background px-3 tech-label text-foreground hover:bg-foreground hover:text-background transition-colors"
               aria-label={open ? "Close menu" : "Open menu"}
             >
               <span className="relative flex h-3 w-4 flex-col justify-between">

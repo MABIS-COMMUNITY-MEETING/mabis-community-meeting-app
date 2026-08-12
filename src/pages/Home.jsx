@@ -104,7 +104,7 @@ export default function Home() {
   const controls = (
     <>
       {canSeeInbox && (
-        <Link to="/feedback" data-cursor="INBOX" title="Feedback & Bug Reports" className="relative hidden sm:flex h-9 w-9 items-center justify-center border border-foreground/30 bg-bone text-foreground hover:bg-foreground hover:text-bone transition-colors">
+        <Link to="/feedback" data-cursor="INBOX" title="Feedback & Bug Reports" className="relative hidden sm:flex h-9 w-9 items-center justify-center border border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors">
           <Inbox className="w-4 h-4" />
           {hasNewFeedback && <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-primary" />}
         </Link>
@@ -123,7 +123,7 @@ export default function Home() {
       )}
       {canPreview && <RolePreviewToggle value={previewRole} onChange={setPreviewRole} realRole={userRole} />}
       <ThemeSwitcher />
-      <button onClick={() => setShowSettings(true)} data-cursor="SET" title="Settings" className="h-9 w-9 flex items-center justify-center border border-foreground/30 bg-bone text-foreground hover:bg-foreground hover:text-bone transition-colors">
+      <button onClick={() => setShowSettings(true)} data-cursor="SET" title="Settings" className="h-9 w-9 flex items-center justify-center border border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors">
         <Settings className="w-4 h-4" />
       </button>
       <div className="hidden sm:flex items-center gap-2.5 pl-1">
@@ -141,7 +141,7 @@ export default function Home() {
         <span className="text-xs tech-label text-foreground hidden lg:inline">
           {user?.full_name?.split(" ")[0]?.toUpperCase() || "USER"}
         </span>
-        <button onClick={() => logout()} data-cursor="EXIT" className="liquid-btn tech-label px-3.5 py-2 border border-foreground/30 bg-bone text-foreground">
+        <button onClick={() => logout()} data-cursor="EXIT" className="liquid-btn tech-label px-3.5 py-2 border border-foreground/30 bg-background text-foreground">
           SIGN OUT
         </button>
       </div>
