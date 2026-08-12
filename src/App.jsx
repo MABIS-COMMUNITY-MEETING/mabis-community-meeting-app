@@ -29,6 +29,7 @@ import Feedback from '@/pages/Feedback';
 import Splash from '@/pages/Splash';
 import LoadingScreen from '@/components/LoadingScreen';
 import MotionPreference from '@/components/MotionPreference';
+import PrefsSync from '@/components/PrefsSync';
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -75,6 +76,7 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <ScrollToTop />
+            <PrefsSync />
             <SoundEffects />
             <SmoothScroll />
             <GrainOverlay />

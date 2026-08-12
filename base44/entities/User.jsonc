@@ -2,29 +2,10 @@
   "name": "User",
   "type": "object",
   "properties": {
-    "role": {
-      "type": "string",
-      "enum": [
-        "admin",
-        "editor",
-        "teacher",
-        "student",
-        "chair",
-        "minutes"
-      ],
-      "default": "student"
-    },
-    "avatar_color": {
-      "type": "string",
-      "description": "Avatar background color hex"
-    },
-    "avatar_url": {
-      "type": "string",
-      "description": "Custom uploaded profile picture URL"
+    "ui_prefs": {
+      "type": "object",
+      "description": "Saved UI preferences (theme, colours, font, motion) synced across devices",
+      "additionalProperties": true
     }
-  },
-  "required": [
-    "avatar_color",
-    "avatar_url"
-  ]
+  }
 }
