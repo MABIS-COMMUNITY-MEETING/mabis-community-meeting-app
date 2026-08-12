@@ -388,19 +388,20 @@ body.gamepad-active [data-gp-section]:focus {
   box-shadow: 0 0 0 1px hsl(var(--background)), 0 0 0 5px hsl(var(--primary) / 0.08);
 }
 
-/* ── manually disabled motion ── */
+/* ── "quiet mode": ambient decoration off, functional UI motion intact ──
+   Hover/focus/open-close transitions still respond, so the app never feels
+   dead — only the looping, attention-grabbing layers stop. */
 html.animations-disabled { scroll-behavior: auto !important; }
-html.animations-disabled *,
-html.animations-disabled *::before,
-html.animations-disabled *::after {
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
-  scroll-behavior: auto !important;
-}
 html.animations-disabled .grain-layer,
 html.animations-disabled .cursor-dot,
 html.animations-disabled .cursor-ring { display: none !important; }
+html.animations-disabled .marquee-track,
+html.animations-disabled .float-y,
+html.animations-disabled .spin-slow,
+html.animations-disabled .blob-drift,
+html.animations-disabled .blob-drift-2,
+html.animations-disabled .pulse-dot,
+html.animations-disabled .grid-bg { animation: none !important; }
 
 /* ── reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
