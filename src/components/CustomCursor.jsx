@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { subscribe } from "@/lib/physics/scheduler";
-import { pointer, startPointerEngine, kinetic } from "@/lib/physics/pointer";
+import { pointer, startPointerEngine } from "@/lib/physics/pointer";
 import { MATERIAL, CURSOR, SLEEP } from "@/lib/physics/tokens";
 import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math";
 
@@ -14,13 +14,6 @@ import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math"
  *           in the travel frame so it is loose along its path and tight across
  *           it, and deformed by an area-preserving matrix (det = 1) so it
  *           stretches without ever gaining or losing visual mass.
- *   TAIL  — an inextensible chain behind the core. Each link is a Verlet
- *           particle with distance constraints (length is conserved) plus a
- *           bending constraint that resists sharp kinks, so the chain reads as
- *           one continuous curve. A travelling sine wave, whose amplitude and
- *           frequency scale with swimming speed, is injected along the chain
- *           normals — that is what produces the tadpole's undulation instead of
- *           a lifeless trail.
  *
  * Everything integrates on the shared fixed-timestep scheduler, so behaviour is
  * identical at 60Hz and 240Hz, and the whole system sleeps when it settles.
@@ -28,7 +21,6 @@ import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math"
 export default function CustomCursor() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
-  const tailRefs = useRef([]);
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -42,21 +34,17 @@ export default function CustomCursor() {
 
     const cx = window.innerWidth / 2;
     const cy = window.innerHeight / 2;
-    const N = CURSOR.trailNodes;
 
     // ── state ─────────────────────────────────────────────────────────
     const coreX = { x: cx, v: 0 }, coreY = { x: cy, v: 0 };
     const bodyX = { x: cx, v: 0 }, bodyY = { x: cy, v: 0 };
     const shear = { x: 0, v: 0 };
     const glow = { x: 0, v: 0 };            // label opacity
-    const swim = { x: 0, v: 0 };            // 0..1 swimming effort
-    const tail = Array.from({ length: N }, () => ({ x: cx, y: cy, px: cx, py: cy }));
+    const swim = { x: 0, v: 0 };            // 0..1 travel effort
 
     let theta = 0;     // deformation orientation (deg)
-    let phase = 0;     // tail wave phase (rad)
     let visible = false;
     let lastLabel = "";
-    let tailEnergy = 0;
 
     // scratch — the hot loop allocates nothing
     const f = { tx: 1, ty: 0, nx: 0, ny: 1 };
@@ -69,7 +57,6 @@ export default function CustomCursor() {
         visible = true;
         coreX.x = bodyX.x = pointer.x;
         coreY.x = bodyY.x = pointer.y;
-        for (const n of tail) { n.x = n.px = pointer.x; n.y = n.py = pointer.y; }
       }
 
       // ── CORE ────────────────────────────────────────────────────────
@@ -118,47 +105,6 @@ export default function CustomCursor() {
         theta += angleDelta(want, theta) * clamp(dt * 7, 0, 1);
       }
 
-      // ── TAIL ────────────────────────────────────────────────────────
-      // wave frequency rises with effort — a resting tadpole barely stirs
-      phase += dt * (3 + 9 * swim.x);
-      const amp = CURSOR.waveAmp * swim.x;
-
-      // Verlet integration with velocity retention
-      const retain = Math.pow(CURSOR.trailRetain, dt * 60);
-      tailEnergy = 0;
-      for (let i = 0; i < N; i++) {
-        const n = tail[i];
-        const vx = (n.x - n.px) * retain, vy = (n.y - n.py) * retain;
-        n.px = n.x; n.py = n.y;
-        n.x += vx; n.y += vy;
-        // travelling wave, growing toward the tip
-        const grow = (i + 1) / N;
-        const w = Math.sin(phase - i * CURSOR.waveLength) * amp * grow * dt * 60;
-        n.x += f.nx * w;
-        n.y += f.ny * w;
-        tailEnergy += vx * vx + vy * vy;
-      }
-
-      // constraints — two relaxation passes keep the chain taut and smooth
-      for (let pass = 0; pass < 2; pass++) {
-        // distance: each link holds its rest length from its parent
-        for (let i = 0; i < N; i++) {
-          const n = tail[i];
-          const ax = i === 0 ? coreX.x : tail[i - 1].x;
-          const ay = i === 0 ? coreY.x : tail[i - 1].y;
-          const dx = n.x - ax, dy = n.y - ay;
-          const d = Math.hypot(dx, dy) || 1;
-          const k = (d - CURSOR.trailLink) / d;
-          n.x -= dx * k; n.y -= dy * k;
-        }
-        // bending: pull each node toward the midpoint of its neighbours,
-        // which penalises curvature and removes kinks
-        for (let i = 1; i < N - 1; i++) {
-          const a = tail[i - 1], n = tail[i], b = tail[i + 1];
-          n.x += ((a.x + b.x) * 0.5 - n.x) * CURSOR.bendStiffness;
-          n.y += ((a.y + b.y) * 0.5 - n.y) * CURSOR.bendStiffness;
-        }
-      }
     };
 
     const render = () => {
@@ -188,15 +134,6 @@ export default function CustomCursor() {
         if (pointer.label) lastLabel = pointer.label;
         r.style.color = `rgba(255,255,255,${glow.x.toFixed(3)})`;
       }
-
-      const intensity = kinetic();
-      for (let i = 0; i < N; i++) {
-        const el = tailRefs.current[i];
-        if (!el) continue;
-        const taper = Math.pow(1 - i / N, 1.5);
-        el.style.opacity = pointer.inside ? ((0.26 + intensity * 0.5) * taper).toFixed(3) : "0";
-        el.style.transform = `translate3d(${tail[i].x.toFixed(2)}px, ${tail[i].y.toFixed(2)}px, 0) translate(-50%,-50%) scale(${(taper * 1.6).toFixed(3)})`;
-      }
     };
 
     const settled = () => {
@@ -206,7 +143,6 @@ export default function CustomCursor() {
       return (
         err < SLEEP.pos &&
         vel < SLEEP.vel &&
-        tailEnergy < 0.02 &&
         swim.x < 0.01 &&
         Math.abs(shear.x) < 0.004 &&
         Math.abs(glow.v) < 0.01
@@ -224,9 +160,6 @@ export default function CustomCursor() {
   if (!enabled) return null;
   return createPortal(
     <>
-      {Array.from({ length: CURSOR.trailNodes }).map((_, i) => (
-        <div key={i} ref={(el) => (tailRefs.current[i] = el)} className="cursor-trail" style={{ opacity: 0 }} aria-hidden />
-      ))}
       <div ref={dotRef} className="cursor-dot" style={{ opacity: 0 }} aria-hidden />
       <div ref={ringRef} className="cursor-ring" style={{ opacity: 0 }} aria-hidden />
     </>,
