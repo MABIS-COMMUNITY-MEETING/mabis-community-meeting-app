@@ -11,7 +11,6 @@ import ScrollToTop from './components/ScrollToTop';
 import SoundEffects from '@/components/SoundEffects';
 import CustomCursor from '@/components/CustomCursor';
 import GamepadNavigator from '@/components/GamepadNavigator';
-import OnScreenKeyboard from '@/components/OnScreenKeyboard';
 import GrainOverlay from '@/components/GrainOverlay';
 import SmoothScroll from '@/components/SmoothScroll';
 import ScrollProgress from '@/components/ScrollProgress';
@@ -92,7 +91,6 @@ function App() {
             <PaletteStripe />
             <ScrollProgress />
             <GamepadNavigator />
-            <OnScreenKeyboard />
             <AuthenticatedApp />
           </Router>
           <Toaster />

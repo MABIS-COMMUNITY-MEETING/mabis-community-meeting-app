@@ -52,7 +52,6 @@ export default function PasswordModal({ open, onClose, onSuccess, title = "Enter
               </div>
               <input
                 type="password"
-                data-osk="1"
                 autoFocus
                 value={code}
                 onChange={(e) => { setCode(e.target.value); setError(false); }}
