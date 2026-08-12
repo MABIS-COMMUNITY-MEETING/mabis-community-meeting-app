@@ -8,6 +8,7 @@ import { useActivePresence } from "@/hooks/usePresence";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import RemoveMemberPanel from "@/components/members/RemoveMemberPanel";
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
@@ -178,8 +179,9 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
       <div className="p-5 space-y-5">
         {/* Add member — admin only (top) */}
         {isAdmin && (
-          <div className="pb-4 border-b border-gray-100">
+          <div className="pb-4 border-b border-gray-100 space-y-2">
             {renderAddForm()}
+            <RemoveMemberPanel members={members} onDelete={handleDelete} />
           </div>
         )}
 
