@@ -129,7 +129,11 @@ export default function CustomCursor() {
         r.style.transform = `translate3d(${bodyX.x.toFixed(2)}px, ${bodyY.x.toFixed(2)}px, 0) translate(-50%,-50%) matrix(${m11.toFixed(4)}, ${m12.toFixed(4)}, ${m12.toFixed(4)}, ${m22.toFixed(4)}, 0, 0)`;
         r.classList.toggle("is-hover", !!pointer.target && !pointer.label);
         r.classList.toggle("is-label", !!pointer.label);
-        r.style.opacity = pointer.down ? "0.5" : pointer.inside ? "1" : "0";
+        // a click compresses the glass and energises it optically — it does not
+        // fade out (opacity would betray the material as a transparent div)
+        r.style.opacity = pointer.inside ? "1" : "0";
+        r.style.setProperty("--glass-press", pointer.down ? "1" : "0");
+        r.classList.toggle("is-press", !!pointer.down);
 
         const text = pointer.label || lastLabel;
         if (r.textContent !== text) r.textContent = text;

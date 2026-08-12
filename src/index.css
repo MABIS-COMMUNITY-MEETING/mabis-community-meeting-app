@@ -177,11 +177,59 @@
 /* ── custom cursor ── */
 .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; mix-blend-mode: difference; }
 .cursor-dot { width: 6px; height: 6px; background: #fff; transform: translate(-50%,-50%); }
-.cursor-ring { width: 38px; height: 38px; border: 1px solid #fff; transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:'Iosevka',monospace; font-size:9px; letter-spacing:0.08em; color:#fff; text-transform:uppercase; }
+/* ── liquid-glass body ──────────────────────────────────────────────
+   The ring is no longer a stroked circle: it is a small optical volume.
+   The page behind it is resampled through a thin-lens displacement field
+   (#lg-lens), so content bends through the thick centre; a Fresnel-style
+   rim (grazing-angle bright edge + inner shading) defines the silhouette,
+   and a soft specular cap reads as the curved top surface. No opacity
+   fills, no frosted panel. */
+.cursor-ring {
+  width: 38px; height: 38px;
+  transform: translate(-50%,-50%);
+  mix-blend-mode: normal;
+  border: none;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Iosevka',monospace; font-size:9px; letter-spacing:0.08em;
+  color: hsl(var(--foreground)); text-transform:uppercase;
+  -webkit-backdrop-filter: url(#lg-lens) saturate(1.06);
+  backdrop-filter: url(#lg-lens) saturate(1.06);
+  background:
+    radial-gradient(120% 90% at 32% 22%, hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.06) 42%, transparent 62%),
+    radial-gradient(100% 100% at 50% 50%, transparent 58%, var(--glass-tint, hsl(var(--primary) / 0.16)) 100%);
+  box-shadow:
+    inset 0 0 0 0.6px hsl(0 0% 100% / 0.55),
+    inset 0 1.5px 2px hsl(0 0% 100% / 0.35),
+    inset 0 -2px 3px var(--glass-rim, hsl(var(--primary) / 0.5)),
+    0 1px 2px hsl(var(--foreground) / 0.16),
+    0 6px 16px -6px hsl(var(--foreground) / 0.22);
+  transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), box-shadow .25s ease, opacity .2s ease, background .3s ease;
+}
+/* click: the volume flexes and light gathers inside it, then settles */
+.cursor-ring.is-press {
+  box-shadow:
+    inset 0 0 0 0.8px hsl(0 0% 100% / 0.7),
+    inset 0 0 10px 2px var(--glass-tint, hsl(var(--primary) / 0.35)),
+    inset 0 -3px 6px var(--glass-rim, hsl(var(--primary) / 0.7)),
+    0 1px 2px hsl(var(--foreground) / 0.24),
+    0 4px 10px -6px hsl(var(--foreground) / 0.3);
+}
 .cursor-label { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; font-family: 'Iosevka', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; white-space: nowrap; }
 .cursor-trail { position: fixed; top: 0; left: 0; width: 5px; height: 5px; pointer-events: none; z-index: 9999; border-radius: 999px; background: #fff; mix-blend-mode: difference; transform: translate(-50%,-50%); }
-.cursor-ring.is-hover { width: 46px; height: 46px; background:transparent; }
-.cursor-ring.is-label { width: 62px; height: 62px; background:rgba(255,255,255,0.14); }
+/* larger states are not the same thin glass scaled up — they read as a
+   materially THICKER volume: stronger lensing, deeper rim, deeper shadow */
+.cursor-ring.is-hover { width: 46px; height: 46px; }
+.cursor-ring.is-label {
+  width: 62px; height: 62px;
+  -webkit-backdrop-filter: url(#lg-lens-thick) saturate(1.12);
+  backdrop-filter: url(#lg-lens-thick) saturate(1.12);
+  box-shadow:
+    inset 0 0 0 0.7px hsl(0 0% 100% / 0.62),
+    inset 0 2px 3px hsl(0 0% 100% / 0.4),
+    inset 0 -3px 5px var(--glass-rim, hsl(var(--primary) / 0.6)),
+    0 2px 4px hsl(var(--foreground) / 0.2),
+    0 12px 28px -10px hsl(var(--foreground) / 0.3);
+}
 body.gamepad-active .cursor-dot,
 body.gamepad-active .cursor-trail,
 body.gamepad-active .cursor-label,
@@ -379,11 +427,11 @@ body.theme-shifting *:not(.cursor-dot):not(.cursor-ring):not(.cursor-trail) {
 }
 
 body.pride-active .cursor-dot { background: var(--pride-glow); mix-blend-mode: normal; }
+/* the palette enters the glass as absorption tint and edge refraction colour,
+   never as a painted fill */
 body.pride-active .cursor-ring {
-  border-color: var(--pride-edge);
-  box-shadow: 0 0 14px -2px var(--pride-glow);
-  mix-blend-mode: normal;
-  color: var(--pride-highlight);
+  --glass-rim: color-mix(in oklab, var(--pride-edge) 72%, transparent);
+  --glass-tint: color-mix(in oklab, var(--pride-highlight) 26%, transparent);
 }
 body.pride-active .cursor-trail { background: var(--pride-highlight); mix-blend-mode: normal; }
 
