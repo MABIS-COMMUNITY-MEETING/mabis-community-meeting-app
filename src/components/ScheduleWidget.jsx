@@ -55,8 +55,8 @@ export default function ScheduleWidget({ isAdmin }) {
       <div className="bg-[#951E3A] px-6 py-4 flex items-center gap-3">
         <CalendarClock className="w-5 h-5 text-white" />
         <div className="flex-1">
-          <h2 className="font-display font-bold text-white text-xl">Schedule <span lang="ja" className="font-jp font-normal text-white/60 text-base">時間割</span></h2>
-          <p className="text-white/60 text-xs mt-0.5">Weekly class timetable ／ <span lang="ja" className="font-jp">毎週の授業予定</span></p>
+          <h2 className="font-display font-bold text-white text-xl">Schedule</h2>
+          <p className="text-white/60 text-xs mt-0.5">Weekly class timetable</p>
         </div>
         {isAdmin && savedUrl && !editing && (
           <Button size="sm" variant="outline"

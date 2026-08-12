@@ -52,9 +52,6 @@ export default function HomeMasthead({ week_label, date_label }) {
 				transition={{ duration: 0.7, ease: EASE, delay: 0.45 }}
 				className="lg:pb-6 lg:border-l lg:border-foreground/15 lg:pl-6 space-y-5"
 			>
-				<p lang="ja" className="font-jp text-2xl text-foreground/60 leading-snug">
-					コミュニティ<br />ミーティング
-				</p>
 				<dl className="space-y-2.5 tech-label text-muted-foreground">
 					<div className="flex justify-between gap-4"><dt>WEEK</dt><dd className="text-foreground tabular-nums">{week_label}</dd></div>
 					<div className="flex justify-between gap-4"><dt>DATE</dt><dd className="text-foreground tabular-nums">{date_label}</dd></div>

@@ -179,45 +179,45 @@ export default function Home() {
 
         <div className="space-y-24 sm:space-y-36">
 
-        <EditorialSection index="01" label="MEETING MODE" jp="会議モード">
+        <EditorialSection index="01" label="MEETING MODE">
           <MeetingModeWidget canStart={canStartMeeting} onStartMeeting={() => {
             window.dispatchEvent(new CustomEvent("startMeetingMode"));
           }} />
         </EditorialSection>
 
-        <EditorialSection index="02" label="ANNOUNCEMENTS" jp="お知らせ">
+        <EditorialSection index="02" label="ANNOUNCEMENTS">
           <AnnouncementsWidget members={members} isAdmin={canManage} />
         </EditorialSection>
 
-        <EditorialSection index="03" label="DISCUSSION" jp="議題">
+        <EditorialSection index="03" label="DISCUSSION">
           <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
         </EditorialSection>
 
-        <EditorialSection index="04" label="JOBS ／ ROTATION" jp="当番">
+        <EditorialSection index="04" label="JOBS ／ ROTATION">
           <JobsWidget members={members} isAdmin={canManage} compact={false} />
         </EditorialSection>
 
-        <EditorialSection index="05" label="CALENDAR" jp="カレンダー">
+        <EditorialSection index="05" label="CALENDAR">
           <CalendarWidget />
         </EditorialSection>
 
-        <EditorialSection index="06" label="SCHEDULE" jp="時間割">
+        <EditorialSection index="06" label="SCHEDULE">
           <ScheduleWidget isAdmin={canManage} />
         </EditorialSection>
 
-        <EditorialSection index="07" label="LOST ／ FOUND" jp="落とし物">
+        <EditorialSection index="07" label="LOST ／ FOUND">
           <MissingItemsWidget members={members} />
         </EditorialSection>
 
-        <EditorialSection index="08" label="LUNCH MENU" jp="給食の献立">
+        <EditorialSection index="08" label="LUNCH MENU">
           <LunchMenuWidget isAdmin={canManage} />
         </EditorialSection>
 
-        <EditorialSection index="09" label="NEWS" jp="ニュース">
+        <EditorialSection index="09" label="NEWS">
           <NewsWidget members={members} isAdmin={canManage} />
         </EditorialSection>
 
-        <EditorialSection index="10" label="MEMBERS" jp="メンバー">
+        <EditorialSection index="10" label="MEMBERS">
           <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
         </EditorialSection>
 

@@ -100,7 +100,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
         <div className="flex items-center gap-3">
           <Megaphone className="w-5 h-5 text-white" />
           <div>
-            <h2 className="font-display font-bold text-white text-xl">Announcements <span lang="ja" className="font-jp font-normal text-white/60 text-base">お知らせ</span></h2>
+            <h2 className="font-display font-bold text-white text-xl">Announcements</h2>
             <p className="text-white/60 text-xs mt-0.5">{announcements.length} announcement{announcements.length !== 1 ? "s" : ""}</p>
           </div>
         </div>

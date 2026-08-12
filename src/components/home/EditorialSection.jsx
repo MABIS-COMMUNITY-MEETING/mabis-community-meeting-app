@@ -44,15 +44,6 @@ export default function EditorialSection({ index = "00", label = "", jp = "", ch
 					style={{ background: flag }}
 					className="mt-4 w-px flex-1 min-h-[3rem] origin-top opacity-70"
 				/>
-				{jp && (
-					<motion.span
-						lang="ja"
-						variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.5, delay: 0.15 } } }}
-						className="vert-text font-jp text-sm text-foreground/45 mt-4"
-					>
-						{jp}
-					</motion.span>
-				)}
 			</div>
 
 			<div className="min-w-0">

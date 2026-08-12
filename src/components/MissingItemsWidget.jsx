@@ -165,7 +165,7 @@ export default function MissingItemsWidget({ members }) {
       <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <div>
           <h2 className="font-display font-bold text-white text-xl flex items-center gap-2">
-            <Search className="w-5 h-5" /> Missing Items <span lang="ja" className="font-jp font-normal text-white/60 text-base">落とし物</span>
+            <Search className="w-5 h-5" /> Missing Items
           </h2>
           <p className="text-white/60 text-xs mt-0.5">{activeItems.length} active · {foundItems.length} found</p>
         </div>

@@ -22,13 +22,6 @@ export default function ScrollScaleRitual() {
 			>
 				A WEEKLY RITUAL
 			</motion.p>
-			<motion.span
-				lang="ja"
-				style={{ opacity }}
-				className="absolute bottom-10 left-1/2 -translate-x-1/2 font-jp text-sm text-foreground/40"
-			>
-				毎週の儀式
-			</motion.span>
 		</div>
 	);
 }
