@@ -94,6 +94,16 @@ export default function CustomCursor() {
       ringX.v = st.v * tmp.tx + sn.v * tmp.nx;
       ringY.v = st.v * tmp.ty + sn.v * tmp.ny;
 
+      // hard constraint: the dot can never leave the ring's interior
+      const ox = ringX.x - dotX.x, oy = ringY.x - dotY.x;
+      const od = Math.hypot(ox, oy);
+      const maxOffset = 13;
+      if (od > maxOffset) {
+        const k = maxOffset / od;
+        ringX.x = dotX.x + ox * k;
+        ringY.x = dotY.x + oy * k;
+      }
+
       // label text lives inside the ring — only its opacity is a body
       integrateSpring(labelOpacity, pointer.label ? 1 : 0, 22, 1.0, dt);
 
