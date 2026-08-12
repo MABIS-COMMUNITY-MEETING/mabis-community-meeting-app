@@ -77,7 +77,7 @@ export default function ThemeSwitcher() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 z-50 w-72 max-h-[85vh] overflow-y-auto">
+          <div className="fixed left-1/2 -translate-x-1/2 top-16 w-[min(18rem,calc(100vw-1.5rem))] sm:absolute sm:left-auto sm:translate-x-0 sm:top-full sm:right-0 sm:mt-2 sm:w-72 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 z-50 max-h-[75vh] overflow-y-auto">
             <div className="flex items-center gap-2 mb-4">
               <Palette className="w-4 h-4 text-[#951E3A]" />
               <h3 className="text-sm font-bold text-gray-800">Themes</h3>
