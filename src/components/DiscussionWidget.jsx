@@ -864,16 +864,16 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
 
   // ── NORMAL MODE ────────────────────────────────────────────────────────────
   return (
-    <div className={fullscreen ? "fixed inset-0 z-50 bg-white overflow-y-auto" : "bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden"}>
-      <div className="bg-[#951E3A] px-4 py-4 flex flex-col items-stretch gap-3 sticky top-0 z-10 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
+    <div className={fullscreen ? "fixed inset-0 z-50 bg-white overflow-y-auto" : "mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden"}>
+      <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex flex-col items-stretch gap-3 sticky top-0 z-10 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <MessagesSquare className="w-5 h-5 text-white" />
           <div>
-            <h2 className="font-display font-bold text-white text-xl">Discussions</h2>
+            <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Discussions</h2>
             <p className="text-white/60 text-xs mt-0.5">{formatWeekLabel(viewedWeek)}</p>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center">
+        <div className="mabis-widget-actions grid grid-cols-2 gap-2 sm:flex sm:items-center">
           <Link to="/history" className="min-w-0">
             <Button size="sm" variant="outline"
               className="w-full border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1 px-2 sm:w-auto sm:px-3">
@@ -896,10 +896,10 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
         </div>
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="mabis-widget-body p-4 space-y-4 sm:p-5">
         {/* Add Topic Form */}
         {showForm && !editingTopicId && isCurrentWeek && (
-          <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50 space-y-4">
+          <div className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-4 sm:rounded-2xl sm:p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Select value={submittedBy} onValueChange={setSubmittedBy}>
                 <SelectTrigger className="rounded-lg border-gray-300 bg-white">
@@ -917,7 +917,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 className="rounded-lg border-gray-300 bg-white" />
             </div>
             <DocsEditor key={editingTopicId || "new"} title={title || "Untitled topic"} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="180px" initialHtml={description} />
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-xs text-gray-500 font-medium">Priority:</span>
                 {[1,2,3,4,5].map(p => (
@@ -931,7 +931,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               </div>
               <Button onClick={handleAdd}
                 disabled={!title.trim() || !submittedBy.trim() || addMutation.isPending || updateTopicMutation.isPending}
-                className="ml-auto bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg">
+                className="w-full bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg sm:ml-auto sm:w-auto">
                 {addMutation.isPending ? "Adding..." : "Add Topic"}
               </Button>
             </div>
