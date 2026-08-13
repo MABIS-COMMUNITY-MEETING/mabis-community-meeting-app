@@ -139,13 +139,17 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
       disableHackerMode();
-      const { restoreOfflineQueries, saveOfflineUser } = await import('@/lib/offline-cache');
-      await restoreOfflineQueries(queryClientInstance, currentUser.id);
-      saveOfflineUser(currentUser, appParams.token);
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
       setAuthChecked(true);
+
+      // Durable cache hydration is useful, but it must never hold the signed-in
+      // interface behind an IndexedDB read or a second JavaScript chunk.
+      void import('@/lib/offline-cache').then(async ({ restoreOfflineQueries, saveOfflineUser }) => {
+        await restoreOfflineQueries(queryClientInstance, currentUser.id);
+        saveOfflineUser(currentUser, appParams.token);
+      });
     } catch (error) {
       console.error('User auth check failed:', error);
       if (await recoverOfflineState(error)) return;
