@@ -27,6 +27,9 @@ const cursorRule = read(".cursor/rules/novesce-design.mdc");
 const copilot = read(".github/copilot-instructions.md");
 const themes = read("src/lib/themes.js");
 const css = read("src/index.css");
+const editorialHomeCss = read("src/styles/editorial-home.css");
+const main = read("src/main.jsx");
+const home = read("src/pages/Home.jsx");
 const cursorPreference = read("src/lib/cursor-preference.js");
 const themeBalance = read("src/lib/color/themeBalance.js");
 const themeBalanceCheck = read("scripts/check-theme-balance.mjs");
@@ -63,6 +66,19 @@ for (const rule of agentRules) {
     requireText("AGENTS.md", agents, rule);
 }
 
+const editorialHomeRule = "Preserve the Home editorial normalization in `src/styles/editorial-home.css`: neutral ruled content planes, restrained radii, no widget elevation, and edge-to-edge mobile modules.";
+const editorialContractFiles = [
+    ["README.md", readme],
+    ["AGENTS.md", agents],
+    ["CLAUDE.md", claude],
+    ["GEMINI.md", gemini],
+    [".cursor/rules/novesce-design.mdc", cursorRule],
+    [".github/copilot-instructions.md", copilot],
+];
+for (const [relativePath, content] of editorialContractFiles) {
+    requireText(relativePath, content, editorialHomeRule);
+}
+
 const cursorTrackingRule = "The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement.";
 const cursorContractFiles = [
     ["README.md", readme],
@@ -95,6 +111,9 @@ requireText("src/lib/themes.js", themes, "const thaiFallback = \"'GNUFreeSerifTh
 requireText("src/lib/themes.js", themes, "root.style.setProperty(\"--font-multilingual\", \"'UnifontEX'\")");
 requireText("src/index.css", css, "--font-body: 'GNUFreeMonoUI', 'GNUFreeSerifThai'");
 requireText("src/index.css", css, "unicode-range: U+0E00-0E7F");
+requireText("src/styles/editorial-home.css", editorialHomeCss, ".editorial-home .mabis-widget-header");
+requireText("src/main.jsx", main, "import '@/styles/editorial-home.css'");
+requireText("src/pages/Home.jsx", home, 'className="editorial-home min-h-screen');
 requireText("src/lib/cursor-preference.js", cursorPreference, "mabis_custom_cursor_enabled");
 requireText("src/lib/color/themeBalance.js", themeBalance, "contrastSafePair");
 requireText("src/lib/color/themeBalance.js", themeBalance, "spreadBalancedPalette");
