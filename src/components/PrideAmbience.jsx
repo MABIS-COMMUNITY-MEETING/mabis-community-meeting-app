@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { PRIDE_THEMES } from "@/lib/pride";
 import { getStoredTheme } from "@/lib/themes";
+import { networkState, NETWORK_EVENT } from "@/lib/network-policy";
 
 /**
  * The Pride collection's lighting layer.
@@ -13,6 +14,7 @@ import { getStoredTheme } from "@/lib/themes";
  */
 export default function PrideAmbience() {
   const [theme, setTheme] = useState(() => PRIDE_THEMES[getStoredTheme()] || null);
+  const [networkLite, setNetworkLite] = useState(() => networkState().constrained);
   const layerRef = useRef(null);
 
   useEffect(() => {
@@ -22,7 +24,13 @@ export default function PrideAmbience() {
   }, []);
 
   useEffect(() => {
-    if (!theme) return;
+    const sync = (event) => setNetworkLite(Boolean(event.detail?.constrained));
+    window.addEventListener(NETWORK_EVENT, sync);
+    return () => window.removeEventListener(NETWORK_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
+    if (!theme || networkLite) return;
     let t;
     const pulse = () => {
       layerRef.current?.classList.add("is-energized");
@@ -31,14 +39,15 @@ export default function PrideAmbience() {
     };
     window.addEventListener("pointerdown", pulse, { passive: true });
     return () => { window.removeEventListener("pointerdown", pulse); clearTimeout(t); };
-  }, [theme]);
+  }, [theme, networkLite]);
 
   if (!theme) return null;
   const spec = theme.pride;
+  const fields = networkLite ? spec.field.slice(0, 1) : spec.field;
 
   return (
     <div ref={layerRef} className="pride-ambience fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden>
-      {spec.field.map((f, i) => (
+      {fields.map((f, i) => (
         <div key={i} className="pride-field-x absolute" style={{
           left: `${f.x}%`, top: `${f.y}%`, width: `${f.r}vmax`, height: `${f.r}vmax`,
           marginLeft: `-${f.r / 2}vmax`, marginTop: `-${f.r / 2}vmax`,
@@ -55,12 +64,12 @@ export default function PrideAmbience() {
         </div>
       ))}
 
-      {spec.ring && <div className="pride-orbit absolute left-1/2 top-1/2 rounded-full" style={{
+      {!networkLite && spec.ring && <div className="pride-orbit absolute left-1/2 top-1/2 rounded-full" style={{
         width: "58vmax", height: "58vmax", marginLeft: "-29vmax", marginTop: "-29vmax",
         border: `1px solid ${spec.flag[1]}`, opacity: 0.22,
       }} />}
 
-      {spec.chevron && <div className="pride-chevron absolute inset-y-0 left-0 w-[46vmax]" style={{
+      {!networkLite && spec.chevron && <div className="pride-chevron absolute inset-y-0 left-0 w-[46vmax]" style={{
         background: `linear-gradient(105deg, ${spec.flag[5]}22 0%, ${spec.flag[1]}18 42%, transparent 72%)`,
         clipPath: "polygon(0 0, 62% 0, 100% 50%, 62% 100%, 0 100%, 34% 50%)",
       }} />}
