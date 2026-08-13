@@ -41,7 +41,7 @@ export default function Login() {
 
   return (
     <AuthLayout
-      logo={<img src={LOGO} alt="MABIS" className="w-12 h-12 object-contain" />}
+      logo={<img src={LOGO} alt="MABIS" width="48" height="48" decoding="async" fetchPriority="high" className="w-12 h-12 object-contain" />}
       title="Log in"
       subtitle=" authenticate to enter the community meeting"
       footer={
