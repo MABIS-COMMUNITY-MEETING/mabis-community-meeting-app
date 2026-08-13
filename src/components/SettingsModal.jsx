@@ -132,7 +132,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   <span className="text-[10px] text-gray-400 tabular-nums">{FONTS.length} choices</span>
                 </div>
                 <p className="text-xs text-gray-400 mb-3">
-                  Choose the typeface used across the interface. Japanese, Chinese and Thai fall back to UnifontEX whenever the selected face lacks those glyphs.
+                  Choose the typeface used across the interface. UnifontEX is kept separate for explicitly marked Japanese, Chinese and Thai text, so it cannot replace ordinary Lilex or Iosevka UI lettering.
                 </p>
 
                 <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-3 mb-3">
