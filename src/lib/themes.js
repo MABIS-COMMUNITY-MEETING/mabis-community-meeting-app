@@ -571,8 +571,8 @@ export function deleteSavedTheme(name) {
 
 // ── Fonts ──
 // Commercial families are never redistributed: they resolve to a user's own
-// licensed local copy. Go is the embedded default; GNU FreeFont, Iosevka,
-// Lilex and the libre catalogue remain selectable. UnifontEX is isolated to
+// licensed local copy. Torrefarfan is the embedded default; Go, GNU FreeFont,
+// Iosevka, Lilex and the libre catalogue remain selectable. UnifontEX is isolated to
 // explicitly multilingual Japanese, Chinese and Thai text.
 export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International School";
 
