@@ -16,7 +16,7 @@ export default function PageNav({ label }) {
         <button type="button" onClick={goBack} data-cursor="BACK"
           className="group flex items-center gap-3 py-2 -my-2">
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span className="tech-label text-muted-foreground">／ BACK</span>
+          <span className="tech-label text-muted-foreground"> BACK</span>
         </button>
         {label && <span className="hidden sm:block tech-label text-primary">{label}</span>}
         <Link to="/home" data-cursor="HOME" className="tech-label text-muted-foreground ul-grow py-2 -my-2">HOME</Link>

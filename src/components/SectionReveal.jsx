@@ -50,8 +50,7 @@ export default function SectionReveal({ index = "00", label = "", jp = "", child
         <motion.span
           variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.4, delay: 0.18 } } }}
           className="tech-label text-muted-foreground hidden sm:block"
-        >
-          ／ SECTION
+        > SECTION
         </motion.span>
       </motion.div>
 

@@ -29,7 +29,7 @@ export default function LoadingScreen() {
         if (countRef.current) countRef.current.textContent = String(n).padStart(3, "0");
         if (wordmarkRef.current) wordmarkRef.current.style.clipPath = `inset(0 ${(100 - n) * 0.6}% 0 0)`;
         if (lineRef.current) lineRef.current.style.transform = `scaleX(${n / 100})`;
-        if (statusRef.current) statusRef.current.textContent = `LOADING ASSETS ／ ${n}%`;
+        if (statusRef.current) statusRef.current.textContent = `LOADING ASSETS ${n}%`;
       }
       if (p < 1) raf.current = requestAnimationFrame(tick);
       else setDone(true);
@@ -51,8 +51,8 @@ export default function LoadingScreen() {
       <div className="pointer-events-none absolute inset-5 sm:inset-8 corner-bracket" />
 
       {/* meta */}
-      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 tech-label text-bone/50">／ INITIALISING</div>
-      <div className="absolute top-6 right-6 sm:top-8 sm:right-8 tech-label text-bone/50">MABIS ／ 2026</div>
+      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 tech-label text-bone/50"> INITIALISING</div>
+      <div className="absolute top-6 right-6 sm:top-8 sm:right-8 tech-label text-bone/50">MABIS 2026</div>
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center">
         <AnimatePresence>
@@ -96,7 +96,7 @@ export default function LoadingScreen() {
             transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
             className="inline-block h-2.5 w-2.5 border border-bone/40 border-t-primary"
           />
-          <span ref={statusRef}>LOADING ASSETS ／ 0%</span>
+          <span ref={statusRef}>LOADING ASSETS 0%</span>
         </motion.div>
       </div>
 

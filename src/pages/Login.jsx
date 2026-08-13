@@ -41,7 +41,7 @@ export default function Login() {
     <AuthLayout
       logo={<img src={LOGO} alt="MABIS" className="w-12 h-12 object-contain" />}
       title="Log in"
-      subtitle="／ authenticate to enter the community meeting"
+      subtitle=" authenticate to enter the community meeting"
       footer={
         <>
           NO ACCOUNT?{" "}
@@ -66,14 +66,13 @@ export default function Login() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 border border-destructive/40 bg-destructive/10 text-destructive text-xs tech-label">
-          ／ {error}
+        <div className="mb-4 p-3 border border-destructive/40 bg-destructive/10 text-destructive text-xs tech-label"> {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email" className="tech-label text-muted-foreground">EMAIL ／ N°01</Label>
+          <Label htmlFor="email" className="tech-label text-muted-foreground">EMAIL N°01</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -92,7 +91,7 @@ export default function Login() {
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="tech-label text-muted-foreground">PASSWORD ／ N°02</Label>
+            <Label htmlFor="password" className="tech-label text-muted-foreground">PASSWORD N°02</Label>
             <Link to="/forgot-password" className="tech-label text-primary ul-grow">RESET?</Link>
           </div>
           <div className="relative">

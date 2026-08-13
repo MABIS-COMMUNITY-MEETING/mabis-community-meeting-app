@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { motion, useScroll } from "framer-motion";
 
 /**
- * Fixed right-edge scroll indicator: a live section counter (01／10) bound to
+ * Fixed right-edge scroll indicator: a live section counter (01 10) bound to
  * page progress, a thin progress line, and a vertical SCROLL label. Decorative
  * depth layer; hidden on touch / small screens, never captures pointer.
  */

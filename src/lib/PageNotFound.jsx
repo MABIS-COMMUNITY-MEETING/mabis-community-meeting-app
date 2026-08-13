@@ -28,7 +28,7 @@ export default function PageNotFound({}) {
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
           className="tech-label text-primary mb-6"
-        >／ ERROR 404</motion.div>
+        > ERROR 404</motion.div>
         <h1 className="font-display font-thin tracking-ultra leading-none text-8xl sm:text-[12rem]">
           404
         </h1>
@@ -43,7 +43,7 @@ export default function PageNotFound({}) {
             <div className="flex items-start gap-3">
               <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary animate-pulse" />
               <div className="space-y-1">
-                <p className="tech-label text-foreground">／ ADMIN NOTE</p>
+                <p className="tech-label text-foreground"> ADMIN NOTE</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   This page may not be implemented yet — request it in the chat.
                 </p>

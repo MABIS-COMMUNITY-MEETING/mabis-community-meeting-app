@@ -28,11 +28,9 @@ export default function PageTransition({ children }) {
           animate={{ x: "8%" }}
           exit={{ x: "-8%" }}
           transition={{ duration: 0.5, ease: EASE }}
-        >
-          ／／
-        </motion.span>
-        <div className="absolute top-6 left-6 tech-label text-bone/40">／ TRANSIT</div>
-        <div className="absolute bottom-6 right-6 tech-label text-bone/40">MABIS ／ 2026</div>
+        > </motion.span>
+        <div className="absolute top-6 left-6 tech-label text-bone/40"> TRANSIT</div>
+        <div className="absolute bottom-6 right-6 tech-label text-bone/40">MABIS 2026</div>
       </motion.div>
 
       <motion.div

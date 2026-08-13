@@ -19,11 +19,11 @@ export default function NewsHistory() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageNav label="／ N°04 — NEWS" />
+      <PageNav label=" N°04 — NEWS" />
 
       <main className="max-w-7xl mx-auto px-5 sm:px-8 pt-28 sm:pt-32 pb-2">
         <div className="mb-10 sm:mb-14">
-          <div className="tech-label text-primary mb-4">／ ARCHIVE — 04</div>
+          <div className="tech-label text-primary mb-4"> ARCHIVE — 04</div>
           <h1 className="font-display font-light tracking-ultra text-5xl sm:text-7xl md:text-8xl leading-[0.9]">
             NEWS<br />HISTORY
           </h1>

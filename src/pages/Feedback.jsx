@@ -65,11 +65,11 @@ export default function Feedback() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageNav label="／ N°05 — INBOX" />
+      <PageNav label=" N°05 — INBOX" />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-8 pt-28 sm:pt-32 pb-8">
         <div className="mb-10 sm:mb-14">
-          <div className="tech-label text-primary mb-4">／ ARCHIVE — 05</div>
+          <div className="tech-label text-primary mb-4"> ARCHIVE — 05</div>
           <h1 className="font-display font-light tracking-ultra text-5xl sm:text-7xl md:text-8xl leading-[0.9]">
             FEEDBACK<br />& BUGS
           </h1>

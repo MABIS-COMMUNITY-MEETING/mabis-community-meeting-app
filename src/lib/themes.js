@@ -623,7 +623,7 @@ const REQUESTED_FONTS = [
   {
     key: "unifontex",
     name: "UnifontEX",
-    detail: "Embedded multilingual · English ／ 日本語 ／ 中文 ／ ไทย",
+    detail: "Embedded multilingual · English 日本語 中文 ไทย",
     source: "Featured",
     heading: "'UnifontEX'",
     body: "'UnifontEX'",

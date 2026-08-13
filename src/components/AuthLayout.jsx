@@ -26,7 +26,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, 
 
       {/* top meta row */}
       <div className="absolute top-6 sm:top-9 left-0 right-0 flex items-center justify-between px-8 sm:px-14">
-        <span className="tech-label text-muted-foreground">／ AUTH</span>
+        <span className="tech-label text-muted-foreground"> AUTH</span>
         <span className="tech-label text-muted-foreground">N° 00</span>
       </div>
 
@@ -38,7 +38,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, 
           className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16"
         >
           <div className="lg:col-span-6 lg:col-start-1">
-            <div className="tech-label text-primary mb-4">／ IDENTITY</div>
+            <div className="tech-label text-primary mb-4"> IDENTITY</div>
             {logo ? (
               <div className="mb-6 inline-flex h-16 w-16 items-center justify-center border border-foreground/20 bg-card overflow-hidden">
                 {logo}

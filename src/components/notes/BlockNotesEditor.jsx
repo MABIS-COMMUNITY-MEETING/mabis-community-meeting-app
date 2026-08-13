@@ -74,7 +74,7 @@ export default function BlockNotesEditor({ initialHtml = "", onChange, status = 
 			{/* status strip */}
 			<div className="flex items-center gap-2 px-4 h-9 border-b border-border">
 				<FileText className="w-3.5 h-3.5 text-primary" />
-				<span className="tech-label text-muted-foreground">DOCUMENT ／ CLICK A BLOCK TO EDIT IT</span>
+				<span className="tech-label text-muted-foreground">DOCUMENT CLICK A BLOCK TO EDIT IT</span>
 				<span className="ml-auto tech-label text-muted-foreground" aria-live="polite">{status}</span>
 			</div>
 

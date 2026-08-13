@@ -14,22 +14,21 @@ export default function PageFooter() {
             <Plus className="absolute -top-1 -left-1 h-3 w-3 text-foreground/30" />
             <img src={MABIS_LOGO} alt="MABIS" className="h-11 w-11 object-contain" />
           </div>
-          <div className="tech-label text-muted-foreground">／ COLOPHON</div>
+          <div className="tech-label text-muted-foreground"> COLOPHON</div>
           <h2 className="max-w-md font-display font-light tracking-ultra text-2xl sm:text-3xl">
             Secondary Community<br />Meeting App
           </h2>
           <div className="flex items-center gap-3 tech-label text-muted-foreground">
             <span>MABIS</span>
             <Plus className="h-3 w-3 text-primary/60" />
-            <span>BANGKOK ／ TH</span>
+            <span>BANGKOK TH</span>
             <Plus className="h-3 w-3 text-primary/60" />
             <span>2026</span>
           </div>
         </div>
       </div>
       <div className="mt-6 mb-8 flex justify-center">
-        <div className="inline-flex items-center border border-foreground/20 px-4 py-1.5 tech-label text-muted-foreground">
-          ／ VERSION {APP_VERSION}
+        <div className="inline-flex items-center border border-foreground/20 px-4 py-1.5 tech-label text-muted-foreground"> VERSION {APP_VERSION}
         </div>
       </div>
     </>

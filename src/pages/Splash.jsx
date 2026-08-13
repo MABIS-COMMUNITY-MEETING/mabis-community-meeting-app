@@ -84,20 +84,20 @@ export default function Splash() {
           <span className="flex h-8 w-8 items-center justify-center border border-bone/30">
             <img src={LOGO} alt="MABIS" className="h-5 w-5 object-contain" />
           </span>
-          <span className="tech-label text-bone/60">MABIS ／ COMMUNITY MEETING</span>
+          <span className="tech-label text-bone/60">MABIS COMMUNITY MEETING</span>
         </div>
-        <span className="tech-label hidden sm:block text-bone/50">EST. BANGKOK ／ TH</span>
+        <span className="tech-label hidden sm:block text-bone/50">EST. BANGKOK TH</span>
       </motion.div>
 
       {/* vertical side labels */}
       <motion.span
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.8, ease: EASE }}
         className="vert-text tech-label absolute left-5 sm:left-8 top-1/2 -translate-y-1/2 text-bone/45 z-20 hidden md:block"
-      >SECONDARY ／ COMMUNITY</motion.span>
+      >SECONDARY COMMUNITY</motion.span>
       <motion.span
         initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 0.8, ease: EASE }}
         className="vert-text tech-label absolute right-5 sm:right-8 top-1/2 -translate-y-1/2 text-bone/45 z-20 hidden md:block"
-      >N° 2026 ／ EDITION</motion.span>
+      >N° 2026 EDITION</motion.span>
 
       {/* crosshair decorations */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="pointer-events-none absolute inset-5 sm:inset-8 corner-bracket z-20" />
@@ -117,8 +117,7 @@ export default function Splash() {
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}
           className="tech-label text-primary mb-6 flex items-center gap-3"
         >
-          <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.55, duration: 0.6, ease: EASE }} className="block h-px w-8 bg-primary origin-left" />
-          ／ 01 — SECONDARY COMMUNITY MEETING APP
+          <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.55, duration: 0.6, ease: EASE }} className="block h-px w-8 bg-primary origin-left" /> 01 — SECONDARY COMMUNITY MEETING APP
         </motion.div>
 
         <motion.div style={{ x: titleX, y: titleY }} className="will-change-transform">
@@ -161,7 +160,7 @@ export default function Splash() {
                 >
                   <span className="tech-label">N° 02</span>
                   <span className="text-lg sm:text-xl font-display font-normal tracking-tight">
-                    {isAuthenticated ? "ENTER ／ START" : "ENTER ／ LOG IN"}
+                    {isAuthenticated ? "ENTER START" : "ENTER LOG IN"}
                   </span>
                   <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden">
                     <motion.span animate={{ y: ready ? 0 : -24 }} transition={{ duration: 0.5 }}>
@@ -196,9 +195,9 @@ export default function Splash() {
             <span key={i} className="flex items-center tech-label">
               <span className="px-6">SECONDARY COMMUNITY MEETING</span>
               <Plus className="h-3 w-3 text-primary/70" />
-              <span className="px-6">FRIDAY ／ WEEKLY</span>
+              <span className="px-6">FRIDAY WEEKLY</span>
               <Plus className="h-3 w-3 text-primary/70" />
-              <span className="px-6">MABIS ／ BANGKOK</span>
+              <span className="px-6">MABIS BANGKOK</span>
               <Plus className="h-3 w-3 text-primary/70" />
             </span>
           ))}
