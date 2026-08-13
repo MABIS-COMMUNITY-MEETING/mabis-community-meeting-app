@@ -24,7 +24,7 @@ export default function LazySection({ minHeight = 480, children }) {
 					io.disconnect();
 				}
 			},
-			{ rootMargin: isConstrainedNetwork() ? "320px 0px" : "1200px 0px" }
+			{ rootMargin: isConstrainedNetwork() ? "900px 0px" : "1600px 0px" }
 		);
 		io.observe(ref.current);
 		return () => io.disconnect();
