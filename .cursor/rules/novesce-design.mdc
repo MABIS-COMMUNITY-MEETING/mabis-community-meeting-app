@@ -26,7 +26,7 @@ Always preserve unless explicitly instructed otherwise:
 - first-paint font loading without flashes
 - Apple-style optical liquid glass only on floating control planes
 - the optional custom cursor and native-cursor fallback
-- The custom cursor's core dot must stay on browser `clientX`/`clientY` without smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling; the outer ring may use bounded spring-follow displacement so the dot can briefly escape it.
+- The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement.
 - Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.
 - inline editing without scroll jumps
 - mobile, touch, keyboard, dark-theme, alternate-theme, and reduced-motion behavior
