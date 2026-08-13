@@ -28,12 +28,30 @@ export function applyStoredPrefs() {
 export async function pullPrefs() {
   const user = await base44.auth.me();
   const remote = user?.ui_prefs;
+  let keepLocalFont = false;
+
   if (remote && typeof remote === "object") {
+    const localFont = localStorage.getItem("mabis-font");
+    const localPickerVersion = localStorage.getItem("mabis-font-picker-version");
+    const localFontUpdatedAt = Number(localStorage.getItem("mabis-font-updated-at") || 0);
+    const remoteFontUpdatedAt = Number(remote["mabis-font-updated-at"] || 0);
+
+    keepLocalFont = Boolean(localFont && localPickerVersion)
+      && (localFontUpdatedAt >= remoteFontUpdatedAt || remoteFontUpdatedAt === 0);
+
     Object.entries(remote).forEach(([k, v]) => {
-      if (isPrefKey(k) && typeof v === "string") localStorage.setItem(k, v);
+      if (!isPrefKey(k) || typeof v !== "string") return;
+      if (keepLocalFont && ["mabis-font", "mabis-font-picker-version", "mabis-font-updated-at"].includes(k)) return;
+      localStorage.setItem(k, v);
     });
   }
+
   applyStoredPrefs();
+
+  // Repair an older account-side font preference with the newer device choice.
+  if (keepLocalFont) {
+    await base44.auth.updateMe({ ui_prefs: collectPrefs() });
+  }
 }
 
 /** Push the current local preferences up to the user record. */
