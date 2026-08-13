@@ -312,6 +312,38 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                 </button>
               </div>
 
+              {/* Data saver */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Wifi className={`w-4 h-4 ${connection.constrained ? "text-[#951E3A]" : "text-gray-400"}`} />
+                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Data Saver</h3>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">
+                  Auto reacts to Save-Data, offline mode, 2G and unusually slow links. Lite mode stops speculative downloads, heavy font previews and optional effects.
+                </p>
+                <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-gray-200 bg-gray-50 p-1.5">
+                  {["auto", "on", "off"].map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => {
+                        setDataSaver(mode);
+                        setConnection(setDataSaverMode(mode));
+                      }}
+                      className={`min-h-9 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-colors ${dataSaver === mode ? "bg-[#951E3A] text-white" : "bg-white text-gray-500 hover:text-gray-800"}`}
+                      aria-pressed={dataSaver === mode}
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-[10px] text-gray-400">
+                  Current path: <span className="font-bold text-gray-600">{connection.constrained ? "Lite" : "Full"}</span>
+                  {connection.offline ? " · Offline" : connection.effectiveType !== "unknown" ? ` · ${connection.effectiveType.toUpperCase()}` : ""}
+                  {connection.saveData ? " · Save-Data requested" : ""}
+                </p>
+              </div>
+
               {/* Motion */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
