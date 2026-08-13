@@ -779,7 +779,12 @@ html.network-lite .pride-field-y,
 html.network-lite .pride-field-light,
 html.network-lite .pride-orbit,
 html.network-lite .blob-drift,
-html.network-lite .widget-loading-shell {
+html.network-lite .widget-loading-shell,
+html.network-lite .loading-grid,
+html.network-lite .loading-spinner,
+html.network-lite .loading-status,
+html.network-lite .route-transition-curtain,
+html.network-lite .route-transition-content {
   animation: none !important;
 }
 html.network-lite .pride-field-light {
