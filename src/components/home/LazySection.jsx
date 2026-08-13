@@ -37,7 +37,7 @@ export default function LazySection({ minHeight = 480, children }) {
 			{mounted ? children : (
 				<div
 					className="lazy-section-placeholder"
-					style={{ "--lazy-min-height": `${minHeight}px` }}
+					style={/** @type {React.CSSProperties} */ ({ "--lazy-min-height": `${minHeight}px` })}
 					aria-hidden
 				/>
 			)}
