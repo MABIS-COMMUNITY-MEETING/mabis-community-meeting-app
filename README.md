@@ -125,7 +125,7 @@ Font implementation rules:
 
 Motion should feel physical, restrained, and responsive. It may use springs, reveals, small transformations, and pointer-aware material behavior, but it must not become a carnival of perpetual animation.
 
-The custom liquid cursor is a distinctive part of the desktop experience. Preserve it, including its outlines, direct-tracking core dot, and bounded spring-follow outer ring, unless Novesce explicitly requests a redesign. It must also remain optional:
+The custom liquid cursor is a distinctive part of the desktop experience. Preserve it, including its outlines, jitter-stabilized core dot, and bounded spring-follow outer ring, unless Novesce explicitly requests a redesign. It must also remain optional:
 
 - The Settings toggle must disable it immediately.
 - The native cursor must return when it is disabled.
@@ -498,7 +498,7 @@ The app has a global animation preference. New animation systems must respect:
 
 The liquid custom cursor is optional.
 
-- The custom cursor's core dot must stay on browser `clientX`/`clientY` without smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling; the outer ring may use bounded spring-follow displacement so the dot can briefly escape it. The ring's CSS-pixel displacement must be capped and settle quickly; neither layer may apply DPR conversion.
+- The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement. Movement beyond the deadband must snap to the current browser sample rather than use time-based easing. The ring's displacement must remain capped and settle quickly; neither layer may apply DPR conversion.
 - Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.
 - It is enabled only for fine pointers when motion and performance conditions permit.
 - Settings can turn it off and restore the native system cursor immediately.
