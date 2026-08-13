@@ -51,6 +51,8 @@ SizeAttr.whitelist = null;
 Quill.register(SizeAttr, true);
 
 const FONTS = [
+  { label: "Transgender Grotesk", value: "'TransgenderGroteskUI', 'UnifontEX'" },
+  { label: "Atlas Mono", value: "'AtlasMonoUI', 'UnifontEX'" },
   { label: "UnifontEX", value: "'UnifontEX'" },
 ];
 
