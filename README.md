@@ -161,6 +161,28 @@ Before an AI changes this project, it must complete all of the following:
 
 An AI must not change the default font, typography fallback rules, liquid-glass philosophy, Japanese editorial direction, cursor behavior, theme architecture, or interaction model as an unsolicited cleanup. A direct request from Novesce may change these rules. When that happens, update this README in the same change so it remains the source of truth.
 
+### Always-on agent enforcement
+
+The design philosophy is duplicated into the repository-level instruction files used by major coding agents:
+
+- `AGENTS.md` for repository-aware coding agents
+- `CLAUDE.md` for Claude Code
+- `GEMINI.md` for Gemini-compatible agents
+- `.cursor/rules/novesce-design.mdc` as an `alwaysApply` Cursor project rule
+- `.github/copilot-instructions.md` for GitHub Copilot
+
+These files do not replace this README. They force agents to load, respect, and validate this README as the canonical design contract.
+
+The command below checks that the instruction files and core design rules remain present:
+
+```bash
+npm run check:design
+```
+
+`npm run build` runs this check automatically through the `prebuild` script. A build must fail if an AI removes the Novesce mandate, disables the always-on rule, changes the protected font/fallback contract without updating the complete instruction system, or deletes an agent instruction file.
+
+No task is exempt because it is “small,” “backend-only,” “just cleanup,” “only a refactor,” or “not really design work.” Every change must preserve the design philosophy, and any explicit design-system change requested by Novesce must update this README, all agent instruction files, and the contract checker together.
+
 ## Core product principles
 
 1. **Useful before decorative**  
