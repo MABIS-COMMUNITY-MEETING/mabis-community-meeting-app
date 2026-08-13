@@ -159,11 +159,11 @@ const SPECS = [
   {
     key: "pride", name: "Rainbow", no: "13", mode: "light",
     flag: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#004DFF", "#750787"],
-    dominant: "#E40303", secondary: "#FF8C00", accent: "#004DFF",
-    note: "the spectrum treated spatially — warm above, cool below, neutral centre",
+    dominant: "#E40303", secondary: "#008026", accent: "#004DFF",
+    note: "warm, green and cool regions share the interface while the full spectrum remains in the stripe",
     field: [
       { c: 0, x: 6, y: 4, r: 40, a: 0.16, d: 4, s: 56 },
-      { c: 1, x: 40, y: 2, r: 30, a: 0.12, d: 4, s: 64 },
+      { c: 3, x: 40, y: 2, r: 30, a: 0.12, d: 4, s: 64 },
       { c: 4, x: 92, y: 96, r: 42, a: 0.16, d: 5, s: 78 },
       { c: 5, x: 58, y: 100, r: 30, a: 0.12, d: 5, s: 91 },
     ],
