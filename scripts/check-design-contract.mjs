@@ -64,15 +64,21 @@ for (const rule of agentRules) {
 }
 
 const cursorTrackingRule = "The custom cursor's visual origin must stay on browser `clientX`/`clientY` without positional smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling.";
-for (const [relativePath, content] of [
+const cursorContractFiles = [
     ["README.md", readme],
     ["AGENTS.md", agents],
     ["CLAUDE.md", claude],
     ["GEMINI.md", gemini],
     [".cursor/rules/novesce-design.mdc", cursorRule],
     [".github/copilot-instructions.md", copilot],
-]) {
+];
+for (const [relativePath, content] of cursorContractFiles) {
     requireText(relativePath, content, cursorTrackingRule);
+}
+
+const cursorDeformationRule = "Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.";
+for (const [relativePath, content] of cursorContractFiles) {
+    requireText(relativePath, content, cursorDeformationRule);
 }
 
 requireText("CLAUDE.md", claude, "@README.md");
