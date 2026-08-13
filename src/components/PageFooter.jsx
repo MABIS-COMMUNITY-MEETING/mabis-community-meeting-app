@@ -12,7 +12,7 @@ export default function PageFooter() {
         <div className="flex flex-col items-center gap-5 text-center">
           <div className="relative flex h-16 w-16 items-center justify-center border border-foreground/20 bg-card overflow-hidden">
             <Plus className="absolute -top-1 -left-1 h-3 w-3 text-foreground/30" />
-            <img src={MABIS_LOGO} alt="MABIS" className="h-11 w-11 object-contain" />
+            <img src={MABIS_LOGO} alt="MABIS" width="44" height="44" loading="lazy" decoding="async" fetchPriority="low" className="h-11 w-11 object-contain" />
           </div>
           <div className="tech-label text-muted-foreground"> COLOPHON</div>
           <h2 className="max-w-md font-display font-light tracking-ultra text-2xl sm:text-3xl">
