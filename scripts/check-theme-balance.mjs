@@ -7,7 +7,7 @@ import {
     spreadBalancedPalette,
 } from "../src/lib/color/themeBalance.js";
 
-const HUE_BUCKET_DEGREES = 12;
+const HUE_BUCKET_DEGREES = 18;
 const ROLE_TOKENS = [
     "--role-student",
     "--role-teacher",
