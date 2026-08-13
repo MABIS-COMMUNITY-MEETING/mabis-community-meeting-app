@@ -69,7 +69,8 @@ export default function NewsWidget({ members, isAdmin, limit }) {
     });
   };
 
-  const displayNews = limit && !fullscreen ? news.slice(0, limit) : news;
+  const sortedNews = [...news].sort((a, b) => new Date(b.published_date || b.created_date) - new Date(a.published_date || a.created_date));
+  const displayNews = limit && !fullscreen ? sortedNews.slice(0, limit) : sortedNews;
 
   return (
     <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}>
@@ -168,7 +169,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
                       <img src={MABIS_LOGO} alt="" className="w-full h-full object-contain p-0.5" />
                     </div>
                     <span className="text-xs font-bold text-gray-700">{n.author_name}</span>
-                    <span className="text-[10px] text-gray-400 ml-auto">{formatDate(n.created_date)}</span>
+                    <span className="text-[10px] text-gray-400 ml-auto">{formatDate(n.published_date || n.created_date)}</span>
                     {isAdmin && (
                       <button onClick={() => deleteMutation.mutate(n.id)}
                         className="p-1 rounded text-gray-300 hover:text-destructive transition-colors">

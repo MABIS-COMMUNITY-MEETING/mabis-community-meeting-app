@@ -15,7 +15,7 @@ export default function NewsHistory() {
     queryFn: () => base44.entities.NewsItem.list("-created_date", 500),
   });
 
-  const weeks = groupByWeek(allNews, "created_date");
+  const weeks = groupByWeek(allNews.map(n => ({ ...n, archive_date: n.published_date || n.created_date })), "archive_date");
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,7 +59,7 @@ export default function NewsHistory() {
                       <div key={n.id} className="rounded-xl border border-gray-100 p-3 bg-white">
                         <div className="flex items-center gap-2 mb-0.5">
                           <span className="font-semibold text-sm text-gray-800">{n.title}</span>
-                          <span className="text-xs text-gray-400 ml-auto">{n.created_date ? format(new Date(n.created_date), "d MMM yyyy") : ""}</span>
+                          <span className="text-xs text-gray-400 ml-auto">{n.published_date || n.created_date ? format(new Date(n.published_date || n.created_date), "d MMM yyyy") : ""}</span>
                         </div>
                         {n.body && <p className="text-sm text-gray-600 whitespace-pre-wrap">{n.body}</p>}
                         {n.image_url && <img src={n.image_url} alt={n.title} className="mt-2 rounded-lg max-h-40 object-cover" />}

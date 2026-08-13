@@ -15,7 +15,7 @@ export default function AnnouncementsHistory() {
     queryFn: () => base44.entities.Announcement.list("-created_date", 500),
   });
 
-  const weeks = groupByWeek(allAnnouncements, "created_date");
+  const weeks = groupByWeek(allAnnouncements.map(a => ({ ...a, archive_date: a.published_date || a.created_date })), "archive_date");
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,7 +61,7 @@ export default function AnnouncementsHistory() {
                         <div className="flex items-center gap-2 mb-0.5">
                           <span className="font-semibold text-sm text-gray-800">{a.title}</span>
                           {a.pinned && <span className="text-[10px] font-bold bg-[#951E3A] text-white px-1.5 py-0.5 rounded-full uppercase">Pinned</span>}
-                          <span className="text-xs text-gray-400 ml-auto">{a.created_date ? format(new Date(a.created_date), "d MMM yyyy") : ""}</span>
+                          <span className="text-xs text-gray-400 ml-auto">{a.published_date || a.created_date ? format(new Date(a.published_date || a.created_date), "d MMM yyyy") : ""}</span>
                         </div>
                         {a.body && <p className="text-sm text-gray-600">{a.body}</p>}
                         {a.image_url && <img src={a.image_url} alt={a.title} className="mt-2 rounded-lg max-h-40 object-cover" />}

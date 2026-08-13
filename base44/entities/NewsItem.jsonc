@@ -10,6 +10,11 @@
       "type": "string",
       "description": "News body text"
     },
+    "published_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Original publication date for imported news"
+    },
     "image_url": {
       "type": "string",
       "description": "Optional image attachment URL"
