@@ -582,13 +582,18 @@ export function deleteSavedTheme(name) {
 // licensed local copy. GNU FreeMono is the embedded default; GNU FreeSerif,
 // Torrefarfan, Go, Iosevka, Lilex and the libre catalogue remain selectable.
 // UnifontEX handles marked Japanese and Chinese text; GNU FreeSerif handles Thai.
-export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International School";
+export { FONT_PREVIEW_TEXT };
 
 const fontSheetPromises = new Map();
 
-function byWomxnSheet(family) {
-  const safe = family.replace(/[^a-zA-Z0-9_-]/g, "-");
-  return `/fonts/by-womxn/individual/${safe}.css`;
+async function resolveFont(key) {
+  const requested = findRequestedFont(key);
+  if (requested) return requested;
+  if (typeof key === "string" && key.startsWith("byw-")) {
+    const { findCatalogueFont } = await import("@/lib/font-catalog");
+    return findCatalogueFont(key) || DEFAULT_FONT;
+  }
+  return DEFAULT_FONT;
 }
 
 function ensureFontStylesheet(font) {
@@ -613,172 +618,21 @@ function ensureFontStylesheet(font) {
   return promise;
 }
 
-export function isFontAssetLoaded(key) {
-  const font = FONTS.find((entry) => entry.key === key);
-  if (!font?.stylesheet || typeof document === "undefined") return true;
+export function isFontAssetLoaded(fontOrKey) {
+  const font = typeof fontOrKey === "object" ? fontOrKey : findRequestedFont(fontOrKey);
+  if (!font?.stylesheet || typeof document === "undefined") return !font?.stylesheet;
   return Array.from(document.querySelectorAll("link[data-mabis-font-sheet]"))
     .some((link) => link.dataset.mabisFontSheet === font.stylesheet && Boolean(link.sheet));
 }
 
 export async function preloadFont(key) {
-  const font = FONTS.find((entry) => entry.key === key) || FONTS[0];
+  const font = await resolveFont(key);
   await ensureFontStylesheet(font);
   if (document.fonts) {
     await document.fonts.load(`400 16px ${font.body}`, FONT_PREVIEW_TEXT).catch(() => []);
   }
   return font;
 }
-
-const REQUESTED_FONTS = [
-  {
-    key: "gnu-free-mono",
-    name: "GNU FreeMono",
-    detail: "Default · embedded GNU FreeFont monospaced family",
-    source: "Featured",
-    family: "GNUFreeMonoUI",
-    heading: "'GNUFreeMonoUI'",
-    body: "'GNUFreeMonoUI'",
-    mono: "'GNUFreeMonoUI'",
-    localOnly: false,
-    featured: true,
-  },
-  {
-    key: "torrefarfan",
-    name: "Torrefarfan",
-    detail: "Embedded editorial serif from Libre Fonts by Womxn",
-    source: "Featured",
-    family: "torrefarfan",
-    stylesheet: byWomxnSheet("torrefarfan"),
-    heading: "'torrefarfan'",
-    body: "'torrefarfan'",
-    mono: "'torrefarfan'",
-    localOnly: false,
-    featured: true,
-  },
-  {
-    key: "go",
-    name: "Go",
-    detail: "Embedded Go typeface with Go Mono for technical labels",
-    source: "Featured",
-    family: "GoUI",
-    stylesheet: "/fonts/font-css/go.css",
-    heading: "'GoUI'",
-    body: "'GoUI'",
-    mono: "'GoMonoUI'",
-    localOnly: false,
-    featured: true,
-  },
-  {
-    key: "gnu-free-sans",
-    name: "GNU FreeSans",
-    detail: "Embedded GNU FreeFont sans-serif family",
-    source: "Featured",
-    family: "GNUFreeSansUI",
-    stylesheet: "/fonts/font-css/gnu-free-sans.css",
-    heading: "'GNUFreeSansUI'",
-    body: "'GNUFreeSansUI'",
-    mono: "'GNUFreeMonoUI'",
-    localOnly: false,
-    featured: true,
-  },
-  {
-    key: "gnu-free-serif",
-    name: "GNU FreeSerif",
-    detail: "Embedded GNU FreeFont serif family",
-    source: "Featured",
-    family: "GNUFreeSerifUI",
-    stylesheet: "/fonts/font-css/gnu-free-serif.css",
-    heading: "'GNUFreeSerifUI'",
-    body: "'GNUFreeSerifUI'",
-    mono: "'GNUFreeSerifUI'",
-    localOnly: false,
-    featured: true,
-  },
-  {
-    key: "transgender-grotesk",
-    name: "Transgender Grotesk",
-    detail: "Licensed/local face · Go fallback",
-    source: "Featured",
-    family: "TransgenderGroteskUI",
-    heading: "'TransgenderGroteskUI', 'GoUI'",
-    body: "'TransgenderGroteskUI', 'GoUI'",
-    mono: "'TransgenderGroteskUI', 'GoMonoUI'",
-    localOnly: true,
-    featured: true,
-  },
-  {
-    key: "atlas-mono",
-    name: "Atlas Mono",
-    detail: "Licensed/local face · Go Mono fallback",
-    source: "Featured",
-    family: "AtlasMonoUI",
-    heading: "'AtlasMonoUI', 'GoMonoUI'",
-    body: "'AtlasMonoUI', 'GoMonoUI'",
-    mono: "'AtlasMonoUI', 'GoMonoUI'",
-    localOnly: true,
-    featured: true,
-  },
-  {
-    key: "iosevka",
-    name: "Iosevka",
-    detail: "Embedded OFL · requested coding/editorial mono",
-    source: "Featured",
-    family: "IosevkaUI",
-    stylesheet: "/fonts/font-css/iosevka.css",
-    heading: "'IosevkaUI'",
-    body: "'IosevkaUI'",
-    mono: "'IosevkaUI'",
-    localOnly: false,
-    featured: true,
-  },
-  {
-    key: "lilex",
-    name: "Lilex",
-    detail: "Embedded OFL · requested programming mono",
-    source: "Featured",
-    family: "LilexUI",
-    stylesheet: "/fonts/font-css/lilex.css",
-    heading: "'LilexUI'",
-    body: "'LilexUI'",
-    mono: "'LilexUI'",
-    localOnly: false,
-    featured: true,
-  },
-  {
-    key: "unifontex",
-    name: "UnifontEX",
-    detail: "Embedded multilingual · English 日本語 中文 ไทย",
-    source: "Featured",
-    family: "UnifontEX",
-    heading: "'UnifontEX'",
-    body: "'UnifontEX'",
-    mono: "'UnifontEX'",
-    localOnly: false,
-    featured: true,
-  },
-];
-
-const requestedNames = new Set(REQUESTED_FONTS.map((font) => font.name.toLowerCase().replace(/[^a-z0-9]/g, "")));
-const libraryFonts = BY_WOMXN_FONTS
-  .filter((font) => !requestedNames.has(font.name.toLowerCase().replace(/[^a-z0-9]/g, "")))
-  .map((font) => ({
-    ...font,
-    stylesheet: byWomxnSheet(font.family),
-    detail: "Embedded libre webfont · Libre Fonts by Womxn",
-    heading: `'${font.family}', 'GoUI'`,
-    body: `'${font.family}', 'GoUI'`,
-    mono: `'${font.family}', 'GoMonoUI'`,
-    localOnly: false,
-    featured: false,
-  }));
-
-export const FONTS = [...REQUESTED_FONTS, ...libraryFonts];
-
-export const FONT_LIBRARIES = [
-  { key: "featured", name: "Featured", detail: `${REQUESTED_FONTS.length} requested fonts` },
-  { key: "by-womxn", name: "Libre Fonts by Womxn", detail: `${libraryFonts.length} embedded libre webfonts`, url: "https://gitlab.com/lfurter/by-womxn" },
-  { key: "flintype", name: "FLINT*ype", detail: "FLINTA* discovery archive. Its current site is moving, so indexed commercial fonts are not mirrored without their licences.", url: "https://flintype.com/" },
-];
 
 export async function applyFont(key) {
   const font = FONTS.find(f => f.key === key) || FONTS[0];
