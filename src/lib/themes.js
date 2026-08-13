@@ -718,17 +718,24 @@ export function applyFont(key) {
   root.style.setProperty("--font-multilingual", "'UnifontEX'");
   root.dataset.uiFont = font.key;
   if (document.body) document.body.style.fontFamily = font.body;
-  if (document.fonts && font.family) {
-    document.fonts.load(`16px "${font.family}"`, FONT_PREVIEW_TEXT).then(() => {
+
+  let loadPromise = Promise.resolve([]);
+  if (document.fonts) {
+    const bodyLoad = document.fonts.load(`400 16px ${font.body}`, FONT_PREVIEW_TEXT);
+    const monoLoad = document.fonts.load(`400 16px ${font.mono}`, "MABIS 0123456789");
+    loadPromise = Promise.all([bodyLoad, monoLoad]).then((loaded) => {
       if (root.dataset.uiFont === font.key) {
         root.dataset.uiFontLoaded = font.key;
         window.dispatchEvent(new CustomEvent("fontRendered", { detail: { key: font.key } }));
       }
-    }).catch(() => {});
+      return loaded;
+    }).catch(() => []);
   }
+
   localStorage.setItem("mabis-font", font.key);
   window.dispatchEvent(new CustomEvent("fontChanged", { detail: { key: font.key } }));
   window.dispatchEvent(new Event("themeChanged"));
+  return loadPromise;
 }
 
 export function getStoredFont() {
