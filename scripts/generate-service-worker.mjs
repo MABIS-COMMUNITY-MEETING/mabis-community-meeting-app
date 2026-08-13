@@ -18,7 +18,7 @@ const core = Array.from(new Set([
   "/manifest.json",
   "/images/mabis-logo-64.png",
   "/images/mabis-logo-128.webp",
-  "/fonts/gnu-freefont/FreeMono-Core.woff2?v=3",
+  "/fonts/gnu-freefont/FreeMono-Basic.woff2?v=4",
   ...discovered,
 ]));
 const version = crypto.createHash("sha256").update(core.join("\n")).digest("hex").slice(0, 12);
