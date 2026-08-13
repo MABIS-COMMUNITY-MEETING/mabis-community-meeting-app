@@ -226,6 +226,7 @@
     --font-display: 'GNUFreeSerifUI';
     --font-mono: 'GNUFreeSerifUI';
     --font-multilingual: 'UnifontEX';
+    --font-thai: 'GNUFreeSerifUI';
     --role-student: 348 74% 30%;
     --role-teacher: 165 55% 32%;
     --role-chair: 38 78% 48%;
@@ -343,12 +344,16 @@
 :lang(zh),
 :lang(zh-CN),
 :lang(zh-TW),
-:lang(th),
 [data-script="ja"],
 [data-script="zh"],
-[data-script="th"],
 .font-multilingual {
   font-family: var(--font-multilingual) !important;
+}
+
+:lang(th),
+[data-script="th"],
+.font-thai {
+  font-family: var(--font-thai) !important;
 }
 
 .jp-roman {
