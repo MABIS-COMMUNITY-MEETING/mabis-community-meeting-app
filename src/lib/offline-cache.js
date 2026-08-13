@@ -125,15 +125,16 @@ export async function restoreOfflineQueries(queryClient, userId) {
     if (!record?.state || Date.now() - record.savedAt > MAX_AGE) return false;
     hydrate(queryClient, record.state);
 
-    // Cached data paints immediately. When online, refresh active queries after
-    // the first interaction window instead of blocking startup on the network.
-    if (navigator.onLine !== false) {
-      window.setTimeout(() => {
-        void queryClient.invalidateQueries({
-          predicate: (query) => PERSISTED_QUERY_ROOTS.has(query.queryKey?.[0]),
-        });
-      }, 1800);
-    }
+    // Cached data paints immediately. Refresh after startup, or after the first
+    // reconnect when the app booted offline, without blocking the useful paint.
+    const refresh = () => {
+      void queryClient.invalidateQueries({
+        predicate: (query) => PERSISTED_QUERY_ROOTS.has(query.queryKey?.[0]),
+      });
+    };
+    const scheduleRefresh = () => window.setTimeout(refresh, 1800);
+    if (navigator.onLine !== false) scheduleRefresh();
+    else window.addEventListener("online", scheduleRefresh, { once: true });
     return true;
   } catch {
     return false;
@@ -151,7 +152,7 @@ export function startOfflineQueryPersistence(queryClient, userId) {
     if (stopped) return;
     const state = dehydrate(queryClient, { shouldDehydrateQuery: queryCanPersist });
     const serialized = JSON.stringify(state);
-    if (serialized.length > MAX_BYTES) return;
+    if (new Blob([serialized]).size > MAX_BYTES) return;
     try {
       await writeRecord({
         key: `queries:${userId}`,
