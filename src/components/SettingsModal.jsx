@@ -62,7 +62,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const visibleFonts = filteredFonts.slice(0, fontLimit);
 
   const handleFontSelect = (key) => {
-    localStorage.setItem("mabis-font-picker-version", "3");
+    localStorage.setItem("mabis-font-picker-version", "4");
     localStorage.setItem("mabis-font-updated-at", String(Date.now()));
     setCurrentFont(key);
     applyFont(key);
@@ -194,7 +194,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-1.5">
                               <span className="text-sm font-bold text-gray-800">{font.name}</span>
-                              {font.key === "transgender-grotesk" && (
+                              {font.key === "go" && (
                                 <span className="rounded-full bg-[#951E3A] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">Default</span>
                               )}
                               {selected && <Check className="h-3.5 w-3.5 text-[#951E3A]" />}
@@ -216,7 +216,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                         </div>
                         {font.localOnly && available === false && (
                           <p className="mt-2 text-[10px] leading-4 text-amber-600">
-                            This commercial face needs a licensed local/webfont copy. Iosevka is active until that file is available.
+                            This commercial face needs a licensed local/webfont copy. Go is active until that file is available.
                           </p>
                         )}
                       </button>
