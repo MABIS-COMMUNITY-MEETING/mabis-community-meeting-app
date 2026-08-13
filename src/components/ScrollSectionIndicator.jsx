@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { motion, useScroll } from "framer-motion";
+import { subscribeScrollProgress } from "@/lib/scroll-progress";
 
 /**
  * Fixed right-edge scroll indicator: a live section counter (01 10) bound to
@@ -7,18 +7,20 @@ import { motion, useScroll } from "framer-motion";
  * depth layer; hidden on touch / small screens, never captures pointer.
  */
 export default function ScrollSectionIndicator({ total = 10 }) {
-  const { scrollYProgress } = useScroll();
   const counterRef = useRef(null);
+  const lineRef = useRef(null);
 
   useEffect(() => {
     let previous = 1;
-    return scrollYProgress.on("change", (v) => {
-      const n = Math.max(1, Math.min(total, Math.ceil(v * total)));
-      if (n === previous) return;
-      previous = n;
-      if (counterRef.current) counterRef.current.textContent = `${String(n).padStart(2, "0")}＜${String(total).padStart(2, "0")}`;
+    return subscribeScrollProgress((progress) => {
+      const n = Math.max(1, Math.min(total, Math.ceil(progress * total)));
+      if (n !== previous) {
+        previous = n;
+        if (counterRef.current) counterRef.current.textContent = `${String(n).padStart(2, "0")}＜${String(total).padStart(2, "0")}`;
+      }
+      if (lineRef.current) lineRef.current.style.transform = `scaleY(${progress})`;
     });
-  }, [scrollYProgress, total]);
+  }, [total]);
 
   return (
     <div
@@ -29,7 +31,7 @@ export default function ScrollSectionIndicator({ total = 10 }) {
         01＜{String(total).padStart(2, "0")}
       </span>
       <div className="relative h-36 w-px bg-foreground/15 overflow-hidden">
-        <motion.div style={{ scaleY: scrollYProgress }} className="absolute inset-0 origin-top bg-primary" />
+        <div ref={lineRef} style={{ transform: "scaleY(0)" }} className="absolute inset-0 origin-top bg-primary will-change-transform" />
       </div>
       <span className="tech-label vert-text text-muted-foreground">SCROLL</span>
     </div>
