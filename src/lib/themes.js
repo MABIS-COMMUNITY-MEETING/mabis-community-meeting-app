@@ -1,7 +1,7 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
-import { balancedPalette, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
+import { balancedPalette, bestForeground, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
 import { BY_WOMXN_FONTS } from "@/lib/by_womxn_fonts";
 
 // Theme definitions for MABIS platform
@@ -23,11 +23,11 @@ function pastelTheme(key, name, p, s) {
     name,
     vars: {
       "--primary": p,
-      "--primary-foreground": "0 0% 100%",
+      "--primary-foreground": onColor(p),
       "--secondary": s,
-      "--secondary-foreground": "30 15% 25%",
+      "--secondary-foreground": onColor(s),
       "--accent": s,
-      "--accent-foreground": "30 15% 25%",
+      "--accent-foreground": onColor(s),
       "--background": bg,
       "--foreground": "220 12% 22%",
       "--card": "0 0% 100%",
@@ -56,8 +56,11 @@ function pastelTheme(key, name, p, s) {
 
 // Text colour that actually reads on a given "H S% L%" fill.
 function onColor(hsl) {
-  const [h, s, l] = hsl.split(" ").map((v) => parseInt(v));
-  return l > 58 ? `${h} ${Math.min(s, 40)}% 14%` : "0 0% 100%";
+  const [h, s] = hsl.split(" ").map((v) => parseInt(v));
+  return bestForeground(hsl, {
+    dark: `${h} ${Math.min(s, 40)}% 12%`,
+    light: "0 0% 100%",
+  });
 }
 
 /* Multi-colour brand theme: primary/secondary drive the UI tokens while the full
