@@ -82,7 +82,7 @@ export default function Splash() {
       >
         <div className="flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center border border-bone/30">
-            <img src={LOGO} alt="MABIS" className="h-5 w-5 object-contain" />
+            <img src={LOGO} alt="MABIS" width="20" height="20" decoding="async" fetchPriority="high" className="h-5 w-5 object-contain" />
           </span>
           <span className="tech-label text-bone/60"><span className="sm:hidden">MABIS</span><span className="hidden sm:inline">MABIS COMMUNITY MEETING</span></span>
         </div>
