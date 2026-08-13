@@ -7,7 +7,7 @@
  */
 
 const HUE_CLUSTER_DEGREES = 24;
-const NEUTRAL_SATURATION = 25;
+const NEUTRAL_SATURATION = 30;
 
 function normalizeHex(value) {
     const hex = value.trim().toLowerCase();
