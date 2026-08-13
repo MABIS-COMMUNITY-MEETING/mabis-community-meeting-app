@@ -650,8 +650,8 @@ export const FONTS = [...REQUESTED_FONTS, ...libraryFonts];
 
 export const FONT_LIBRARIES = [
   { key: "featured", name: "Featured", detail: `${REQUESTED_FONTS.length} requested fonts` },
-  { key: "by-womxn", name: "Libre Fonts by Womxn", detail: `${libraryFonts.length} embedded libre webfonts` },
-  { key: "flintype", name: "FLINT*ype", detail: "Discovery archive with mixed licenses; compatible libre faces can be added without redistributing commercial files." },
+  { key: "by-womxn", name: "Libre Fonts by Womxn", detail: `${libraryFonts.length} embedded libre webfonts`, url: "https://gitlab.com/lfurter/by-womxn" },
+  { key: "flintype", name: "FLINT*ype", detail: "FLINTA* discovery archive. Its current site is moving, so indexed commercial fonts are not mirrored without their licences.", url: "https://flintype.com/" },
 ];
 
 export function applyFont(key) {
