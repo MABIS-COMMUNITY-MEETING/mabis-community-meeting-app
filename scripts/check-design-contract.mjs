@@ -45,6 +45,8 @@ const readmeRules = [
     "No romaji decoration",
     "Preserve outlines and borders",
     "### AI enforcement procedure",
+    "# Performance architecture",
+    "Large Home widgets remain behind near-viewport `LazySection` and `React.lazy` boundaries",
 ];
 
 for (const rule of readmeRules) {
