@@ -797,7 +797,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                     <Button onClick={handleAdd}
                       disabled={!title.trim() || !submittedBy.trim() || addMutation.isPending || updateTopicMutation.isPending}
                       className="ml-auto bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg text-sm">
-                      {editingTopicId ? "Update" : (addMutation.isPending ? "Adding..." : "Add")}
+                      {addMutation.isPending ? "Adding..." : "Add"}
                     </Button>
                   </div>
                 </div>
@@ -883,7 +883,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           {isCurrentWeek && (
             <Button size="sm" variant="outline"
               className="w-full border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
-              onClick={() => showForm ? resetTopicForm() : (setEditingTopicId(null), setTitle(""), setDescription(""), setSubmittedBy(""), setPriority("3"), setShowForm(true))}>
+              onClick={toggleAddTopicForm}>
               <Plus className="w-3.5 h-3.5" /> Add Topic
             </Button>
           )}
@@ -932,7 +932,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               <Button onClick={handleAdd}
                 disabled={!title.trim() || !submittedBy.trim() || addMutation.isPending || updateTopicMutation.isPending}
                 className="ml-auto bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg">
-                {editingTopicId ? "Update Topic" : (addMutation.isPending ? "Adding..." : "Add Topic")}
+                {addMutation.isPending ? "Adding..." : "Add Topic"}
               </Button>
             </div>
           </div>
