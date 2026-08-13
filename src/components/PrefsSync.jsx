@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
-import { pullPrefs, pushPrefs, PREF_EVENTS } from "@/lib/prefs_sync";
+import { applyStoredPrefs, pullPrefs, pushPrefs, PREF_EVENTS } from "@/lib/prefs_sync";
 
 /**
  * Keeps theme / colour / font / motion preferences on the user account so they
@@ -10,6 +10,12 @@ export default function PrefsSync() {
   const { user } = useAuth();
   const ready = useRef(false);
   const timer = useRef(null);
+
+  useEffect(() => {
+    // Apply the device's saved font before any account/network round trip so
+    // the interface never boots in a stale fallback face.
+    applyStoredPrefs();
+  }, []);
 
   useEffect(() => {
     if (!user) return;
