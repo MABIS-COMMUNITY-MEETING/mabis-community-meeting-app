@@ -1,20 +1,20 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
+import { balancedPalette, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
 import { BY_WOMXN_FONTS } from "@/lib/by_womxn_fonts";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
 // Pastel themes use 2 harmonious pastel colors + white background
 
+function toneVariant(hslStr, lightnessDelta) {
+  const [h, sat, lRaw] = hslStr.split(" ");
+  const newL = Math.max(32, Math.min(58, parseInt(lRaw) + lightnessDelta));
+  return `${h} ${sat} ${newL}%`;
+}
+
 function pastelTheme(key, name, p, s) {
-  // Derive role colors from primary hue
-  const shift = (hslStr, deg, lAdj = 0) => {
-    const [h, sat, lRaw] = hslStr.split(" ");
-    const newH = (parseInt(h) + deg + 360) % 360;
-    const newL = Math.max(32, Math.min(48, parseInt(lRaw) + lAdj));
-    return `${newH} ${sat} ${newL}%`;
-  };
   // Very light background tint from primary hue
   const [pH] = p.split(" ");
   const bg = `${pH} 25% 97%`;
@@ -39,12 +39,14 @@ function pastelTheme(key, name, p, s) {
       "--border": `${pH} 12% 90%`,
       "--input": `${pH} 12% 90%`,
       "--ring": p,
+      // Two-colour themes alternate their real hues evenly. Tone variants keep
+      // badges distinct without inventing unrelated green, purple or orange.
       "--role-student": p,
-      "--role-teacher": shift(p, 180),
-      "--role-chair": s,
-      "--role-minutes": shift(p, 45),
-      "--role-admin": "270 45% 45%",
-      "--role-editor": shift(p, 120),
+      "--role-teacher": s,
+      "--role-chair": toneVariant(p, -8),
+      "--role-minutes": toneVariant(s, -8),
+      "--role-admin": toneVariant(p, 8),
+      "--role-editor": toneVariant(s, 8),
     },
     bodyClass: `theme-${key}`,
     swatches: [`hsl(${p})`, `hsl(${s})`, "#ffffff"],
@@ -78,26 +80,17 @@ function paletteTheme(key, name, p, s, flagHexes) {
   t.vars["--muted-foreground"] = `${pH} 8% 42%`;
   t.vars["--border"] = `${pH} 12% 88%`;
   t.vars["--input"] = `${pH} 12% 88%`;
+  const tertiaryHex = pickDistinctPaletteColor(flagHexes, [p, s]);
+  const tertiary = tertiaryHex ? hexToHsl(tertiaryHex) : s;
+  t.vars["--accent"] = tertiary;
   t.vars["--primary-foreground"] = onColor(p);
   t.vars["--secondary-foreground"] = onColor(s);
-  t.vars["--accent-foreground"] = onColor(s);
+  t.vars["--accent-foreground"] = onColor(tertiary);
 
-  // Roles pull from the flag, but only from its distinct hues — flags repeat
-  // stripes and carry white/black, which would otherwise hand several roles the
-  // same graphite badge.
+  // Roles cycle through each distinct usable palette hue in canonical order.
+  // Repeated stripes and white/black no longer crowd out identity colours.
   const roles = ["--role-student", "--role-teacher", "--role-chair", "--role-minutes", "--role-admin", "--role-editor"];
-  const seen = new Set();
-  const usable = [];
-  const byVividness = flagHexes
-    .map(readableHex)
-    .sort((a, b) => parseInt(hexToHsl(b).split(" ")[1]) - parseInt(hexToHsl(a).split(" ")[1]));
-  byVividness.forEach((hex) => {
-    const hsl = hexToHsl(hex);
-    const bucket = Math.round(parseInt(hsl.split(" ")[0]) / 24);
-    if (seen.has(bucket)) return;
-    seen.add(bucket);
-    usable.push(hsl);
-  });
+  const usable = balancedPalette(flagHexes).map((hex) => hexToHsl(readableHex(hex)));
   roles.forEach((r, i) => { t.vars[r] = usable[i % usable.length]; });
   return t;
 }
@@ -150,6 +143,8 @@ function gmkTheme(key) {
   // itself is never altered — it still ships as --accent and --character-*.
   const acc = hexToHsl(u.accent_ui || u.accent);
   const acc2 = hexToHsl(u.accent_secondary);
+  const accentHex = u.accent_tertiary || pickDistinctPaletteColor(u.swatches, [acc, acc2], u.accent_secondary);
+  const acc3 = hexToHsl(accentHex);
   const d = u.dark;
 
   const t = {
@@ -159,8 +154,8 @@ function gmkTheme(key) {
       "--primary-foreground": onColor(acc),
       "--secondary": acc2,
       "--secondary-foreground": onColor(acc2),
-      "--accent": acc2,
-      "--accent-foreground": onColor(acc2),
+      "--accent": acc3,
+      "--accent-foreground": onColor(acc3),
       "--background": bg,
       "--foreground": fg,
       "--card": d ? nudgeL(u.surface, 5) : nudgeL(u.background, 5),
@@ -181,7 +176,7 @@ function gmkTheme(key) {
     character: {
       character_primary: u.accent,
       character_secondary: u.accent_secondary,
-      character_highlight: u.accent_tertiary || u.accent,
+      character_highlight: accentHex,
     },
   };
 
@@ -189,7 +184,7 @@ function gmkTheme(key) {
   // keysets are two/three-colour sets: keep each swatch's own hue AND saturation,
   // only move lightness into a legible band. Boosting saturation turned Olivia's
   // pink/cream into red and yellow.
-  const usable = u.swatches.map(keepHueLegible);
+  const usable = balancedPalette(u.swatches).map(keepHueLegible);
   roles.forEach((r, i) => { t.vars[r] = usable[i % usable.length]; });
   // canonical keyset hexes go into --flag-* untouched (only near-greys darkened)
   t.exact = true;
@@ -388,18 +383,17 @@ Object.assign(THEMES, PRIDE_THEMES);
 function applyPalette(colors, exact = false) {
   const root = document.documentElement;
   const list = colors.filter(Boolean);
-  // accents get the legible copy, the stripe below keeps the true flag.
-  // `exact` palettes (the art-directed Pride collection) keep their published
-  // hexes — only white/grey stripes are darkened so they stay visible.
-  const accents = list.map((c) => {
+  // Semantic accent slots use each distinct usable hue fairly. The canonical
+  // list below still paints official stripes and previews without reordering.
+  const semantic = balancedPalette(list);
+  const accents = spreadBalancedPalette(list, 8).map((c) => {
     if (!c.startsWith("#")) return c;
     if (!exact) return readableHex(c);
     return parseInt(hexToHsl(c).split(" ")[1]) < 8 ? readableHex(c) : c;
   });
-  for (let i = 0; i < 8; i++) {
-    root.style.setProperty(`--flag-${i + 1}`, accents[i % accents.length]);
-  }
+  accents.forEach((accent, i) => root.style.setProperty(`--flag-${i + 1}`, accent));
   root.style.setProperty("--palette-count", String(list.length));
+  root.style.setProperty("--palette-accent-count", String(semantic.length));
   const stops = list.map((c, i) => `${c} ${(i / list.length) * 100}% ${((i + 1) / list.length) * 100}%`);
   root.style.setProperty("--palette-stripes", `linear-gradient(90deg, ${stops.join(", ")})`);
   root.style.setProperty("--palette-gradient", `linear-gradient(90deg, ${list.join(", ")})`);
