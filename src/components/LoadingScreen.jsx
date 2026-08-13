@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 /**
- * Numeric loader. A giant Iosevka counter climbs 00 → 100 while a hairline
- * sweeps across, the grid initializes, and a masked wordmark assembles
- * beneath — then resolves toward the app. Not a generic spinner.
+ * Numeric loader. The selected UI font is loaded before this component mounts,
+ * so the counter, metadata and wordmark never flash through a different face.
+ * A hairline sweeps across while the wordmark assembles beneath it.
  */
 export default function LoadingScreen() {
   const [done, setDone] = useState(false);
@@ -39,7 +39,7 @@ export default function LoadingScreen() {
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-ink text-bone">
+    <div className="loading-screen fixed inset-0 overflow-hidden bg-ink text-bone">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.4 }} transition={{ duration: 1 }} className="absolute inset-0 grid-bg" />
       {/* faint drifting glow */}
       <div
@@ -63,7 +63,7 @@ export default function LoadingScreen() {
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="flex items-baseline"
             >
-              <span ref={countRef} className="font-display font-thin tracking-ultra text-[22vw] sm:text-[16vw] leading-none tabular-nums">
+              <span ref={countRef} className="font-display font-normal tracking-ultra text-[22vw] sm:text-[16vw] leading-none tabular-nums">
                 000
               </span>
               <span className="ml-2 tech-label text-primary">％</span>
@@ -74,7 +74,7 @@ export default function LoadingScreen() {
         {/* assembling wordmark behind counter */}
         <span ref={wordmarkRef}
           style={{ clipPath: "inset(0 100% 0 0)" }}
-          className="absolute font-display font-thin tracking-ultra text-bone/8 text-[18vw] leading-none select-none"
+          className="absolute font-display font-normal tracking-ultra text-bone/8 text-[18vw] leading-none select-none"
         >
           COMMUNITY
         </span>
