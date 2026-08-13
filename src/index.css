@@ -91,10 +91,11 @@
     --ink: 222 22% 8%;
     --bone: 42 34% 96%;
 
-    --font-heading: 'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX';
-    --font-body: 'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX';
-    --font-display: 'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX';
-    --font-mono: 'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX';
+    --font-heading: 'TransgenderGroteskUI', 'IosevkaUI';
+    --font-body: 'TransgenderGroteskUI', 'IosevkaUI';
+    --font-display: 'TransgenderGroteskUI', 'IosevkaUI';
+    --font-mono: 'TransgenderGroteskUI', 'IosevkaUI';
+    --font-multilingual: 'UnifontEX';
     --role-student: 348 74% 30%;
     --role-teacher: 165 55% 32%;
     --role-chair: 38 78% 48%;
@@ -189,13 +190,25 @@
 .cursor-ring.is-hover { width: 40px; height: 40px; background:transparent; }
 .cursor-ring.is-label { width: 56px; height: 56px; background:rgba(255,255,255,0.1); }
 
-/* ── selected UI face with UnifontEX multilingual fallback ── */
+/* ── selected UI face and explicit multilingual script handling ── */
 .font-jp,
 .jp-roman {
   font-family: var(--font-body);
   font-weight: 400;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+}
+
+:lang(ja),
+:lang(zh),
+:lang(zh-CN),
+:lang(zh-TW),
+:lang(th),
+[data-script="ja"],
+[data-script="zh"],
+[data-script="th"],
+.font-multilingual {
+  font-family: var(--font-multilingual) !important;
 }
 
 .jp-roman {
