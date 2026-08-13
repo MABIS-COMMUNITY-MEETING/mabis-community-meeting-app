@@ -1,0 +1,23 @@
+{
+  "name": "MABIS Community Meeting App",
+  "short_name": "MABIS",
+  "description": "Community meeting, discussions, jobs, calendar and archives for MABIS.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#11131a",
+  "theme_color": "#11131a",
+  "icons": [
+    {
+      "src": "/images/mabis-logo-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/mabis-logo-512.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}
