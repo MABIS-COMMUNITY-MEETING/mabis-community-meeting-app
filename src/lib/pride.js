@@ -27,12 +27,12 @@ const SPECS = [
   {
     key: "trans", name: "Trans", no: "01", mode: "light",
     flag: ["#5BCEFA", "#F5A9B8", "#FFFFFF", "#F5A9B8", "#5BCEFA"],
-    dominant: "#5BCEFA", secondary: "#F5A9B8", accent: "#F5A9B8", exact: true,
-    note: "glassy blue light, soft pink highlight, white separation",
+    dominant: "#F5A9B8", secondary: "#5BCEFA", accent: "#F5A9B8", exact: true,
+    note: "pink-led editorial surfaces, sky-blue counterpoint, white separation",
     field: [
-      { c: 0, x: 12, y: 8, r: 46, a: 0.20, d: 5, s: 46 },
-      { c: 1, x: 88, y: 78, r: 40, a: 0.16, d: 6, s: 61 },
-      { c: 0, x: 62, y: 106, r: 34, a: 0.10, d: 4, s: 79 },
+      { c: 1, x: 12, y: 8, r: 46, a: 0.20, d: 5, s: 46 },
+      { c: 0, x: 88, y: 78, r: 40, a: 0.16, d: 6, s: 61 },
+      { c: 1, x: 62, y: 106, r: 34, a: 0.12, d: 4, s: 79 },
     ],
   },
   {
