@@ -9,6 +9,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
+import { disableHackerMode } from "@/lib/hacker";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -28,6 +29,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
+      disableHackerMode();
       await base44.auth.register({ email, password });
       setShowOtp(true);
     } catch (err) {
@@ -67,6 +69,7 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
+    disableHackerMode();
     base44.auth.loginWithProvider("google", "/home");
   };
 
