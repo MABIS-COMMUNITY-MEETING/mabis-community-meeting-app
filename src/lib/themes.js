@@ -581,9 +581,9 @@ const REQUESTED_FONTS = [
     name: "Transgender Grotesk",
     detail: "Default · licensed/local face · Iosevka fallback",
     source: "Featured",
-    heading: "'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX'",
-    body: "'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX'",
-    mono: "'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX'",
+    heading: "'TransgenderGroteskUI', 'IosevkaUI'",
+    body: "'TransgenderGroteskUI', 'IosevkaUI'",
+    mono: "'TransgenderGroteskUI', 'IosevkaUI'",
     localOnly: true,
     featured: true,
   },
@@ -592,9 +592,9 @@ const REQUESTED_FONTS = [
     name: "Atlas Mono",
     detail: "Licensed/local face · Iosevka fallback",
     source: "Featured",
-    heading: "'AtlasMonoUI', 'IosevkaUI', 'UnifontEX'",
-    body: "'AtlasMonoUI', 'IosevkaUI', 'UnifontEX'",
-    mono: "'AtlasMonoUI', 'IosevkaUI', 'UnifontEX'",
+    heading: "'AtlasMonoUI', 'IosevkaUI'",
+    body: "'AtlasMonoUI', 'IosevkaUI'",
+    mono: "'AtlasMonoUI', 'IosevkaUI'",
     localOnly: true,
     featured: true,
   },
@@ -603,9 +603,9 @@ const REQUESTED_FONTS = [
     name: "Iosevka",
     detail: "Embedded OFL · requested coding/editorial mono",
     source: "Featured",
-    heading: "'IosevkaUI', 'UnifontEX'",
-    body: "'IosevkaUI', 'UnifontEX'",
-    mono: "'IosevkaUI', 'UnifontEX'",
+    heading: "'IosevkaUI'",
+    body: "'IosevkaUI'",
+    mono: "'IosevkaUI'",
     localOnly: false,
     featured: true,
   },
@@ -614,9 +614,9 @@ const REQUESTED_FONTS = [
     name: "Lilex",
     detail: "Embedded OFL · requested programming mono",
     source: "Featured",
-    heading: "'LilexUI', 'UnifontEX'",
-    body: "'LilexUI', 'UnifontEX'",
-    mono: "'LilexUI', 'UnifontEX'",
+    heading: "'LilexUI'",
+    body: "'LilexUI'",
+    mono: "'LilexUI'",
     localOnly: false,
     featured: true,
   },
@@ -639,9 +639,9 @@ const libraryFonts = BY_WOMXN_FONTS
   .map((font) => ({
     ...font,
     detail: "Embedded libre webfont · Libre Fonts by Womxn",
-    heading: `'${font.family}', 'UnifontEX'`,
-    body: `'${font.family}', 'UnifontEX'`,
-    mono: `'${font.family}', 'UnifontEX'`,
+    heading: `'${font.family}', 'IosevkaUI'`,
+    body: `'${font.family}', 'IosevkaUI'`,
+    mono: `'${font.family}', 'IosevkaUI'`,
     localOnly: false,
     featured: false,
   }));
@@ -661,6 +661,9 @@ export function applyFont(key) {
   root.style.setProperty("--font-body", font.body);
   root.style.setProperty("--font-display", font.heading);
   root.style.setProperty("--font-mono", font.mono);
+  root.style.setProperty("--font-multilingual", "'UnifontEX'");
+  root.dataset.uiFont = font.key;
+  if (document.body) document.body.style.fontFamily = font.body;
   localStorage.setItem("mabis-font", font.key);
   window.dispatchEvent(new CustomEvent("fontChanged", { detail: { key: font.key } }));
   window.dispatchEvent(new Event("themeChanged"));
