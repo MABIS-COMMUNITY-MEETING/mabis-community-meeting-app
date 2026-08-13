@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import EditorialSection from "@/components/home/EditorialSection";
+import LazySection from "@/components/home/LazySection";
 import HomeMasthead from "@/components/home/HomeMasthead";
 import ScrollVelocity from "@/components/ScrollVelocity";
 import ScrollScaleRitual from "@/components/home/ScrollScaleRitual";
@@ -190,35 +191,51 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="03" label="DISCUSSION">
-          <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
+          <LazySection minHeight={560}>
+            <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
+          </LazySection>
         </EditorialSection>
 
         <EditorialSection index="04" label="JOBS ／ ROTATION">
-          <JobsWidget members={members} isAdmin={canManage} compact={false} />
+          <LazySection minHeight={560}>
+            <JobsWidget members={members} isAdmin={canManage} compact={false} />
+          </LazySection>
         </EditorialSection>
 
         <EditorialSection index="05" label="CALENDAR">
-          <CalendarWidget />
+          <LazySection minHeight={620}>
+            <CalendarWidget />
+          </LazySection>
         </EditorialSection>
 
         <EditorialSection index="06" label="SCHEDULE">
-          <ScheduleWidget isAdmin={canManage} />
+          <LazySection minHeight={420}>
+            <ScheduleWidget isAdmin={canManage} />
+          </LazySection>
         </EditorialSection>
 
         <EditorialSection index="07" label="LOST ／ FOUND">
-          <MissingItemsWidget members={members} />
+          <LazySection minHeight={420}>
+            <MissingItemsWidget members={members} />
+          </LazySection>
         </EditorialSection>
 
         <EditorialSection index="08" label="LUNCH MENU">
-          <LunchMenuWidget isAdmin={canManage} />
+          <LazySection minHeight={420}>
+            <LunchMenuWidget isAdmin={canManage} />
+          </LazySection>
         </EditorialSection>
 
         <EditorialSection index="09" label="NEWS">
-          <NewsWidget members={members} isAdmin={canManage} />
+          <LazySection minHeight={480}>
+            <NewsWidget members={members} isAdmin={canManage} />
+          </LazySection>
         </EditorialSection>
 
         <EditorialSection index="10" label="MEMBERS">
-          <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
+          <LazySection minHeight={560}>
+            <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
+          </LazySection>
         </EditorialSection>
 
         </div>
