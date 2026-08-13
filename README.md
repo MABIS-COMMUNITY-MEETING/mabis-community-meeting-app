@@ -52,7 +52,7 @@ The Japanese influence should come from composition, pacing, hierarchy, and mate
 ### Do not
 
 - Add random Japanese words purely for decoration.
-- Add romanized Japanese labels such as `KAIGI`, `OSHIRASE`, or `YOTEI`.
+- Add romaji. Romanized Japanese labels such as `KAIGI`, `OSHIRASE`, or `YOTEI` are not part of the design language.
 - Use anime-style decoration unless it is an intentional theme or requested feature.
 - Use full-width slash characters or font-rendered `/` glyphs as visual separators.
 - Cover every surface in blur, gradients, glow, or glass.
