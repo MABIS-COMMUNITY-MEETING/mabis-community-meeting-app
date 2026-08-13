@@ -8,7 +8,7 @@ import { Mail, Lock, Loader2, ArrowUpRight } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import FamicomController from "@/components/FamicomController";
-import { enableHackerMode } from "@/lib/hacker";
+import { disableHackerMode, enableHackerMode } from "@/lib/hacker";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
@@ -24,6 +24,7 @@ export default function Login() {
     setLoading(true);
     try {
       const fullEmail = emailPrefix.trim().includes("@") ? emailPrefix.trim() : `${emailPrefix.trim()}@montessoribkk.com`;
+      disableHackerMode();
       await base44.auth.loginViaEmailPassword(fullEmail, password);
       window.location.href = "/home";
     } catch (err) {
@@ -34,6 +35,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
+    disableHackerMode();
     base44.auth.loginWithProvider("google", "/home");
   };
 
