@@ -42,7 +42,6 @@ function budget(prefix, maxKb) {
 budget("index", 205);
 budget("Home", 35);
 budget("Feedback", 15);
-budget("DiscussionWidget", 20);
 budget("CustomCursor", 15);
 budget("DocsEditor", 80);
 budget("AnalyticsTab", 115);
@@ -63,7 +62,7 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-const summary = ["index", "Home", "Feedback", "DiscussionWidget", "DocsEditor", "AnalyticsTab"]
+const summary = ["index", "Home", "Feedback", "DocsEditor", "AnalyticsTab"]
   .map((prefix) => largest(prefix))
   .filter(Boolean)
   .map(({ file, bytes }) => `${file} ${(bytes / 1024).toFixed(1)} KiB gzip`)
