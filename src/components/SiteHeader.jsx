@@ -9,11 +9,11 @@ import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 const NAV = [
-  { label: "Home", roman: "TOP", to: "/home", n: "01" },
-  { label: "Meeting History", roman: "KAIGI KIROKU", to: "/history", n: "02" },
-  { label: "Announcements", roman: "OSHIRASE", to: "/history/announcements", n: "03" },
-  { label: "News", roman: "NYUSU", to: "/history/news", n: "04" },
-  { label: "Feedback Inbox", roman: "IKEN", to: "/feedback", n: "05" },
+  { label: "Home", to: "/home", n: "01" },
+  { label: "Meeting History", to: "/history", n: "02" },
+  { label: "Announcements", to: "/history/announcements", n: "03" },
+  { label: "News", to: "/history/news", n: "04" },
+  { label: "Feedback Inbox", to: "/feedback", n: "05" },
 ];
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -65,7 +65,7 @@ export default function SiteHeader({ rightSlot }) {
             </span>
             <span className="hidden sm:flex flex-col leading-none">
               <span className="tech-label text-foreground">MABIS</span>
-              <span className="tech-label text-muted-foreground">COMMUNITY ／ MEETING</span>
+              <span className="tech-label text-muted-foreground">COMMUNITY MEETING</span>
             </span>
           </Link>
 
@@ -113,7 +113,7 @@ export default function SiteHeader({ rightSlot }) {
               <div className="flex items-start justify-between">
                 <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="flex items-center gap-3">
                   <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.15, duration: 0.6, ease: EASE }} className="block h-px w-10 bg-secondary origin-left" />
-                  <span className="tech-label text-bone/50">SELECTED ／ NAVIGATION</span>
+                  <span className="tech-label text-bone/50">SELECTED NAVIGATION</span>
                 </motion.div>
                 <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="tech-label vert-text text-bone/50 sm:hidden">MENU</motion.span>
               </div>
@@ -149,7 +149,6 @@ export default function SiteHeader({ rightSlot }) {
                             {item.label}
                           </span>
                         </span>
-                        <span className="hidden md:block jp-roman ml-2 text-bone/40">{item.roman}</span>
                         <ArrowUpRight className="ml-auto h-5 w-5 sm:h-7 sm:w-7 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" />
                       </span>
                     </motion.button>
@@ -159,10 +158,10 @@ export default function SiteHeader({ rightSlot }) {
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex items-end justify-between">
                 <div className="tech-label text-bone/40">
-                  SECONDARY COMMUNITY<br />MEETING APP ／ 2026
+                  SECONDARY COMMUNITY<br />MEETING APP 2026
                 </div>
                 <div className="tech-label text-bone/40 text-right">
-                  ／ EST. MABIS<br />BANGKOK ／ TH
+                  EST. MABIS<br />BANGKOK TH
                 </div>
               </motion.div>
             </div>

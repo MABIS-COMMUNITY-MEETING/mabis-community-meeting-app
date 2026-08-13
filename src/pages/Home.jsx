@@ -166,7 +166,7 @@ export default function Home() {
         {/* restrained editorial interlude */}
         <div className="-mx-5 sm:-mx-10 py-4 sm:py-5 overflow-hidden border-b jp-rule">
           <ScrollVelocity
-            text="MABIS ／ KAIGI ／ COMMUNITY ／ FRIDAY ／ BANGKOK ／ "
+            items={["MABIS", "COMMUNITY", "FRIDAY", "BANGKOK"]}
             className="font-display font-light tracking-[-0.035em] text-foreground/16 text-[7vw] sm:text-[4.2vw]"
           />
         </div>
@@ -179,59 +179,59 @@ export default function Home() {
 
         <div className="space-y-16 sm:space-y-24">
 
-        <EditorialSection index="01" label="MEETING MODE" sublabel="KAIGI">
+        <EditorialSection index="01" label="MEETING MODE">
           <MeetingModeWidget canStart={canStartMeeting} onStartMeeting={() => {
             window.dispatchEvent(new CustomEvent("startMeetingMode"));
           }} />
         </EditorialSection>
 
-        <EditorialSection index="02" label="ANNOUNCEMENTS" sublabel="OSHIRASE">
+        <EditorialSection index="02" label="ANNOUNCEMENTS">
           <AnnouncementsWidget members={members} isAdmin={canManage} />
         </EditorialSection>
 
-        <EditorialSection index="03" label="DISCUSSION" sublabel="GIRON">
+        <EditorialSection index="03" label="DISCUSSION">
           <LazySection minHeight={560}>
             <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="04" label="JOBS ／ ROTATION" sublabel="TOBAN">
+        <EditorialSection index="04" label="JOBS AND ROTATION">
           <LazySection minHeight={560}>
             <JobsWidget members={members} isAdmin={canManage} compact={false} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="05" label="CALENDAR" sublabel="KOYOMI">
+        <EditorialSection index="05" label="CALENDAR">
           <LazySection minHeight={620}>
             <CalendarWidget />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="06" label="SCHEDULE" sublabel="YOTEI">
+        <EditorialSection index="06" label="SCHEDULE">
           <LazySection minHeight={420}>
             <ScheduleWidget isAdmin={canManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="07" label="LOST ／ FOUND" sublabel="OTOSHIMONO">
+        <EditorialSection index="07" label="LOST AND FOUND">
           <LazySection minHeight={420}>
             <MissingItemsWidget members={members} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="08" label="LUNCH MENU" sublabel="HIRUGOHAN">
+        <EditorialSection index="08" label="LUNCH MENU">
           <LazySection minHeight={420}>
             <LunchMenuWidget isAdmin={canManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="09" label="NEWS" sublabel="NYUSU">
+        <EditorialSection index="09" label="NEWS">
           <LazySection minHeight={480}>
             <NewsWidget members={members} isAdmin={canManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="10" label="MEMBERS" sublabel="MENBA">
+        <EditorialSection index="10" label="MEMBERS">
           <LazySection minHeight={560}>
             <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
           </LazySection>

@@ -14,7 +14,7 @@ export default function HomeMasthead({ week_label, date_label }) {
           className="mb-8 flex items-center gap-3"
         >
           <span className="h-px w-10 bg-primary" />
-          <span className="jp-kicker">KAIGI / COMMUNITY DASHBOARD</span>
+          <span className="jp-kicker">COMMUNITY DASHBOARD</span>
         </motion.div>
 
         <h1 className="font-display font-light tracking-[-0.065em] leading-[0.9]">
@@ -41,7 +41,7 @@ export default function HomeMasthead({ week_label, date_label }) {
         </h1>
 
         <div className="mt-7 flex max-w-2xl items-start gap-4 border-t jp-rule pt-4">
-          <span className="jp-roman shrink-0">SHUKAI / 01</span>
+          <span className="tech-label shrink-0">01</span>
           <p className="max-w-xl text-xs sm:text-sm leading-6 text-muted-foreground">
             A shared working space for meetings, announcements, schedules, jobs, notes and community records.
           </p>
@@ -55,7 +55,7 @@ export default function HomeMasthead({ week_label, date_label }) {
         className="lg:border-l jp-rule lg:pl-6 lg:pb-1"
       >
         <div className="mb-5 flex items-center justify-between lg:block">
-          <span className="jp-kicker">BANGKOK / TH</span>
+          <span className="jp-kicker">BANGKOK TH</span>
           <span className="jp-roman lg:mt-2 lg:block">MABIS 2026</span>
         </div>
         <dl className="space-y-2.5 tech-label text-muted-foreground">
@@ -65,7 +65,7 @@ export default function HomeMasthead({ week_label, date_label }) {
           <div className="flex justify-between gap-4"><dt>INDEX</dt><dd className="text-foreground tabular-nums">10</dd></div>
         </dl>
         <div className="my-5 h-px bg-foreground/15" />
-        <p className="jp-kicker">SCROLL / READ DOWN</p>
+        <p className="jp-kicker">SCROLL TO CONTINUE</p>
       </motion.aside>
     </section>
   );

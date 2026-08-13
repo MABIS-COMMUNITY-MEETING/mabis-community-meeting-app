@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-export default function EditorialSection({ index = "00", label = "", sublabel = "", children }) {
+export default function EditorialSection({ index = "00", label = "", children }) {
   const flag = `var(--flag-${((parseInt(index, 10) || 1) % 8) + 1}, hsl(var(--primary)))`;
 
   return (
@@ -25,7 +25,6 @@ export default function EditorialSection({ index = "00", label = "", sublabel = 
         >
           {index}
         </motion.span>
-        {sublabel && <span className="jp-roman vert-text mt-5">{sublabel}</span>}
         <motion.span
           variants={{ hidden: { scaleY: 0 }, show: { scaleY: 1, transition: { duration: 0.65, ease: EASE } } }}
           className="mt-5 w-px flex-1 min-h-[3rem] origin-top opacity-45"
@@ -43,9 +42,8 @@ export default function EditorialSection({ index = "00", label = "", sublabel = 
             <h2 className="font-display font-medium tracking-[-0.045em] text-2xl sm:text-[2.15rem] leading-none">
               {label}
             </h2>
-            {sublabel && <span className="jp-roman mt-1.5 block lg:hidden">{sublabel}</span>}
           </div>
-          <span className="hidden sm:block jp-kicker text-right">MABIS / SECTION</span>
+          <span className="hidden sm:block jp-kicker text-right">MABIS SECTION</span>
         </motion.header>
 
         <motion.div
