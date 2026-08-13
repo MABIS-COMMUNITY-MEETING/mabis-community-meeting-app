@@ -72,8 +72,114 @@ const PRIORITY_DOT = {
   5: "bg-primary/20",
 };
 
-function TopicItem({ topic, compact, isAdmin, onToggle, onDelete, onEdit }) {
+function TopicItem({
+  topic,
+  compact,
+  isAdmin,
+  onToggle,
+  onDelete,
+  onEdit,
+  isEditing,
+  editTitle,
+  editDescription,
+  editSubmittedBy,
+  editPriority,
+  members,
+  onTitleChange,
+  onDescriptionChange,
+  onSubmittedByChange,
+  onPriorityChange,
+  onSave,
+  onCancel,
+  isSaving,
+}) {
   const priority = topic.priority || 3;
+
+  if (isEditing) {
+    return (
+      <div className="flex items-start gap-3 rounded-xl border-2 border-[#951E3A]/35 bg-[#951E3A]/[0.025] p-4 shadow-sm">
+        <div className={`w-1 self-stretch rounded-full shrink-0 ${PRIORITY_DOT[parseInt(editPriority) || 3]}`} />
+        <div className="min-w-0 flex-1 space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#951E3A]">Editing topic</p>
+              <p className="mt-0.5 text-xs text-gray-400">Changes stay attached to this discussion card.</p>
+            </div>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-800"
+              title="Cancel editing"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Select value={editSubmittedBy} onValueChange={onSubmittedByChange}>
+              <SelectTrigger className="rounded-lg border-gray-300 bg-white">
+                <SelectValue placeholder="Name..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All</SelectItem>
+                {members.map((member) => (
+                  <SelectItem key={member.id} value={member.name}>{member.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              autoFocus
+              placeholder="Topic title..."
+              value={editTitle}
+              onChange={(event) => onTitleChange(event.target.value)}
+              className="rounded-lg border-gray-300 bg-white"
+            />
+          </div>
+
+          <DocsEditor
+            key={`inline-edit-${topic.id}`}
+            title={editTitle || "Untitled topic"}
+            placeholder="Write your topic description, paste screenshots, add context…"
+            onChange={onDescriptionChange}
+            minHeight={compact ? "140px" : "180px"}
+            initialHtml={editDescription}
+          />
+
+          <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 text-xs font-medium text-gray-500">Priority:</span>
+              {[1, 2, 3, 4, 5].map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => onPriorityChange(String(level))}
+                  className={`rounded-full border-2 px-2.5 py-1 text-xs font-bold transition-all ${editPriority === String(level)
+                    ? `${PRIORITY_COLORS[level]} scale-105 border-transparent shadow`
+                    : "border-gray-200 bg-white text-gray-400 hover:border-gray-300"}`}
+                >
+                  {PRIORITY_LABELS[level]}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2 sm:ml-auto">
+              <Button type="button" variant="outline" onClick={onCancel} className="flex-1 rounded-lg sm:flex-none">
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={onSave}
+                disabled={!editTitle.trim() || !editSubmittedBy.trim() || isSaving}
+                className="flex-1 rounded-lg bg-[#951E3A] text-white hover:bg-[#7a1830] sm:flex-none"
+              >
+                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Changes"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex items-start gap-3 p-4 rounded-xl border transition-all group
       ${topic.completed ? "bg-gray-50 border-gray-100 opacity-60" : "bg-white border-gray-200 hover:border-[#951E3A]/20"}`}>
@@ -105,11 +211,11 @@ function TopicItem({ topic, compact, isAdmin, onToggle, onDelete, onEdit }) {
       </div>
       {isAdmin && (
         <div className="flex flex-col gap-1.5 shrink-0 mt-0.5">
-          <button onClick={() => onEdit(topic)} title="Edit topic"
+          <button onClick={(event) => { event.stopPropagation(); onEdit(topic); }} title="Edit topic"
             className="w-7 h-7 flex items-center justify-center rounded-md bg-[#951E3A] text-white hover:bg-[#7a1830] transition-colors">
             <Pencil className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => onDelete(topic.id)} title="Delete topic"
+          <button onClick={(event) => { event.stopPropagation(); onDelete(topic.id); }} title="Delete topic"
             className="w-7 h-7 flex items-center justify-center rounded-md bg-[#951E3A] text-white hover:bg-[#7a1830] transition-colors">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
