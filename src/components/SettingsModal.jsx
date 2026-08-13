@@ -6,7 +6,8 @@ import { base44 } from "@/api/base44Client";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
 import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
-import { FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont, isFontAssetLoaded, preloadFont } from "@/lib/themes";
+import { FONT_PREVIEW_TEXT, applyFont, getStoredFont, isFontAssetLoaded, preloadFont } from "@/lib/themes";
+import { FONTS, FONT_LIBRARIES } from "@/lib/font-catalog";
 import { allowSpeculativeFetch, getDataSaverMode, networkState, NETWORK_EVENT, setDataSaverMode } from "@/lib/network-policy";
 
 export default function SettingsModal({ open, onClose, isAdmin }) {
@@ -214,7 +215,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                       || font.key === "gnu-free-mono"
                       || selected
                       || fontPreviewLoaded[font.key]
-                      || (font.stylesheet && isFontAssetLoaded(font.key));
+                      || (font.stylesheet && isFontAssetLoaded(font));
                     return (
                       <button
                         key={font.key}
