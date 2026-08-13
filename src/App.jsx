@@ -9,7 +9,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import SoundEffects from '@/components/SoundEffects';
-import CustomCursor from '@/components/CustomCursor';
+import OptionalCustomCursor from '@/components/OptionalCustomCursor';
 import GrainOverlay from '@/components/GrainOverlay';
 import SmoothScroll from '@/components/SmoothScroll';
 import ScrollProgress from '@/components/ScrollProgress';
@@ -19,17 +19,18 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import PageTransition from '@/components/PageTransition';
 import { lazy, Suspense } from 'react';
 import Splash from '@/pages/Splash';
-// Everything past the splash is code-split: the first paint no longer carries
-// the editor, widgets or archive pages in its bundle.
-const Login = lazy(() => import('@/pages/Login'));
-const Register = lazy(() => import('@/pages/Register'));
-const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
-const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
-const Home = lazy(() => import('@/pages/Home'));
-const History = lazy(() => import('@/pages/History'));
-const AnnouncementsHistory = lazy(() => import('@/pages/AnnouncementsHistory'));
-const NewsHistory = lazy(() => import('@/pages/NewsHistory'));
-const Feedback = lazy(() => import('@/pages/Feedback'));
+import { routeModules } from '@/lib/routeLoaders';
+// Route loaders are shared with intent prefetching in SiteHeader. Hovering or
+// focusing a destination warms the same module promise React.lazy will consume.
+const Login = lazy(routeModules['/login']);
+const Register = lazy(routeModules['/register']);
+const ForgotPassword = lazy(routeModules['/forgot-password']);
+const ResetPassword = lazy(routeModules['/reset-password']);
+const Home = lazy(routeModules['/home']);
+const History = lazy(routeModules['/history']);
+const AnnouncementsHistory = lazy(routeModules['/history/announcements']);
+const NewsHistory = lazy(routeModules['/history/news']);
+const Feedback = lazy(routeModules['/feedback']);
 import LoadingScreen from '@/components/LoadingScreen';
 import MotionPreference from '@/components/MotionPreference';
 import PrefsSync from '@/components/PrefsSync';
@@ -86,7 +87,7 @@ function App() {
             <SmoothScroll />
             <GrainOverlay />
             <PrideAmbience />
-            <CustomCursor />
+            <OptionalCustomCursor />
             <PaletteStripe />
             <ScrollProgress />
             <AuthenticatedApp />
