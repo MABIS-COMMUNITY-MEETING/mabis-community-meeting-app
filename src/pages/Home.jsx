@@ -166,7 +166,7 @@ export default function Home() {
   const dateLabel = format(now, "dd.MM.yyyy");
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="editorial-home min-h-screen bg-background overflow-x-hidden">
       <SiteHeader rightSlot={controls} />
       <ScrollSectionIndicator total={10} />
       {editingProfile && (
