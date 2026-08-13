@@ -1,4 +1,4 @@
-import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
+import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search, MousePointer2 } from "lucide-react";
@@ -6,7 +6,47 @@ import { base44 } from "@/api/base44Client";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
 import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
-import { FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
+import { CORE_FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
+import { FONT_CATALOG, ensureFontCatalogStyles } from "@/lib/font-catalog";
+
+const FONTS = [...CORE_FONTS, ...FONT_CATALOG];
+
+function FontPreview({ font, eager = false }) {
+  const ref = useRef(null);
+  const [active, setActive] = useState(eager);
+
+  useEffect(() => {
+    if (eager) {
+      setActive(true);
+      return undefined;
+    }
+    if (!ref.current || typeof IntersectionObserver === "undefined") {
+      setActive(true);
+      return undefined;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setActive(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "180px 0px" },
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [eager]);
+
+  return (
+    <div
+      ref={ref}
+      className="rounded-lg border border-gray-200 bg-white px-3 py-3 text-[17px] leading-snug text-gray-900 break-words"
+      style={{ fontFamily: active ? font.body : "var(--font-body)" }}
+    >
+      {FONT_PREVIEW_TEXT}
+    </div>
+  );
+}
 
 export default function SettingsModal({ open, onClose, isAdmin }) {
   const [currentCode, setCurrentCode] = useState("");
@@ -51,6 +91,11 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   useEffect(() => {
     setFontLimit(18);
   }, [fontSearch, fontSource]);
+
+  useEffect(() => {
+    if (!open || (fontSource !== "by-womxn" && fontSource !== "all")) return;
+    void ensureFontCatalogStyles();
+  }, [open, fontSource]);
 
   const filteredFonts = useMemo(() => {
     const query = deferredFontSearch.trim().toLowerCase();
@@ -212,12 +257,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                             </span>
                           </div>
                         </div>
-                        <div
-                          className="rounded-lg border border-gray-200 bg-white px-3 py-3 text-[17px] leading-snug text-gray-900 break-words"
-                          style={{ fontFamily: font.body }}
-                        >
-                          {FONT_PREVIEW_TEXT}
-                        </div>
+                        <FontPreview font={font} eager={selected} />
                         {font.localOnly && available === false && (
                           <p className="mt-2 text-[10px] leading-4 text-amber-600">
                             This commercial face needs a licensed local/webfont copy. Go is active until that file is available.
