@@ -10,6 +10,10 @@ const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6
  */
 export default function LoadingScreen() {
   const [done, setDone] = useState(false);
+  const [loadingFont] = useState(() => {
+    if (typeof document === "undefined") return "'GoUI'";
+    return getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'GoUI'";
+  });
   const raf = useRef();
   const countRef = useRef(null);
   const wordmarkRef = useRef(null);
@@ -39,7 +43,10 @@ export default function LoadingScreen() {
   }, []);
 
   return (
-    <div className="loading-screen fixed inset-0 overflow-hidden bg-ink text-bone">
+    <div
+      className="loading-screen fixed inset-0 overflow-hidden bg-ink text-bone"
+      style={{ "--loading-font": loadingFont }}
+    >
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.4 }} transition={{ duration: 1 }} className="absolute inset-0 grid-bg" />
       {/* faint drifting glow */}
       <div
