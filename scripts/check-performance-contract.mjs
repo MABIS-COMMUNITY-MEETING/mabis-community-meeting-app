@@ -83,7 +83,7 @@ requireText("src/lib/themes.js", themes, 'import("@/lib/font-catalog")');
 forbidText("src/lib/themes.js", themes, 'import { BY_WOMXN_FONTS }');
 forbidText("src/index.css", css, "@import url('/fonts/by-womxn/fonts.css')");
 requireText("index.html", html, "/fonts/gnu-freefont/FreeMono.woff2?v=2");
-requireText("src/lib/routeLoaders.js", routeLoaders, "navigator.connection?.saveData");
+requireText("src/lib/routeLoaders.js", routeLoaders, "saveDataEnabled()");
 requireText("src/lib/query-client.js", queryClient, "CACHE_LIFETIME");
 requireText("src/components/home/LazySection.jsx", lazySection, "isConstrainedNetwork()");
 requireText("src/components/IdleMount.jsx", idleMount, "isConstrainedNetwork()");
