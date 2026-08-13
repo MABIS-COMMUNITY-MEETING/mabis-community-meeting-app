@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { lazy, Suspense, useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,7 +6,7 @@ import { Plus, Trash2, Pin, Loader2, Video, Image as ImageIcon, X, Megaphone, Ma
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import DocsEditor from "@/components/DocsEditor";
+const DocsEditor = lazy(() => import("@/components/DocsEditor"));
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/lib/AuthContext";
@@ -157,7 +157,9 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
               <Input placeholder="Announcement title..." value={title} onChange={(e) => setTitle(e.target.value)}
             className="rounded-lg border-gray-300 bg-white font-semibold" />
 
-              <DocsEditor initialHtml={body} onChange={setBody} placeholder="Write your announcement…" minHeight="120px" title="Announcement" />
+              <Suspense fallback={<div className="widget-loading-shell" style={{ "--widget-fallback-height": "120px" }} aria-hidden />}>
+                <DocsEditor initialHtml={body} onChange={setBody} placeholder="Write your announcement…" minHeight="120px" title="Announcement" />
+              </Suspense>
             
 
               {/* Media preview */}
