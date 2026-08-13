@@ -53,11 +53,12 @@ forbidText("src/pages/Home.jsx", home, "from 'moment'");
   '<IdleMount timeout={1800}>',
 ].forEach((text) => requireText("src/pages/Home.jsx", home, text));
 
-requireText("src/pages/Home.jsx", home, 'import DiscussionWidget from "@/components/DiscussionWidget"');
-forbidText("src/pages/Home.jsx", home, 'lazy(() => import("@/components/DiscussionWidget"))');
+requireText("src/pages/Home.jsx", home, 'const discussionModule = import("@/components/DiscussionWidget")');
+requireText("src/pages/Home.jsx", home, "const DiscussionWidget = lazy(() => discussionModule)");
 requireText("src/components/DiscussionWidget.jsx", discussion, 'lazy(() => import("@/components/DocsEditor"))');
 requireText("src/components/DiscussionWidget.jsx", discussion, 'queryKey: ["topics", viewedWeek]');
 requireText("src/components/DiscussionWidget.jsx", discussion, '{ week_label: viewedWeek }');
+forbidText("src/pages/Home.jsx", home, '<LazySection minHeight={560}>\n            <Suspense fallback={<WidgetFallback minHeight={560} />}>\n              <DiscussionWidget');
 requireText("src/pages/Feedback.jsx", feedback, 'lazy(() => import("@/components/AnalyticsTab"))');
 requireText("src/pages/Feedback.jsx", feedback, 'enabled: filter === "analytics"');
 requireText("src/pages/Feedback.jsx", feedback, "useDeferredValue(filter)");
