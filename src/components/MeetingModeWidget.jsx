@@ -112,16 +112,16 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleWidgetClick(); } }}
       className={`relative bg-ink text-bone border border-ink overflow-hidden select-none ${(meetingEnded || !canStart) ? "" : "cursor-pointer"}`}
     >
-      <div className="p-6 sm:p-8 flex flex-wrap items-center justify-between gap-6">
-        <div className="flex items-center gap-5 min-w-0">
-          <div className="w-14 h-14 bg-bone/10 flex items-center justify-center shrink-0 border border-bone/25">
+      <div className="flex flex-col items-stretch justify-between gap-5 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6 sm:p-8">
+        <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-bone/25 bg-bone/10 sm:h-14 sm:w-14">
             {meetingEnded || isLocked || !canStart ? <Lock className="w-6 h-6" /> : <Video className="w-6 h-6" />}
           </div>
           <div className="min-w-0">
             <p className="tech-label text-bone/60 mb-1.5">
               {meetingEnded ? "Completed" : !canStart ? "Locked" : isLocked ? "Meeting Locked until Friday" : isToday ? "Today's Meeting" : "Next Meeting"}
             </p>
-            <h2 className="font-display font-extralight tracking-ultra text-3xl sm:text-4xl leading-[1.05]">
+            <h2 className="font-display text-2xl font-extralight leading-[1.05] tracking-ultra sm:text-4xl">
               {meetingEnded ? "Meeting Ended for the Week" : !canStart ? "Meeting Mode" : "Start Meeting"}
             </h2>
             <div className="flex items-center gap-2 mt-3">
@@ -132,7 +132,7 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
           {status && (
             <div className={`flex items-center gap-2 px-3.5 py-1.5 tech-label ${status.bg || ""} ${status.text || ""}`}
               style={status.style || {}}>
@@ -193,12 +193,12 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
         {showDateConfirm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             data-native-cursor
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            className="mobile-sheet-backdrop fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
             <motion.div initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+              className="mobile-sheet-panel bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6">
               <h3 className="font-display font-bold text-gray-800 text-lg mb-1">Start meeting today?</h3>
               <p className="text-sm text-gray-500 mb-4">This will set the meeting date to today and start it now.</p>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => setShowDateConfirm(false)}
                   className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50">Cancel</button>
                 <button onClick={handleStartFromPopup}
