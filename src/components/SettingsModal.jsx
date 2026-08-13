@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type } from "lucide-react";
+import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
-import { FONTS, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
+import { FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
 
 export default function SettingsModal({ open, onClose, isAdmin }) {
   const [currentCode, setCurrentCode] = useState("");
@@ -16,23 +16,27 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const [animationsOff, setAnimationsOff] = useState(animationsDisabled());
   const [currentFont, setCurrentFont] = useState(getStoredFont());
   const [fontAvailability, setFontAvailability] = useState({});
+  const [fontSearch, setFontSearch] = useState("");
+  const [fontSource, setFontSource] = useState("featured");
+  const [fontLimit, setFontLimit] = useState(18);
 
   useEffect(() => {
-    if (!open || !document.fonts) return;
+    if (!open) return;
     setCurrentFont(getStoredFont());
+    if (!document.fonts) return;
     let cancelled = false;
     const aliases = {
       "transgender-grotesk": "TransgenderGroteskUI",
       "atlas-mono": "AtlasMonoUI",
-      unifontex: "UnifontEX",
     };
-    Promise.all(FONTS.map(async (font) => {
+    const localFonts = FONTS.filter((font) => font.localOnly);
+    Promise.all(localFonts.map(async (font) => {
       const alias = aliases[font.key];
       try {
         const loaded = await document.fonts.load(`16px "${alias}"`, FONT_PREVIEW_TEXT);
         return [font.key, loaded.length > 0];
       } catch {
-        return [font.key, !font.localOnly];
+        return [font.key, false];
       }
     })).then((entries) => {
       if (!cancelled) setFontAvailability(Object.fromEntries(entries));
@@ -40,8 +44,25 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
     return () => { cancelled = true; };
   }, [open]);
 
+  useEffect(() => {
+    setFontLimit(18);
+  }, [fontSearch, fontSource]);
+
+  const filteredFonts = useMemo(() => {
+    const query = fontSearch.trim().toLowerCase();
+    return FONTS.filter((font) => {
+      const matchesSource = fontSource === "all"
+        || (fontSource === "featured" && font.featured)
+        || (fontSource === "by-womxn" && font.source === "Libre Fonts by Womxn");
+      const matchesSearch = !query || `${font.name} ${font.detail} ${font.source}`.toLowerCase().includes(query);
+      return matchesSource && matchesSearch;
+    });
+  }, [fontSearch, fontSource]);
+
+  const visibleFonts = filteredFonts.slice(0, fontLimit);
+
   const handleFontSelect = (key) => {
-    localStorage.setItem("mabis-font-picker-version", "1");
+    localStorage.setItem("mabis-font-picker-version", "2");
     setCurrentFont(key);
     applyFont(key);
   };
