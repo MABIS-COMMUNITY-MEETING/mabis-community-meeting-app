@@ -19,6 +19,9 @@ export default function SpinWheel({ members, onResult }) {
 
   useEffect(() => {
     drawWheel();
+    const handleFontChange = () => drawWheel();
+    window.addEventListener("fontChanged", handleFontChange);
+    return () => window.removeEventListener("fontChanged", handleFontChange);
   }, [members, rotation]);
 
   const drawWheel = () => {
@@ -64,7 +67,8 @@ export default function SpinWheel({ members, onResult }) {
       ctx.translate(textX, textY);
       ctx.rotate(textAngle + Math.PI / 2);
       ctx.fillStyle = "white";
-      ctx.font = `bold ${Math.max(10, Math.min(14, 200 / members.length))}px UnifontEX`;
+      const uiFont = getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'UnifontEX'";
+      ctx.font = `bold ${Math.max(10, Math.min(14, 200 / members.length))}px ${uiFont}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       
