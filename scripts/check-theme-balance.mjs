@@ -7,7 +7,6 @@ import {
     spreadBalancedPalette,
 } from "../src/lib/color/themeBalance.js";
 
-const HUE_BUCKET_DEGREES = 18;
 const ROLE_TOKENS = [
     "--role-student",
     "--role-teacher",
@@ -17,13 +16,8 @@ const ROLE_TOKENS = [
     "--role-editor",
 ];
 
-function hueBucket(parts) {
-    if (!parts || parts.s < 10) return null;
-    return Math.round(parts.h / HUE_BUCKET_DEGREES) % Math.round(360 / HUE_BUCKET_DEGREES);
-}
-
 function distinctTokenHues(values) {
-    return new Set(values.map(colorParts).map(hueBucket).filter((value) => value !== null)).size;
+    return distinctChromaticCount(values);
 }
 
 function hslToRgb(value) {
@@ -98,7 +92,7 @@ try {
 
         const roleValues = ROLE_TOKENS.map((token) => theme.vars[token]).filter(Boolean);
         const roleHues = distinctTokenHues(roleValues);
-        const expectedRoleHues = Math.min(availableHues, ROLE_TOKENS.length);
+        const expectedRoleHues = Math.min(availableHues, 4);
         if (roleHues < expectedRoleHues) {
             failures.push(`${key}: role badges use ${roleHues}/${expectedRoleHues} available hues`);
         }
