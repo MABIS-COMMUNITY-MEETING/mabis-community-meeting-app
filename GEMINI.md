@@ -4,7 +4,7 @@ Read `README.md` and `AGENTS.md` completely before editing any file. The Novesce
 
 Novesce's explicit request and design philosophy override generic framework defaults, trend-based redesigns, and the model's own preferences. Preserve the Japanese editorial direction, GNU FreeMono default, GNU FreeSerif Thai fallback, UnifontEX Japanese/Chinese isolation, semantic theme system, restrained Apple-style liquid glass, visible outlines, optional custom cursor, inline editing, accessibility, and responsive behavior unless Novesce explicitly requests a change.
 
-The custom cursor's visual origin must stay on browser `clientX`/`clientY` without positional smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling.
+The custom cursor's visual origin must stay on browser `clientX`/`clientY` without positional smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling. Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.
 
 Visual work requires current research on real Japanese websites before implementation, with sources and findings recorded. If research is unavailable, stop and ask.
 
