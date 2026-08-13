@@ -27,6 +27,9 @@ const discussion = read("src/components/DiscussionWidget.jsx");
 const feedback = read("src/pages/Feedback.jsx");
 const optionalCursor = read("src/components/OptionalCustomCursor.jsx");
 const scrollProgress = read("src/lib/scroll-progress.js");
+const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
+const pointer = read("src/lib/physics/pointer.js");
+const glass = read("src/styles/glass.css");
 const jobs = read("src/components/JobsWidget.jsx");
 const settings = read("src/components/SettingsModal.jsx");
 const css = read("src/index.css");
@@ -66,7 +69,15 @@ requireText("src/components/SettingsModal.jsx", settings, "useDeferredValue(font
 requireText("src/App.jsx", app, "<OptionalCustomCursor />");
 requireText("src/components/OptionalCustomCursor.jsx", optionalCursor, 'lazy(() => import("@/components/CustomCursor"))');
 requireText("src/lib/routeLoaders.js", routeLoaders, "preloadRoute");
-requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListener("scroll", schedule, { passive: true })');
+forbidText("src/App.jsx", app, "<SmoothScroll />");
+requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListener("scroll", onScroll, { passive: true })');
+requireText("src/lib/scroll-progress.js", scrollProgress, 'classList.toggle("is-scrolling", active)');
+requireText("src/lib/scroll-progress.js", scrollProgress, "new ResizeObserver(scheduleMetrics)");
+requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "style={{ scale, opacity }}");
+forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
+requireText("src/index.css", css, "html.is-scrolling .grain-layer");
+requireText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
 requireText("src/components/JobsWidget.jsx", jobs, "appearanceRef");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
 requireText("src/index.css", css, "content-visibility: auto");
@@ -96,7 +107,7 @@ requireText("src/components/IdleMount.jsx", idleMount, "isConstrainedNetwork()")
 if (failures.length > 0) {
   console.error("\nPerformance-contract check failed:\n");
   failures.forEach((failure) => console.error(`- ${failure}`));
-  console.error("\nRestore the lazy boundaries, bounded offline shell, deferred fonts, constrained-network safeguards, shared scroll signal, canvas caching and rendering containment.\n");
+  console.error("\nRestore the lazy boundaries, bounded offline shell, deferred fonts, constrained-network safeguards, native compositor scroll fast path, canvas caching and rendering containment.\n");
   process.exit(1);
 }
 
