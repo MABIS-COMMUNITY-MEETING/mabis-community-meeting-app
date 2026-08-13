@@ -73,15 +73,15 @@ export default function NewsWidget({ members, isAdmin, limit }) {
   const displayNews = limit && !fullscreen ? sortedNews.slice(0, limit) : sortedNews;
 
   return (
-    <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}>
-      <div className="bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+    <div className={`mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
+      <div className="mabis-widget-header bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <div className="min-w-0">
-          <h2 className="font-display font-bold text-white text-xl flex items-center gap-2">
+          <h2 className="mabis-widget-title font-display font-bold text-white text-xl flex items-center gap-2">
             <Newspaper className="w-5 h-5" /> News
           </h2>
           <p className="text-white/60 text-xs mt-0.5">{news.length} articles</p>
         </div>
-        <div className="flex items-center flex-wrap gap-2 shrink-0">
+        <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
             <Link to="/history/news">
               <Button size="sm" variant="outline"
                 className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5">
@@ -109,9 +109,9 @@ export default function NewsWidget({ members, isAdmin, limit }) {
         </div>
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="mabis-widget-body p-4 space-y-4 sm:p-5">
         {showForm && (
-          <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
+          <div className="border border-gray-200 rounded-xl p-3 space-y-3 bg-gray-50 sm:p-4">
             <Input placeholder="News title..." value={title} onChange={(e) => setTitle(e.target.value)}
               className="rounded-lg" />
             <DocsEditor initialHtml={body} onChange={setBody} placeholder="Write the news…" minHeight="140px" title={title || "Untitled news"} />
