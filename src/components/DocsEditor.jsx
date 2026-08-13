@@ -51,11 +51,11 @@ SizeAttr.whitelist = null;
 Quill.register(SizeAttr, true);
 
 const FONTS = [
+  { label: "GNU FreeSerif", value: "'GNUFreeSerifUI'" },
   { label: "Torrefarfan", value: "'torrefarfan'" },
   { label: "Go", value: "'GoUI'" },
   { label: "Go Mono", value: "'GoMonoUI'" },
   { label: "GNU FreeSans", value: "'GNUFreeSansUI'" },
-  { label: "GNU FreeSerif", value: "'GNUFreeSerifUI'" },
   { label: "GNU FreeMono", value: "'GNUFreeMonoUI'" },
   { label: "Transgender Grotesk", value: "'TransgenderGroteskUI', 'GoUI'" },
   { label: "Atlas Mono", value: "'AtlasMonoUI', 'GoMonoUI'" },
