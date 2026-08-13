@@ -39,6 +39,7 @@ Unless Novesce explicitly requests a change:
 - Preserve first-paint font loading and prevent loading-screen font flashes.
 - Preserve the optional custom cursor, its outlines, its immediate off switch, and native-cursor fallback.
 - The custom cursor's visual origin must stay on browser `clientX`/`clientY` without positional smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling.
+- Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.
 - Preserve reduced-motion, touch, keyboard, mobile, dark-theme, and alternate-theme behavior.
 - Edit existing items in place. Do not introduce scroll-jumping edit forms.
 - Use CSS-drawn separators instead of slash glyphs.
