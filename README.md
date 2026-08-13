@@ -622,8 +622,11 @@ Use real buttons for actions and real links for navigation. Avoid clickable `div
 
 ## Important style files
 
+Preserve the Home editorial normalization in `src/styles/editorial-home.css`: neutral ruled content planes, restrained radii, no widget elevation, and edge-to-edge mobile modules.
+
 ```txt
 src/index.css                 Global tokens and editorial UI rules
+src/styles/editorial-home.css Scoped Home widget and mobile editorial rules
 src/styles/glass.css          Liquid-glass material system
 tailwind.config.js            Theme tokens, font utilities, radii
 src/lib/themes.js             Theme and font catalogue
