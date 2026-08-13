@@ -647,6 +647,27 @@ When redesigning, do not break these product expectations:
 
 ---
 
+# Performance architecture
+
+Performance is part of the Novesce design contract. A technically correct change is incomplete when it makes the interface slower, increases first-load work without necessity, or restores hidden background activity.
+
+AI and human contributors must preserve these rules:
+
+- Route modules use shared dynamic loaders so navigation targets can preload on pointer or keyboard intent.
+- Large Home widgets remain behind near-viewport `LazySection` and `React.lazy` boundaries. Delaying mount without splitting the import is not sufficient.
+- Rich-text editing, analytics charts, settings, profile editing, cursor physics, and floating assistant tools load only when their interaction requires them.
+- Noncritical reminders and floating tools mount during browser idle time rather than competing with the first useful paint.
+- Long editorial sections and list cards use `content-visibility` and intrinsic-size containment where supported.
+- Decorative scroll indicators share one passive, animation-frame-throttled scroll signal and write to isolated DOM nodes without causing React renders on every scroll frame.
+- Canvas animations must cache computed styles, avoid reallocating backing buffers per frame, cap unreasonable pixel density, and cancel animation frames on unmount.
+- Data queries that serve hidden tabs or unauthorized controls remain disabled until those surfaces are reachable.
+- Use `useMemo`, `useDeferredValue`, transitions, and component memoization only where they remove measured work. Do not scatter them ceremonially.
+- Canonical visuals, accessibility, reduced-motion behavior, mobile behavior, and the optional custom cursor must survive every optimization.
+
+The production build enforces static performance boundaries and gzip budgets. Do not weaken or remove these checks merely to make an oversized change pass. Investigate the regression, preserve the intended lazy boundary, or obtain Novesce's explicit approval for a documented budget change.
+
+---
+
 # Development
 
 ## Requirements
@@ -679,9 +700,12 @@ npm run dev
 Before committing:
 
 ```bash
+npm run check:performance
 npm run build
 npm run lint
 ```
+
+`npm run build` also runs the design, theme, performance-contract, and post-build gzip-budget checks.
 
 Also manually test:
 
@@ -694,6 +718,9 @@ Also manually test:
 - custom cursor on and off
 - animation toggle
 - inline topic editing without a scroll jump
+- Home loading without fetching below-fold widget chunks immediately
+- Analytics and rich-text editor chunks loading only when opened
+- cursor physics remaining absent on touch, reduced-motion, and low-power devices
 
 ## Publishing
 
