@@ -119,8 +119,8 @@ function buildContext(topics, members, assignments, announcements, meetings, new
   return ctx;
 }
 
-export default function MabisAIAssistant() {
-  const [open, setOpen] = useState(false);
+export default function MabisAIAssistant({ defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
   const [expanded, setExpanded] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
