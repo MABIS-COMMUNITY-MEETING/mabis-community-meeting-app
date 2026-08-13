@@ -5,7 +5,7 @@ const CACHE_LIFETIME = detectLowPowerDevice() ? 10 * 60 * 1000 : 30 * 60 * 1000;
 
 function shouldRetry(failureCount, error) {
 	const status = error?.status || error?.response?.status;
-	if (navigator.onLine === false) return false;
+	if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
 	if (status && status < 500 && status !== 408 && status !== 429) return false;
 	return failureCount < 1;
 }
