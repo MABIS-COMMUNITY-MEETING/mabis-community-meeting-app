@@ -29,7 +29,8 @@ export function setSoundEnabled(value) {
 function getCtx(create = true) {
   if (typeof window === "undefined") return null;
   if (!ctx && create) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    const audioWindow = /** @type {typeof window & { webkitAudioContext?: typeof AudioContext }} */ (window);
+    const AudioContextClass = audioWindow.AudioContext || audioWindow.webkitAudioContext;
     if (AudioContextClass) {
       try { ctx = new AudioContextClass({ latencyHint: "interactive" }); }
       catch { ctx = new AudioContextClass(); }
