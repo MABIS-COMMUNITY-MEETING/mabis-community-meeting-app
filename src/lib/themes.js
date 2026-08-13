@@ -1,6 +1,7 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
+import { BY_WOMXN_FONTS } from "@/lib/by_womxn_fonts";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
@@ -569,39 +570,88 @@ export function deleteSavedTheme(name) {
 }
 
 // ── Fonts ──
-// Paid families are referenced with local() only: the app never redistributes
-// their font files. UnifontEX is the self-hosted multilingual safety net for
-// Japanese, Chinese and Thai glyphs whenever a selected Latin face lacks them.
+// Commercial families are never redistributed: they resolve to a user's own
+// licensed local copy. Libre faces are embedded, and UnifontEX remains the
+// multilingual safety net for Japanese, Chinese and Thai glyphs.
 export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International School";
 
-export const FONTS = [
+const REQUESTED_FONTS = [
   {
     key: "transgender-grotesk",
     name: "Transgender Grotesk",
-    detail: "Default · wide grotesk · local/licensed copy",
-    heading: "'TransgenderGroteskUI', 'UnifontEX'",
-    body: "'TransgenderGroteskUI', 'UnifontEX'",
-    mono: "'TransgenderGroteskUI', 'UnifontEX'",
+    detail: "Default · licensed/local face · Iosevka fallback",
+    source: "Featured",
+    heading: "'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX'",
+    body: "'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX'",
+    mono: "'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX'",
     localOnly: true,
+    featured: true,
   },
   {
     key: "atlas-mono",
     name: "Atlas Mono",
-    detail: "Editorial mono · Giulia Boggio · local/licensed copy",
-    heading: "'AtlasMonoUI', 'UnifontEX'",
-    body: "'AtlasMonoUI', 'UnifontEX'",
-    mono: "'AtlasMonoUI', 'UnifontEX'",
+    detail: "Licensed/local face · Iosevka fallback",
+    source: "Featured",
+    heading: "'AtlasMonoUI', 'IosevkaUI', 'UnifontEX'",
+    body: "'AtlasMonoUI', 'IosevkaUI', 'UnifontEX'",
+    mono: "'AtlasMonoUI', 'IosevkaUI', 'UnifontEX'",
     localOnly: true,
+    featured: true,
+  },
+  {
+    key: "iosevka",
+    name: "Iosevka",
+    detail: "Embedded OFL · requested coding/editorial mono",
+    source: "Featured",
+    heading: "'IosevkaUI', 'UnifontEX'",
+    body: "'IosevkaUI', 'UnifontEX'",
+    mono: "'IosevkaUI', 'UnifontEX'",
+    localOnly: false,
+    featured: true,
+  },
+  {
+    key: "lilex",
+    name: "Lilex",
+    detail: "Embedded OFL · requested programming mono",
+    source: "Featured",
+    heading: "'LilexUI', 'UnifontEX'",
+    body: "'LilexUI', 'UnifontEX'",
+    mono: "'LilexUI', 'UnifontEX'",
+    localOnly: false,
+    featured: true,
   },
   {
     key: "unifontex",
     name: "UnifontEX",
     detail: "Embedded multilingual · English ／ 日本語 ／ 中文 ／ ไทย",
+    source: "Featured",
     heading: "'UnifontEX'",
     body: "'UnifontEX'",
     mono: "'UnifontEX'",
     localOnly: false,
+    featured: true,
   },
+];
+
+const requestedNames = new Set(REQUESTED_FONTS.map((font) => font.name.toLowerCase().replace(/[^a-z0-9]/g, "")));
+const libraryFonts = BY_WOMXN_FONTS
+  .filter((font) => !requestedNames.has(font.name.toLowerCase().replace(/[^a-z0-9]/g, "")))
+  .map((font) => ({
+    ...font,
+    detail: "Embedded libre webfont · Libre Fonts by Womxn",
+    heading: `'${font.family}', 'UnifontEX'`,
+    body: `'${font.family}', 'UnifontEX'`,
+    mono: `'${font.family}', 'UnifontEX'`,
+    localOnly: false,
+    featured: false,
+  }));
+
+export const FONTS = [...REQUESTED_FONTS, ...libraryFonts];
+
+export const FONT_LIBRARIES = [
+  { key: "featured", name: "Featured", detail: `${REQUESTED_FONTS.length} requested fonts` },
+  { key: "by-womxn", name: "Libre Fonts by Womxn", detail: `${libraryFonts.length} embedded libre webfonts` },
+  { key: "flintype", name: "FLINT*ype", detail: "Discovery archive with mixed licenses; compatible libre faces can be added without redistributing commercial files." },
 ];
 
 export function applyFont(key) {
