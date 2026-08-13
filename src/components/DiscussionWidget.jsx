@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,14 +8,20 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getISOWeek, getYear, nextFriday, isFriday, subWeeks, addWeeks, format } from "date-fns";
 import { Link, useLocation } from "react-router-dom";
-import JobsWidget from "@/components/JobsWidget";
-import MeetingNotesEditor from "@/components/MeetingNotesEditor";
-import DocsEditor from "@/components/DocsEditor";
-import AnnouncementsWidget from "@/components/AnnouncementsWidget";
-import CalendarWidget from "@/components/CalendarWidget";
+
 import { displayName } from "@/lib/names";
-import MabisAIAssistant from "@/components/MabisAIAssistant";
 import { motion } from "framer-motion";
+
+const JobsWidget = lazy(() => import("@/components/JobsWidget"));
+const MeetingNotesEditor = lazy(() => import("@/components/MeetingNotesEditor"));
+const DocsEditor = lazy(() => import("@/components/DocsEditor"));
+const AnnouncementsWidget = lazy(() => import("@/components/AnnouncementsWidget"));
+const CalendarWidget = lazy(() => import("@/components/CalendarWidget"));
+const MabisAIAssistant = lazy(() => import("@/components/MabisAIAssistant"));
+
+function ChunkFallback({ height = 160 }) {
+  return <div className="widget-loading-shell" style={{ "--widget-fallback-height": `${height}px` }} aria-hidden />;
+}
 
 
 function getWeekLabel(date) {
