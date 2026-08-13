@@ -47,6 +47,9 @@ const readmeRules = [
     "### AI enforcement procedure",
     "# Performance architecture",
     "Large Home widgets remain behind near-viewport `LazySection` and `React.lazy` boundaries",
+    "## Poor-network and offline contract",
+    "The assistant and feedback panel must remain click-to-download",
+    "It must never intercept or cache Base44 API, authentication, entity, integration, or function responses",
 ];
 
 for (const rule of readmeRules) {
