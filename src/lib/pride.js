@@ -16,7 +16,7 @@
  * dark treatment.
  */
 import { tone, toneHex, surface } from "@/lib/color/oklch";
-import { balancedPalette, bestForeground } from "@/lib/color/themeBalance";
+import { balancedPalette, contrastSafePair } from "@/lib/color/themeBalance";
 
 /**
  * field — the theme's lighting geometry. Each entry is a soft radial light:
@@ -259,14 +259,18 @@ function applyExact(vars, s) {
   // page. In dark mode --foreground is near-white, so using it on a light flag
   // colour (the ADMIN badge on lesbian orange) washed the label out.
   const darkInk = surface(s.dominant, 0.20, 0.03);
-  const on = (hex) => bestForeground(hex, { dark: darkInk, light: "0 0% 100%" });
-  vars["--primary"] = hexToHslStr(s.dominant);
-  vars["--primary-foreground"] = on(s.dominant);
-  vars["--secondary"] = hexToHslStr(s.secondary);
-  vars["--secondary-foreground"] = on(s.secondary);
-  vars["--accent"] = hexToHslStr(s.accent);
-  vars["--accent-foreground"] = on(s.accent);
-  vars["--ring"] = hexToHslStr(s.dominant);
+  const pairs = {
+    primary: contrastSafePair(s.dominant, { dark: darkInk, light: "0 0% 100%" }),
+    secondary: contrastSafePair(s.secondary, { dark: darkInk, light: "0 0% 100%" }),
+    accent: contrastSafePair(s.accent, { dark: darkInk, light: "0 0% 100%" }),
+  };
+  vars["--primary"] = pairs.primary.fill;
+  vars["--primary-foreground"] = pairs.primary.foreground;
+  vars["--secondary"] = pairs.secondary.fill;
+  vars["--secondary-foreground"] = pairs.secondary.foreground;
+  vars["--accent"] = pairs.accent.fill;
+  vars["--accent-foreground"] = pairs.accent.foreground;
+  vars["--ring"] = pairs.primary.fill;
   return vars;
 }
 
@@ -328,10 +332,12 @@ function buildTheme(s) {
     const darkInk = surface(s.dominant, 0.16, 0.014);
     const lightInk = surface(s.dominant, 0.99, 0.004);
     ["primary", "secondary", "accent"].forEach((token) => {
-      vars[`--${token}-foreground`] = bestForeground(vars[`--${token}`], {
+      const pair = contrastSafePair(vars[`--${token}`], {
         dark: darkInk,
         light: lightInk,
       });
+      vars[`--${token}`] = pair.fill;
+      vars[`--${token}-foreground`] = pair.foreground;
     });
     // Role colours are used two ways: as small text on a surface, and as a
     // filled badge with white text on top. Distinct flag hues rotate evenly;
