@@ -275,6 +275,33 @@
 .loading-screen .font-display {
   font-weight: 400 !important;
 }
+.loading-grid { animation: loading-grid-in 700ms ease-out both; }
+.loading-count { transition: opacity 260ms ease, transform 260ms cubic-bezier(.16,1,.3,1); }
+.loading-count.is-done { opacity: 0; transform: scale(1.035); }
+.loading-status { animation: loading-status-in 420ms 180ms ease-out both; }
+.loading-spinner { animation: loading-spin 1.4s linear infinite; }
+@keyframes loading-grid-in { from { opacity: 0; } to { opacity: 0.4; } }
+@keyframes loading-status-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes loading-spin { to { transform: rotate(360deg); } }
+
+/* Route choreography stays CSS-only so the first bundle does not carry the
+   component animation runtime. The default styles are the fully revealed end
+   state, which makes disabled animation and interrupted loads safe. */
+.route-transition-curtain {
+  clip-path: inset(0 0 100% 0);
+  animation: route-curtain-out 500ms cubic-bezier(.16,1,.3,1) both;
+}
+.route-transition-content {
+  animation: route-content-in 500ms 180ms cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes route-curtain-out {
+  from { clip-path: inset(0 0 0 0); }
+  to { clip-path: inset(0 0 100% 0); }
+}
+@keyframes route-content-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* ── selected UI face and explicit multilingual script handling ── */
 .font-jp,
