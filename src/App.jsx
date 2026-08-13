@@ -13,7 +13,7 @@ import GrainOverlay from '@/components/GrainOverlay';
 import SmoothScroll from '@/components/SmoothScroll';
 import ScrollProgress from '@/components/ScrollProgress';
 import PaletteStripe from '@/components/PaletteStripe';
-import PrideAmbience from '@/components/PrideAmbience';
+import OptionalPrideAmbience from '@/components/OptionalPrideAmbience';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PageTransition from '@/components/PageTransition';
 import { lazy, Suspense } from 'react';
@@ -80,7 +80,7 @@ function App() {
             <SoundEffects />
             <SmoothScroll />
             <GrainOverlay />
-            <PrideAmbience />
+            <OptionalPrideAmbience />
             <OptionalCustomCursor />
             <PaletteStripe />
             <ScrollProgress />
