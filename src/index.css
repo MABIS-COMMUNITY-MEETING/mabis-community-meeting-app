@@ -836,6 +836,116 @@ html.performance-lite .lg-surface {
   -webkit-backdrop-filter: none !important;
 }
 
+/* ── mobile editorial layout ───────────────────────────────────────
+   Phones use edge-to-edge content planes, compact bordered headers and
+   intentional horizontal scrolling for genuinely wide data. Floating desktop
+   windows become bottom sheets instead of shrunken modal postcards. */
+.lazy-section-placeholder { min-height: var(--lazy-min-height, 480px); }
+
+@media (max-width: 639px) {
+  html { scroll-padding-top: 4.5rem; }
+  body { overflow-x: clip; }
+
+  .lazy-section-placeholder {
+    min-height: min(var(--lazy-min-height, 480px), 42svh);
+  }
+
+  .mobile-nav-controls > button,
+  .mobile-nav-controls > a,
+  .mobile-nav-controls > div {
+    min-height: 44px;
+  }
+  .mobile-nav-controls > button,
+  .mobile-nav-controls > a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mabis-widget {
+    border-left-width: 0 !important;
+    border-right-width: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  .mabis-widget-header {
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+    padding: 0.875rem 1rem !important;
+  }
+  .mabis-widget-title {
+    font-size: 1.125rem !important;
+    line-height: 1.1 !important;
+  }
+  .mabis-widget-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem !important;
+    width: 100%;
+  }
+  .mabis-widget-actions > *,
+  .mabis-widget-actions > a > button,
+  .mabis-widget-actions > button {
+    min-width: 0;
+    width: 100%;
+  }
+  .mabis-widget-actions button,
+  .mabis-widget-actions a {
+    min-height: 44px;
+    justify-content: center;
+  }
+  .mabis-widget-body {
+    padding: 1rem !important;
+  }
+
+  .mobile-sheet-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .mobile-sheet-panel {
+    margin-top: 1rem;
+    max-height: calc(100dvh - 1rem) !important;
+    max-width: none !important;
+    width: 100% !important;
+    border-radius: 1rem 1rem 0 0 !important;
+  }
+  .mobile-sheet-header { padding: 1rem !important; }
+  .mobile-sheet-body { padding: 1rem !important; }
+
+  .mobile-fab {
+    bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+    height: 48px !important;
+    width: 48px !important;
+  }
+  .mobile-fab-left { left: 0.75rem !important; }
+  .mobile-fab-right { right: 0.75rem !important; }
+  .mobile-fab-open { display: none !important; }
+
+  .mobile-assistant-panel,
+  .mobile-feedback-panel {
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    border-radius: 1rem 1rem 0 0 !important;
+  }
+  .mobile-assistant-panel {
+    height: min(82dvh, 720px) !important;
+    max-height: 82dvh !important;
+  }
+  .mobile-feedback-panel {
+    max-height: 82dvh;
+    overflow-y: auto;
+  }
+
+  .mobile-horizontal-scroll {
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* ── reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
