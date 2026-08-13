@@ -58,9 +58,15 @@ export default function CalendarWidget() {
       : "Month"
   );
   const queryClient = useQueryClient();
+  const eventYear = viewDate.getFullYear();
   const { data: dbEvents = [] } = useQuery({
-    queryKey: ["calendarevents"],
-    queryFn: () => base44.entities.CalendarEvent.list("-created_date", 500),
+    queryKey: ["calendarevents", eventYear],
+    queryFn: () => base44.entities.CalendarEvent.filter({
+      date: {
+        $gte: `${eventYear - 1}-12-20`,
+        $lte: `${eventYear + 1}-01-10`,
+      },
+    }),
   });
   const events = useMemo(() => [
     ...THAI_HOLIDAYS,
