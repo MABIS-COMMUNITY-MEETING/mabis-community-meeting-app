@@ -64,7 +64,7 @@ export default function SpinWheel({ members, onResult }) {
       ctx.translate(textX, textY);
       ctx.rotate(textAngle + Math.PI / 2);
       ctx.fillStyle = "white";
-      ctx.font = `bold ${Math.max(10, Math.min(14, 200 / members.length))}px 'Space Grotesk', sans-serif`;
+      ctx.font = `bold ${Math.max(10, Math.min(14, 200 / members.length))}px UnifontEX`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       
