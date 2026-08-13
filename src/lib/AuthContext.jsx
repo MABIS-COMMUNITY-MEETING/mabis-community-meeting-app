@@ -39,14 +39,16 @@ export const AuthProvider = ({ children }) => {
         const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
         setAppPublicSettings(publicSettings);
         
-        // If we got the app public settings successfully, check if user is authenticated
-        if (isHackerMode()) {
+        // A genuine Base44 session always wins over the optional local hacker
+        // easter egg. The old order let a stale localStorage flag impersonate
+        // the user even while their real MABIS account token was still valid.
+        if (appParams.token) {
+          await checkUserAuth();
+        } else if (isHackerMode()) {
           setUser(HACKER_USER);
           setIsAuthenticated(true);
           setIsLoadingAuth(false);
           setAuthChecked(true);
-        } else if (appParams.token) {
-          await checkUserAuth();
         } else {
           setIsLoadingAuth(false);
           setIsAuthenticated(false);
@@ -100,6 +102,7 @@ export const AuthProvider = ({ children }) => {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
+      disableHackerMode();
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
@@ -121,11 +124,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = (shouldRedirect = true) => {
-    if (isHackerMode()) {
+    if (user?.id === HACKER_USER.id) {
       disableHackerMode();
+      setUser(null);
+      setIsAuthenticated(false);
       window.location.href = '/login';
       return;
     }
+    // A stale hacker flag must never prevent a real Base44 logout.
+    disableHackerMode();
     setUser(null);
     setIsAuthenticated(false);
     
@@ -147,6 +154,7 @@ export const AuthProvider = ({ children }) => {
   const updateUser = async () => {
     try {
       const currentUser = await base44.auth.me();
+      disableHackerMode();
       setUser(currentUser);
     } catch (e) { /* ignore */ }
   };
