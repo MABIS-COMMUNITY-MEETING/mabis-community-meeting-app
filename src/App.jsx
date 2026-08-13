@@ -11,7 +11,6 @@ import ScrollToTop from './components/ScrollToTop';
 import SoundEffects from '@/components/SoundEffects';
 import OptionalCustomCursor from '@/components/OptionalCustomCursor';
 import GrainOverlay from '@/components/GrainOverlay';
-import SmoothScroll from '@/components/SmoothScroll';
 import ScrollProgress from '@/components/ScrollProgress';
 import PaletteStripe from '@/components/PaletteStripe';
 import PrideAmbience from '@/components/PrideAmbience';
@@ -84,7 +83,6 @@ function App() {
             <ScrollToTop />
             <PrefsSync />
             <SoundEffects />
-            <SmoothScroll />
             <GrainOverlay />
             <PrideAmbience />
             <OptionalCustomCursor />
