@@ -30,6 +30,7 @@ Unless Novesce explicitly requests a change:
 
 - Preserve the contemporary Japanese editorial direction.
 - Preserve visible structure, outlines, thin rules, crisp edges, compact controls, and restrained radii.
+- Preserve the Home editorial normalization in `src/styles/editorial-home.css`: neutral ruled content planes, restrained radii, no widget elevation, and edge-to-edge mobile modules.
 - Do not turn the app into a generic rounded-card SaaS dashboard.
 - Preserve Apple-style optical liquid glass only on floating control planes. Do not spread glass across content.
 - Keep GNU FreeMono as the default UI font.
