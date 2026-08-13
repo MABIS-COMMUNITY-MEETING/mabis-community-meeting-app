@@ -656,7 +656,7 @@ Performance is part of the Novesce design contract. A technically correct change
 AI and human contributors must preserve these rules:
 
 - Route modules use shared dynamic loaders so navigation targets can preload on pointer or keyboard intent.
-- Large Home widgets remain behind near-viewport `LazySection` and `React.lazy` boundaries. Delaying mount without splitting the import is not sufficient.
+- Large Home widgets retain near-viewport `LazySection` and `React.lazy` mount boundaries. On the first authenticated Home visit, capable connections may warm the section 01–10 code behind the startup screen within a strict time budget; Save-Data and 2G warm only the immediately useful sections. Delaying mount without splitting the import is not sufficient.
 - Discussion is the explicit measured exception: its split chunk starts downloading as soon as Home evaluates, without a scroll gate, and it queries only the viewed week; its rich editor remains lazy.
 - Rich-text editing, analytics charts, settings, profile editing, cursor physics, and floating assistant tools load only when their interaction requires them.
 - Noncritical reminders and floating tools mount during browser idle time rather than competing with the first useful paint.
@@ -726,7 +726,7 @@ Also manually test:
 - custom cursor on and off
 - animation toggle
 - inline topic editing without a scroll jump
-- Home loading without fetching below-fold widget chunks immediately
+- Home warm-up preparing sections 01–10 on a capable connection, while Save-Data/2G avoids below-fold chunk warm-up
 - Analytics and rich-text editor chunks loading only when opened
 - cursor physics remaining absent on touch, reduced-motion, and low-power devices
 
