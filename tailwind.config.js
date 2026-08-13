@@ -28,11 +28,11 @@ module.exports = {
                 golden: 'hsl(var(--secondary))',
             },
             fontFamily: {
-                heading: ['UnifontEX'],
-                body: ['UnifontEX'],
-                display: ['UnifontEX'],
-                mono: ['UnifontEX'],
-                jp: ['UnifontEX']
+                heading: ['var(--font-heading)'],
+                body: ['var(--font-body)'],
+                display: ['var(--font-display)'],
+                mono: ['var(--font-mono)'],
+                jp: ['var(--font-body)']
             },
             letterSpacing: { ultra: '-0.06em', tightest: '-0.05em' },
             keyframes: {
