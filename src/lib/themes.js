@@ -780,7 +780,7 @@ export const FONT_LIBRARIES = [
   { key: "flintype", name: "FLINT*ype", detail: "FLINTA* discovery archive. Its current site is moving, so indexed commercial fonts are not mirrored without their licences.", url: "https://flintype.com/" },
 ];
 
-export function applyFont(key) {
+export async function applyFont(key) {
   const font = FONTS.find(f => f.key === key) || FONTS[0];
   const root = document.documentElement;
   const thaiFallback = "'GNUFreeSerifThai'";
@@ -796,25 +796,30 @@ export function applyFont(key) {
   root.dataset.uiFont = font.key;
   if (document.body) document.body.style.fontFamily = bodyStack;
 
-  let loadPromise = Promise.resolve([]);
-  if (document.fonts) {
-    const bodyLoad = document.fonts.load(`400 16px ${bodyStack}`, FONT_PREVIEW_TEXT);
-    const headingLoad = document.fonts.load(`700 16px ${headingStack}`, FONT_PREVIEW_TEXT);
-    const monoLoad = document.fonts.load(`400 16px ${monoStack}`, "MABIS 0123456789");
-    const thaiLoad = document.fonts.load(`400 16px ${thaiFallback}`, "ภาษาไทย");
-    loadPromise = Promise.all([bodyLoad, headingLoad, monoLoad, thaiLoad]).then((loaded) => {
-      if (root.dataset.uiFont === font.key) {
-        root.dataset.uiFontLoaded = font.key;
-        window.dispatchEvent(new CustomEvent("fontRendered", { detail: { key: font.key } }));
-      }
-      return loaded;
-    }).catch(() => []);
-  }
-
   localStorage.setItem("mabis-font", font.key);
   window.dispatchEvent(new CustomEvent("fontChanged", { detail: { key: font.key } }));
   window.dispatchEvent(new Event("themeChanged"));
-  return loadPromise;
+
+  await ensureFontStylesheet(font);
+  if (!document.fonts) return [];
+
+  const loads = [document.fonts.load(`400 16px ${bodyStack}`, FONT_PREVIEW_TEXT)];
+  // On constrained links, only the face needed for first readable paint is
+  // requested. Bold, mono and Thai subsets remain available and load naturally
+  // if actual page content needs them.
+  if (!networkState().constrained) {
+    loads.push(
+      document.fonts.load(`700 16px ${headingStack}`, FONT_PREVIEW_TEXT),
+      document.fonts.load(`400 16px ${monoStack}`, "MABIS 0123456789"),
+    );
+  }
+
+  const loaded = await Promise.all(loads).catch(() => []);
+  if (root.dataset.uiFont === font.key) {
+    root.dataset.uiFontLoaded = font.key;
+    window.dispatchEvent(new CustomEvent("fontRendered", { detail: { key: font.key } }));
+  }
+  return loaded;
 }
 
 export function getStoredFont() {
