@@ -52,7 +52,7 @@ export default function FeedbackWidget() {
         onClick={() => setOpen(!open)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        className="fixed bottom-5 left-5 z-[60] w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-white border-2 border-white"
+        className={`mobile-fab mobile-fab-left fixed bottom-5 left-5 z-[60] w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-white border-2 border-white ${open ? "mobile-fab-open" : ""}`}
         style={{ background: "hsl(var(--primary))" }}
         title="Feedback & Bug Reports"
       >
@@ -76,11 +76,14 @@ export default function FeedbackWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed bottom-24 left-5 z-[60] w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
+            className="mobile-feedback-panel fixed bottom-24 left-5 z-[60] w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
           >
             <div className="px-4 py-3 flex items-center gap-2" style={{ background: "hsl(var(--primary))" }}>
               <Heart className="w-4 h-4 text-white" />
-              <span className="text-white font-bold text-sm">Feedback & Bug Reports</span>
+              <span className="flex-1 text-white font-bold text-sm">Feedback & Bug Reports</span>
+              <button type="button" onClick={() => setOpen(false)} className="flex h-9 w-9 items-center justify-center text-white/75 hover:text-white" aria-label="Close feedback panel">
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
             <AnimatePresence mode="wait">
