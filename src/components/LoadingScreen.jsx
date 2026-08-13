@@ -91,7 +91,7 @@ export default function LoadingScreen() {
             aria-hidden
           />
           <span className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-            <span className="text-bone/70">{loading.label}</span>
+            <span className="text-bone/70">LOADING SHADERS</span>
             <span className="tabular-nums">{loading.detail}</span>
           </span>
         </motion.div>
