@@ -38,6 +38,7 @@ Unless Novesce explicitly requests a change:
 - Use shared font variables and semantic color tokens. Never hard-code a normal component to a specific UI font.
 - Preserve first-paint font loading and prevent loading-screen font flashes.
 - Preserve the optional custom cursor, its outlines, its immediate off switch, and native-cursor fallback.
+- The custom cursor's visual origin must stay on browser `clientX`/`clientY` without positional smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling.
 - Preserve reduced-motion, touch, keyboard, mobile, dark-theme, and alternate-theme behavior.
 - Edit existing items in place. Do not introduce scroll-jumping edit forms.
 - Use CSS-drawn separators instead of slash glyphs.
