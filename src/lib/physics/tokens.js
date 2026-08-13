@@ -14,6 +14,12 @@ export const MATERIAL = {
   precision: { omega: 32, zeta: 1.0 },
   /** outer cursor ring — close, fluid follow-through */
   glass: { omega: 23, zeta: 0.92 },
+  /** travel-energy envelope — slow inhale, softly underdamped release */
+  flow: { omega: 6, zeta: 0.88 },
+  /** directional membrane stretch — one quiet wave, then stillness */
+  liquid: { omega: 10, zeta: 0.72 },
+  /** press/release shape response — tactile, bounded rebound */
+  bounce: { omega: 18, zeta: 0.68 },
   /** contextual label — settles last, softest */
   paper: { omega: 12, zeta: 0.95 },
   /** large typography / panels — apparent mass */
@@ -30,6 +36,9 @@ export const CURSOR = {
   /** deformation */
   shearMax: 0.16,      // max |s| in the area-preserving matrix
   shearAlpha: 0.00022, // speed → shear gain, fed through tanh
+  motionExpansion: 0.045, // max whole-body growth at full travel effort
+  pressScale: 0.82,       // tactile squash around the unchanged pointer origin
+  idleReleaseDelay: 0.05, // seconds before stale velocity begins releasing
   /** how far the body may lag behind the core, px */
   maxLag: 8,
   /** tail chain */
