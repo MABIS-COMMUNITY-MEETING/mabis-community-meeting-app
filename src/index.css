@@ -157,7 +157,7 @@
 .cursor-ring.is-hover { width: 40px; height: 40px; background:transparent; }
 .cursor-ring.is-label { width: 56px; height: 56px; background:rgba(255,255,255,0.1); }
 
-/* ── approved multilingual editorial type system: UnifontEX only ── */
+/* ── selected UI face with UnifontEX multilingual fallback ── */
 .font-jp,
 .jp-roman {
   font-family: var(--font-body);
