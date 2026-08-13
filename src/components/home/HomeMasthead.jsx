@@ -5,13 +5,13 @@ const EASE = [0.16, 1, 0.3, 1];
 
 export default function HomeMasthead({ week_label, date_label }) {
   return (
-    <section className="relative min-h-[58vh] border-b jp-rule pb-10 sm:pb-14 grid grid-cols-1 lg:grid-cols-[1fr_15rem] gap-x-12 gap-y-10 items-end">
+    <section className="relative grid min-h-0 grid-cols-1 items-end gap-x-12 gap-y-7 border-b pb-8 pt-5 jp-rule sm:min-h-[58vh] sm:gap-y-10 sm:pb-14 sm:pt-0 lg:grid-cols-[1fr_15rem]">
       <div className="min-w-0">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.45 }}
-          className="mb-8 flex items-center gap-3"
+          className="mb-5 flex items-center gap-3 sm:mb-8"
         >
           <span className="h-px w-10 bg-primary" />
           <span className="jp-kicker">COMMUNITY DASHBOARD</span>
@@ -23,7 +23,7 @@ export default function HomeMasthead({ week_label, date_label }) {
               initial={{ y: "102%" }}
               animate={{ y: 0 }}
               transition={{ duration: 0.78, ease: EASE, delay: 0.06 }}
-              className="block text-[11.5vw] lg:text-[7.6vw] -ml-[0.035em]"
+              className="-ml-[0.035em] block text-[clamp(2.75rem,13.7vw,5.5rem)] lg:text-[7.6vw]"
             >
               COMMUNITY
             </motion.span>
@@ -33,7 +33,7 @@ export default function HomeMasthead({ week_label, date_label }) {
               initial={{ y: "102%" }}
               animate={{ y: 0 }}
               transition={{ duration: 0.78, ease: EASE, delay: 0.14 }}
-              className="block text-[11.5vw] lg:text-[7.6vw] -ml-[0.035em] text-foreground/28"
+              className="-ml-[0.035em] block text-[clamp(2.75rem,13.7vw,5.5rem)] text-foreground/28 lg:text-[7.6vw]"
             >
               MEETING
             </motion.span>
@@ -52,13 +52,13 @@ export default function HomeMasthead({ week_label, date_label }) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: EASE, delay: 0.28 }}
-        className="lg:border-l jp-rule lg:pl-6 lg:pb-1"
+        className="border-t pt-4 jp-rule lg:border-l lg:border-t-0 lg:pb-1 lg:pl-6 lg:pt-0"
       >
         <div className="mb-5 flex items-center justify-between lg:block">
           <span className="jp-kicker">BANGKOK TH</span>
           <span className="jp-roman lg:mt-2 lg:block">MABIS 2026</span>
         </div>
-        <dl className="space-y-2.5 tech-label text-muted-foreground">
+        <dl className="grid grid-cols-2 gap-x-5 gap-y-2.5 tech-label text-muted-foreground lg:block lg:space-y-2.5">
           <div className="flex justify-between gap-4"><dt>WEEK</dt><dd className="text-foreground tabular-nums">{week_label}</dd></div>
           <div className="flex justify-between gap-4"><dt>DATE</dt><dd className="text-foreground tabular-nums">{date_label}</dd></div>
           <div className="flex justify-between gap-4"><dt>CYCLE</dt><dd className="text-foreground">FRIDAY</dd></div>
