@@ -842,6 +842,24 @@ html.performance-lite .lg-surface {
   -webkit-backdrop-filter: none !important;
 }
 
+/* ── active-scroll compositor fast path ────────────────────────────
+   Native scrolling stays in charge. While content is moving, pause only
+   decorative loops and the full-viewport grain paint; everything restores
+   immediately after scrollend without changing layout or interaction. */
+html.is-scrolling .grain-layer { opacity: 0 !important; }
+html.is-scrolling .marquee-track,
+html.is-scrolling .pride-field-x,
+html.is-scrolling .pride-field-y,
+html.is-scrolling .pride-orbit,
+html.is-scrolling .float-y,
+html.is-scrolling .spin-slow,
+html.is-scrolling .blob-drift,
+html.is-scrolling .blob-drift-2,
+html.is-scrolling .pulse-dot,
+html.is-scrolling .widget-loading-shell {
+  animation-play-state: paused !important;
+}
+
 /* ── rendering containment ─────────────────────────────────────────
    The long home/inbox pages keep their full document semantics, but the browser
    may skip style/layout/paint for far-off content until it approaches view. */
