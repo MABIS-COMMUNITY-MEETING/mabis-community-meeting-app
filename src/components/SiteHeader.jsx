@@ -9,7 +9,7 @@ import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 const NAV = [
-  { label: "Home", roman: "HONBU", to: "/home", n: "01" },
+  { label: "Home", roman: "TOP", to: "/home", n: "01" },
   { label: "Meeting History", roman: "KAIGI KIROKU", to: "/history", n: "02" },
   { label: "Announcements", roman: "OSHIRASE", to: "/history/announcements", n: "03" },
   { label: "News", roman: "NYUSU", to: "/history/news", n: "04" },
@@ -149,7 +149,7 @@ export default function SiteHeader({ rightSlot }) {
                             {item.label}
                           </span>
                         </span>
-                        <span className="hidden md:block jp-roman ml-2 text-bone/38">{item.roman}</span>
+                        <span className="hidden md:block jp-roman ml-2 text-bone/40">{item.roman}</span>
                         <ArrowUpRight className="ml-auto h-5 w-5 sm:h-7 sm:w-7 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" />
                       </span>
                     </motion.button>
