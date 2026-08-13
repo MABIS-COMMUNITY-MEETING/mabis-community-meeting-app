@@ -760,13 +760,13 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 <span className="text-sm text-gray-400">{viewedTopics.filter(t => t.completed).length}/{viewedTopics.length} done</span>
                 <Button size="sm" variant="outline"
                   className="ml-auto border-[#951E3A]/40 text-[#951E3A] hover:bg-[#951E3A]/5 text-xs gap-1"
-                  onClick={() => showForm ? resetTopicForm() : (setEditingTopicId(null), setTitle(""), setDescription(""), setSubmittedBy(""), setPriority("3"), setShowForm(true))}>
+                  onClick={toggleAddTopicForm}>
                   <Plus className="w-3.5 h-3.5" /> Add Topic
                 </Button>
               </div>
 
               {/* Inline add form in meeting mode */}
-              {showForm && (
+              {showForm && !editingTopicId && (
                 <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50 space-y-4 mb-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Select value={submittedBy} onValueChange={setSubmittedBy}>
@@ -810,7 +810,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                   {viewedTopics.map(topic => (
                     <TopicItem key={topic.id} topic={topic} compact isAdmin={topicAdmin}
                       onToggle={(id, completed) => toggleMutation.mutate({ id, completed })}
-                      onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic} />
+                      onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic}
+                      {...inlineEditProps(topic)} />
                   ))}
                 </div>
               )}
@@ -897,7 +898,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
 
       <div className="p-5 space-y-4">
         {/* Add Topic Form */}
-        {showForm && (isCurrentWeek || !!editingTopicId) && (
+        {showForm && !editingTopicId && isCurrentWeek && (
           <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Select value={submittedBy} onValueChange={setSubmittedBy}>
@@ -964,7 +965,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           {viewedTopics.map(topic => (
             <TopicItem key={topic.id} topic={topic} compact={false} isAdmin={topicAdmin}
               onToggle={(id, completed) => toggleMutation.mutate({ id, completed })}
-              onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic} />
+              onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic}
+              {...inlineEditProps(topic)} />
           ))}
         </div>
 
