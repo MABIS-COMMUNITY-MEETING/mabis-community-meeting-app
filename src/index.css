@@ -703,6 +703,36 @@ html.performance-lite .lg-surface {
   -webkit-backdrop-filter: none !important;
 }
 
+/* Network Lite is selected automatically for Save-Data, 2G, extreme latency
+   and offline use, or manually in Settings. It preserves structure and colour
+   while removing downloads and continuous compositing that are not essential. */
+html.network-lite .grain-layer,
+html.network-lite .cursor-dot,
+html.network-lite .cursor-ring,
+html.network-lite .cursor-trail,
+html.network-lite .cursor-label { display: none !important; }
+html.network-lite .pride-field-x,
+html.network-lite .pride-field-y,
+html.network-lite .pride-field-light,
+html.network-lite .pride-orbit,
+html.network-lite .blob-drift,
+html.network-lite .widget-loading-shell {
+  animation: none !important;
+}
+html.network-lite .pride-field-light {
+  filter: none !important;
+  opacity: 0.38 !important;
+}
+html.network-lite .lg-surface,
+html.network-lite .backdrop-blur-sm,
+html.network-lite .backdrop-blur-md,
+html.network-lite .backdrop-blur-lg,
+html.network-lite .backdrop-blur-xl {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.network-severe .pride-ambience { display: none !important; }
+
 /* ── rendering containment ─────────────────────────────────────────
    The long home/inbox pages keep their full document semantics, but the browser
    may skip style/layout/paint for far-off content until it approaches view. */
