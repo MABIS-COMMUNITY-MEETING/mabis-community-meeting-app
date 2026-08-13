@@ -52,7 +52,11 @@ const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
 
 export default function CalendarWidget() {
   const [viewDate, setViewDate] = useState(new Date());
-  const [view, setView] = useState("Month");
+  const [view, setView] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches
+      ? "Day"
+      : "Month"
+  );
   const queryClient = useQueryClient();
   const { data: dbEvents = [] } = useQuery({
     queryKey: ["calendarevents"],
@@ -206,7 +210,7 @@ export default function CalendarWidget() {
     const trailingPad = Array((7 - ((padDays.length + days.length) % 7)) % 7).fill(null);
 
     return (
-      <div>
+      <div className="min-w-[700px]">
         <div className="grid grid-cols-7 border-b border-gray-100">
           {DAY_NAMES.map((d, i) => (
             <div key={i} className={`text-center text-xs font-semibold py-2 ${i === 5 ? "text-[#951E3A]" : "text-gray-400"}`}>{d}</div>
@@ -258,7 +262,7 @@ export default function CalendarWidget() {
       const d = new Date(ws); d.setDate(ws.getDate() + i); return d;
     });
     return (
-      <div>
+      <div className="min-w-[700px]">
         <div className="grid grid-cols-7 border-b border-gray-100">
           {weekDays.map((day, i) => (
             <div key={i} className={`text-center py-3 ${isFriday(day) ? "bg-[#951E3A]/5" : ""}`}>
@@ -321,7 +325,7 @@ export default function CalendarWidget() {
   const YearView = () => {
     const year = viewDate.getFullYear();
     return (
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 p-4">
+      <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-4 sm:gap-4 sm:p-4">
         {MONTH_NAMES.map((monthName, mi) => {
           const mStart = new Date(year, mi, 1);
           const mEnd = endOfMonth(mStart);
@@ -363,14 +367,14 @@ export default function CalendarWidget() {
   };
 
   return (
-    <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
+    <div className={`mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
       {/* Header — Google Calendar style */}
-      <div className="bg-[#951E3A] px-4 py-3 flex items-center gap-2 flex-wrap">
+      <div className="mabis-widget-header bg-[#951E3A] px-4 py-3 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:flex-wrap">
         <div className="flex items-center gap-2">
           <Calendar className="w-5 h-5 text-white" />
-          <h2 className="font-display font-bold text-white text-lg">{headerTitle()}</h2>
+          <h2 className="mabis-widget-title min-w-0 break-words font-display font-bold text-white text-lg">{headerTitle()}</h2>
         </div>
-        <div className="flex items-center gap-1 ml-2">
+        <div className="flex items-center gap-1 sm:ml-2">
           <button onClick={goBack} className="p-1.5 rounded-lg hover:bg-white/20 text-white transition-colors">
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -384,7 +388,7 @@ export default function CalendarWidget() {
         </div>
 
         {/* View tabs */}
-        <div className="ml-auto flex items-center gap-0.5 bg-white/10 rounded-xl p-1">
+        <div className="mobile-horizontal-scroll flex items-center gap-0.5 overflow-x-auto rounded-xl bg-white/10 p-1 sm:ml-auto sm:overflow-visible">
           {VIEWS.map(v => (
             <button key={v} onClick={() => setView(v)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -394,8 +398,9 @@ export default function CalendarWidget() {
           ))}
         </div>
 
+        <div className="mabis-widget-actions flex items-center gap-2 sm:contents">
         <button onClick={() => { if (showForm) { resetForm(); } else { setEditingId(null); setShowForm(true); } }}
-          className="flex items-center gap-1 text-xs text-white bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg border border-white/40 font-semibold transition-colors">
+          className="flex items-center justify-center gap-1 text-xs text-white bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg border border-white/40 font-semibold transition-colors">
           <Plus className="w-3.5 h-3.5" /> Add Event
         </button>
         <button onClick={() => screenshotInputRef.current?.click()} disabled={importing}
@@ -415,6 +420,7 @@ export default function CalendarWidget() {
             <Maximize2 className="w-3.5 h-3.5" />
           </button>
         )}
+        </div>
       </div>
 
       {importMsg && (
@@ -433,9 +439,9 @@ export default function CalendarWidget() {
             className="overflow-hidden border-b border-gray-100 bg-gray-50"
           >
             <div className="px-4 py-3 space-y-2">
-              <div className="flex gap-2 flex-wrap">
+              <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
                 <Input placeholder="Event title..." value={newTitle} onChange={e => setNewTitle(e.target.value)}
-                  className="rounded-lg border-gray-200 text-sm h-9 flex-1 min-w-[160px]" />
+                  className="rounded-lg border-gray-200 text-sm h-9 flex-1 min-w-0 sm:min-w-[160px]" />
                 <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
                   className="border border-gray-200 rounded-lg px-3 text-sm h-9 bg-white text-gray-700 focus:outline-none focus:border-[#951E3A]/50" />
                 <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
@@ -443,7 +449,7 @@ export default function CalendarWidget() {
               </div>
               <Textarea placeholder="Description (optional)..." value={newDesc} onChange={e => setNewDesc(e.target.value)}
                 className="rounded-lg border-gray-200 text-sm min-h-[60px]" />
-              <div className="flex items-center gap-2">
+              <div className="mobile-horizontal-scroll flex items-center gap-2 overflow-x-auto pb-1">
                 {Object.entries(EVENT_COLORS).map(([type, cfg]) => (
                   <button key={type} onClick={() => setNewType(type)}
                     className={`px-3 py-1 rounded-full text-xs font-semibold border-2 transition-all ${newType === type ? cfg.bg + " " + cfg.text + " border-transparent" : "bg-white text-gray-400 border-gray-200"}`}>
@@ -461,7 +467,7 @@ export default function CalendarWidget() {
       </AnimatePresence>
 
       {/* Calendar body */}
-      <div className="overflow-x-auto">
+      <div className="mobile-horizontal-scroll overflow-x-auto">
         {view === "Month" && <MonthView />}
         {view === "Week" && <WeekView />}
         {view === "Day" && <DayView />}
@@ -473,11 +479,11 @@ export default function CalendarWidget() {
         {selectedEvent && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+            className="mobile-sheet-backdrop fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedEvent(null)}>
             <motion.div
               initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+              className="mobile-sheet-panel bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6"
               onClick={e => e.stopPropagation()}>
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
