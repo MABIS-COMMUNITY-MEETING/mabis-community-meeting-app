@@ -25,17 +25,19 @@ export default function JobReminder() {
   const currentWeek = getCurrentWeekLabel();
 
   const { data: assignments = [] } = useQuery({
-    queryKey: ["assignments"],
-    queryFn: () => base44.entities.JobAssignment.list("-created_date", 300),
+    queryKey: ["assignments", currentWeek, user?.email, "reminder"],
+    queryFn: () => base44.entities.JobAssignment.filter({
+      week_label: currentWeek,
+      assigned_to_email: user.email,
+    }),
+    enabled: Boolean(user?.email),
   });
 
   useEffect(() => {
     if (localStorage.getItem(todayKey)) setDismissed(true);
   }, []);
 
-  const myJobs = assignments.filter(a =>
-    a.week_label === currentWeek && user?.email && a.assigned_to_email === user.email
-  );
+  const myJobs = assignments;
   const pending = myJobs.filter(a => {
     const sched = scheduledDaysFor(a.job_title);
     return sched.length > 0 && (a.days_completed || []).length < sched.length;
