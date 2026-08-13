@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'abeezeeregular';
+    src: url('../abeezee-regular-webfont.woff2') format('woff2'),
+         url('../abeezee-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}

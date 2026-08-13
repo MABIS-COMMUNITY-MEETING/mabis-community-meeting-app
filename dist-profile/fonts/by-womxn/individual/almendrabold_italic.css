@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'almendrabold_italic';
+    src: url('../almendra-bolditalic-webfont.woff2') format('woff2'),
+         url('../almendra-bolditalic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}

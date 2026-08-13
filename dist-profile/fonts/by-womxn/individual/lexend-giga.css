@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'lexend-giga';
+    src: url('../lexendgiga-regular-webfont.woff2') format('woff2'),
+         url('../lexendgiga-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

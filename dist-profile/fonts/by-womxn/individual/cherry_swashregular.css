@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'cherry_swashregular';
+    src: url('../cherryswash-regular-webfont.woff2') format('woff2'),
+         url('../cherryswash-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

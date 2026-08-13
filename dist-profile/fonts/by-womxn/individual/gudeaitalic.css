@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'gudeaitalic';
+    src: url('../gudea-italic-webfont.woff2') format('woff2'),
+         url('../gudea-italic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}

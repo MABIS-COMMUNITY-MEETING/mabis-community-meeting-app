@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'catamaranextrabold';
+    src: url('../catamaran-extrabold-webfont.woff2') format('woff2'),
+         url('../catamaran-extrabold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

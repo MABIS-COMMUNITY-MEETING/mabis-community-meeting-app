@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'authenticsans60';
+    src: url('../AUTHENTICSans-60.woff2') format('woff2'),
+         url('../AUTHENTICSans-60.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

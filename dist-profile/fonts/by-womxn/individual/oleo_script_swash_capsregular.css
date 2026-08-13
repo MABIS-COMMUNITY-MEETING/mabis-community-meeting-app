@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'oleo_script_swash_capsregular';
+    src: url('../oleoscriptswashcaps-regular-webfont.woff2') format('woff2'),
+         url('../oleoscriptswashcaps-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

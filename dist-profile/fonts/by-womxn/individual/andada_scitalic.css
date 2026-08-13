@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'andada_scitalic';
+    src: url('../andadasc-italic-webfont.woff2') format('woff2'),
+         url('../andadasc-italic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

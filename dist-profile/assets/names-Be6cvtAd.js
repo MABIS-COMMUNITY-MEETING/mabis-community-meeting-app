@@ -1,0 +1,2 @@
+function a(t){if(!t)return"?";if(t.role==="teacher"||/^(Ms\.?|Mrs\.?|Mr\.?|Dr\.?)\b/i.test(t.name))return t.name;const n=t.name.match(/\((.*?)\)/);return n?n[1].trim():t.name.split(" ")[0]}export{a as d};
+//# sourceMappingURL=names-Be6cvtAd.js.map

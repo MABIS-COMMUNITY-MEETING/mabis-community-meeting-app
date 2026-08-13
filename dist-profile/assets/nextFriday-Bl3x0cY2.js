@@ -1,0 +1,2 @@
+import{t as n,c as r}from"./format-Buwytaxw.js";function i(t,a){const e=n(t);return isNaN(a)?r(t,NaN):(a&&e.setDate(e.getDate()+a),e)}function s(t){return n(t).getDay()}function c(t){return n(t).getFullYear()}function f(t){return n(t).getDay()===5}function u(t,a){let e=a-s(t);return e<=0&&(e+=7),i(t,e)}function y(t){return u(t,5)}export{s as a,i as b,c as g,f as i,y as n};
+//# sourceMappingURL=nextFriday-Bl3x0cY2.js.map

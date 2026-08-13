@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'compagnon-bold';
+    src: url('../compagnon-bold.woff2') format('woff2'),
+         url('../compagnon-bold.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

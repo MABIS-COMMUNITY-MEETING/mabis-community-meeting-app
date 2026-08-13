@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'compagnon-roman';
+    src: url('../compagnon-roman.woff2') format('woff2'),
+         url('../compagnon-roman.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
