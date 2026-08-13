@@ -16,6 +16,7 @@
  * dark treatment.
  */
 import { tone, toneHex, surface } from "@/lib/color/oklch";
+import { balancedPalette } from "@/lib/color/themeBalance";
 
 /**
  * field — the theme's lighting geometry. Each entry is a soft radial light:
@@ -325,10 +326,11 @@ function buildTheme(s) {
   const mk = (mode) => {
     const vars = applyExact(mode === "dark" ? darkVars(s) : lightVars(s), s);
     // Role colours are used two ways: as small text on a surface, and as a
-    // filled badge with white text on top. Only a mid band satisfies both, so
-    // every role sits at the same lightness regardless of the palette's mode.
+    // filled badge with white text on top. Distinct flag hues rotate evenly;
+    // repeated stripes and white separators no longer consume extra roles.
     const L = 0.54;
-    ROLES.forEach((r, i) => { vars[r] = tone(s.flag[i % s.flag.length], L, 1.05, 0.17); });
+    const rolePalette = balancedPalette(s.flag);
+    ROLES.forEach((r, i) => { vars[r] = tone(rolePalette[i % rolePalette.length], L, 1.05, 0.17); });
     return vars;
   };
   return {
