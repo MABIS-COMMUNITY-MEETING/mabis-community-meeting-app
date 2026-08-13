@@ -569,17 +569,17 @@ export function deleteSavedTheme(name) {
 }
 
 // ── Fonts ──
+// One verified LGBTQ-created Unicode family is used for every script so the
+// browser never falls through to an unrelated system font for CJK or Thai.
 export const FONTS = [
-  { key: "default",   name: "Space Grotesk", heading: "'Space Grotesk', sans-serif", body: "'Inter', sans-serif" },
-  { key: "inter",     name: "Inter",         heading: "'Inter', sans-serif",         body: "'Inter', sans-serif" },
-  { key: "poppins",   name: "Poppins",      heading: "'Poppins', sans-serif",       body: "'Poppins', sans-serif" },
-  { key: "montserrat",name: "Montserrat",   heading: "'Montserrat', sans-serif",    body: "'Montserrat', sans-serif" },
-  { key: "nunito",    name: "Nunito",       heading: "'Nunito', sans-serif",        body: "'Nunito', sans-serif" },
-  { key: "lato",      name: "Lato",         heading: "'Lato', sans-serif",          body: "'Lato', sans-serif" },
-  { key: "raleway",   name: "Raleway",      heading: "'Raleway', sans-serif",       body: "'Raleway', sans-serif" },
-  { key: "dmsans",    name: "DM Sans",      heading: "'DM Sans', sans-serif",       body: "'DM Sans', sans-serif" },
-  { key: "manrope",   name: "Manrope",      heading: "'Manrope', sans-serif",       body: "'Manrope', sans-serif" },
-  { key: "alegreya",  name: "Alegreya",     heading: "'Alegreya', serif",            body: "'Alegreya', serif" },
+  {
+    key: "unifontex",
+    name: "UnifontEX",
+    detail: "English ／ 日本語 ／ 中文 ／ ไทย",
+    heading: "'UnifontEX'",
+    body: "'UnifontEX'",
+    mono: "'UnifontEX'",
+  },
 ];
 
 export function applyFont(key) {
@@ -588,10 +588,11 @@ export function applyFont(key) {
   root.style.setProperty("--font-heading", font.heading);
   root.style.setProperty("--font-body", font.body);
   root.style.setProperty("--font-display", font.heading);
-  localStorage.setItem("mabis-font", key);
+  root.style.setProperty("--font-mono", font.mono);
+  localStorage.setItem("mabis-font", font.key);
   window.dispatchEvent(new Event("themeChanged"));
 }
 
 export function getStoredFont() {
-  return localStorage.getItem("mabis-font") || "default";
+  return localStorage.getItem("mabis-font") || "unifontex";
 }
