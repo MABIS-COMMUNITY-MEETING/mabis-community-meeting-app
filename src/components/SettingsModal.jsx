@@ -88,13 +88,13 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
       {open && (
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          className="mobile-sheet-backdrop fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
           onClick={onClose}>
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto">
-            <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+            className="mobile-sheet-panel bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto">
+            <div className="mobile-sheet-header bg-[#951E3A] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center gap-2.5">
                 <Settings className="w-5 h-5 text-white" />
                 <h2 className="font-display font-bold text-white text-xl">Settings</h2>
@@ -104,7 +104,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="mobile-sheet-body p-6 space-y-6">
               {/* Security — admin/editor only */}
               {isAdmin && (
                 <div>
@@ -244,7 +244,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
 
                 <div className="mt-3 grid gap-1.5">
                   {FONT_LIBRARIES.map((library) => (
-                    <div key={library.key} className="flex items-start justify-between gap-3 border-t border-gray-100 pt-2 text-[10px]">
+                    <div key={library.key} className="flex flex-col gap-1 border-t border-gray-100 pt-2 text-[10px] sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                       {library.url ? (
                         <a href={library.url} target="_blank" rel="noreferrer" className="font-bold text-gray-600 underline underline-offset-2">
                           {library.name}
@@ -252,7 +252,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                       ) : (
                         <span className="font-bold text-gray-600">{library.name}</span>
                       )}
-                      <span className="max-w-[70%] text-right leading-4 text-gray-400">{library.detail}</span>
+                      <span className="leading-4 text-gray-400 sm:max-w-[70%] sm:text-right">{library.detail}</span>
                     </div>
                   ))}
                 </div>
