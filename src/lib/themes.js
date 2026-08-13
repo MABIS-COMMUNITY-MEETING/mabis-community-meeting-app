@@ -723,21 +723,26 @@ export const FONT_LIBRARIES = [
 export function applyFont(key) {
   const font = FONTS.find(f => f.key === key) || FONTS[0];
   const root = document.documentElement;
-  root.style.setProperty("--font-heading", font.heading);
-  root.style.setProperty("--font-body", font.body);
-  root.style.setProperty("--font-display", font.heading);
-  root.style.setProperty("--font-mono", font.mono);
+  const thaiFallback = "'GNUFreeSerifThai'";
+  const headingStack = `${font.heading}, ${thaiFallback}`;
+  const bodyStack = `${font.body}, ${thaiFallback}`;
+  const monoStack = `${font.mono}, ${thaiFallback}`;
+  root.style.setProperty("--font-heading", headingStack);
+  root.style.setProperty("--font-body", bodyStack);
+  root.style.setProperty("--font-display", headingStack);
+  root.style.setProperty("--font-mono", monoStack);
   root.style.setProperty("--font-multilingual", "'UnifontEX'");
-  root.style.setProperty("--font-thai", "'GNUFreeSerifUI'");
+  root.style.setProperty("--font-thai", thaiFallback);
   root.dataset.uiFont = font.key;
-  if (document.body) document.body.style.fontFamily = font.body;
+  if (document.body) document.body.style.fontFamily = bodyStack;
 
   let loadPromise = Promise.resolve([]);
   if (document.fonts) {
-    const bodyLoad = document.fonts.load(`400 16px ${font.body}`, FONT_PREVIEW_TEXT);
-    const headingLoad = document.fonts.load(`700 16px ${font.heading}`, FONT_PREVIEW_TEXT);
-    const monoLoad = document.fonts.load(`400 16px ${font.mono}`, "MABIS 0123456789");
-    loadPromise = Promise.all([bodyLoad, headingLoad, monoLoad]).then((loaded) => {
+    const bodyLoad = document.fonts.load(`400 16px ${bodyStack}`, FONT_PREVIEW_TEXT);
+    const headingLoad = document.fonts.load(`700 16px ${headingStack}`, FONT_PREVIEW_TEXT);
+    const monoLoad = document.fonts.load(`400 16px ${monoStack}`, "MABIS 0123456789");
+    const thaiLoad = document.fonts.load(`400 16px ${thaiFallback}`, "ภาษาไทย");
+    loadPromise = Promise.all([bodyLoad, headingLoad, monoLoad, thaiLoad]).then((loaded) => {
       if (root.dataset.uiFont === font.key) {
         root.dataset.uiFontLoaded = font.key;
         window.dispatchEvent(new CustomEvent("fontRendered", { detail: { key: font.key } }));
