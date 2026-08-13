@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility } from "lucide-react";
+import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
+import { FONTS, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
 
 export default function SettingsModal({ open, onClose, isAdmin }) {
   const [currentCode, setCurrentCode] = useState("");
@@ -13,6 +14,36 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const [codeError, setCodeError] = useState(false);
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [animationsOff, setAnimationsOff] = useState(animationsDisabled());
+  const [currentFont, setCurrentFont] = useState(getStoredFont());
+  const [fontAvailability, setFontAvailability] = useState({});
+
+  useEffect(() => {
+    if (!open || !document.fonts) return;
+    let cancelled = false;
+    const aliases = {
+      "transgender-grotesk": "TransgenderGroteskUI",
+      "atlas-mono": "AtlasMonoUI",
+      unifontex: "UnifontEX",
+    };
+    Promise.all(FONTS.map(async (font) => {
+      const alias = aliases[font.key];
+      try {
+        const loaded = await document.fonts.load(`16px "${alias}"`, FONT_PREVIEW_TEXT);
+        return [font.key, loaded.length > 0];
+      } catch {
+        return [font.key, !font.localOnly];
+      }
+    })).then((entries) => {
+      if (!cancelled) setFontAvailability(Object.fromEntries(entries));
+    });
+    return () => { cancelled = true; };
+  }, [open]);
+
+  const handleFontSelect = (key) => {
+    localStorage.setItem("mabis-font-picker-version", "1");
+    setCurrentFont(key);
+    applyFont(key);
+  };
 
   const handleSaveCode = () => {
     const existing = localStorage.getItem("mabis_admin_code") || "10260";
