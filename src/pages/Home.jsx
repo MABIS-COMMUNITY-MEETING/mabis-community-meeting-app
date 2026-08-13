@@ -140,8 +140,8 @@ export default function Home() {
           <div className="h-9 w-9 overflow-hidden flex items-center justify-center bg-card"
             style={{ border: `2px solid ${roleColor}`, boxSizing: "border-box" }}>
             {user?.avatar_url
-              ? <img src={user.avatar_url} alt="avatar" className="w-full h-full object-cover" />
-              : <img src={MABIS_LOGO} alt="avatar" className="w-full h-full object-contain p-0.5" />}
+              ? <img src={user.avatar_url} alt="avatar" width="36" height="36" decoding="async" fetchPriority="low" className="w-full h-full object-cover" />
+              : <img src={MABIS_LOGO} alt="avatar" width="36" height="36" decoding="async" className="w-full h-full object-contain p-0.5" />}
           </div>
           <button onClick={() => setEditingProfile(!editingProfile)} title="Customize Profile Picture" className="absolute -bottom-1 -right-1 h-5 w-5 flex items-center justify-center bg-card border border-foreground/30 text-primary">
             <Palette className="w-3 h-3" />
