@@ -1,92 +1,59 @@
 import React from "react";
 import { motion } from "framer-motion";
-import Tilt3D from "@/components/Tilt3D";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-/*
- * Offset-column section chrome.
- *
- * Replaces the old full-width "header bar + panel" stack. The index number
- * lives OUTSIDE the content column as oversized graphic material, the Japanese
- * label runs vertically down the gutter, and the content sits in an offset
- * column so the page reads as an editorial index rather than a widget stack.
- */
-export default function EditorialSection({ index = "00", label = "", jp = "", children }) {
-	/* each section takes the next colour of the active theme's palette, so
-	   multi-colour themes (pride flags) show up beyond primary/secondary */
-	const flag = `var(--flag-${((parseInt(index, 10) || 1) % 8) + 1}, hsl(var(--primary)))`;
-	return (
-		<motion.section
-			id={`sec-${index}`}
-			data-gp-section
-			tabIndex={-1}
-			aria-label={`${index} ${label}`}
-			initial="hidden"
-			whileInView="show"
-			viewport={{ once: true, margin: "-10% 0px" }}
-			variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
-			className="relative outline-none grid grid-cols-1 lg:grid-cols-[7rem_1fr] gap-x-8"
-		>
-			{/* gutter: giant index + vertical japanese label */}
-			<div className="hidden lg:flex flex-col items-end pt-1 select-none">
-				<Tilt3D max={18}>
-					<motion.span
-						variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } } }}
-						className="block font-display font-thin leading-[0.78] tracking-ultra text-[4.5rem] text-foreground/12 tabular-nums"
-						style={{ textShadow: "1px 1px 0 hsl(var(--foreground)/0.06), 3px 3px 0 hsl(var(--foreground)/0.04)" }}
-					>
-						{index}
-					</motion.span>
-				</Tilt3D>
-				<motion.span
-					variants={{ hidden: { scaleY: 0 }, show: { scaleY: 1, transition: { duration: 0.8, ease: EASE } } }}
-					style={{ background: flag }}
-					className="mt-4 w-px flex-1 min-h-[3rem] origin-top opacity-70"
-				/>
-			</div>
+export default function EditorialSection({ index = "00", label = "", sublabel = "", children }) {
+  const flag = `var(--flag-${((parseInt(index, 10) || 1) % 8) + 1}, hsl(var(--primary)))`;
 
-			<div className="min-w-0">
-				<motion.div
-					variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
-					className="flex items-baseline gap-3 mb-4"
-				>
-					<motion.span
-						variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.4 } } }}
-						style={{ color: flag }}
-						className="lg:hidden tech-label tabular-nums"
-					>
-						{index}
-					</motion.span>
-					<motion.span
-						variants={{ hidden: { scale: 0 }, show: { scale: 1, transition: { duration: 0.4, ease: EASE } } }}
-						style={{ background: flag }}
-						className="hidden lg:block h-2 w-2 shrink-0 self-center"
-					/>
-					<motion.h2
-						variants={{ hidden: { y: "110%" }, show: { y: 0, transition: { duration: 0.8, ease: EASE } } }}
-						className="font-display font-extralight tracking-ultra text-2xl sm:text-4xl leading-none"
-					>
-						{label}
-					</motion.h2>
-					<motion.span
-						variants={{ hidden: { scaleX: 0 }, show: { scaleX: 1, transition: { duration: 0.9, ease: EASE } } }}
-						style={{ backgroundImage: `linear-gradient(90deg, ${flag}, hsl(var(--foreground)/0.18))` }}
-						className="flex-1 h-px origin-left"
-					/>
-				</motion.div>
+  return (
+    <motion.section
+      id={`sec-${index}`}
+      data-gp-section
+      tabIndex={-1}
+      aria-label={`${index} ${label}`}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, margin: "-8% 0px" }}
+      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
+      className="relative outline-none grid grid-cols-1 lg:grid-cols-[6.5rem_1fr] gap-x-8"
+    >
+      <div className="hidden lg:flex flex-col items-end select-none">
+        <motion.span
+          variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } } }}
+          className="jp-index text-[3.8rem] leading-[0.85] font-light text-foreground/12"
+        >
+          {index}
+        </motion.span>
+        {sublabel && <span className="jp-roman vert-text mt-5">{sublabel}</span>}
+        <motion.span
+          variants={{ hidden: { scaleY: 0 }, show: { scaleY: 1, transition: { duration: 0.65, ease: EASE } } }}
+          className="mt-5 w-px flex-1 min-h-[3rem] origin-top opacity-45"
+          style={{ background: flag }}
+        />
+      </div>
 
-				{/* no transform / clip / containment stays on this wrapper once revealed —
-				    those create a containing block that broke widgets' full-screen mode */}
-				<motion.div
-					variants={{
-						hidden: { opacity: 0 },
-						show: { opacity: 1, transition: { duration: 0.7, ease: EASE } },
-					}}
-				>
-					{children}
-				</motion.div>
-			</div>
-		</motion.section>
-	);
+      <div className="min-w-0">
+        <motion.header
+          variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } } }}
+          className="mb-5 border-t jp-rule pt-3 grid grid-cols-[auto_1fr] sm:grid-cols-[4rem_1fr_auto] gap-x-3 sm:gap-x-5 items-start"
+        >
+          <span className="tech-label tabular-nums" style={{ color: flag }}>{index}</span>
+          <div className="min-w-0">
+            <h2 className="font-display font-medium tracking-[-0.045em] text-2xl sm:text-[2.15rem] leading-none">
+              {label}
+            </h2>
+            {sublabel && <span className="jp-roman mt-1.5 block lg:hidden">{sublabel}</span>}
+          </div>
+          <span className="hidden sm:block jp-kicker text-right">MABIS / SECTION</span>
+        </motion.header>
+
+        <motion.div
+          variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.55, ease: EASE } } }}
+        >
+          {children}
+        </motion.div>
+      </div>
+    </motion.section>
+  );
 }
