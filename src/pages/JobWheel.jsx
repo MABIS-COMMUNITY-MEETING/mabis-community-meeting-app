@@ -38,7 +38,7 @@ export default function JobWheel() {
         to: data.assigned_to_email,
         subject: `🎯 New Job Assigned: ${data.title}`,
         body: `
-          <div style="font-family: 'UnifontEX'; max-width: 500px; margin: 0 auto; padding: 20px;">
+          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #8B5CF6, #EC4899); padding: 30px; border-radius: 16px; text-align: center; color: white;">
               <h1 style="margin: 0; font-size: 24px;">🎰 The Wheel Has Spoken!</h1>
               <p style="margin-top: 8px; opacity: 0.9;">You've been chosen for a new job</p>
