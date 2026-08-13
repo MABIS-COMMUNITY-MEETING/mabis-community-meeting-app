@@ -544,13 +544,17 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   const viewedWeek = getWeekLabel(offsetDate);
   const isCurrentWeek = weekOffset === 0;
 
-  const { data: allTopics = [] } = useQuery({
-    queryKey: ["topics"],
-    queryFn: () => base44.entities.DiscussionTopic.list("-created_date", 500),
+  const { data: viewedWeekTopics = [] } = useQuery({
+    queryKey: ["topics", viewedWeek],
+    queryFn: () => base44.entities.DiscussionTopic.filter(
+      { week_label: viewedWeek },
+      "-created_date",
+      100,
+    ),
   });
 
-  const viewedTopics = allTopics
-    .filter(t => t.week_label === viewedWeek && !t.archived && t.title !== "__meeting_notes__")
+  const viewedTopics = viewedWeekTopics
+    .filter(t => !t.archived && t.title !== "__meeting_notes__")
     .sort((a, b) => {
       // Incomplete (unticked) topics move over to the top; completed ones sink down.
       if (!!a.completed !== !!b.completed) return a.completed ? 1 : -1;
