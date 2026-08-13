@@ -52,25 +52,6 @@ Quill.register(SizeAttr, true);
 
 const FONTS = [
   { label: "Iosevka", value: "'Iosevka', monospace" },
-  { label: "Arial", value: "Arial, Helvetica, sans-serif" },
-  { label: "Helvetica", value: "Helvetica, Arial, sans-serif" },
-  { label: "Inter", value: "'Inter', sans-serif" },
-  { label: "Space Grotesk", value: "'Space Grotesk', sans-serif" },
-  { label: "Poppins", value: "'Poppins', sans-serif" },
-  { label: "Montserrat", value: "'Montserrat', sans-serif" },
-  { label: "Manrope", value: "'Manrope', sans-serif" },
-  { label: "DM Sans", value: "'DM Sans', sans-serif" },
-  { label: "Raleway", value: "'Raleway', sans-serif" },
-  { label: "Nunito", value: "'Nunito', sans-serif" },
-  { label: "Lato", value: "'Lato', sans-serif" },
-  { label: "Alegreya", value: "'Alegreya', serif" },
-  { label: "Georgia", value: "Georgia, serif" },
-  { label: "Times New Roman", value: "'Times New Roman', serif" },
-  { label: "Palatino", value: "'Palatino Linotype', serif" },
-  { label: "Courier New", value: "'Courier New', monospace" },
-  { label: "Verdana", value: "Verdana, sans-serif" },
-  { label: "Tahoma", value: "Tahoma, sans-serif" },
-  { label: "Trebuchet MS", value: "'Trebuchet MS', sans-serif" },
 ];
 
 const FontAttr = Quill.import("attributors/style/font");
@@ -580,7 +561,7 @@ export default function DocsEditor({
   const downloadHtml = () => {
     const quill = getQuill();
     if (!quill) return;
-    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{max-width:760px;margin:48px auto;padding:0 24px;font:16px/1.65 Arial,sans-serif;color:#202124}img{max-width:100%}blockquote{border-left:3px solid #dadce0;margin-left:0;padding-left:16px;color:#5f6368}pre{white-space:pre-wrap;background:#f8f9fa;padding:12px;border-radius:8px}</style></head><body>${quill.root.innerHTML}</body></html>`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{max-width:760px;margin:48px auto;padding:0 24px;font:16px/1.65 Iosevka,monospace;color:#202124}img{max-width:100%}blockquote{border-left:3px solid #dadce0;margin-left:0;padding-left:16px;color:#5f6368}pre{white-space:pre-wrap;background:#f8f9fa;padding:12px;border-radius:8px}</style></head><body>${quill.root.innerHTML}</body></html>`;
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -595,7 +576,7 @@ export default function DocsEditor({
     if (!quill) return;
     const popup = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
     if (!popup) return;
-    popup.document.write(`<!doctype html><html><head><title>${title}</title><style>@page{margin:18mm}body{max-width:760px;margin:0 auto;font:11pt/1.55 Arial,sans-serif;color:#111}img{max-width:100%;page-break-inside:avoid}blockquote{border-left:3px solid #aaa;margin-left:0;padding-left:14px}pre{white-space:pre-wrap}</style></head><body>${quill.root.innerHTML}</body></html>`);
+    popup.document.write(`<!doctype html><html><head><title>${title}</title><style>@page{margin:18mm}body{max-width:760px;margin:0 auto;font:11pt/1.55 Iosevka,monospace;color:#111}img{max-width:100%;page-break-inside:avoid}blockquote{border-left:3px solid #aaa;margin-left:0;padding-left:14px}pre{white-space:pre-wrap}</style></head><body>${quill.root.innerHTML}</body></html>`);
     popup.document.close();
     popup.focus();
     popup.print();
