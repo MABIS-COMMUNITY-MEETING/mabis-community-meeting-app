@@ -54,8 +54,6 @@
        url(https://cdn.jsdelivr.net/fontsource/fonts/iosevka@5.3.0/latin-400-italic.woff) format('woff');
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Hina+Mincho&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -163,10 +161,10 @@
      viewports for the same visible grain. */
   position: fixed; inset: -8%;
   pointer-events: none; z-index: 9998;
-  opacity: 0.045; mix-blend-mode: multiply;
-  will-change: transform; contain: strict;
+  opacity: 0.022; mix-blend-mode: multiply;
+  contain: strict;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: grain-shift 0.7s steps(4) infinite;
+  animation: none;
 }
 @keyframes grain-shift {
   0%   { transform: translate(0,0); }
@@ -185,11 +183,27 @@
 .cursor-ring.is-hover { width: 40px; height: 40px; background:transparent; }
 .cursor-ring.is-label { width: 56px; height: 56px; background:rgba(255,255,255,0.1); }
 
-/* ── japanese (Hina Mincho ships at one weight — thicken optically) ── */
-.font-jp { -webkit-text-stroke: 0.45px currentColor; paint-order: stroke fill; }
+/* ── approved editorial type system: Iosevka only ── */
+.font-jp,
+.jp-roman {
+  font-family: 'Iosevka', ui-monospace, monospace;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.jp-roman {
+  font-size: 10px;
+  color: hsl(var(--muted-foreground));
+}
 
 /* ── thin technical label ── */
-.tech-label { font-family:'Iosevka',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; font-weight:500; }
+.tech-label { font-family:'Iosevka',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; font-weight:500; }
+
+/* restrained Japanese-editorial primitives */
+.jp-rule { border-color: hsl(var(--foreground) / 0.14); }
+.jp-kicker { font-family:'Iosevka',monospace; font-size:9px; letter-spacing:0.24em; text-transform:uppercase; color:hsl(var(--muted-foreground)); }
+.jp-index { font-family:'Iosevka',monospace; font-variant-numeric:tabular-nums; letter-spacing:-0.06em; }
 
 /* ── vertical text ── */
 .vert-text { writing-mode: vertical-rl; text-orientation: mixed; }
