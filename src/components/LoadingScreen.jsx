@@ -11,8 +11,8 @@ const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6
 export default function LoadingScreen() {
   const [done, setDone] = useState(false);
   const [loadingFont] = useState(() => {
-    if (typeof document === "undefined") return "'GoUI'";
-    return getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'GoUI'";
+    if (typeof document === "undefined") return "'torrefarfan'";
+    return getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'torrefarfan'";
   });
   const raf = useRef();
   const countRef = useRef(null);
