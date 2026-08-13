@@ -51,11 +51,11 @@ export default function ScheduleWidget({ isAdmin }) {
   const embedUrl = toEmbedUrl(savedUrl);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="bg-[#951E3A] px-6 py-4 flex items-center gap-3">
+    <div className="mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex flex-col items-start gap-3 sm:px-6 sm:flex-row sm:items-center">
         <CalendarClock className="w-5 h-5 text-white" />
         <div className="flex-1">
-          <h2 className="font-display font-bold text-white text-xl">Schedule</h2>
+          <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Schedule</h2>
           <p className="text-white/60 text-xs mt-0.5">Weekly class timetable</p>
         </div>
         {isAdmin && savedUrl && !editing && (
@@ -67,7 +67,7 @@ export default function ScheduleWidget({ isAdmin }) {
         )}
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="mabis-widget-body p-4 space-y-4 sm:p-5">
         {editing ? (
           <div className="space-y-3">
             <p className="text-sm text-gray-600 flex items-center gap-1.5">
@@ -76,7 +76,7 @@ export default function ScheduleWidget({ isAdmin }) {
             </p>
             <Input value={link} onChange={(e) => setLink(e.target.value)}
               placeholder="https://docs.google.com/spreadsheets/d/..." className="rounded-lg" />
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex">
               <Button onClick={() => saveMutation.mutate(link.trim())}
                 disabled={!link.trim() || saveMutation.isPending}
                 className="bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg gap-1.5">
@@ -86,7 +86,7 @@ export default function ScheduleWidget({ isAdmin }) {
               {savedUrl && (
                 <Button variant="ghost" onClick={() => removeMutation.mutate()}
                   disabled={removeMutation.isPending}
-                  className="rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 ml-auto">
+                  className="col-span-2 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 sm:ml-auto">
                   Remove Link
                 </Button>
               )}
@@ -94,7 +94,7 @@ export default function ScheduleWidget({ isAdmin }) {
           </div>
         ) : embedUrl ? (
           <div className="rounded-xl overflow-hidden border border-gray-200">
-            <iframe src={embedUrl} title="Weekly Schedule" className="w-full" style={{ height: "600px" }} />
+            <iframe src={embedUrl} title="Weekly Schedule" className="h-[70dvh] w-full sm:h-[600px]" />
           </div>
         ) : (
           <div className="p-8 flex flex-col items-center justify-center text-center gap-3">
