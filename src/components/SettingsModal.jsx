@@ -19,6 +19,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
 
   useEffect(() => {
     if (!open || !document.fonts) return;
+    setCurrentFont(getStoredFont());
     let cancelled = false;
     const aliases = {
       "transgender-grotesk": "TransgenderGroteskUI",
@@ -67,7 +68,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto">
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto">
             <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center gap-2.5">
                 <Settings className="w-5 h-5 text-white" />
@@ -99,6 +100,63 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   {codeSaved && <p className="text-xs text-green-600 font-semibold mt-2">Code updated!</p>}
                 </div>
               )}
+
+              {/* Typography */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Type className="w-4 h-4 text-[#951E3A]" />
+                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">UI Font</h3>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">
+                  Choose the typeface used across the interface. Japanese, Chinese and Thai automatically fall back to the embedded multilingual face when needed.
+                </p>
+                <div className="space-y-2.5">
+                  {FONTS.map((font) => {
+                    const selected = currentFont === font.key;
+                    const available = fontAvailability[font.key];
+                    return (
+                      <button
+                        key={font.key}
+                        type="button"
+                        onClick={() => handleFontSelect(font.key)}
+                        aria-pressed={selected}
+                        className={`w-full text-left rounded-xl border-2 p-3.5 transition-colors ${selected ? "border-[#951E3A] bg-[#951E3A]/5" : "border-gray-200 hover:border-[#951E3A]/30"}`}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-2.5">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-gray-800">{font.name}</span>
+                              {font.key === "transgender-grotesk" && (
+                                <span className="rounded-full bg-[#951E3A] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">Default</span>
+                              )}
+                            </div>
+                            <p className="text-[10px] leading-4 text-gray-400 mt-0.5">{font.detail}</p>
+                          </div>
+                          <div className="shrink-0 flex items-center gap-1.5">
+                            <span className={`h-1.5 w-1.5 rounded-full ${available === true ? "bg-green-500" : available === false ? "bg-amber-400" : "bg-gray-300"}`} />
+                            <span className="text-[9px] uppercase tracking-wider text-gray-400">
+                              {font.localOnly
+                                ? available === true ? "Installed" : available === false ? "Fallback active" : "Checking"
+                                : "Embedded"}
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          className="rounded-lg border border-gray-200 bg-white px-3 py-3 text-[17px] leading-snug text-gray-900 break-words"
+                          style={{ fontFamily: font.body }}
+                        >
+                          {FONT_PREVIEW_TEXT}
+                        </div>
+                        {font.localOnly && available === false && (
+                          <p className="mt-2 text-[10px] leading-4 text-amber-600">
+                            Install your licensed copy on this device to render this face. Until then, UnifontEX is used safely.
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               {/* Sound */}
               <div>
