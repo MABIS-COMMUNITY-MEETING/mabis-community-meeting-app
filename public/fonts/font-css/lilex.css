@@ -1,0 +1,7 @@
+@font-face {
+  font-family: 'LilexUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/lilex/Lilex-Variable.woff2?v=3') format('woff2');
+}

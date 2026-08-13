@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'typefesse_pleineregular';
+    src: url('../Typefesse_Pleine.woff2') format('woff2'),
+         url('../Typefesse_Pleine.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

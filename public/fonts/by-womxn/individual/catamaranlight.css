@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'catamaranlight';
+    src: url('../catamaran-light-webfont.woff2') format('woff2'),
+         url('../catamaran-light-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

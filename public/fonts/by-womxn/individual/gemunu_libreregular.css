@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'gemunu_libreregular';
+    src: url('../gemunulibre-regular-webfont.woff2') format('woff2'),
+         url('../gemunulibre-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'almendraregular';
+    src: url('../almendra-regular-webfont.woff2') format('woff2'),
+         url('../almendra-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

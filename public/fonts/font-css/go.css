@@ -1,0 +1,42 @@
+@font-face {
+  font-family: 'GoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/go/Go-Regular.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/go/Go-Bold.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/go/Go-Italic.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/go/Go-Bold-Italic.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoMonoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/go/Go-Mono.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoMonoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/go/Go-Mono-Bold.ttf?v=1') format('truetype');
+}

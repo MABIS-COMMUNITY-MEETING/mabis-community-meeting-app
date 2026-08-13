@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'coconat-boldext';
+    src: url('../coconat-boldext.woff2') format('woff2'),
+         url('../coconat-boldext.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
