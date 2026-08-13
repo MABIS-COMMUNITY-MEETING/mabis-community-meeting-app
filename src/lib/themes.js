@@ -571,32 +571,81 @@ export function deleteSavedTheme(name) {
 
 // ── Fonts ──
 // Commercial families are never redistributed: they resolve to a user's own
-// licensed local copy. Libre faces are embedded, and UnifontEX remains the
-// multilingual safety net for Japanese, Chinese and Thai glyphs.
+// licensed local copy. Go is the embedded default; GNU FreeFont, Iosevka,
+// Lilex and the libre catalogue remain selectable. UnifontEX is isolated to
+// explicitly multilingual Japanese, Chinese and Thai text.
 export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International School";
 
 const REQUESTED_FONTS = [
   {
+    key: "go",
+    name: "Go",
+    detail: "Default · embedded Go typeface with Go Mono for technical labels",
+    source: "Featured",
+    family: "GoUI",
+    heading: "'GoUI'",
+    body: "'GoUI'",
+    mono: "'GoMonoUI'",
+    localOnly: false,
+    featured: true,
+  },
+  {
+    key: "gnu-free-sans",
+    name: "GNU FreeSans",
+    detail: "Embedded GNU FreeFont sans-serif family",
+    source: "Featured",
+    family: "GNUFreeSansUI",
+    heading: "'GNUFreeSansUI'",
+    body: "'GNUFreeSansUI'",
+    mono: "'GNUFreeMonoUI'",
+    localOnly: false,
+    featured: true,
+  },
+  {
+    key: "gnu-free-serif",
+    name: "GNU FreeSerif",
+    detail: "Embedded GNU FreeFont serif family",
+    source: "Featured",
+    family: "GNUFreeSerifUI",
+    heading: "'GNUFreeSerifUI'",
+    body: "'GNUFreeSerifUI'",
+    mono: "'GNUFreeMonoUI'",
+    localOnly: false,
+    featured: true,
+  },
+  {
+    key: "gnu-free-mono",
+    name: "GNU FreeMono",
+    detail: "Embedded GNU FreeFont monospaced family",
+    source: "Featured",
+    family: "GNUFreeMonoUI",
+    heading: "'GNUFreeMonoUI'",
+    body: "'GNUFreeMonoUI'",
+    mono: "'GNUFreeMonoUI'",
+    localOnly: false,
+    featured: true,
+  },
+  {
     key: "transgender-grotesk",
     name: "Transgender Grotesk",
-    detail: "Default · licensed/local face · Iosevka fallback",
+    detail: "Licensed/local face · Go fallback",
     source: "Featured",
     family: "TransgenderGroteskUI",
-    heading: "'TransgenderGroteskUI', 'IosevkaUI'",
-    body: "'TransgenderGroteskUI', 'IosevkaUI'",
-    mono: "'TransgenderGroteskUI', 'IosevkaUI'",
+    heading: "'TransgenderGroteskUI', 'GoUI'",
+    body: "'TransgenderGroteskUI', 'GoUI'",
+    mono: "'TransgenderGroteskUI', 'GoMonoUI'",
     localOnly: true,
     featured: true,
   },
   {
     key: "atlas-mono",
     name: "Atlas Mono",
-    detail: "Licensed/local face · Iosevka fallback",
+    detail: "Licensed/local face · Go Mono fallback",
     source: "Featured",
     family: "AtlasMonoUI",
-    heading: "'AtlasMonoUI', 'IosevkaUI'",
-    body: "'AtlasMonoUI', 'IosevkaUI'",
-    mono: "'AtlasMonoUI', 'IosevkaUI'",
+    heading: "'AtlasMonoUI', 'GoMonoUI'",
+    body: "'AtlasMonoUI', 'GoMonoUI'",
+    mono: "'AtlasMonoUI', 'GoMonoUI'",
     localOnly: true,
     featured: true,
   },
@@ -644,9 +693,9 @@ const libraryFonts = BY_WOMXN_FONTS
   .map((font) => ({
     ...font,
     detail: "Embedded libre webfont · Libre Fonts by Womxn",
-    heading: `'${font.family}', 'IosevkaUI'`,
-    body: `'${font.family}', 'IosevkaUI'`,
-    mono: `'${font.family}', 'IosevkaUI'`,
+    heading: `'${font.family}', 'GoUI'`,
+    body: `'${font.family}', 'GoUI'`,
+    mono: `'${font.family}', 'GoMonoUI'`,
     localOnly: false,
     featured: false,
   }));
@@ -683,11 +732,16 @@ export function applyFont(key) {
 }
 
 export function getStoredFont() {
+  const migration = localStorage.getItem("mabis-font-default-version");
+  if (migration !== "go-v1") {
+    const now = String(Date.now());
+    localStorage.setItem("mabis-font-default-version", "go-v1");
+    localStorage.setItem("mabis-font-picker-version", "4");
+    localStorage.setItem("mabis-font-updated-at", now);
+    localStorage.setItem("mabis-font", "go");
+    return "go";
+  }
+
   const stored = localStorage.getItem("mabis-font");
-  const pickerVersion = localStorage.getItem("mabis-font-picker-version");
-  // Before the picker existed, everybody was forced onto UnifontEX. Treat that
-  // legacy value as the old default so this release can move to Transgender
-  // Grotesk without overriding a choice somebody explicitly makes afterward.
-  if (!pickerVersion && (!stored || stored === "unifontex")) return "transgender-grotesk";
-  return FONTS.some((font) => font.key === stored) ? stored : "transgender-grotesk";
+  return FONTS.some((font) => font.key === stored) ? stored : "go";
 }
