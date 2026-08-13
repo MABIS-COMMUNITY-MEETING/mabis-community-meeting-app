@@ -1,6 +1,5 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight } from "lucide-react";
@@ -25,10 +24,7 @@ export default function PageNotFound({}) {
     <div className="relative min-h-screen w-full overflow-hidden bg-bone text-foreground flex items-center justify-center px-6 py-16">
       <div className="grid-bg absolute inset-0 opacity-50" />
       <div className="relative z-10 w-full max-w-xl text-center">
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
-          className="tech-label text-primary mb-6"
-        > ERROR 404</motion.div>
+        <div className="route-transition-content tech-label text-primary mb-6"> ERROR 404</div>
         <h1 className="font-display font-thin tracking-ultra leading-none text-8xl sm:text-[12rem]">
           404
         </h1>
