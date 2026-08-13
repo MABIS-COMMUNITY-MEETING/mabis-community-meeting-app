@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Video, ArrowRight, Pause, Circle, CalendarCog, Lock, Undo2 } from "lucide-react";
+import { Video, ArrowRight, Pause, Circle, Lock, Undo2 } from "lucide-react";
 import { format, nextFriday, isFriday, getISOWeek, getYear } from "date-fns";
 import { base44 } from "@/api/base44Client";
 import PasswordModal from "@/components/PasswordModal";
