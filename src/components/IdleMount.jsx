@@ -15,7 +15,7 @@ export default function IdleMount({ children, timeout = 1400 }) {
       if ("requestIdleCallback" in window) {
         id = window.requestIdleCallback(show, { timeout });
       } else {
-        id = window.setTimeout(show, Math.min(timeout, 500));
+        id = setTimeout(show, Math.min(timeout, 500));
       }
     };
     const events = ["pointerdown", "keydown", "touchstart", "scroll"];
@@ -34,7 +34,7 @@ export default function IdleMount({ children, timeout = 1400 }) {
       cancelled = true;
       events.forEach((event) => window.removeEventListener(event, beginAfterInteraction));
       if ("cancelIdleCallback" in window) window.cancelIdleCallback(id);
-      else window.clearTimeout(id);
+      else clearTimeout(id);
     };
   }, [timeout]);
 
