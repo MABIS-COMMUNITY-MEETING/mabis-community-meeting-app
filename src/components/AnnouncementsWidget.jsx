@@ -91,7 +91,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
   const sorted = [...announcements].sort((a, b) => {
     if (a.pinned && !b.pinned) return -1;
     if (!a.pinned && b.pinned) return 1;
-    return new Date(b.created_date) - new Date(a.created_date);
+    return new Date(b.published_date || b.created_date) - new Date(a.published_date || a.created_date);
   });
 
   return (
@@ -231,7 +231,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
                     <span className="text-[10px] font-bold bg-[#951E3A] text-white px-1.5 py-0.5 rounded-full uppercase tracking-wide">PINNED</span>
                     }
                       <span className="text-xs text-gray-400 ml-auto">
-                        {ann.created_date ? format(new Date(ann.created_date), "d MMM yyyy") : ""}
+                        {ann.published_date || ann.created_date ? format(new Date(ann.published_date || ann.created_date), "d MMM yyyy") : ""}
                       </span>
                     </div>
                     <p className="font-semibold text-gray-800 text-sm">{ann.title}</p>

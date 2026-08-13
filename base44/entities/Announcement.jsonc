@@ -14,6 +14,11 @@
       "type": "string",
       "description": "Name of person posting"
     },
+    "published_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Original publication date for imported announcements"
+    },
     "image_url": {
       "type": "string",
       "description": "Optional image attachment URL"
