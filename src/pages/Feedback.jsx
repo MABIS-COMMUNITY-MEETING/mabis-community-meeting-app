@@ -67,21 +67,21 @@ export default function Feedback() {
     <div className="min-h-screen bg-background">
       <PageNav label=" N°05 — INBOX" />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 pt-28 sm:pt-32 pb-8">
+      <main className="mx-auto max-w-7xl px-4 pb-8 pt-20 sm:px-8 sm:pt-32">
         <div className="mb-10 sm:mb-14">
           <div className="tech-label text-primary mb-4"> ARCHIVE — 05</div>
-          <h1 className="font-display font-light tracking-ultra text-5xl sm:text-7xl md:text-8xl leading-[0.9]">
+          <h1 className="font-display text-[clamp(2.65rem,13vw,4.5rem)] font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl">
             FEEDBACK<br />& BUGS
           </h1>
-          <div className="mt-6 flex items-center gap-3 tech-label text-muted-foreground">
+          <div className="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
             <span>INBOX</span><span className="h-1 w-1 bg-primary" /><span>REPORTS</span><span className="h-1 w-1 bg-primary" /><span>ADMIN</span>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-1 mb-6 border border-foreground/15 bg-card p-1 w-fit">
+        <div className="mobile-horizontal-scroll mb-6 flex w-full gap-1 overflow-x-auto border border-foreground/15 bg-card p-1 sm:w-fit sm:flex-wrap sm:overflow-visible">
           {["all", "feedback", "bug", "archived", "analytics"].map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-4 py-2 tech-label transition-colors flex items-center gap-1.5 ${filter === f ? "bg-foreground text-bone" : "text-muted-foreground hover:bg-foreground/5"}`}>
+              className={`flex shrink-0 items-center gap-1.5 px-4 py-2 tech-label transition-colors ${filter === f ? "bg-foreground text-bone" : "text-muted-foreground hover:bg-foreground/5"}`}>
               {f === "all" ? "ALL" : f === "feedback" ? "FEEDBACK" : f === "bug" ? "BUGS" : f === "archived" ? "ARCHIVED" : <><BarChart3 className="w-3.5 h-3.5" /> ANALYTICS</>}
             </button>
           ))}
@@ -119,7 +119,7 @@ export default function Feedback() {
                     {f.submitted_by_email && (
                       <p className="text-[10px] text-gray-400 mt-2">{f.submitted_by_email}</p>
                     )}
-                    <div className="flex gap-1.5 mt-3">
+                    <div className="mt-3 flex flex-wrap gap-1.5">
                       {f.status !== "reviewed" && f.status !== "resolved" && (
                         <button onClick={() => updateMutation.mutate({ id: f.id, data: { status: "reviewed" } })}
                           className="text-[10px] font-bold text-yellow-700 bg-yellow-50 hover:bg-yellow-100 px-2.5 py-1 rounded-md flex items-center gap-1">
