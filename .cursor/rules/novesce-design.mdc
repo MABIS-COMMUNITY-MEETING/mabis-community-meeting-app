@@ -27,6 +27,7 @@ Always preserve unless explicitly instructed otherwise:
 - Apple-style optical liquid glass only on floating control planes
 - the optional custom cursor and native-cursor fallback
 - The custom cursor's visual origin must stay on browser `clientX`/`clientY` without positional smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling.
+- Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.
 - inline editing without scroll jumps
 - mobile, touch, keyboard, dark-theme, alternate-theme, and reduced-motion behavior
 - CSS-drawn separators, with no romaji or random Japanese decoration
