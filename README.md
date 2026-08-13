@@ -125,7 +125,7 @@ Font implementation rules:
 
 Motion should feel physical, restrained, and responsive. It may use springs, reveals, small transformations, and pointer-aware material behavior, but it must not become a carnival of perpetual animation.
 
-The custom liquid cursor is a distinctive part of the desktop experience. Preserve it, including its outlines and physical behavior, unless Novesce explicitly requests a redesign. It must also remain optional:
+The custom liquid cursor is a distinctive part of the desktop experience. Preserve it, including its outlines and non-positional physical deformation, unless Novesce explicitly requests a redesign. It must also remain optional:
 
 - The Settings toggle must disable it immediately.
 - The native cursor must return when it is disabled.
@@ -498,6 +498,7 @@ The app has a global animation preference. New animation systems must respect:
 
 The liquid custom cursor is optional.
 
+- The custom cursor's visual origin must stay on browser `clientX`/`clientY` without positional smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling. Those CSS-pixel coordinates already reflect OS pointer sensitivity and acceleration; fluidity belongs in shape and hover-state deformation only.
 - It is enabled only for fine pointers when motion and performance conditions permit.
 - Settings can turn it off and restore the native system cursor immediately.
 - Turning it off must stop the pointer physics loop, not merely hide the cursor graphics.
