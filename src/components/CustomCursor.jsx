@@ -2,23 +2,25 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { subscribe } from "@/lib/physics/scheduler";
 import { pointer, startPointerEngine } from "@/lib/physics/pointer";
-import { MATERIAL, CURSOR, SLEEP } from "@/lib/physics/tokens";
+import { CURSOR } from "@/lib/physics/tokens";
 import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math";
 import { lowPowerMode, PERFORMANCE_TIER_EVENT } from "@/lib/performance-tier";
 import { customCursorEnabled, CURSOR_EVENT } from "@/lib/cursor-preference";
 
 /**
- * The cursor is simulated as a small swimming organism.
+ * The cursor keeps the browser pointer's OS-processed position exact while its
+ * outline behaves like a small swimming organism.
  *
- *   CORE  — the dot. A critically damped spring on the predicted pointer
- *           target: exact, never overshoots, defines "where you are".
- *   BODY  — the ring. A soft viscous membrane coupled to the core, integrated
- *           in the travel frame so it is loose along its path and tight across
- *           it, and deformed by an area-preserving matrix (det = 1) so it
- *           stretches without ever gaining or losing visual mass.
+ *   POSITION — the dot and ring share PointerEvent clientX/clientY directly.
+ *              Those CSS-pixel coordinates already include the OS sensitivity
+ *              and acceleration; extra smoothing, prediction, or DPR scaling
+ *              would make the visual pointer diverge from the native pointer.
+ *   MATERIAL — the ring deforms from estimated speed using an area-preserving
+ *              matrix (det = 1), so it stays expressive without moving the
+ *              cursor's actual point of aim.
  *
- * Everything integrates on the shared fixed-timestep scheduler, so behaviour is
- * identical at 60Hz and 240Hz, and the whole system sleeps when it settles.
+ * Deformation integrates on the shared fixed-timestep scheduler, so behaviour
+ * is identical at 60Hz and 240Hz and the system sleeps when it settles.
  */
 export default function CustomCursor() {
   const dotRef = useRef(null);
@@ -52,12 +54,7 @@ export default function CustomCursor() {
 
     const stopPointer = startPointerEngine();
 
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-
     // ── state ─────────────────────────────────────────────────────────
-    const coreX = { x: cx, v: 0 }, coreY = { x: cy, v: 0 };
-    const bodyX = { x: cx, v: 0 }, bodyY = { x: cy, v: 0 };
     const shear = { x: 0, v: 0 };
     const glow = { x: 0, v: 0 };            // label opacity
     const swim = { x: 0, v: 0 };            // 0..1 travel effort
@@ -65,70 +62,23 @@ export default function CustomCursor() {
     let theta = 0;     // deformation orientation (deg)
     let visible = false;
     let lastLabel = "";
-    let prevCoreX = cx, prevCoreY = cy, prevBodyX = cx, prevBodyY = cy;
     let prevShear = 0, prevTheta = 0, prevGlow = 0;
     let lastHover = false, lastIsLabel = false, lastDotOpacity = "", lastRingOpacity = "", lastColor = "";
-
-    // scratch — the hot loop allocates nothing
-    const f = { tx: 1, ty: 0, nx: 0, ny: 1 };
-    const st = { x: 0, v: 0 }, sn = { x: 0, v: 0 };
 
     const step = (dt) => {
       if (!pointer.seen) return;
 
-      if (!visible) {
-        visible = true;
-        coreX.x = bodyX.x = prevCoreX = prevBodyX = pointer.x;
-        coreY.x = bodyY.x = prevCoreY = prevBodyY = pointer.y;
-      }
+      if (!visible) visible = true;
 
-      // Retain only the previous simulation pose; render interpolation makes the
-      // 120 Hz physics visually continuous on 144/165/240 Hz displays.
-      prevCoreX = coreX.x; prevCoreY = coreY.x;
-      prevBodyX = bodyX.x; prevBodyY = bodyY.x;
+      // Only the material response is interpolated. Position stays on the most
+      // recent browser pointer sample so the page adds no sensitivity or lag.
       prevShear = shear.x; prevTheta = theta; prevGlow = glow.x;
 
-      // ── CORE ────────────────────────────────────────────────────────
-      const P = MATERIAL.precision;
-      integrateSpring(coreX, pointer.tx, P.omega, P.zeta, dt);
-      integrateSpring(coreY, pointer.ty, P.omega, P.zeta, dt);
-
-      // travel frame (tangent / normal)
       const s = pointer.speed;
-      // only trust the travel direction once the movement is clearly intentional —
-      // below that, a sensitive mouse's noise flips the frame and shakes the ring
-      if (s > 90) { f.tx = pointer.vx / s; f.ty = pointer.vy / s; }
-      f.nx = -f.ty; f.ny = f.tx;
-
-      // ── BODY: anisotropic viscous spring coupled to the core ────────
-      const G = MATERIAL.glass;
-      const ex = bodyX.x - coreX.x, ey = bodyY.x - coreY.x;
-      st.x = ex * f.tx + ey * f.ty;
-      sn.x = ex * f.nx + ey * f.ny;
-      st.v = bodyX.v * f.tx + bodyY.v * f.ty;
-      sn.v = bodyX.v * f.nx + bodyY.v * f.ny;
-
-      integrateSpring(st, 0, G.omega * CURSOR.tangentScale, G.zeta, dt);
-      integrateSpring(sn, 0, G.omega * CURSOR.normalScale, G.zeta, dt);
-
-      bodyX.x = coreX.x + st.x * f.tx + sn.x * f.nx;
-      bodyY.x = coreY.x + st.x * f.ty + sn.x * f.ny;
-      bodyX.v = st.v * f.tx + sn.v * f.nx;
-      bodyY.v = st.v * f.ty + sn.v * f.ny;
-
-      // the core must stay enclosed by the body
-      const ox = bodyX.x - coreX.x, oy = bodyY.x - coreY.x;
-      const lag = Math.hypot(ox, oy);
-      if (lag > CURSOR.maxLag) {
-        const k = CURSOR.maxLag / lag;
-        bodyX.x = coreX.x + ox * k;
-        bodyY.x = coreY.x + oy * k;
-      }
-
-      // ── deformation: speed + lag, saturated, then softly sprung ─────
-      const effort = tanhSat(CURSOR.shearAlpha * s + lag / 46);
+      const effort = tanhSat(CURSOR.shearAlpha * s);
       integrateSpring(swim, effort, 5.5, 1.0, dt);
-      // drive deformation from the smoothed effort, never the raw sample
+      // Drive deformation from smoothed effort, never the raw sample. This
+      // changes the ring's shape only; its centre stays at the OS pointer.
       integrateSpring(shear, pointer.label ? 0 : CURSOR.shearMax * swim.x, 7, 1.0, dt);
       integrateSpring(glow, pointer.label ? 1 : 0, 22, 1.0, dt);
 
@@ -142,10 +92,8 @@ export default function CustomCursor() {
       if (!visible) return;
       const d = dotRef.current, r = ringRef.current;
       const a = clamp(alpha, 0, 1);
-      const ix = prevCoreX + (coreX.x - prevCoreX) * a;
-      const iy = prevCoreY + (coreY.x - prevCoreY) * a;
-      const bx = prevBodyX + (bodyX.x - prevBodyX) * a;
-      const by = prevBodyY + (bodyY.x - prevBodyY) * a;
+      const px = pointer.rawX;
+      const py = pointer.rawY;
       const sh = prevShear + (shear.x - prevShear) * a;
       const th = prevTheta + angleDelta(theta, prevTheta) * a;
       const gl = prevGlow + (glow.x - prevGlow) * a;
@@ -153,7 +101,7 @@ export default function CustomCursor() {
       if (d) {
         const opacity = pointer.inside ? "1" : "0";
         if (opacity !== lastDotOpacity) { d.style.opacity = opacity; lastDotOpacity = opacity; }
-        d.style.transform = `translate3d(${ix.toFixed(2)}px, ${iy.toFixed(2)}px, 0) translate(-50%,-50%)`;
+        d.style.transform = `translate3d(${px.toFixed(2)}px, ${py.toFixed(2)}px, 0) translate(-50%,-50%)`;
       }
 
       if (r) {
@@ -164,7 +112,7 @@ export default function CustomCursor() {
         const m11 = ep * c * c + em * sn2 * sn2;
         const m12 = (ep - em) * c * sn2;
         const m22 = ep * sn2 * sn2 + em * c * c;
-        r.style.transform = `translate3d(${bx.toFixed(2)}px, ${by.toFixed(2)}px, 0) translate(-50%,-50%) matrix(${m11.toFixed(4)}, ${m12.toFixed(4)}, ${m12.toFixed(4)}, ${m22.toFixed(4)}, 0, 0)`;
+        r.style.transform = `translate3d(${px.toFixed(2)}px, ${py.toFixed(2)}px, 0) translate(-50%,-50%) matrix(${m11.toFixed(4)}, ${m12.toFixed(4)}, ${m12.toFixed(4)}, ${m22.toFixed(4)}, 0, 0)`;
         const hover = !!pointer.target && !pointer.label;
         const isLabel = !!pointer.label;
         if (hover !== lastHover) { r.classList.toggle("is-hover", hover); lastHover = hover; }
@@ -182,13 +130,11 @@ export default function CustomCursor() {
 
     const settled = () => {
       if (!visible) return true;
-      const err = Math.hypot(bodyX.x - pointer.tx, bodyY.x - pointer.ty);
-      const vel = Math.hypot(bodyX.v, bodyY.v) + Math.hypot(coreX.v, coreY.v);
       return (
-        err < SLEEP.pos &&
-        vel < SLEEP.vel &&
         swim.x < 0.01 &&
+        Math.abs(swim.v) < 0.01 &&
         Math.abs(shear.x) < 0.004 &&
+        Math.abs(shear.v) < 0.01 &&
         Math.abs(glow.v) < 0.01
       );
     };
