@@ -121,7 +121,7 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
       ctx.rotate(s + arc / 2);
       ctx.textAlign = "right";
       const fontSize = members.length > 20 ? 9 : members.length > 14 ? 11 : 13;
-      const uiFont = getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'IosevkaUI'";
+      const uiFont = getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'GoUI'";
       ctx.font = `700 ${fontSize}px ${uiFont}`;
       ctx.shadowColor = "rgba(0,0,0,0.45)";
       ctx.shadowBlur = 2;
@@ -152,7 +152,11 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
     drawWheel(rotationRef.current);
     const handler = () => drawWheel(rotationRef.current);
     window.addEventListener("themeChanged", handler);
-    return () => window.removeEventListener("themeChanged", handler);
+    window.addEventListener("fontChanged", handler);
+    return () => {
+      window.removeEventListener("themeChanged", handler);
+      window.removeEventListener("fontChanged", handler);
+    };
   }, [drawWheel]);
 
   // Pointer at top (12 o'clock = -π/2) — wheelofnames style
