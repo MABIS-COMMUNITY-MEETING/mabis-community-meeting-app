@@ -836,6 +836,37 @@ html.performance-lite .lg-surface {
   -webkit-backdrop-filter: none !important;
 }
 
+/* ── rendering containment ─────────────────────────────────────────
+   The long home/inbox pages keep their full document semantics, but the browser
+   may skip style/layout/paint for far-off content until it approaches view. */
+.widget-loading-shell {
+  min-height: var(--widget-fallback-height, 320px);
+  border: 1px solid hsl(var(--border));
+  background:
+    linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.035), transparent),
+    hsl(var(--card));
+  background-size: 220% 100%;
+  animation: widget-loading-sheen 1.4s ease-in-out infinite;
+  contain: layout paint style;
+}
+@keyframes widget-loading-sheen {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@supports (content-visibility: auto) {
+  main [data-gp-section] {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 720px;
+  }
+  .perf-list-item {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 180px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .widget-loading-shell { animation: none; }
+}
+
 /* ── mobile editorial layout ───────────────────────────────────────
    Phones use edge-to-edge content planes, compact bordered headers and
    intentional horizontal scrolling for genuinely wide data. Floating desktop
