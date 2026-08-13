@@ -1133,7 +1133,7 @@ export default function DocsEditor({
           min-height: ${minHeight};
           padding: clamp(22px, 5vw, 48px) clamp(22px, 7vw, 64px);
           color: hsl(var(--foreground));
-          font-family: 'UnifontEX';
+          font-family: var(--font-body);
           font-size: 14px;
           line-height: 1.65;
           overflow-y: visible;
@@ -1183,7 +1183,7 @@ export default function DocsEditor({
           border-radius: 6px;
           background: hsl(var(--muted));
           color: hsl(var(--foreground));
-          font-family: 'UnifontEX';
+          font-family: var(--font-mono);
           font-size: .9em;
         }
         .docs-quill .ql-editor img {
