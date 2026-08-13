@@ -13,7 +13,6 @@ import HomeMasthead from "@/components/home/HomeMasthead";
 import ScrollVelocity from "@/components/ScrollVelocity";
 import ScrollScaleRitual from "@/components/home/ScrollScaleRitual";
 import ScrollSectionIndicator from "@/components/ScrollSectionIndicator";
-import AnnouncementsWidget from "@/components/AnnouncementsWidget";
 import MeetingModeWidget from "@/components/MeetingModeWidget";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import IdleMount from "@/components/IdleMount";
@@ -22,6 +21,7 @@ import RolePreviewToggle from "@/components/RolePreviewToggle";
 import BirthdayBanner from "@/components/BirthdayBanner";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
 
+const AnnouncementsWidget = lazy(() => import("@/components/AnnouncementsWidget"));
 const DiscussionWidget = lazy(() => import("@/components/DiscussionWidget"));
 const MembersWidget = lazy(() => import("@/components/MembersWidget"));
 const CalendarWidget = lazy(() => import("@/components/CalendarWidget"));
@@ -203,7 +203,11 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="02" label="ANNOUNCEMENTS">
-          <AnnouncementsWidget members={members} isAdmin={canManage} />
+          <LazySection minHeight={360}>
+            <Suspense fallback={<WidgetFallback minHeight={360} />}>
+              <AnnouncementsWidget members={members} isAdmin={canManage} />
+            </Suspense>
+          </LazySection>
         </EditorialSection>
 
         <EditorialSection index="03" label="DISCUSSION">
