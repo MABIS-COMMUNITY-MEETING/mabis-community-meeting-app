@@ -499,6 +499,7 @@ The app has a global animation preference. New animation systems must respect:
 The liquid custom cursor is optional.
 
 - The custom cursor's visual origin must stay on browser `clientX`/`clientY` without positional smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling. Those CSS-pixel coordinates already reflect OS pointer sensitivity and acceleration; fluidity belongs in shape and hover-state deformation only.
+- Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.
 - It is enabled only for fine pointers when motion and performance conditions permit.
 - Settings can turn it off and restore the native system cursor immediately.
 - Turning it off must stop the pointer physics loop, not merely hide the cursor graphics.
