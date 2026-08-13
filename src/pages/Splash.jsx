@@ -78,13 +78,13 @@ export default function Splash() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.6, ease: EASE }}
-        className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-5 sm:px-8 py-5"
+        className="absolute left-0 right-0 top-0 z-30 flex items-center justify-between px-4 py-4 sm:px-8 sm:py-5"
       >
         <div className="flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center border border-bone/30">
             <img src={LOGO} alt="MABIS" className="h-5 w-5 object-contain" />
           </span>
-          <span className="tech-label text-bone/60">MABIS COMMUNITY MEETING</span>
+          <span className="tech-label text-bone/60"><span className="sm:hidden">MABIS</span><span className="hidden sm:inline">MABIS COMMUNITY MEETING</span></span>
         </div>
         <span className="tech-label hidden sm:block text-bone/50">EST. BANGKOK TH</span>
       </motion.div>
@@ -104,7 +104,7 @@ export default function Splash() {
       <Plus className="absolute top-1/3 right-1/4 h-2.5 w-2.5 text-primary/60 z-20" />
 
       {/* center stage with pointer parallax */}
-      <div className="relative z-10 flex min-h-screen flex-col items-start sm:items-center justify-center px-5 sm:px-8">
+      <div className="relative z-10 flex min-h-[100dvh] flex-col items-start justify-center px-4 pb-20 pt-20 sm:min-h-screen sm:items-center sm:px-8 sm:pb-0 sm:pt-0">
         {/* giant cropped background word */}
         <motion.span
           initial={{ opacity: 0 }} animate={{ opacity: 0.05 }} transition={{ delay: 0.4, duration: 1.2 }}
@@ -115,13 +115,13 @@ export default function Splash() {
 
         <motion.div
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}
-          className="tech-label text-primary mb-6 flex items-center gap-3"
+          className="mb-4 flex max-w-full items-center gap-3 text-[9px] text-primary sm:mb-6 sm:tech-label"
         >
           <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.55, duration: 0.6, ease: EASE }} className="block h-px w-8 bg-primary origin-left" /> 01 — SECONDARY COMMUNITY MEETING APP
         </motion.div>
 
         <motion.div style={{ x: titleX, y: titleY }} className="will-change-transform">
-          <h1 className="text-left sm:text-center font-display font-extralight tracking-ultra leading-[0.88] text-6xl sm:text-8xl md:text-9xl lg:text-[11rem]">
+          <h1 className="text-left font-display text-[clamp(2.8rem,14vw,4.1rem)] font-extralight leading-[0.88] tracking-ultra sm:text-center sm:text-8xl md:text-9xl lg:text-[11rem]">
             <span className="block">
               <SplitChars text="COMMUNITY" stagger={0.05} delay={0.6} />
             </span>
@@ -133,7 +133,7 @@ export default function Splash() {
 
         <motion.div
           initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 1.6, duration: 0.8, ease: EASE }}
-          className="h-px w-40 bg-bone/40 my-8 sm:my-10 origin-left sm:origin-center"
+          className="my-6 h-px w-32 origin-left bg-bone/40 sm:my-10 sm:w-40 sm:origin-center"
         />
 
         <motion.p
@@ -150,13 +150,13 @@ export default function Splash() {
               initial={{ opacity: 0, y: 18, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ type: "spring", stiffness: 180, damping: 18 }}
-              className="mt-10 sm:mt-12"
+              className="mt-7 w-full sm:mt-12 sm:w-auto"
             >
               <MagneticButton strength={0.4}>
                 <button
                   onClick={enter}
                   data-cursor="ENTER"
-                  className="liquid-btn liquid-ink group relative flex items-center gap-4 border border-bone/40 bg-bone/5 px-8 py-4 text-bone backdrop-blur-sm"
+                  className="liquid-btn liquid-ink group relative flex w-full items-center justify-between gap-3 border border-bone/40 bg-bone/5 px-5 py-4 text-bone backdrop-blur-sm sm:w-auto sm:justify-start sm:gap-4 sm:px-8"
                 >
                   <span className="tech-label">N° 02</span>
                   <span className="text-lg sm:text-xl font-display font-normal tracking-tight">
@@ -176,7 +176,7 @@ export default function Splash() {
         {/* scroll cue */}
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: ready ? 1 : 0 }} transition={{ delay: 0.4, duration: 0.6 }}
-          className="absolute bottom-16 right-5 sm:right-10 flex flex-col items-center gap-2"
+          className="absolute bottom-16 right-5 hidden flex-col items-center gap-2 sm:right-10 sm:flex"
         >
           <span className="tech-label vert-text text-bone/45">SCROLL</span>
           <motion.span
