@@ -1,49 +1,69 @@
 import { useEffect } from "react";
-import { playClick, playType, playHover, playSectionEnter } from "@/lib/sound";
+import { playClick, playType, playHover, playSectionEnter, unlockSound } from "@/lib/sound";
 
 /* things worth a tick when the pointer crosses them — controls plus the
    card-ish rows (members, jobs, list items) that read as pickable */
 const HOVER_TARGETS =
   "button, a, [role='button'], [role='option'], [role='menuitem'], [role='tab'], [role='checkbox'], [role='switch'], summary, label, li, tr, th, [data-cursor], input, textarea, select, h1, h2, h3, .cursor-pointer";
+const UNLOCK_EVENTS = ["pointerdown", "touchend", "keydown", "click"];
 
-// Plays a mouse click for any button / link / toggle press app-wide,
-// and a soft keypress "tock" while typing in text fields.
+// Plays a click for any button/link/toggle and a soft keypress while typing.
+// A capture-phase gesture unlocks Web Audio before the control's click handler,
+// so users never need a sacrificial first block click.
 export default function SoundEffects() {
   useEffect(() => {
-    const clickHandler = (e) => {
-      const t = e.target.closest?.(
+    let active = true;
+    let listeningForUnlock = true;
+
+    const removeUnlockListeners = () => {
+      if (!listeningForUnlock) return;
+      listeningForUnlock = false;
+      UNLOCK_EVENTS.forEach((eventName) => window.removeEventListener(eventName, unlockHandler, true));
+    };
+    const unlockHandler = () => {
+      void unlockSound().then((audioContext) => {
+        if (active && audioContext?.state === "running") removeUnlockListeners();
+      });
+    };
+
+    UNLOCK_EVENTS.forEach((eventName) => window.addEventListener(eventName, unlockHandler, true));
+    if (navigator.userActivation?.hasBeenActive) unlockHandler();
+
+    const clickHandler = (event) => {
+      const target = event.target.closest?.(
         "button, a, [role='button'], input[type='checkbox'], input[type='radio'], input[type='submit']"
       );
-      if (t) playClick();
+      if (target) playClick();
     };
-    const inputHandler = (e) => {
-      const t = e.target;
-      if (!t) return;
-      const tag = t.tagName;
-      if (tag === "INPUT" && !["text", "search", "email", "password", "tel", "url", "number"].includes(t.type)) return;
-      if (tag !== "INPUT" && tag !== "TEXTAREA" && !t.isContentEditable) return;
+    const inputHandler = (event) => {
+      const target = event.target;
+      if (!target) return;
+      const tag = target.tagName;
+      if (tag === "INPUT" && !["text", "search", "email", "password", "tel", "url", "number"].includes(target.type)) return;
+      if (tag !== "INPUT" && tag !== "TEXTAREA" && !target.isContentEditable) return;
       playType();
     };
-    // one tick per element entered — moving within the same element stays quiet
+
     let last = null;
     let lastSection = null;
-    const hoverHandler = (e) => {
-      // entering one of the numbered sections (meeting mode, announcements,
-      // discussion … 01–10) gets its own lower tone
-      const section = e.target.closest?.("[data-gp-section]") || null;
+    const hoverHandler = (event) => {
+      const section = event.target.closest?.("[data-gp-section]") || null;
       if (section !== lastSection) {
         lastSection = section;
         if (section) playSectionEnter();
       }
-      const t = e.target.closest?.(HOVER_TARGETS) || null;
-      if (t === last) return;
-      last = t;
-      if (t) playHover();
+      const target = event.target.closest?.(HOVER_TARGETS) || null;
+      if (target === last) return;
+      last = target;
+      if (target) playHover();
     };
+
     document.addEventListener("mouseover", hoverHandler, true);
     document.addEventListener("click", clickHandler, true);
     document.addEventListener("input", inputHandler, true);
     return () => {
+      active = false;
+      removeUnlockListeners();
       document.removeEventListener("mouseover", hoverHandler, true);
       document.removeEventListener("click", clickHandler, true);
       document.removeEventListener("input", inputHandler, true);
