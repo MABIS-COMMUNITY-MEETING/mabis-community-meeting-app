@@ -1,0 +1,35 @@
+---
+description: Always enforce Novesce's UI philosophy and the MABIS design contract for every repository task.
+globs: "**/*"
+alwaysApply: true
+---
+
+# Always-on Novesce design rule
+
+Read `README.md` and `AGENTS.md` before editing any file. The `Novesce UI mandate` is not optional and applies to every task, including non-visual changes.
+
+Priority:
+1. Novesce's explicit current request.
+2. The Novesce UI mandate and complete design contract in `README.md`.
+3. Existing project behavior and architecture.
+4. Framework conventions and the model's own preferences.
+
+Never perform an unsolicited redesign, modernization, simplification, font change, fallback change, glass restyle, cursor change, theme rewrite, or interaction-model change.
+
+Always preserve unless explicitly instructed otherwise:
+- contemporary Japanese editorial composition
+- visible outlines, thin rules, crisp edges, compact controls, and restrained radii
+- GNU FreeMono as the default UI font
+- GNU FreeSerif as the Thai-only fallback
+- UnifontEX only for explicitly marked Japanese and Chinese
+- semantic color and font variables
+- first-paint font loading without flashes
+- Apple-style optical liquid glass only on floating control planes
+- the optional custom cursor and native-cursor fallback
+- inline editing without scroll jumps
+- mobile, touch, keyboard, dark-theme, alternate-theme, and reduced-motion behavior
+- CSS-drawn separators, with no romaji or random Japanese decoration
+
+Before visual work, research current real Japanese websites and record sources and findings. If research access is unavailable, stop and ask.
+
+Prefer surgical edits. Run `npm run check:design`, `npm run build`, and relevant lint checks before finishing. A technically working result that violates Novesce's design philosophy is a failed result.
