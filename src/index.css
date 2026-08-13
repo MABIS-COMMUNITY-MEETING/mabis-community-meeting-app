@@ -2,7 +2,7 @@
 
 /* ──────────────────────────────────────────────────────────────
    UI TYPE SYSTEM
-   Torrefarfan is the embedded default. Go, GNU FreeFont, Iosevka,
+   GNU FreeSerif is the embedded default. Torrefarfan, Go, Iosevka,
    Lilex and the libre catalogue are selectable; commercial faces resolve only to
    licensed local copies. UnifontEX is reserved for marked multilingual text.
    ────────────────────────────────────────────────────────────── */
@@ -129,28 +129,28 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeSerif.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeSerif.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeSerifUI';
   font-style: normal;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeSerifBold.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeSerifBold.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeSerifUI';
   font-style: italic;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeSerifItalic.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeSerifItalic.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeSerifUI';
   font-style: italic;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeSerifBoldItalic.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeSerifBoldItalic.woff2?v=2') format('woff2');
 }
 
 @font-face {
@@ -221,10 +221,10 @@
     --ink: 222 22% 8%;
     --bone: 42 34% 96%;
 
-    --font-heading: 'torrefarfan';
-    --font-body: 'torrefarfan';
-    --font-display: 'torrefarfan';
-    --font-mono: 'torrefarfan';
+    --font-heading: 'GNUFreeSerifUI';
+    --font-body: 'GNUFreeSerifUI';
+    --font-display: 'GNUFreeSerifUI';
+    --font-mono: 'GNUFreeSerifUI';
     --font-multilingual: 'UnifontEX';
     --role-student: 348 74% 30%;
     --role-teacher: 165 55% 32%;
