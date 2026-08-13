@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { isConstrainedNetwork } from "@/lib/performance-tier";
 
 /*
  * Below-fold widgets are expensive (calendars, editors, tables, canvases).
@@ -23,7 +24,7 @@ export default function LazySection({ minHeight = 480, children }) {
 					io.disconnect();
 				}
 			},
-			{ rootMargin: "1200px 0px" }
+			{ rootMargin: isConstrainedNetwork() ? "320px 0px" : "1200px 0px" }
 		);
 		io.observe(ref.current);
 		return () => io.disconnect();
