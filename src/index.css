@@ -323,7 +323,7 @@
 /* ── loading screen uses one already-loaded selected face ── */
 .loading-screen,
 .loading-screen * {
-  font-family: var(--font-body) !important;
+  font-family: var(--loading-font, var(--font-body)) !important;
 }
 .loading-screen .tech-label,
 .loading-screen .font-display {
