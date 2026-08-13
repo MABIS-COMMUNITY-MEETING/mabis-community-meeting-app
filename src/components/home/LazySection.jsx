@@ -31,5 +31,15 @@ export default function LazySection({ minHeight = 480, children }) {
 
 	// The placeholder reserves approximate space so scrollbar/anchor geometry
 	// stays stable; it is replaced by real content long before it is visible.
-	return <div ref={ref}>{mounted ? children : <div style={{ minHeight }} aria-hidden />}</div>;
+	return (
+		<div ref={ref}>
+			{mounted ? children : (
+				<div
+					className="lazy-section-placeholder"
+					style={{ "--lazy-min-height": `${minHeight}px` }}
+					aria-hidden
+				/>
+			)}
+		</div>
+	);
 }
