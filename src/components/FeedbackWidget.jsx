@@ -4,9 +4,9 @@ import { Heart, X, Star, Send, Loader2, ImagePlus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/AuthContext";
 
-export default function FeedbackWidget() {
+export default function FeedbackWidget({ defaultOpen = false }) {
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [tab, setTab] = useState("feedback");
   const [rating, setRating] = useState(8);
   const [message, setMessage] = useState("");
