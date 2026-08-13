@@ -1,6 +1,7 @@
 import { base44 } from "@/api/base44Client";
 import { applyTheme, applyCustomColors, applyFont, getStoredTheme, getStoredFont, getStoredCustomColors } from "@/lib/themes";
 import { applyAnimationPreference, MOTION_EVENT } from "@/lib/motion-preference";
+import { applyCursorPreference, CURSOR_EVENT } from "@/lib/cursor-preference";
 
 /* Every UI preference the app stores locally lives under a "mabis" key.
    We mirror that whole bag onto the signed-in user so settings follow them
@@ -22,6 +23,7 @@ export function applyStoredPrefs() {
   if (custom) applyCustomColors(custom.primary, custom.secondary);
   applyFont(getStoredFont());
   applyAnimationPreference();
+  applyCursorPreference();
 }
 
 /** Pull the user's saved preferences down and apply them. */
@@ -59,4 +61,4 @@ export async function pushPrefs() {
   await base44.auth.updateMe({ ui_prefs: collectPrefs() });
 }
 
-export const PREF_EVENTS = ["themeChanged", "fontChanged", MOTION_EVENT, "storage"];
+export const PREF_EVENTS = ["themeChanged", "fontChanged", MOTION_EVENT, CURSOR_EVENT, "storage"];
