@@ -241,7 +241,13 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                 <div className="mt-3 grid gap-1.5">
                   {FONT_LIBRARIES.map((library) => (
                     <div key={library.key} className="flex items-start justify-between gap-3 border-t border-gray-100 pt-2 text-[10px]">
-                      <span className="font-bold text-gray-600">{library.name}</span>
+                      {library.url ? (
+                        <a href={library.url} target="_blank" rel="noreferrer" className="font-bold text-gray-600 underline underline-offset-2">
+                          {library.name}
+                        </a>
+                      ) : (
+                        <span className="font-bold text-gray-600">{library.name}</span>
+                      )}
                       <span className="max-w-[70%] text-right leading-4 text-gray-400">{library.detail}</span>
                     </div>
                   ))}
