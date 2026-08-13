@@ -72,7 +72,7 @@ export default function ProfileEditor({ open, onClose }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed top-24 right-4 sm:right-6 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 z-[61] w-80 max-h-[75vh] overflow-y-auto"
+            className="fixed inset-x-3 top-20 z-[61] max-h-[calc(100dvh-6rem)] w-auto overflow-y-auto rounded-2xl border border-gray-200 bg-white p-4 shadow-xl sm:inset-x-auto sm:right-6 sm:top-24 sm:max-h-[75vh] sm:w-80"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
