@@ -9,11 +9,11 @@ import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 const NAV = [
-  { label: "Home", jp: "ホーム", to: "/home", n: "01" },
-  { label: "Meeting History", jp: "会議の記録", to: "/history", n: "02" },
-  { label: "Announcements", jp: "お知らせ", to: "/history/announcements", n: "03" },
-  { label: "News", jp: "ニュース", to: "/history/news", n: "04" },
-  { label: "Feedback Inbox", jp: "ご意見箱", to: "/feedback", n: "05" },
+  { label: "Home", roman: "HONBU", to: "/home", n: "01" },
+  { label: "Meeting History", roman: "KAIGI KIROKU", to: "/history", n: "02" },
+  { label: "Announcements", roman: "OSHIRASE", to: "/history/announcements", n: "03" },
+  { label: "News", roman: "NYUSU", to: "/history/news", n: "04" },
+  { label: "Feedback Inbox", roman: "IKEN", to: "/feedback", n: "05" },
 ];
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -99,10 +99,10 @@ export default function SiteHeader({ rightSlot }) {
             transition={{ duration: 0.5, ease: EASE }}
             className="fixed inset-0 z-40 bg-ink text-bone"
           >
-            <div className="grid-bg absolute inset-0 opacity-30" />
+            <div className="grid-bg absolute inset-0 opacity-15" />
             {/* giant vertical background label */}
             <motion.span
-              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 0.06, y: 0 }} transition={{ duration: 0.8, ease: EASE }}
+              initial={{ opacity: 0, y: 18 }} animate={{ opacity: 0.035, y: 0 }} transition={{ duration: 0.65, ease: EASE }}
               className="vert-text pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-display font-thin tracking-ultra text-bone leading-none select-none whitespace-nowrap"
               style={{ fontSize: "26vw" }}
             >
@@ -142,14 +142,15 @@ export default function SiteHeader({ rightSlot }) {
                           <motion.span layoutId="nav-active" className="absolute left-0 top-0 bottom-0 w-[3px] bg-secondary" />
                         )}
                         <span className="relative block overflow-hidden pb-[0.32em] -mb-[0.32em]">
-                          <span className={`block whitespace-nowrap ${size} sm:text-6xl md:text-7xl font-display font-light tracking-ultra leading-[1.6] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:-translate-y-[125%]`}>
+                          <span className={`block whitespace-nowrap ${size} sm:text-5xl md:text-6xl font-display font-light tracking-[-0.055em] leading-[1.45] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:-translate-y-[125%]`}>
                             {item.label}
                           </span>
-                          <span className={`absolute inset-0 block whitespace-nowrap ${size} sm:text-6xl md:text-7xl font-display font-light tracking-ultra leading-[1.6] text-secondary translate-y-[125%] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0`}>
+                          <span className={`absolute inset-0 block whitespace-nowrap ${size} sm:text-5xl md:text-6xl font-display font-light tracking-[-0.055em] leading-[1.45] text-secondary translate-y-[125%] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0`}>
                             {item.label}
                           </span>
                         </span>
-                        <ArrowUpRight className="ml-auto h-6 w-6 sm:h-10 sm:w-10 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" />
+                        <span className="hidden md:block jp-roman ml-2 text-bone/38">{item.roman}</span>
+                        <ArrowUpRight className="ml-auto h-5 w-5 sm:h-7 sm:w-7 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" />
                       </span>
                     </motion.button>
                   );
