@@ -1,7 +1,0 @@
-@font-face {
-    font-family: 'signikaregular';
-    src: url('../signika-regular-webfont.woff2') format('woff2'),
-         url('../signika-regular-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,12 +6,12 @@ import { Plus, Trash2, Pin, Loader2, Video, Image as ImageIcon, X, Megaphone, Ma
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-const DocsEditor = lazy(() => import("@/components/DocsEditor"));
+import DocsEditor from "@/components/DocsEditor";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/lib/AuthContext";
 
-const MABIS_LOGO = "/images/mabis-logo-128.webp";
+const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 export default function AnnouncementsWidget({ members, isAdmin }) {
   const [showForm, setShowForm] = useState(false);
@@ -30,7 +30,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
 
   const { data: announcements = [] } = useQuery({
     queryKey: ["announcements"],
-    queryFn: () => base44.entities.Announcement.list("-created_date", 25)
+    queryFn: () => base44.entities.Announcement.list("-created_date", 50)
   });
 
   const addMutation = useMutation({
@@ -157,9 +157,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
               <Input placeholder="Announcement title..." value={title} onChange={(e) => setTitle(e.target.value)}
             className="rounded-lg border-gray-300 bg-white font-semibold" />
 
-              <Suspense fallback={<div className="widget-loading-shell" style={{ "--widget-fallback-height": "120px" }} aria-hidden />}>
-                <DocsEditor initialHtml={body} onChange={setBody} placeholder="Write your announcement…" minHeight="120px" title="Announcement" />
-              </Suspense>
+              <DocsEditor initialHtml={body} onChange={setBody} placeholder="Write your announcement…" minHeight="120px" title="Announcement" />
             
 
               {/* Media preview */}

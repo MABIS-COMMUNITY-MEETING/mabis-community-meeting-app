@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { askGemini } from "@/lib/geminiClient";
 
-const MABIS_LOGO = "/images/mabis-logo-128.webp";
+const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 const SUGGESTIONS = [
   "What's on the agenda this week?",
@@ -119,8 +119,8 @@ function buildContext(topics, members, assignments, announcements, meetings, new
   return ctx;
 }
 
-export default function MabisAIAssistant({ defaultOpen = false }) {
-  const [open, setOpen] = useState(defaultOpen);
+export default function MabisAIAssistant() {
+  const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");

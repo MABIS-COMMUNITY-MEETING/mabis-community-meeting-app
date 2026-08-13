@@ -2,22 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowUpRight, Plus, ArrowDown } from "lucide-react";
-import { isHackerMode } from "@/lib/hacker";
+import { useAuth } from "@/lib/AuthContext";
 import MagneticButton from "@/components/MagneticButton";
 import Marquee from "@/components/Marquee";
 import KineticBackground from "@/components/KineticBackground";
 
-const LOGO = "/images/mabis-logo-128.webp";
+const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 const EASE = [0.16, 1, 0.3, 1];
-
-function hasStoredSession() {
-  try {
-    return Boolean(localStorage.getItem("base44_access_token") || localStorage.getItem("token")) || isHackerMode();
-  } catch {
-    return false;
-  }
-}
 const charParent = (stagger, delay) => ({ hidden: {}, show: { transition: { staggerChildren: stagger, delayChildren: delay } } });
 const charChild = {
   hidden: { y: "115%", opacity: 0 },
@@ -44,7 +36,7 @@ function SplitChars({ text, stagger = 0.05, delay = 0, className = "" }) {
 
 export default function Splash() {
   const navigate = useNavigate();
-  const [hasSession] = useState(hasStoredSession);
+  const { isAuthenticated } = useAuth();
   const [ready, setReady] = useState(false);
 
   // pointer parallax for the hero typography
@@ -73,7 +65,7 @@ export default function Splash() {
     return () => window.removeEventListener("mousemove", onMove);
   }, [mx, my]);
 
-  const enter = () => navigate(hasStoredSession() ? "/home" : "/login");
+  const enter = () => navigate(isAuthenticated ? "/home" : "/login");
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-ink text-bone">
@@ -90,7 +82,7 @@ export default function Splash() {
       >
         <div className="flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center border border-bone/30">
-            <img src={LOGO} alt="MABIS" width="20" height="20" decoding="async" fetchPriority="high" className="h-5 w-5 object-contain" />
+            <img src={LOGO} alt="MABIS" className="h-5 w-5 object-contain" />
           </span>
           <span className="tech-label text-bone/60"><span className="sm:hidden">MABIS</span><span className="hidden sm:inline">MABIS COMMUNITY MEETING</span></span>
         </div>
@@ -168,7 +160,7 @@ export default function Splash() {
                 >
                   <span className="tech-label">N° 02</span>
                   <span className="text-lg sm:text-xl font-display font-normal tracking-tight">
-                    {hasSession ? "ENTER START" : "ENTER LOG IN"}
+                    {isAuthenticated ? "ENTER START" : "ENTER LOG IN"}
                   </span>
                   <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden">
                     <motion.span animate={{ y: ready ? 0 : -24 }} transition={{ duration: 0.5 }}>

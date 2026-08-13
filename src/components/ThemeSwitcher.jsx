@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Palette, Check, RotateCcw, Save, Trash2, Star, Loader2 } from "lucide-react";
+import { Palette, Check, RotateCcw, Save, Trash2, Star } from "lucide-react";
 import {
-  applyTheme, applyCustomColors, clearCustomColors,
+  THEMES, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
 } from "@/lib/themes";
 
 export default function ThemeSwitcher() {
   const [open, setOpen] = useState(false);
-  const [themes, setThemes] = useState(null);
-  const [themesLoading, setThemesLoading] = useState(false);
   const [currentTheme, setCurrentTheme] = useState("default");
   const [customActive, setCustomActive] = useState(false);
   const [customPrimary, setCustomPrimary] = useState("#951E3A");
@@ -21,6 +19,7 @@ export default function ThemeSwitcher() {
   useEffect(() => {
     const stored = getStoredTheme();
     setCurrentTheme(stored);
+    applyTheme(stored);
     const custom = getStoredCustomColors();
     if (custom) {
       setCustomActive(true);
@@ -30,29 +29,14 @@ export default function ThemeSwitcher() {
     setSavedThemes(getSavedThemes());
   }, []);
 
-  const handleToggle = async () => {
-    const next = !open;
-    setOpen(next);
-    if (!next || themes || themesLoading) return;
-    setThemesLoading(true);
-    try {
-      const catalogue = await import("@/lib/theme-catalog");
-      setThemes(catalogue.THEMES);
-    } finally {
-      setThemesLoading(false);
-    }
-  };
-
-  const handleSelectTheme = async (key) => {
-    const theme = themes?.[key];
+  const handleSelectTheme = (key) => {
     setCurrentTheme(key);
     setCustomActive(false);
     clearCustomColors();
-    await applyTheme(key);
-    if (theme) {
-      setCustomPrimary(hslToHex(theme.vars["--primary"]));
-      setCustomSecondary(hslToHex(theme.vars["--secondary"]));
-    }
+    applyTheme(key);
+    const theme = THEMES[key];
+    setCustomPrimary(hslToHex(theme.vars["--primary"]));
+    setCustomSecondary(hslToHex(theme.vars["--secondary"]));
   };
 
   const handleCustomColor = (which, hex) => {
@@ -85,7 +69,7 @@ export default function ThemeSwitcher() {
 
   return (
     <div className="relative">
-      <button onClick={handleToggle}
+      <button onClick={() => setOpen(!open)}
         className="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
         title="Change theme">
         <Palette className="w-4 h-4 text-gray-600" />
@@ -99,14 +83,9 @@ export default function ThemeSwitcher() {
               <h3 className="text-sm font-bold text-gray-800">Themes</h3>
             </div>
 
-            {/* Theme presets load only after this panel is explicitly opened. */}
-            {!themes ? (
-              <div className="mb-4 flex min-h-24 items-center justify-center border border-gray-200 text-xs text-gray-400">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading theme catalogue…
-              </div>
-            ) : (
+            {/* Theme presets */}
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {Object.entries(themes).map(([key, theme]) => (
+              {Object.entries(THEMES).map(([key, theme]) => (
                 <button key={key} onClick={() => handleSelectTheme(key)}
                   className={`relative p-2.5 rounded-xl border-2 transition-all text-left ${
                     currentTheme === key && !customActive
@@ -129,7 +108,6 @@ export default function ThemeSwitcher() {
                 </button>
               ))}
             </div>
-            )}
 
             {/* Saved custom themes */}
             {savedThemes.length > 0 && (

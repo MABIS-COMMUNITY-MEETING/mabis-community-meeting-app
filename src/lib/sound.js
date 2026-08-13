@@ -6,6 +6,27 @@ let enabled = (() => {
 
 let ctx = null;
 
+const CLICK_SOUND_URL = "https://media.base44.com/files/public/6a2fcc3f4fec7200fed7a889/3db4f74bb_universfield-computer-mouse-click-352734.mp3";
+const TYPE_SOUND_URL = "https://media.base44.com/files/public/6a2fcc3f4fec7200fed7a889/011842ec2_dragon-studio-keyboard-typing-sound-effect-335503.mp3";
+let clickAudio = null;
+let typeAudio = null;
+function getClickAudio() {
+  if (typeof window === "undefined") return null;
+  if (!clickAudio) {
+    clickAudio = new Audio(CLICK_SOUND_URL);
+    clickAudio.volume = 0.6;
+  }
+  return clickAudio;
+}
+function getTypeAudio() {
+  if (typeof window === "undefined") return null;
+  if (!typeAudio) {
+    typeAudio = new Audio(TYPE_SOUND_URL);
+    typeAudio.volume = 0.45;
+  }
+  return typeAudio;
+}
+
 export function isSoundEnabled() {
   return enabled;
 }
@@ -60,15 +81,15 @@ function noiseBurst(c, t, dur, vol, filterType, freq, q = 1) {
   src.start(t);
 }
 
-// Short synthesized click: no audio file, decode step or network request.
+// Realistic mouse click using the attached mp3.
 export function playClick() {
   if (!enabled) return;
-  const c = getCtx();
-  if (!c) return;
-  if (c.state === "suspended") c.resume().catch(() => {});
-  const t = c.currentTime;
-  noiseBurst(c, t, 0.012, 0.045, "highpass", 4200, 0.8);
-  tick(c, t, 1350, 0.035, 0.035);
+  const a = getClickAudio();
+  if (!a) return;
+  try {
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  } catch {}
 }
 
 // Mechanical keyboard keypress (Cherry-MX-style): sharp click + plastic thock.

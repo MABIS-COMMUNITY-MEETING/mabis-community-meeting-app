@@ -10,7 +10,7 @@ import GoogleIcon from "@/components/GoogleIcon";
 import FamicomController from "@/components/FamicomController";
 import { disableHackerMode, enableHackerMode } from "@/lib/hacker";
 
-const LOGO = "/images/mabis-logo-128.webp";
+const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 export default function Login() {
   const [emailPrefix, setEmailPrefix] = useState("");
@@ -41,7 +41,7 @@ export default function Login() {
 
   return (
     <AuthLayout
-      logo={<img src={LOGO} alt="MABIS" width="48" height="48" decoding="async" fetchPriority="high" className="w-12 h-12 object-contain" />}
+      logo={<img src={LOGO} alt="MABIS" className="w-12 h-12 object-contain" />}
       title="Log in"
       subtitle=" authenticate to enter the community meeting"
       footer={

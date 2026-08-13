@@ -76,7 +76,7 @@ const failures = [];
 let themesChecked = 0;
 
 try {
-    const { THEMES } = await server.ssrLoadModule("/src/lib/theme-catalog.js");
+    const { THEMES } = await server.ssrLoadModule("/src/lib/themes.js");
 
     for (const [key, theme] of Object.entries(THEMES)) {
         themesChecked += 1;

@@ -1,4 +1,4 @@
-@import "./styles/generated-default-theme.css";
+@import url('/fonts/by-womxn/fonts.css');
 
 /* ──────────────────────────────────────────────────────────────
    UI TYPE SYSTEM
@@ -22,6 +22,137 @@
   src: local('Atlas Mono'), local('Atlas Mono Regular'), local('AtlasMono');
 }
 
+@font-face {
+  font-family: 'IosevkaUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/iosevka/Iosevka-Regular.woff2?v=3') format('woff2');
+}
+@font-face {
+  font-family: 'IosevkaUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('/fonts/iosevka/Iosevka-SemiBold.woff2?v=3') format('woff2');
+}
+@font-face {
+  font-family: 'IosevkaUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/iosevka/Iosevka-Bold.woff2?v=3') format('woff2');
+}
+
+@font-face {
+  font-family: 'LilexUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/lilex/Lilex-Variable.woff2?v=3') format('woff2');
+}
+
+@font-face {
+  font-family: 'GoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/go/Go-Regular.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/go/Go-Bold.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/go/Go-Italic.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/go/Go-Bold-Italic.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoMonoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/go/Go-Mono.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoMonoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/go/Go-Mono-Bold.ttf?v=1') format('truetype');
+}
+
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSans.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSansBold.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSansOblique.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSansBoldOblique.ttf?v=1') format('truetype');
+}
+
+@font-face {
+  font-family: 'GNUFreeSerifUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSerif.woff2?v=2') format('woff2');
+}
+@font-face {
+  font-family: 'GNUFreeSerifUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSerifBold.woff2?v=2') format('woff2');
+}
+@font-face {
+  font-family: 'GNUFreeSerifUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSerifItalic.woff2?v=2') format('woff2');
+}
+@font-face {
+  font-family: 'GNUFreeSerifUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSerifBoldItalic.woff2?v=2') format('woff2');
+}
+
 /* Thai-only alias. Appending this family to every selectable UI stack gives
    Thai an automatic GNU FreeSerif fallback without touching Latin glyphs. */
 @font-face {
@@ -29,7 +160,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeSerif-Thai.woff2?v=3') format('woff2');
+  src: url('/fonts/gnu-freefont/FreeSerif.woff2?v=2') format('woff2');
   unicode-range: U+0E00-0E7F;
 }
 @font-face {
@@ -37,7 +168,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeSerifBold-Thai.woff2?v=3') format('woff2');
+  src: url('/fonts/gnu-freefont/FreeSerifBold.woff2?v=2') format('woff2');
   unicode-range: U+0E00-0E7F;
 }
 @font-face {
@@ -45,7 +176,7 @@
   font-style: italic;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeSerifItalic-Thai.woff2?v=3') format('woff2');
+  src: url('/fonts/gnu-freefont/FreeSerifItalic.woff2?v=2') format('woff2');
   unicode-range: U+0E00-0E7F;
 }
 @font-face {
@@ -53,7 +184,7 @@
   font-style: italic;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeSerifBoldItalic-Thai.woff2?v=3') format('woff2');
+  src: url('/fonts/gnu-freefont/FreeSerifBoldItalic.woff2?v=2') format('woff2');
   unicode-range: U+0E00-0E7F;
 }
 
@@ -62,64 +193,28 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMono-Basic.woff2?v=4') format('woff2');
-  unicode-range: U+0000-00FF, U+2000-206F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2300-23FF, U+2500-25FF, U+2600-26FF, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'GNUFreeMonoUI';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMono-Extended.woff2?v=4') format('woff2');
-  unicode-range: U+0100-024F, U+0370-052F, U+1E00-1EFF, U+2E00-2E7F;
+  src: url('/fonts/gnu-freefont/FreeMono.ttf?v=1') format('truetype');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: normal;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBold-Basic.woff2?v=4') format('woff2');
-  unicode-range: U+0000-00FF, U+2000-206F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2300-23FF, U+2500-25FF, U+2600-26FF, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'GNUFreeMonoUI';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBold-Extended.woff2?v=4') format('woff2');
-  unicode-range: U+0100-024F, U+0370-052F, U+1E00-1EFF, U+2E00-2E7F;
+  src: url('/fonts/gnu-freefont/FreeMonoBold.ttf?v=1') format('truetype');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: italic;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMonoOblique-Basic.woff2?v=4') format('woff2');
-  unicode-range: U+0000-00FF, U+2000-206F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2300-23FF, U+2500-25FF, U+2600-26FF, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'GNUFreeMonoUI';
-  font-style: italic;
-  font-display: swap;
-  font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMonoOblique-Extended.woff2?v=4') format('woff2');
-  unicode-range: U+0100-024F, U+0370-052F, U+1E00-1EFF, U+2E00-2E7F;
+  src: url('/fonts/gnu-freefont/FreeMonoOblique.ttf?v=1') format('truetype');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: italic;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBoldOblique-Basic.woff2?v=4') format('woff2');
-  unicode-range: U+0000-00FF, U+2000-206F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2300-23FF, U+2500-25FF, U+2600-26FF, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'GNUFreeMonoUI';
-  font-style: italic;
-  font-display: swap;
-  font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBoldOblique-Extended.woff2?v=4') format('woff2');
-  unicode-range: U+0100-024F, U+0370-052F, U+1E00-1EFF, U+2E00-2E7F;
+  src: url('/fonts/gnu-freefont/FreeMonoBoldOblique.ttf?v=1') format('truetype');
 }
 
 @font-face {
@@ -276,33 +371,6 @@
 .loading-screen .tech-label,
 .loading-screen .font-display {
   font-weight: 400 !important;
-}
-.loading-grid { animation: loading-grid-in 700ms ease-out both; }
-.loading-count { transition: opacity 260ms ease, transform 260ms cubic-bezier(.16,1,.3,1); }
-.loading-count.is-done { opacity: 0; transform: scale(1.035); }
-.loading-status { animation: loading-status-in 420ms 180ms ease-out both; }
-.loading-spinner { animation: loading-spin 1.4s linear infinite; }
-@keyframes loading-grid-in { from { opacity: 0; } to { opacity: 0.4; } }
-@keyframes loading-status-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes loading-spin { to { transform: rotate(360deg); } }
-
-/* Route choreography stays CSS-only so the first bundle does not carry the
-   component animation runtime. The default styles are the fully revealed end
-   state, which makes disabled animation and interrupted loads safe. */
-.route-transition-curtain {
-  clip-path: inset(0 0 100% 0);
-  animation: route-curtain-out 500ms cubic-bezier(.16,1,.3,1) both;
-}
-.route-transition-content {
-  animation: route-content-in 500ms 180ms cubic-bezier(.16,1,.3,1) both;
-}
-@keyframes route-curtain-out {
-  from { clip-path: inset(0 0 0 0); }
-  to { clip-path: inset(0 0 100% 0); }
-}
-@keyframes route-content-in {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ── selected UI face and explicit multilingual script handling ── */
@@ -767,41 +835,6 @@ html.performance-lite .lg-surface {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-
-/* Network Lite is selected automatically for Save-Data, 2G, extreme latency
-   and offline use, or manually in Settings. It preserves structure and colour
-   while removing downloads and continuous compositing that are not essential. */
-html.network-lite .grain-layer,
-html.network-lite .cursor-dot,
-html.network-lite .cursor-ring,
-html.network-lite .cursor-trail,
-html.network-lite .cursor-label { display: none !important; }
-html.network-lite .pride-field-x,
-html.network-lite .pride-field-y,
-html.network-lite .pride-field-light,
-html.network-lite .pride-orbit,
-html.network-lite .blob-drift,
-html.network-lite .widget-loading-shell,
-html.network-lite .loading-grid,
-html.network-lite .loading-spinner,
-html.network-lite .loading-status,
-html.network-lite .route-transition-curtain,
-html.network-lite .route-transition-content {
-  animation: none !important;
-}
-html.network-lite .pride-field-light {
-  filter: none !important;
-  opacity: 0.38 !important;
-}
-html.network-lite .lg-surface,
-html.network-lite .backdrop-blur-sm,
-html.network-lite .backdrop-blur-md,
-html.network-lite .backdrop-blur-lg,
-html.network-lite .backdrop-blur-xl {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-html.network-severe .pride-ambience { display: none !important; }
 
 /* ── rendering containment ─────────────────────────────────────────
    The long home/inbox pages keep their full document semantics, but the browser

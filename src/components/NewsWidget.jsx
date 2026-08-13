@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Newspaper, Plus, Trash2, Loader2, X, Image as ImageIcon, Video, Maximize2, History } from "lucide-react";
@@ -8,9 +8,9 @@ import { useAuth } from "@/lib/AuthContext";
 import { displayName } from "@/lib/names";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-const DocsEditor = lazy(() => import("@/components/DocsEditor"));
+import DocsEditor from "@/components/DocsEditor";
 
-const MABIS_LOGO = "/images/mabis-logo-128.webp";
+const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 function formatDate(d) {
   try { return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }); }
@@ -30,7 +30,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
 
   const { data: news = [], isLoading } = useQuery({
     queryKey: ["news"],
-    queryFn: () => base44.entities.NewsItem.list("-created_date", 25),
+    queryFn: () => base44.entities.NewsItem.list("-created_date", 100),
   });
 
   const createMutation = useMutation({
@@ -114,9 +114,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
           <div className="border border-gray-200 rounded-xl p-3 space-y-3 bg-gray-50 sm:p-4">
             <Input placeholder="News title..." value={title} onChange={(e) => setTitle(e.target.value)}
               className="rounded-lg" />
-            <Suspense fallback={<div className="widget-loading-shell" style={{ "--widget-fallback-height": "140px" }} aria-hidden />}>
-              <DocsEditor initialHtml={body} onChange={setBody} placeholder="Write the news…" minHeight="140px" title={title || "Untitled news"} />
-            </Suspense>
+            <DocsEditor initialHtml={body} onChange={setBody} placeholder="Write the news…" minHeight="140px" title={title || "Untitled news"} />
             <div className="flex flex-wrap gap-2">
               <label className="flex items-center gap-1.5 cursor-pointer px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-600">
                 <ImageIcon className="w-3.5 h-3.5" />

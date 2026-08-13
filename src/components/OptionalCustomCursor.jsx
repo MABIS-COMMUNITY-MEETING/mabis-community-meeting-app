@@ -1,14 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { customCursorEnabled, CURSOR_EVENT } from "@/lib/cursor-preference";
 import { lowPowerMode, PERFORMANCE_TIER_EVENT } from "@/lib/performance-tier";
-import { allowRichEffects, NETWORK_EVENT } from "@/lib/network-policy";
 
 const CustomCursor = lazy(() => import("@/components/CustomCursor"));
 
 function cursorCanRun() {
   if (typeof window === "undefined") return false;
   return customCursorEnabled()
-    && allowRichEffects()
     && !lowPowerMode()
     && window.matchMedia("(hover: hover) and (pointer: fine)").matches
     && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -25,14 +23,12 @@ export default function OptionalCustomCursor() {
 
     window.addEventListener(CURSOR_EVENT, update);
     window.addEventListener(PERFORMANCE_TIER_EVENT, update);
-    window.addEventListener(NETWORK_EVENT, update);
     finePointer.addEventListener?.("change", update);
     reducedMotion.addEventListener?.("change", update);
 
     return () => {
       window.removeEventListener(CURSOR_EVENT, update);
       window.removeEventListener(PERFORMANCE_TIER_EVENT, update);
-      window.removeEventListener(NETWORK_EVENT, update);
       finePointer.removeEventListener?.("change", update);
       reducedMotion.removeEventListener?.("change", update);
     };

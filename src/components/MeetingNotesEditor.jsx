@@ -12,15 +12,11 @@ export default function MeetingNotesEditor({ weekLabel }) {
   const recordIdRef = useRef(null);
 
   const { data: allTopics = [], isLoading } = useQuery({
-    queryKey: ["topics", weekLabel, "meeting-notes"],
-    queryFn: () => base44.entities.DiscussionTopic.filter({
-      week_label: weekLabel,
-      title: "__meeting_notes__",
-    }),
-    enabled: Boolean(weekLabel),
+    queryKey: ["topics"],
+    queryFn: () => base44.entities.DiscussionTopic.list("-created_date", 500),
   });
 
-  const notesRecord = allTopics.find(t => t.is_jobs_topic === true && t.title === "__meeting_notes__");
+  const notesRecord = allTopics.find(t => t.week_label === weekLabel && t.is_jobs_topic === true && t.title === "__meeting_notes__");
   useEffect(() => { if (notesRecord) recordIdRef.current = notesRecord.id; }, [notesRecord]);
 
   const saveMutation = useMutation({

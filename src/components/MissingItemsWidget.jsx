@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const MABIS_LOGO = "/images/mabis-logo-128.webp";
+const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 function formatDate(d) {
   try { return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }); }
@@ -27,16 +27,10 @@ export default function MissingItemsWidget({ members }) {
   const [fullscreen, setFullscreen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: activeItems = [], isLoading: activeLoading } = useQuery({
-    queryKey: ["missing-items", "active"],
-    queryFn: () => base44.entities.MissingItem.filter({ found: { $ne: true } }),
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["missing-items"],
+    queryFn: () => base44.entities.MissingItem.list("-created_date", 200),
   });
-  const { data: foundItems = [], isLoading: foundLoading } = useQuery({
-    queryKey: ["missing-items", "found"],
-    queryFn: () => base44.entities.MissingItem.filter({ found: true }),
-    enabled: showFound,
-  });
-  const isLoading = activeLoading || (showFound && foundLoading);
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.MissingItem.create(data),
@@ -55,6 +49,9 @@ export default function MissingItemsWidget({ members }) {
     mutationFn: (id) => base44.entities.MissingItem.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["missing-items"] }),
   });
+
+  const activeItems = items.filter(i => !i.found);
+  const foundItems = items.filter(i => i.found);
 
   const handleFileUpload = async (file) => {
     if (!file) return;

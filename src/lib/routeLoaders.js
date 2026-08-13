@@ -1,9 +1,4 @@
-import { allowSpeculativeFetch, networkState } from "@/lib/network-policy";
-
 const routeLoaders = {
-  "/": () => networkState().constrained
-    ? import("@/pages/SplashLite")
-    : import("@/pages/Splash"),
   "/login": () => import("@/pages/Login"),
   "/register": () => import("@/pages/Register"),
   "/forgot-password": () => import("@/pages/ForgotPassword"),
@@ -21,7 +16,6 @@ export function loadRoute(pathname) {
 }
 
 export function preloadRoute(pathname) {
-  if (!allowSpeculativeFetch()) return;
   const loader = routeLoaders[pathname];
   if (!loader) return;
   void loader();

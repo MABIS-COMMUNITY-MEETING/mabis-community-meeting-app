@@ -16,7 +16,6 @@ import ScrollSectionIndicator from "@/components/ScrollSectionIndicator";
 import MeetingModeWidget from "@/components/MeetingModeWidget";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import IdleMount from "@/components/IdleMount";
-import OnDemandTools from "@/components/home/OnDemandTools";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import RolePreviewToggle from "@/components/RolePreviewToggle";
 import BirthdayBanner from "@/components/BirthdayBanner";
@@ -31,6 +30,8 @@ const NewsWidget = lazy(() => import("@/components/NewsWidget"));
 const MissingItemsWidget = lazy(() => import("@/components/MissingItemsWidget"));
 const LunchMenuWidget = lazy(() => import("@/components/LunchMenuWidget"));
 const ScheduleWidget = lazy(() => import("@/components/ScheduleWidget"));
+const MabisAIAssistant = lazy(() => import("@/components/MabisAIAssistant"));
+const FeedbackWidget = lazy(() => import("@/components/FeedbackWidget"));
 const ProfileEditor = lazy(() => import("@/components/ProfileEditor"));
 const JobReminder = lazy(() => import("@/components/JobReminder"));
 const SettingsModal = lazy(() => import("@/components/SettingsModal"));
@@ -39,7 +40,7 @@ function WidgetFallback({ minHeight = 320 }) {
   return <div className="widget-loading-shell" style={{ "--widget-fallback-height": `${minHeight}px` }} aria-hidden />;
 }
 
-const MABIS_LOGO = "/images/mabis-logo-128.webp";
+const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 const ROLE_COLOR_VARS = {
   student: "hsl(var(--role-student))",
@@ -140,8 +141,8 @@ export default function Home() {
           <div className="h-9 w-9 overflow-hidden flex items-center justify-center bg-card"
             style={{ border: `2px solid ${roleColor}`, boxSizing: "border-box" }}>
             {user?.avatar_url
-              ? <img src={user.avatar_url} alt="avatar" width="36" height="36" decoding="async" fetchPriority="low" className="w-full h-full object-cover" />
-              : <img src={MABIS_LOGO} alt="avatar" width="36" height="36" decoding="async" className="w-full h-full object-contain p-0.5" />}
+              ? <img src={user.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+              : <img src={MABIS_LOGO} alt="avatar" className="w-full h-full object-contain p-0.5" />}
           </div>
           <button onClick={() => setEditingProfile(!editingProfile)} title="Customize Profile Picture" className="absolute -bottom-1 -right-1 h-5 w-5 flex items-center justify-center bg-card border border-foreground/30 text-primary">
             <Palette className="w-3 h-3" />
@@ -277,11 +278,12 @@ export default function Home() {
 
         <PageFooter />
       </main>
-      <IdleMount timeout={1800} constrainedTimeout={12000}>
+      <IdleMount timeout={1800}>
         <Suspense fallback={null}>
           <JobReminder />
+          <MabisAIAssistant />
+          <FeedbackWidget />
         </Suspense>
       </IdleMount>
-      <OnDemandTools />
     </div>);
 }

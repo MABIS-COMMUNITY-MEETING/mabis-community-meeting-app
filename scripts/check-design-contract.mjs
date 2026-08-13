@@ -28,7 +28,6 @@ const copilot = read(".github/copilot-instructions.md");
 const themes = read("src/lib/themes.js");
 const css = read("src/index.css");
 const cursorPreference = read("src/lib/cursor-preference.js");
-const fontDefinitions = read("src/lib/font-definitions.js");
 const themeBalance = read("src/lib/color/themeBalance.js");
 const themeBalanceCheck = read("scripts/check-theme-balance.mjs");
 const packageJson = read("package.json");
@@ -48,9 +47,6 @@ const readmeRules = [
     "### AI enforcement procedure",
     "# Performance architecture",
     "Large Home widgets remain behind near-viewport `LazySection` and `React.lazy` boundaries",
-    "## Poor-network and offline contract",
-    "The assistant and feedback panel must remain click-to-download",
-    "It must never intercept or cache Base44 API, authentication, entity, integration, or function responses",
 ];
 
 for (const rule of readmeRules) {
@@ -75,13 +71,12 @@ requireText(".cursor/rules/novesce-design.mdc", cursorRule, "globs: \"**/*\"");
 requireText(".github/copilot-instructions.md", copilot, "Repository-wide mandatory instructions");
 requireText(".github/copilot-instructions.md", copilot, "The Novesce UI mandate applies to every task");
 
-requireText("src/lib/font-definitions.js", fontDefinitions, "key: \"gnu-free-mono\"");
+requireText("src/lib/themes.js", themes, "key: \"gnu-free-mono\"");
 requireText("src/lib/themes.js", themes, "gnu-free-mono-v1");
 requireText("src/lib/themes.js", themes, "const thaiFallback = \"'GNUFreeSerifThai'\"");
 requireText("src/lib/themes.js", themes, "root.style.setProperty(\"--font-multilingual\", \"'UnifontEX'\")");
 requireText("src/index.css", css, "--font-body: 'GNUFreeMonoUI', 'GNUFreeSerifThai'");
 requireText("src/index.css", css, "unicode-range: U+0E00-0E7F");
-requireText("src/index.css", css, "FreeMono-Basic.woff2?v=4");
 requireText("src/lib/cursor-preference.js", cursorPreference, "mabis_custom_cursor_enabled");
 requireText("src/lib/color/themeBalance.js", themeBalance, "contrastSafePair");
 requireText("src/lib/color/themeBalance.js", themeBalance, "spreadBalancedPalette");

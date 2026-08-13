@@ -653,36 +653,18 @@ Performance is part of the Novesce design contract. A technically correct change
 
 AI and human contributors must preserve these rules:
 
-- Route modules use shared dynamic loaders so navigation targets can preload on pointer or keyboard intent only when the active network policy permits speculative transfer.
+- Route modules use shared dynamic loaders so navigation targets can preload on pointer or keyboard intent.
 - Large Home widgets remain behind near-viewport `LazySection` and `React.lazy` boundaries. Delaying mount without splitting the import is not sufficient.
 - Rich-text editing, analytics charts, settings, profile editing, cursor physics, and floating assistant tools load only when their interaction requires them.
-- The assistant and feedback panel must remain click-to-download. Their launcher controls may be present immediately, but their implementation chunks must not be fetched merely because the browser became idle.
-- Noncritical reminders mount during browser idle time and wait substantially longer on constrained links rather than competing with the first useful paint.
+- Noncritical reminders and floating tools mount during browser idle time rather than competing with the first useful paint.
 - Long editorial sections and list cards use `content-visibility` and intrinsic-size containment where supported.
 - Decorative scroll indicators share one passive, animation-frame-throttled scroll signal and write to isolated DOM nodes without causing React renders on every scroll frame.
 - Canvas animations must cache computed styles, avoid reallocating backing buffers per frame, cap unreasonable pixel density, and cancel animation frames on unmount.
 - Data queries that serve hidden tabs or unauthorized controls remain disabled until those surfaces are reachable.
-- Live widgets query only the week, year, status, or user records they display. Archive-sized fetches belong on archive routes, not the Home dashboard.
 - Use `useMemo`, `useDeferredValue`, transitions, and component memoization only where they remove measured work. Do not scatter them ceremonially.
 - Canonical visuals, accessibility, reduced-motion behavior, mobile behavior, and the optional custom cursor must survive every optimization.
 
-## Poor-network and offline contract
-
-The website has an always-on network policy with **Auto**, **On**, and **Off** Data Saver modes. Auto must react to the browser's Save-Data request, offline state, 2G or slow-2G classification, very low reported downlink, and extreme round-trip latency. A constrained connection must not be treated as a smaller desktop broadband connection.
-
-The following rules are mandatory:
-
-- Do not speculatively preload routes, optional fonts, cursor physics, assistant code, feedback code, or decorative media in Lite mode.
-- Keep the default GNU FreeMono startup face in compact WOFF2 subsets. Do not restore raw TTF preloads or preload bold, italic, Thai, CJK, and catalogue fonts before the page needs them.
-- GNU FreeSerif Thai files remain Thai-only subsets. UnifontEX remains available for explicitly marked Japanese and Chinese text, but its large file must load only when actual marked text or an explicit selection requires it.
-- Every optional font family has its own stylesheet. Opening Settings must not parse or download the complete Libre Fonts by Womxn catalogue, and unloaded font previews must use the current UI face until selected or intentionally warmed on an unconstrained connection.
-- First-paint logos and icons are local, compressed, dimensioned resources. Below-fold attachments, archive images, and avatars use lazy loading, asynchronous decoding, and low fetch priority where appropriate.
-- Network Lite disables continuous decorative compositing, grain, blur-heavy glass, animated ambience, smooth-scroll interception, and the custom cursor while preserving the same information structure, theme colors, borders, and controls.
-- The generated service worker may cache the public application shell, hashed static chunks, compact core fonts, local images, and resources the user explicitly requests. It must never intercept or cache Base44 API, authentication, entity, integration, or function responses.
-- Offline shell support improves repeat visits after one successful load. Do not claim that uncached private data or first-time authentication works without a network connection.
-- UI sounds must be synthesized or local and interaction-triggered. Do not reintroduce remote click or typing audio downloads.
-
-The production build enforces static performance boundaries, poor-network rules, safe service-worker generation, and gzip budgets. Do not weaken or remove these checks merely to make an oversized change pass. Investigate the regression, preserve the intended boundary, or obtain Novesce's explicit approval for a documented budget change.
+The production build enforces static performance boundaries and gzip budgets. Do not weaken or remove these checks merely to make an oversized change pass. Investigate the regression, preserve the intended lazy boundary, or obtain Novesce's explicit approval for a documented budget change.
 
 ---
 

@@ -1,14 +1,12 @@
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search, MousePointer2, Wifi } from "lucide-react";
+import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search, MousePointer2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
 import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
-import { FONT_PREVIEW_TEXT, applyFont, getStoredFont, isFontAssetLoaded, preloadFont } from "@/lib/themes";
-import { FONTS, FONT_LIBRARIES } from "@/lib/font-catalog";
-import { allowSpeculativeFetch, getDataSaverMode, networkState, NETWORK_EVENT, setDataSaverMode } from "@/lib/network-policy";
+import { FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
 
 export default function SettingsModal({ open, onClose, isAdmin }) {
   const [currentCode, setCurrentCode] = useState("");
@@ -19,20 +17,15 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const [animationsOff, setAnimationsOff] = useState(animationsDisabled());
   const [customCursorOn, setCustomCursorOn] = useState(customCursorEnabled());
   const [currentFont, setCurrentFont] = useState(getStoredFont());
-  const [fontPreviewLoaded, setFontPreviewLoaded] = useState(() => ({ "gnu-free-mono": true, [getStoredFont()]: true }));
   const [fontAvailability, setFontAvailability] = useState({});
   const [fontSearch, setFontSearch] = useState("");
   const [fontSource, setFontSource] = useState("featured");
   const [fontLimit, setFontLimit] = useState(18);
-  const [dataSaver, setDataSaver] = useState(getDataSaverMode);
-  const [connection, setConnection] = useState(networkState);
   const deferredFontSearch = useDeferredValue(fontSearch);
 
   useEffect(() => {
     if (!open) return;
-    const storedFont = getStoredFont();
-    setCurrentFont(storedFont);
-    setFontPreviewLoaded((loaded) => ({ ...loaded, "gnu-free-mono": true, [storedFont]: true }));
+    setCurrentFont(getStoredFont());
     setCustomCursorOn(customCursorEnabled());
     if (!document.fonts) return;
     let cancelled = false;
@@ -59,16 +52,6 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
     setFontLimit(18);
   }, [fontSearch, fontSource]);
 
-  useEffect(() => {
-    const sync = (event) => {
-      setDataSaver(getDataSaverMode());
-      setConnection(event?.detail || networkState());
-    };
-    sync();
-    window.addEventListener(NETWORK_EVENT, sync);
-    return () => window.removeEventListener(NETWORK_EVENT, sync);
-  }, []);
-
   const filteredFonts = useMemo(() => {
     const query = deferredFontSearch.trim().toLowerCase();
     return FONTS.filter((font) => {
@@ -82,19 +65,11 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
 
   const visibleFonts = filteredFonts.slice(0, fontLimit);
 
-  const warmFontPreview = async (font) => {
-    if (!allowSpeculativeFetch() || fontPreviewLoaded[font.key]) return;
-    await preloadFont(font.key);
-    setFontPreviewLoaded((loaded) => ({ ...loaded, [font.key]: true }));
-  };
-
   const handleFontSelect = (key) => {
     localStorage.setItem("mabis-font-picker-version", "7");
     localStorage.setItem("mabis-font-updated-at", String(Date.now()));
     setCurrentFont(key);
-    applyFont(key).finally(() => {
-      setFontPreviewLoaded((loaded) => ({ ...loaded, [key]: true }));
-    });
+    applyFont(key);
   };
 
   const handleSaveCode = () => {
@@ -211,18 +186,11 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   {visibleFonts.map((font) => {
                     const selected = currentFont === font.key;
                     const available = font.localOnly ? fontAvailability[font.key] : true;
-                    const previewReady = font.localOnly
-                      || font.key === "gnu-free-mono"
-                      || selected
-                      || fontPreviewLoaded[font.key]
-                      || (font.stylesheet && isFontAssetLoaded(font));
                     return (
                       <button
                         key={font.key}
                         type="button"
                         onClick={() => handleFontSelect(font.key)}
-                        onPointerEnter={() => warmFontPreview(font)}
-                        onFocus={() => warmFontPreview(font)}
                         aria-pressed={selected}
                         className={`w-full text-left rounded-xl border-2 p-3.5 transition-colors ${selected ? "border-[#951E3A] bg-[#951E3A]/5" : "border-gray-200 hover:border-[#951E3A]/30"}`}
                       >
@@ -240,23 +208,16 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                           <div className="shrink-0 flex items-center gap-1.5">
                             <span className={`h-1.5 w-1.5 rounded-full ${available ? "bg-green-500" : available === false ? "bg-amber-400" : "bg-gray-300"}`} />
                             <span className="text-[9px] uppercase tracking-wider text-gray-400">
-                              {font.localOnly
-                                ? (available ? "Installed" : available === false ? "Fallback" : "Checking")
-                                : previewReady ? "Loaded" : "On demand"}
+                              {font.localOnly ? (available ? "Installed" : available === false ? "Fallback" : "Checking") : "Embedded"}
                             </span>
                           </div>
                         </div>
                         <div
                           className="rounded-lg border border-gray-200 bg-white px-3 py-3 text-[17px] leading-snug text-gray-900 break-words"
-                          style={{ fontFamily: previewReady ? font.body : "var(--font-body)" }}
+                          style={{ fontFamily: font.body }}
                         >
                           {FONT_PREVIEW_TEXT}
                         </div>
-                        {!previewReady && (
-                          <p className="mt-2 text-[10px] leading-4 text-gray-400">
-                            Preview stays unloaded to save data. Select this font to download it.
-                          </p>
-                        )}
                         {font.localOnly && available === false && (
                           <p className="mt-2 text-[10px] leading-4 text-amber-600">
                             This commercial face needs a licensed local/webfont copy. Go is active until that file is available.
@@ -311,38 +272,6 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                     <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${soundOn ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                 </button>
-              </div>
-
-              {/* Data saver */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Wifi className={`w-4 h-4 ${connection.constrained ? "text-[#951E3A]" : "text-gray-400"}`} />
-                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Data Saver</h3>
-                </div>
-                <p className="text-xs text-gray-400 mb-3">
-                  Auto reacts to Save-Data, offline mode, 2G and unusually slow links. Lite mode stops speculative downloads, heavy font previews and optional effects.
-                </p>
-                <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-gray-200 bg-gray-50 p-1.5">
-                  {["auto", "on", "off"].map((mode) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      onClick={() => {
-                        setDataSaver(mode);
-                        setConnection(setDataSaverMode(mode));
-                      }}
-                      className={`min-h-9 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-colors ${dataSaver === mode ? "bg-[#951E3A] text-white" : "bg-white text-gray-500 hover:text-gray-800"}`}
-                      aria-pressed={dataSaver === mode}
-                    >
-                      {mode}
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-2 text-[10px] text-gray-400">
-                  Current path: <span className="font-bold text-gray-600">{connection.constrained ? "Lite" : "Full"}</span>
-                  {connection.offline ? " · Offline" : connection.effectiveType !== "unknown" ? ` · ${connection.effectiveType.toUpperCase()}` : ""}
-                  {connection.saveData ? " · Save-Data requested" : ""}
-                </p>
               </div>
 
               {/* Motion */}

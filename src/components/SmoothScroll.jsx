@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { animationsDisabled } from "@/lib/motion-preference";
 import { subscribe, wake } from "@/lib/physics/scheduler";
 import { lowPowerMode } from "@/lib/performance-tier";
-import { networkState, NETWORK_EVENT } from "@/lib/network-policy";
 /**
  * Inertial smooth scrolling, tuned per input device:
  * - Mouse wheels (Windows/Linux/Mac mice) get the rAF-eased inertial scroll.
@@ -13,18 +12,10 @@ import { networkState, NETWORK_EVENT } from "@/lib/network-policy";
  * Disabled on touch, reduced-motion, and inside independently scrollable panes.
  */
 export default function SmoothScroll() {
-  const [networkLite, setNetworkLite] = useState(() => networkState().constrained);
-
-  useEffect(() => {
-    const update = (event) => setNetworkLite(Boolean(event.detail?.constrained));
-    window.addEventListener(NETWORK_EVENT, update);
-    return () => window.removeEventListener(NETWORK_EVENT, update);
-  }, []);
-
   useEffect(() => {
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!fine || reduced || animationsDisabled() || networkLite) return;
+    if (!fine || reduced || animationsDisabled()) return;
 
     let target = window.scrollY;
     let current = target;
@@ -86,7 +77,7 @@ export default function SmoothScroll() {
     });
 
     const onWheel = (e) => {
-      if (e.ctrlKey || lowPowerMode() || networkState().constrained) return; // native scrolling is cheapest
+      if (e.ctrlKey || lowPowerMode()) return; // native scrolling is cheapest
       if (looksLikeTrackpad(e)) { stop(); return; } // native inertia is better
       if (scrollableParent(e.target)) return;
       e.preventDefault();
@@ -110,7 +101,7 @@ export default function SmoothScroll() {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [networkLite]);
+  }, []);
 
   return null;
 }
