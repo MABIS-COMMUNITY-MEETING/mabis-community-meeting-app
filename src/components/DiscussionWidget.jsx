@@ -142,14 +142,16 @@ function TopicItem({
             />
           </div>
 
-          <DocsEditor
-            key={`inline-edit-${topic.id}`}
-            title={editTitle || "Untitled topic"}
-            placeholder="Write your topic description, paste screenshots, add context…"
-            onChange={onDescriptionChange}
-            minHeight={compact ? "140px" : "180px"}
-            initialHtml={editDescription}
-          />
+          <Suspense fallback={<ChunkFallback height={compact ? 140 : 180} />}>
+            <DocsEditor
+              key={`inline-edit-${topic.id}`}
+              title={editTitle || "Untitled topic"}
+              placeholder="Write your topic description, paste screenshots, add context…"
+              onChange={onDescriptionChange}
+              minHeight={compact ? "140px" : "180px"}
+              initialHtml={editDescription}
+            />
+          </Suspense>
 
           <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
             <div className="flex flex-wrap items-center gap-1.5">
@@ -755,7 +757,9 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
                 <h3 className="font-display font-bold text-gray-800 text-xl">Announcements</h3>
               </div>
-              <AnnouncementsWidget members={members} isAdmin={isAdmin} />
+              <Suspense fallback={<ChunkFallback height={260} />}>
+                <AnnouncementsWidget members={members} isAdmin={isAdmin} />
+              </Suspense>
             </section>
 
             {/* Topics */}
@@ -789,7 +793,9 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                     <Input placeholder="Topic title..." value={title} onChange={(e) => setTitle(e.target.value)}
                       className="rounded-lg border-gray-300 bg-white" />
                   </div>
-                  <DocsEditor key={editingTopicId || "new-mm"} title={title || "Untitled topic"} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="140px" initialHtml={description} />
+                  <Suspense fallback={<ChunkFallback height={140} />}>
+                    <DocsEditor key={editingTopicId || "new-mm"} title={title || "Untitled topic"} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="140px" initialHtml={description} />
+                  </Suspense>
                   <div className="flex items-center gap-2 flex-wrap pt-1">
                     <span className="text-xs text-gray-500 font-medium">Priority:</span>
                     {[1,2,3,4,5].map(p => (
@@ -830,7 +836,9 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 <h3 className="font-display font-bold text-gray-800 text-xl">Meeting Notes</h3>
                 <span className="text-xs text-gray-400">{formatWeekLabel(viewedWeek)}</span>
               </div>
-              <MeetingNotesEditor weekLabel={viewedWeek} />
+              <Suspense fallback={<ChunkFallback height={260} />}>
+                <MeetingNotesEditor weekLabel={viewedWeek} />
+              </Suspense>
             </section>
 
             {/* Jobs */}
@@ -839,7 +847,9 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
                 <h3 className="font-display font-bold text-gray-800 text-xl">Jobs Assignment</h3>
               </div>
-              <JobsWidget members={members} isAdmin={isAdmin} />
+              <Suspense fallback={<ChunkFallback height={420} />}>
+                <JobsWidget members={members} isAdmin={isAdmin} />
+              </Suspense>
             </section>
 
             {/* Calendar */}
@@ -848,7 +858,9 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
                 <h3 className="font-display font-bold text-gray-800 text-xl">Calendar</h3>
               </div>
-              <CalendarWidget />
+              <Suspense fallback={<ChunkFallback height={420} />}>
+                <CalendarWidget />
+              </Suspense>
             </section>
 
             {/* End Meeting */}
@@ -862,7 +874,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
 
           </div>
         </div>
-        <MabisAIAssistant />
+        <Suspense fallback={null}><MabisAIAssistant /></Suspense>
       </motion.div>,
       document.body
     );
@@ -922,7 +934,9 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 onChange={(e) => setTitle(e.target.value)}
                 className="rounded-lg border-gray-300 bg-white" />
             </div>
-            <DocsEditor key={editingTopicId || "new"} title={title || "Untitled topic"} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="180px" initialHtml={description} />
+            <Suspense fallback={<ChunkFallback height={180} />}>
+              <DocsEditor key={editingTopicId || "new"} title={title || "Untitled topic"} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="180px" initialHtml={description} />
+            </Suspense>
             <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-xs text-gray-500 font-medium">Priority:</span>
@@ -977,7 +991,9 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
         </div>
 
         <div className="border-t border-gray-100 pt-4">
-          <JobsWidget members={members} isAdmin={isAdmin} compact={true} />
+          <Suspense fallback={<ChunkFallback height={240} />}>
+            <JobsWidget members={members} isAdmin={isAdmin} compact={true} />
+          </Suspense>
         </div>
       </div>
     </div>
