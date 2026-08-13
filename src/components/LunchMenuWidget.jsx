@@ -54,25 +54,25 @@ export default function LunchMenuWidget({ isAdmin }) {
   const setVal = (field, val) => setDraft(d => ({ ...d, [field]: val }));
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="bg-[#951E3A] px-6 py-4 flex items-center gap-3">
+    <div className="mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex items-center gap-3 sm:px-6">
         <UtensilsCrossed className="w-5 h-5 text-white" />
         <div>
-          <h2 className="font-display font-bold text-white text-xl">Snacks &amp; Lunch</h2>
+          <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Snacks &amp; Lunch</h2>
           <p className="text-white/60 text-xs mt-0.5">Week of {format(fridayOfCurrentWeek(), "d MMMM yyyy")}</p>
         </div>
       </div>
 
-      <div className="p-5">
+      <div className="mabis-widget-body p-4 sm:p-5">
         {isLoading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-[#951E3A]" />
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="mobile-horizontal-scroll flex snap-x gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 md:grid-cols-5">
               {DAYS.map(([key, label]) => (
-                <div key={key} className="rounded-xl border border-gray-200 overflow-hidden">
+                <div key={key} className="w-[82vw] max-w-[18rem] shrink-0 snap-start overflow-hidden rounded-xl border border-gray-200 sm:w-auto sm:max-w-none">
                   <div className="bg-[#951E3A]/10 px-3 py-2 text-center">
                     <span className="text-xs font-bold text-[#951E3A] uppercase tracking-wide">{label}</span>
                   </div>
@@ -101,9 +101,9 @@ export default function LunchMenuWidget({ isAdmin }) {
             </div>
 
             {isAdmin && (
-              <div className="flex justify-end mt-4">
+              <div className="flex justify-stretch mt-4 sm:justify-end">
                 <button onClick={() => upsertMutation.mutate(draft)} disabled={upsertMutation.isPending}
-                  className="flex items-center gap-1.5 bg-[#951E3A] hover:bg-[#7a1830] text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors disabled:opacity-60">
+                  className="flex w-full items-center justify-center gap-1.5 bg-[#951E3A] hover:bg-[#7a1830] text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors disabled:opacity-60 sm:w-auto">
                   {upsertMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save Menu
                 </button>
