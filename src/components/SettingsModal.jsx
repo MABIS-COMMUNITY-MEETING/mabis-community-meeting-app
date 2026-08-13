@@ -124,17 +124,63 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
 
               {/* Typography */}
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Type className="w-4 h-4 text-[#951E3A]" />
-                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">UI Font</h3>
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Type className="w-4 h-4 text-[#951E3A]" />
+                    <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">UI Font</h3>
+                  </div>
+                  <span className="text-[10px] text-gray-400 tabular-nums">{FONTS.length} choices</span>
                 </div>
                 <p className="text-xs text-gray-400 mb-3">
-                  Choose the typeface used across the interface. Japanese, Chinese and Thai automatically fall back to the embedded multilingual face when needed.
+                  Choose the typeface used across the interface. Japanese, Chinese and Thai fall back to UnifontEX whenever the selected face lacks those glyphs.
                 </p>
-                <div className="space-y-2.5">
-                  {FONTS.map((font) => {
+
+                <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-3 mb-3">
+                  <p className="text-[9px] uppercase tracking-[0.2em] text-gray-400 mb-1.5">Current UI preview</p>
+                  <p className="text-[20px] leading-snug text-gray-900 break-words" style={{ fontFamily: "var(--font-body)" }}>
+                    {FONT_PREVIEW_TEXT}
+                  </p>
+                </div>
+
+                <div className="relative mb-2.5">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <input
+                    type="search"
+                    value={fontSearch}
+                    onChange={(event) => setFontSearch(event.target.value)}
+                    placeholder="Search the font library..."
+                    className="w-full h-9 rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-xs outline-none focus:border-[#951E3A]/40"
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setFontSource("featured")}
+                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-bold ${fontSource === "featured" ? "bg-[#951E3A] text-white border-[#951E3A]" : "border-gray-200 text-gray-500"}`}
+                  >
+                    Featured
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFontSource("by-womxn")}
+                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-bold ${fontSource === "by-womxn" ? "bg-[#951E3A] text-white border-[#951E3A]" : "border-gray-200 text-gray-500"}`}
+                  >
+                    Libre Fonts by Womxn
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFontSource("all")}
+                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-bold ${fontSource === "all" ? "bg-[#951E3A] text-white border-[#951E3A]" : "border-gray-200 text-gray-500"}`}
+                  >
+                    All
+                  </button>
+                </div>
+
+                <div className="grid gap-2.5">
+                  {visibleFonts.map((font) => {
                     const selected = currentFont === font.key;
-                    const available = fontAvailability[font.key];
+                    const available = font.localOnly ? fontAvailability[font.key] : true;
                     return (
                       <button
                         key={font.key}
@@ -145,20 +191,19 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                       >
                         <div className="flex items-start justify-between gap-3 mb-2.5">
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-1.5">
                               <span className="text-sm font-bold text-gray-800">{font.name}</span>
                               {font.key === "transgender-grotesk" && (
                                 <span className="rounded-full bg-[#951E3A] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">Default</span>
                               )}
+                              {selected && <Check className="h-3.5 w-3.5 text-[#951E3A]" />}
                             </div>
                             <p className="text-[10px] leading-4 text-gray-400 mt-0.5">{font.detail}</p>
                           </div>
                           <div className="shrink-0 flex items-center gap-1.5">
-                            <span className={`h-1.5 w-1.5 rounded-full ${available === true ? "bg-green-500" : available === false ? "bg-amber-400" : "bg-gray-300"}`} />
+                            <span className={`h-1.5 w-1.5 rounded-full ${available ? "bg-green-500" : available === false ? "bg-amber-400" : "bg-gray-300"}`} />
                             <span className="text-[9px] uppercase tracking-wider text-gray-400">
-                              {font.localOnly
-                                ? available === true ? "Installed" : available === false ? "Fallback active" : "Checking"
-                                : "Embedded"}
+                              {font.localOnly ? (available ? "Installed" : available === false ? "Fallback" : "Checking") : "Embedded"}
                             </span>
                           </div>
                         </div>
@@ -170,12 +215,36 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                         </div>
                         {font.localOnly && available === false && (
                           <p className="mt-2 text-[10px] leading-4 text-amber-600">
-                            Install your licensed copy on this device to render this face. Until then, UnifontEX is used safely.
+                            This commercial face needs a licensed local/webfont copy. Iosevka is active until that file is available.
                           </p>
                         )}
                       </button>
                     );
                   })}
+                </div>
+
+                {visibleFonts.length === 0 && (
+                  <div className="rounded-lg border border-dashed border-gray-200 px-3 py-5 text-center text-xs text-gray-400">
+                    No fonts match this search.
+                  </div>
+                )}
+                {filteredFonts.length > visibleFonts.length && (
+                  <button
+                    type="button"
+                    onClick={() => setFontLimit((value) => value + 18)}
+                    className="mt-2.5 w-full h-9 rounded-lg border border-gray-200 text-xs font-bold text-gray-600 hover:border-[#951E3A]/30"
+                  >
+                    Show more · {filteredFonts.length - visibleFonts.length} remaining
+                  </button>
+                )}
+
+                <div className="mt-3 grid gap-1.5">
+                  {FONT_LIBRARIES.map((library) => (
+                    <div key={library.key} className="flex items-start justify-between gap-3 border-t border-gray-100 pt-2 text-[10px]">
+                      <span className="font-bold text-gray-600">{library.name}</span>
+                      <span className="max-w-[70%] text-right leading-4 text-gray-400">{library.detail}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
