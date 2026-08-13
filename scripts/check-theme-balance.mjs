@@ -17,7 +17,7 @@ const ROLE_TOKENS = [
 ];
 
 function distinctTokenHues(values) {
-    return distinctChromaticCount(values);
+    return distinctChromaticCount(values, { neutralSaturation: 15 });
 }
 
 function hslToRgb(value) {
