@@ -1,13 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { networkState } from "@/lib/network-policy";
 
 const LOGO = "/images/mabis-logo-128.webp";
 
-/**
- * Numeric loader. The selected UI font is loaded before this component mounts,
- * so the counter, metadata and wordmark never flash through a different face.
- * A hairline sweeps across while the wordmark assembles beneath it.
- */
+/** Numeric loader with direct DOM writes and CSS-only decorative motion. */
 export default function LoadingScreen() {
   const [done, setDone] = useState(false);
   const [loadingFont] = useState(() => {
@@ -22,20 +18,20 @@ export default function LoadingScreen() {
 
   useEffect(() => {
     const start = performance.now();
-    const dur = 1300;
+    const dur = networkState().constrained ? 320 : 1100;
     let previous = -1;
-    const tick = (t) => {
-      const p = Math.min((t - start) / dur, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      const n = Math.round(eased * 100);
-      if (n !== previous) {
-        previous = n;
-        if (countRef.current) countRef.current.textContent = String(n).padStart(3, "0");
-        if (wordmarkRef.current) wordmarkRef.current.style.clipPath = `inset(0 ${(100 - n) * 0.6}% 0 0)`;
-        if (lineRef.current) lineRef.current.style.transform = `scaleX(${n / 100})`;
-        if (statusRef.current) statusRef.current.textContent = `LOADING ASSETS ${n}%`;
+    const tick = (time) => {
+      const progress = Math.min((time - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const number = Math.round(eased * 100);
+      if (number !== previous) {
+        previous = number;
+        if (countRef.current) countRef.current.textContent = String(number).padStart(3, "0");
+        if (wordmarkRef.current) wordmarkRef.current.style.clipPath = `inset(0 ${(100 - number) * 0.6}% 0 0)`;
+        if (lineRef.current) lineRef.current.style.transform = `scaleX(${number / 100})`;
+        if (statusRef.current) statusRef.current.textContent = `LOADING ASSETS ${number}%`;
       }
-      if (p < 1) raf.current = requestAnimationFrame(tick);
+      if (progress < 1) raf.current = requestAnimationFrame(tick);
       else setDone(true);
     };
     raf.current = requestAnimationFrame(tick);
@@ -43,68 +39,39 @@ export default function LoadingScreen() {
   }, []);
 
   return (
-    <div
-      className="loading-screen fixed inset-0 overflow-hidden bg-ink text-bone"
-      style={{ "--loading-font": loadingFont }}
-    >
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.4 }} transition={{ duration: 1 }} className="absolute inset-0 grid-bg" />
-      {/* faint drifting glow */}
+    <div className="loading-screen fixed inset-0 overflow-hidden bg-ink text-bone" style={{ "--loading-font": loadingFont }}>
+      <div className="loading-grid absolute inset-0 grid-bg opacity-40" />
       <div
         className="absolute left-1/2 top-1/2 h-[60vw] w-[60vw] max-w-[600px] max-h-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl blob-drift"
         style={{ background: "radial-gradient(circle, hsl(var(--primary)/0.28) 0%, transparent 62%)" }}
       />
 
-      {/* corner brackets */}
       <div className="pointer-events-none absolute inset-5 sm:inset-8 corner-bracket" />
-
-      {/* meta */}
       <div className="absolute top-6 left-6 sm:top-8 sm:left-8 tech-label text-bone/50"> INITIALISING</div>
       <div className="absolute top-6 right-6 sm:top-8 sm:right-8 tech-label text-bone/50">MABIS 2026</div>
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center">
-        <AnimatePresence>
-          {!done && (
-            <motion.div
-              key="count"
-              exit={{ opacity: 0, scale: 1.04 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="flex items-baseline"
-            >
-              <span ref={countRef} className="font-display font-normal tracking-ultra text-[22vw] sm:text-[16vw] leading-none tabular-nums">
-                000
-              </span>
-              <span className="ml-2 tech-label text-primary">％</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className={`loading-count flex items-baseline ${done ? "is-done" : ""}`}>
+          <span ref={countRef} className="font-display font-normal tracking-ultra text-[22vw] sm:text-[16vw] leading-none tabular-nums">000</span>
+          <span className="ml-2 tech-label text-primary">％</span>
+        </div>
 
-        {/* assembling wordmark behind counter */}
-        <span ref={wordmarkRef}
+        <span
+          ref={wordmarkRef}
           style={{ clipPath: "inset(0 100% 0 0)" }}
           className="absolute font-display font-normal tracking-ultra text-bone/8 text-[18vw] leading-none select-none"
         >
           COMMUNITY
         </span>
 
-        {/* sweeping line */}
         <div className="relative mt-6 h-px w-56 overflow-hidden bg-bone/15">
-          <div ref={lineRef}
-            className="absolute inset-y-0 left-0 w-full origin-left bg-primary"
-            style={{ transform: "scaleX(0)" }}
-          />
+          <div ref={lineRef} className="absolute inset-y-0 left-0 w-full origin-left bg-primary" style={{ transform: "scaleX(0)" }} />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-          className="mt-5 flex items-center gap-3 tech-label text-bone/45"
-        >
-          <motion.span
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
-            className="inline-block h-2.5 w-2.5 border border-bone/40 border-t-primary"
-          />
+        <div className="loading-status mt-5 flex items-center gap-3 tech-label text-bone/45">
+          <span className="loading-spinner inline-block h-2.5 w-2.5 border border-bone/40 border-t-primary" />
           <span ref={statusRef}>LOADING ASSETS 0%</span>
-        </motion.div>
+        </div>
       </div>
 
       <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-8 tech-label text-bone/40">
