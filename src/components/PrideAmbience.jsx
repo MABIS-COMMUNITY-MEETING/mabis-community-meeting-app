@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { PRIDE_THEMES } from "@/lib/pride";
 import { getStoredTheme } from "@/lib/themes";
 
@@ -13,7 +13,6 @@ import { getStoredTheme } from "@/lib/themes";
  */
 export default function PrideAmbience() {
   const [theme, setTheme] = useState(() => PRIDE_THEMES[getStoredTheme()] || null);
-  const layerRef = useRef(null);
 
   useEffect(() => {
     const sync = () => setTheme(PRIDE_THEMES[getStoredTheme()] || null);
@@ -21,23 +20,11 @@ export default function PrideAmbience() {
     return () => window.removeEventListener("themeChanged", sync);
   }, []);
 
-  useEffect(() => {
-    if (!theme) return;
-    let t;
-    const pulse = () => {
-      layerRef.current?.classList.add("is-energized");
-      clearTimeout(t);
-      t = setTimeout(() => layerRef.current?.classList.remove("is-energized"), 900);
-    };
-    window.addEventListener("pointerdown", pulse, { passive: true });
-    return () => { window.removeEventListener("pointerdown", pulse); clearTimeout(t); };
-  }, [theme]);
-
   if (!theme) return null;
   const spec = theme.pride;
 
   return (
-    <div ref={layerRef} className="pride-ambience fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden>
+    <div className="pride-ambience fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden>
       {spec.field.map((f, i) => (
         <div key={i} className="pride-field-x absolute" style={{
           left: `${f.x}%`, top: `${f.y}%`, width: `${f.r}vmax`, height: `${f.r}vmax`,
