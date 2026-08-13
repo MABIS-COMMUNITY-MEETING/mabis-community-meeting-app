@@ -67,10 +67,17 @@ function pastelTheme(key, name, p, s) {
 /* Multi-colour brand theme: primary/secondary drive the UI tokens while the full
    colour set (flag stripes, distro brand palette) feeds swatches and accents. */
 function paletteTheme(key, name, p, s, flagHexes) {
-  const t = pastelTheme(key, name, p, s);
+  const semanticPalette = balancedPalette(flagHexes);
+  const primarySource = semanticPalette[0]?.startsWith("#")
+    ? hexToHsl(readableHex(semanticPalette[0]))
+    : p;
+  const secondarySource = semanticPalette[1]?.startsWith("#")
+    ? hexToHsl(readableHex(semanticPalette[1]))
+    : s;
+  const t = pastelTheme(key, name, primarySource, secondarySource);
   t.swatches = flagHexes;
   t.flag = flagHexes;
-  const [pH] = p.split(" ");
+  const [pH] = primarySource.split(" ");
   // Flags are already loud. The page underneath stays an almost-neutral sheet
   // carrying a whisper of the flag's hue, so the colour reads as intentional
   // rather than as UI chrome fighting the palette.
@@ -84,8 +91,8 @@ function paletteTheme(key, name, p, s, flagHexes) {
   t.vars["--muted-foreground"] = `${pH} 8% 42%`;
   t.vars["--border"] = `${pH} 12% 88%`;
   t.vars["--input"] = `${pH} 12% 88%`;
-  const tertiaryHex = pickDistinctPaletteColor(flagHexes, [p, s]);
-  const tertiary = tertiaryHex ? hexToHsl(tertiaryHex) : s;
+  const tertiaryHex = pickDistinctPaletteColor(flagHexes, [primarySource, secondarySource]);
+  const tertiary = tertiaryHex ? hexToHsl(readableHex(tertiaryHex)) : secondarySource;
   const tertiaryPair = keyColorPair(tertiary);
   t.vars["--accent"] = tertiaryPair.fill;
   t.vars["--accent-foreground"] = tertiaryPair.foreground;
