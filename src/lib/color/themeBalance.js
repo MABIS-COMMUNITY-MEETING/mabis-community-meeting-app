@@ -6,8 +6,8 @@
  * roles such as primary/secondary/accent, member badges and legacy accent slots.
  */
 
-const HUE_BUCKET_DEGREES = 18;
-const NEUTRAL_SATURATION = 10;
+const HUE_CLUSTER_DEGREES = 18;
+const NEUTRAL_SATURATION = 16;
 
 function normalizeHex(value) {
     const hex = value.trim().toLowerCase();
@@ -113,6 +113,52 @@ export function bestForeground(
     return contrastRatio(fill, dark) >= contrastRatio(fill, light) ? dark : light;
 }
 
+function hslString(parts) {
+    return `${Math.round(parts.h)} ${Math.round(parts.s)}% ${Math.round(parts.l)}%`;
+}
+
+/**
+ * Keep hue and saturation, moving only lightness when a key colour cannot
+ * support readable text. Canonical source swatches remain unchanged elsewhere.
+ */
+export function contrastSafePair(
+    fill,
+    { dark = "0 0% 12%", light = "0 0% 100%", minimum = 4.5 } = {},
+) {
+    const parts = colorParts(fill);
+    if (!parts) return { fill, foreground: bestForeground(fill, { dark, light }) };
+
+    const original = hslString(parts);
+    const originalForeground = bestForeground(original, { dark, light });
+    if (contrastRatio(original, originalForeground) >= minimum) {
+        return { fill: original, foreground: originalForeground };
+    }
+
+    const candidates = [
+        { target: 0, foreground: light },
+        { target: 100, foreground: dark },
+    ].map(({ target, foreground }) => {
+        let safe = target;
+        let unsafe = parts.l;
+        for (let i = 0; i < 18; i += 1) {
+            const mid = (safe + unsafe) / 2;
+            const candidate = hslString({ ...parts, l: mid });
+            if (contrastRatio(candidate, foreground) >= minimum) safe = mid;
+            else unsafe = mid;
+        }
+        const adjusted = hslString({ ...parts, l: safe });
+        return {
+            fill: adjusted,
+            foreground,
+            delta: Math.abs(safe - parts.l),
+            ratio: contrastRatio(adjusted, foreground),
+        };
+    }).filter((candidate) => candidate.ratio >= minimum - 0.01);
+
+    candidates.sort((a, b) => a.delta - b.delta);
+    return candidates[0] || { fill: original, foreground: originalForeground };
+}
+
 function neutralBand(lightness) {
     if (lightness < 35) return "dark";
     if (lightness > 72) return "light";
@@ -136,7 +182,7 @@ export function balancedPalette(
         .map((value, index) => ({ value, index, parts: colorParts(value) }))
         .filter((entry) => entry.parts);
 
-    const chromatic = new Map();
+    const chromatic = [];
     const neutrals = new Map();
 
     for (const entry of entries) {
@@ -150,14 +196,17 @@ export function balancedPalette(
             continue;
         }
 
-        const key = Math.round(h / HUE_BUCKET_DEGREES) % Math.round(360 / HUE_BUCKET_DEGREES);
-        const current = chromatic.get(key);
-        if (!current || s > current.parts.s) {
-            chromatic.set(key, entry);
+        const current = chromatic.find((candidate) => hueDistance(candidate.parts.h, h) < HUE_CLUSTER_DEGREES);
+        if (!current) {
+            chromatic.push({ ...entry });
+        } else if (s > current.parts.s) {
+            current.value = entry.value;
+            current.parts = entry.parts;
+            current.index = Math.min(current.index, entry.index);
         }
     }
 
-    const chromaticValues = [...chromatic.values()]
+    const chromaticValues = chromatic
         .sort((a, b) => a.index - b.index)
         .map((entry) => entry.value);
 
