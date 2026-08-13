@@ -121,7 +121,7 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
       ctx.rotate(s + arc / 2);
       ctx.textAlign = "right";
       const fontSize = members.length > 20 ? 9 : members.length > 14 ? 11 : 13;
-      ctx.font = `700 ${fontSize}px Inter, system-ui, sans-serif`;
+      ctx.font = `700 ${fontSize}px UnifontEX`;
       ctx.shadowColor = "rgba(0,0,0,0.45)";
       ctx.shadowBlur = 2;
       ctx.fillStyle = "#ffffff";
