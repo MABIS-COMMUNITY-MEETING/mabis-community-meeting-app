@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MotionConfig, MotionGlobalConfig } from "framer-motion";
 import { animationsDisabled, applyAnimationPreference, MOTION_EVENT } from "@/lib/motion-preference";
 import { applyLowPowerMode, detectLowPowerDevice, monitorFrameBudget } from "@/lib/performance-tier";
+import { networkState, NETWORK_EVENT } from "@/lib/network-policy";
 
 /* Motion off = everything simply exists: framer skips every animation
    (including ones with their own explicit transition, like the section
@@ -13,13 +14,20 @@ if (typeof window !== "undefined") {
 export default function MotionPreference({ children }) {
   const [disabled, setDisabled] = useState(animationsDisabled);
   const [lowPower, setLowPower] = useState(detectLowPowerDevice);
-  const effectiveDisabled = disabled || lowPower;
+  const [networkLite, setNetworkLite] = useState(() => networkState().constrained);
+  const effectiveDisabled = disabled || lowPower || networkLite;
 
   useEffect(() => {
     applyLowPowerMode(lowPower);
   }, [lowPower]);
 
   useEffect(() => monitorFrameBudget(() => setLowPower(true)), []);
+
+  useEffect(() => {
+    const update = (event) => setNetworkLite(Boolean(event.detail?.constrained));
+    window.addEventListener(NETWORK_EVENT, update);
+    return () => window.removeEventListener(NETWORK_EVENT, update);
+  }, []);
 
   useEffect(() => {
     MotionGlobalConfig.skipAnimations = effectiveDisabled;
