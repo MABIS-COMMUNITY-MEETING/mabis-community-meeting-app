@@ -8,13 +8,15 @@ import { lowPowerMode, PERFORMANCE_TIER_EVENT } from "@/lib/performance-tier";
 import { customCursorEnabled, CURSOR_EVENT } from "@/lib/cursor-preference";
 
 /**
- * The cursor keeps the browser pointer's OS-processed position exact while its
+ * The cursor preserves the browser pointer's OS-processed movement while its
  * outline behaves like a small swimming organism.
  *
- *   POSITION — the core dot reads PointerEvent clientX/clientY directly.
- *              The outer ring follows that same CSS-pixel target through a
- *              capped spring, so the dot can escape it during a quick gesture
- *              without changing OS sensitivity, acceleration, or DPI.
+ *   POSITION — the core dot reads PointerEvent clientX/clientY through a tiny
+ *              spatial deadband that absorbs ±1 px OS noise. Movement beyond
+ *              it snaps to the browser coordinate, so there is no timed easing,
+ *              accumulating lag, sensitivity change, prediction, or DPR math.
+ *              The outer ring follows that stabilized CSS-pixel target through
+ *              a capped spring, so the dot can escape it during a quick gesture.
  *   MATERIAL — bounded underdamped springs shape and recapture the ring like a
  *              soft membrane, producing a gentle rebound before settling.
  *
@@ -63,18 +65,40 @@ export default function CustomCursor() {
 
     let theta = 0;     // deformation orientation (deg)
     let visible = false;
+    let dotReady = false, dotMoved = false;
+    let dotX = 0, dotY = 0;
     let lastLabel = "";
     let prevRingX = 0, prevRingY = 0;
     let prevShear = 0, prevScale = 1, prevTheta = 0, prevGlow = 0;
     let lastHover = false, lastIsLabel = false, lastDotOpacity = "", lastRingOpacity = "", lastColor = "";
+
+    // Spatial hysteresis, not temporal smoothing: ignore only motion contained
+    // within the noise radius, then snap fully to the browser coordinate.
+    const sampleDot = () => {
+      dotMoved = false;
+      if (!pointer.seen) return;
+      if (!dotReady) {
+        dotX = pointer.rawX;
+        dotY = pointer.rawY;
+        dotReady = true;
+        dotMoved = true;
+        return;
+      }
+      const dx = pointer.rawX - dotX;
+      const dy = pointer.rawY - dotY;
+      if (Math.hypot(dx, dy) <= CURSOR.dotJitterDeadband) return;
+      dotX = pointer.rawX;
+      dotY = pointer.rawY;
+      dotMoved = true;
+    };
 
     const step = (dt) => {
       if (!pointer.seen) return;
 
       if (!visible) {
         visible = true;
-        ringX.x = prevRingX = pointer.rawX;
-        ringY.x = prevRingY = pointer.rawY;
+        ringX.x = prevRingX = dotX;
+        ringY.x = prevRingY = dotY;
       }
 
       // The dot is never interpolated. Only the ring's bounded follower and
@@ -85,19 +109,19 @@ export default function CustomCursor() {
       // A velocity estimate belongs to the last input sample. Release it after
       // a brief grace period so deformation cannot loop forever while idle.
       const idleFor = performance.now() / 1000 - pointer.movedAt;
-      const s = idleFor <= CURSOR.idleReleaseDelay ? pointer.speed : 0;
+      const s = dotMoved && idleFor <= CURSOR.idleReleaseDelay ? pointer.speed : 0;
 
-      integrateSpring(ringX, pointer.rawX, MATERIAL.follow.omega, MATERIAL.follow.zeta, dt);
-      integrateSpring(ringY, pointer.rawY, MATERIAL.follow.omega, MATERIAL.follow.zeta, dt);
+      integrateSpring(ringX, dotX, MATERIAL.follow.omega, MATERIAL.follow.zeta, dt);
+      integrateSpring(ringY, dotY, MATERIAL.follow.omega, MATERIAL.follow.zeta, dt);
 
-      let tetherX = pointer.rawX - ringX.x;
-      let tetherY = pointer.rawY - ringY.x;
+      let tetherX = dotX - ringX.x;
+      let tetherY = dotY - ringY.x;
       let tetherDistance = Math.hypot(tetherX, tetherY);
       if (tetherDistance > CURSOR.ringMaxLag) {
         const nx = tetherX / tetherDistance;
         const ny = tetherY / tetherDistance;
-        ringX.x = pointer.rawX - nx * CURSOR.ringMaxLag;
-        ringY.x = pointer.rawY - ny * CURSOR.ringMaxLag;
+        ringX.x = dotX - nx * CURSOR.ringMaxLag;
+        ringY.x = dotY - ny * CURSOR.ringMaxLag;
         // Remove only velocity that would stretch the tether farther. Inward
         // velocity survives, so the ring catches the dot without a hard snap.
         const inwardVelocity = ringX.v * nx + ringY.v * ny;
@@ -135,8 +159,8 @@ export default function CustomCursor() {
       if (!visible) return;
       const d = dotRef.current, r = ringRef.current;
       const a = clamp(alpha, 0, 1);
-      const px = pointer.rawX;
-      const py = pointer.rawY;
+      const px = dotX;
+      const py = dotY;
       const rx = prevRingX + (ringX.x - prevRingX) * a;
       const ry = prevRingY + (ringY.x - prevRingY) * a;
       const sh = prevShear + (shear.x - prevShear) * a;
@@ -178,7 +202,7 @@ export default function CustomCursor() {
     const settled = () => {
       if (!visible) return true;
       return (
-        Math.hypot(ringX.x - pointer.rawX, ringY.x - pointer.rawY) < SLEEP.pos &&
+        Math.hypot(ringX.x - dotX, ringY.x - dotY) < SLEEP.pos &&
         Math.hypot(ringX.v, ringY.v) < SLEEP.vel &&
         swim.x < 0.01 &&
         Math.abs(swim.v) < 0.01 &&
@@ -190,7 +214,7 @@ export default function CustomCursor() {
       );
     };
 
-    const unsubscribe = subscribe({ step, render, settled });
+    const unsubscribe = subscribe({ sample: sampleDot, step, render, settled });
     return () => {
       unsubscribe();
       stopPointer();
