@@ -67,7 +67,7 @@ export default function SpinWheel({ members, onResult }) {
       ctx.translate(textX, textY);
       ctx.rotate(textAngle + Math.PI / 2);
       ctx.fillStyle = "white";
-      const uiFont = getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'UnifontEX'";
+      const uiFont = getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'IosevkaUI'";
       ctx.font = `bold ${Math.max(10, Math.min(14, 200 / members.length))}px ${uiFont}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
