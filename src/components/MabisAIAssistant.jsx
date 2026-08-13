@@ -205,7 +205,7 @@ ${recentHistory || "(just started)"}`;
         onClick={() => setOpen(!open)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-6 right-6 z-[60] w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-white border-2 border-white"
+        className={`mobile-fab mobile-fab-right fixed bottom-6 right-6 z-[60] w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-white border-2 border-white ${open ? "mobile-fab-open" : ""}`}
         style={{ background: "hsl(var(--primary))" }}
         title="MABIS Omni AI Assistant"
       >
@@ -219,8 +219,8 @@ ${recentHistory || "(just started)"}`;
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 z-[60] rounded-2xl shadow-2xl border border-black/10 flex flex-col overflow-hidden"
-            style={{ width: `min(${panelWidth}px, calc(100vw - 3rem))`, height: `min(${panelHeight}, 78vh)`, background: "#F5F4EE" }}
+            className="mobile-assistant-panel fixed bottom-24 right-6 z-[60] rounded-2xl shadow-2xl border border-black/10 flex flex-col overflow-hidden"
+            style={{ width: `min(${panelWidth}px, calc(100vw - 3rem))`, height: `min(${panelHeight}, 78vh)`, background: "#F5F4EE", paddingBottom: "env(safe-area-inset-bottom)" }}
           >
             {/* Header — quiet, claude-style: just a title and window controls */}
             <div className="px-4 h-12 flex items-center gap-2 shrink-0 border-b border-black/5">
