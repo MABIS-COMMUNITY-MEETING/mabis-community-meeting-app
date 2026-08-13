@@ -95,16 +95,16 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
   });
 
   return (
-    <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
-      <div className="bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+    <div className={`mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
+      <div className="mabis-widget-header bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <div className="flex items-center gap-3 min-w-0">
           <Megaphone className="w-5 h-5 text-white" />
           <div>
-            <h2 className="font-display font-bold text-white text-xl">Announcements</h2>
+            <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Announcements</h2>
             <p className="text-white/60 text-xs mt-0.5">{announcements.length} announcement{announcements.length !== 1 ? "s" : ""}</p>
           </div>
         </div>
-        <div className="flex items-center flex-wrap gap-2 shrink-0">
+        <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
           <Link to="/history/announcements">
             <Button size="sm" variant="outline"
             className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1">
@@ -132,7 +132,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
         </div>
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="mabis-widget-body p-4 space-y-4 sm:p-5">
         {/* Post form */}
         <AnimatePresence>
           {showForm &&
@@ -140,7 +140,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="border border-gray-200 rounded-2xl p-5 bg-gray-50 space-y-3 overflow-hidden">
+            className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3 overflow-hidden sm:rounded-2xl sm:p-5">
             
               {/* Author */}
               <Select value={authorName} onValueChange={setAuthorName}>
@@ -180,7 +180,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
                 </div>
             }
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <button onClick={() => imgRef.current?.click()}
               className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#951E3A] px-2 py-1.5 rounded-lg border border-gray-200 hover:border-[#951E3A]/30 transition-colors">
                   <ImageIcon className="w-3.5 h-3.5" /> Image
@@ -191,7 +191,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
                 </button>
                 <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                 <input ref={vidRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
-                <div className="ml-auto flex gap-2">
+                <div className="flex gap-2 sm:ml-auto">
                   <Button variant="outline" size="sm" onClick={resetForm} className="text-xs rounded-lg">Cancel</Button>
                   <Button size="sm" onClick={handleSubmit}
                 disabled={!title.trim() || !authorName.trim() || uploading || addMutation.isPending}
