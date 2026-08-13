@@ -27,11 +27,6 @@ const JOBS = [
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const ADMIN_EMAIL = "summer@montessoribkk.com";
 
-function getThemeColor(varName, fallback) {
-  const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-  return val ? `hsl(${val})` : fallback;
-}
-
 // Person 1 jobs "(1)" → Mon/Wed/Fri, Person 2 jobs "(2)" → Tue/Thu
 function scheduledDaysFor(jobTitle) {
   if (jobTitle.includes("(1)")) return ["Monday", "Wednesday", "Friday"];
