@@ -1,3 +1,5 @@
+@import url('/fonts/by-womxn/fonts.css');
+
 /* ──────────────────────────────────────────────────────────────
    UI TYPE SYSTEM
    Transgender Grotesk and Atlas Mono resolve only to a user's own
@@ -18,6 +20,36 @@
   font-display: swap;
   font-weight: 400 900;
   src: local('Atlas Mono'), local('Atlas Mono Regular'), local('AtlasMono');
+}
+
+@font-face {
+  font-family: 'IosevkaUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/iosevka/Iosevka-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IosevkaUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('/fonts/iosevka/Iosevka-SemiBold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IosevkaUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/iosevka/Iosevka-Bold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'LilexUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/lilex/Lilex-Variable.woff2') format('woff2');
 }
 
 @font-face {
@@ -59,10 +91,10 @@
     --ink: 222 22% 8%;
     --bone: 42 34% 96%;
 
-    --font-heading: 'TransgenderGroteskUI', 'UnifontEX';
-    --font-body: 'TransgenderGroteskUI', 'UnifontEX';
-    --font-display: 'TransgenderGroteskUI', 'UnifontEX';
-    --font-mono: 'TransgenderGroteskUI', 'UnifontEX';
+    --font-heading: 'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX';
+    --font-body: 'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX';
+    --font-display: 'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX';
+    --font-mono: 'TransgenderGroteskUI', 'IosevkaUI', 'UnifontEX';
     --role-student: 348 74% 30%;
     --role-teacher: 165 55% 32%;
     --role-chair: 38 78% 48%;
