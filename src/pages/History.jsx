@@ -3,8 +3,6 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, Trash2, Users } from "lucide-react";
 import PageNav from "@/components/PageNav";
-import { Button } from "@/components/ui/button";
-
 import { getISOWeek, getYear, nextFriday, isFriday, format } from "date-fns";
 import PageFooter from "@/components/PageFooter";
 
