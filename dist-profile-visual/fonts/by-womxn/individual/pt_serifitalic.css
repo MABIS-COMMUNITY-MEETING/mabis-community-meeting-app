@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'pt_serifitalic';
+    src: url('../pt_serif-web-italic-webfont.woff2') format('woff2'),
+         url('../pt_serif-web-italic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

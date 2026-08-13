@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'rudaregular';
+    src: url('../ruda-regular-webfont.woff2') format('woff2'),
+         url('../ruda-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

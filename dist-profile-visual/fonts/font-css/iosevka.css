@@ -1,0 +1,21 @@
+@font-face {
+  font-family: 'IosevkaUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/iosevka/Iosevka-Regular.woff2?v=3') format('woff2');
+}
+@font-face {
+  font-family: 'IosevkaUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('/fonts/iosevka/Iosevka-SemiBold.woff2?v=3') format('woff2');
+}
+@font-face {
+  font-family: 'IosevkaUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/iosevka/Iosevka-Bold.woff2?v=3') format('woff2');
+}

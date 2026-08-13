@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'lily_script_oneregular';
+    src: url('../lilyscriptone-regular-webfont.woff2') format('woff2'),
+         url('../lilyscriptone-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

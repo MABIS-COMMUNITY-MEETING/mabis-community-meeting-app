@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'pt_sansitalic';
+    src: url('../pt_sans-web-italic-webfont.woff2') format('woff2'),
+         url('../pt_sans-web-italic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

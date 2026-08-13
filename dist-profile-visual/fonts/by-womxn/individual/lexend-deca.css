@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'lexend-deca';
+    src: url('../lexenddeca-regular-webfont.woff2') format('woff2'),
+         url('../lexenddeca-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

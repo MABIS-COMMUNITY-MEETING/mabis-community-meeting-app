@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'typefesse_claire-obscure';
+    src: url('../Typefesse_Claire-Obscure.woff2') format('woff2'),
+         url('../Typefesse_Claire-Obscure.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

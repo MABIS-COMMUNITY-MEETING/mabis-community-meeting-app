@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'catamaransemibold';
+    src: url('../catamaran-semibold-webfont.woff2') format('woff2'),
+         url('../catamaran-semibold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
