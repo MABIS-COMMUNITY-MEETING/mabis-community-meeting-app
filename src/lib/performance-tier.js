@@ -2,11 +2,26 @@ export const PERFORMANCE_TIER_EVENT = "mabis-performance-tier";
 
 let lowPower = false;
 
+function browserNavigator() {
+  return /** @type {Navigator & { connection?: { saveData?: boolean, effectiveType?: string }, deviceMemory?: number }} */ (navigator);
+}
+
+export function saveDataEnabled() {
+  return typeof navigator !== "undefined" && browserNavigator().connection?.saveData === true;
+}
+
+export function isConstrainedNetwork() {
+  if (typeof navigator === "undefined") return false;
+  const connection = browserNavigator().connection;
+  return connection?.saveData === true || ["slow-2g", "2g"].includes(connection?.effectiveType);
+}
+
 export function detectLowPowerDevice() {
   if (typeof navigator === "undefined") return false;
-  const memory = navigator.deviceMemory;
-  const cores = navigator.hardwareConcurrency;
-  return navigator.connection?.saveData === true ||
+  const capabilities = browserNavigator();
+  const memory = capabilities.deviceMemory;
+  const cores = capabilities.hardwareConcurrency;
+  return capabilities.connection?.saveData === true ||
     (typeof memory === "number" && memory <= 2) ||
     (typeof cores === "number" && cores <= 2);
 }

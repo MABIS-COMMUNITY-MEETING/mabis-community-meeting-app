@@ -665,6 +665,10 @@ AI and human contributors must preserve these rules:
 - Data queries that serve hidden tabs or unauthorized controls remain disabled until those surfaces are reachable.
 - Use `useMemo`, `useDeferredValue`, transitions, and component memoization only where they remove measured work. Do not scatter them ceremonially.
 - Canonical visuals, accessibility, reduced-motion behavior, mobile behavior, and the optional custom cursor must survive every optimization.
+- The critical GNU FreeMono faces remain full-glyph WOFF2 files. Thai, Japanese/Chinese, and the optional Libre Fonts by Womxn catalogue load only when their actual text or settings surface requires them.
+- Production builds generate a revisioned offline shell from Vite's manifest. Register it after the `load` event, keep runtime caches bounded, and never put Base44 API, function, authorization, or cross-origin responses in Cache Storage.
+- Offline data is a progressive enhancement: persist only the explicit read-only query allowlist, scope snapshots to the authenticated user, cap them at 2 MiB and seven days, and erase them on logout. Online authorization always wins and `401`/`403` responses must never fall back to an offline session.
+- Respect Save-Data and 2G signals: avoid speculative route downloads, narrow below-fold preload distance, and postpone nonessential floating UI until interaction. Low-memory devices use a shorter inactive query lifetime.
 
 The production build enforces static performance boundaries and gzip budgets. Do not weaken or remove these checks merely to make an oversized change pass. Investigate the regression, preserve the intended lazy boundary, or obtain Novesce's explicit approval for a documented budget change.
 

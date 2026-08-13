@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Eye, Star, MessageSquare, TrendingUp, User, Users } from "lucide-react";
+import { Eye, Star, MessageSquare, Users } from "lucide-react";
 import { format } from "date-fns";
 import { displayName } from "@/lib/names";
 
