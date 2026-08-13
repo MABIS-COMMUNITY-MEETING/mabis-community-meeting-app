@@ -3,6 +3,7 @@ import { gmk_ui } from "@/lib/gmk_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
 import { balancedPalette, contrastSafePair, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
 import { BY_WOMXN_FONTS } from "@/lib/by_womxn_fonts";
+import { networkState } from "@/lib/network-policy";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
@@ -582,6 +583,51 @@ export function deleteSavedTheme(name) {
 // Torrefarfan, Go, Iosevka, Lilex and the libre catalogue remain selectable.
 // UnifontEX handles marked Japanese and Chinese text; GNU FreeSerif handles Thai.
 export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International School";
+
+const fontSheetPromises = new Map();
+
+function byWomxnSheet(family) {
+  const safe = family.replace(/[^a-zA-Z0-9_-]/g, "-");
+  return `/fonts/by-womxn/individual/${safe}.css`;
+}
+
+function ensureFontStylesheet(font) {
+  if (!font?.stylesheet || typeof document === "undefined") return Promise.resolve();
+  const href = font.stylesheet;
+  if (fontSheetPromises.has(href)) return fontSheetPromises.get(href);
+
+  const existing = Array.from(document.querySelectorAll("link[data-mabis-font-sheet]"))
+    .find((link) => link.dataset.mabisFontSheet === href);
+  if (existing?.sheet) return Promise.resolve();
+
+  const promise = new Promise((resolve) => {
+    const link = existing || document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.dataset.mabisFontSheet = href;
+    link.onload = () => resolve();
+    link.onerror = () => resolve();
+    if (!existing) document.head.appendChild(link);
+  });
+  fontSheetPromises.set(href, promise);
+  return promise;
+}
+
+export function isFontAssetLoaded(key) {
+  const font = FONTS.find((entry) => entry.key === key);
+  if (!font?.stylesheet || typeof document === "undefined") return true;
+  return Array.from(document.querySelectorAll("link[data-mabis-font-sheet]"))
+    .some((link) => link.dataset.mabisFontSheet === font.stylesheet && Boolean(link.sheet));
+}
+
+export async function preloadFont(key) {
+  const font = FONTS.find((entry) => entry.key === key) || FONTS[0];
+  await ensureFontStylesheet(font);
+  if (document.fonts) {
+    await document.fonts.load(`400 16px ${font.body}`, FONT_PREVIEW_TEXT).catch(() => []);
+  }
+  return font;
+}
 
 const REQUESTED_FONTS = [
   {
