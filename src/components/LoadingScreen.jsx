@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
+const LOGO = "/images/mabis-logo-128.webp";
 
 /**
  * Numeric loader. The selected UI font is loaded before this component mounts,

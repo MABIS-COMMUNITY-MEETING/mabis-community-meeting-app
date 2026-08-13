@@ -7,7 +7,7 @@ import Glass from "@/components/glass/Glass";
 import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
 import { preloadRoute } from "@/lib/routeLoaders";
 
-const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
+const LOGO = "/images/mabis-logo-128.webp";
 
 const NAV = [
   { label: "Home", to: "/home", n: "01" },

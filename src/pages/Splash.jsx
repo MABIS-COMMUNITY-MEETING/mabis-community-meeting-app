@@ -7,7 +7,7 @@ import MagneticButton from "@/components/MagneticButton";
 import Marquee from "@/components/Marquee";
 import KineticBackground from "@/components/KineticBackground";
 
-const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
+const LOGO = "/images/mabis-logo-128.webp";
 
 const EASE = [0.16, 1, 0.3, 1];
 const charParent = (stagger, delay) => ({ hidden: {}, show: { transition: { staggerChildren: stagger, delayChildren: delay } } });
