@@ -5,217 +5,236 @@ let enabled = (() => {
 })();
 
 let ctx = null;
-
-const CLICK_SOUND_URL = "https://media.base44.com/files/public/6a2fcc3f4fec7200fed7a889/3db4f74bb_universfield-computer-mouse-click-352734.mp3";
-const TYPE_SOUND_URL = "https://media.base44.com/files/public/6a2fcc3f4fec7200fed7a889/011842ec2_dragon-studio-keyboard-typing-sound-effect-335503.mp3";
-let clickAudio = null;
-let typeAudio = null;
-function getClickAudio() {
-  if (typeof window === "undefined") return null;
-  if (!clickAudio) {
-    clickAudio = new Audio(CLICK_SOUND_URL);
-    clickAudio.volume = 0.6;
-  }
-  return clickAudio;
-}
-function getTypeAudio() {
-  if (typeof window === "undefined") return null;
-  if (!typeAudio) {
-    typeAudio = new Audio(TYPE_SOUND_URL);
-    typeAudio.volume = 0.45;
-  }
-  return typeAudio;
-}
+let resumePromise = null;
+let noiseBuffer = null;
 
 export function isSoundEnabled() {
   return enabled;
 }
 
-export function setSoundEnabled(v) {
-  enabled = !!v;
+export function setSoundEnabled(value) {
+  enabled = !!value;
   try { localStorage.setItem(KEY, enabled ? "true" : "false"); } catch {}
   try { window.dispatchEvent(new CustomEvent("mabis-sound-changed", { detail: enabled })); } catch {}
+
+  // The toggle click is a valid user gesture. When sound is being switched on,
+  // use that exact gesture to unlock Web Audio and provide quiet confirmation.
+  if (enabled) {
+    void unlockSound().then((audioContext) => {
+      if (enabled && audioContext) tick(audioContext, audioContext.currentTime + 0.004, 1050, 0.022, 0.045);
+    });
+  }
 }
 
-function getCtx() {
+function getCtx(create = true) {
   if (typeof window === "undefined") return null;
-  if (!ctx) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (AC) ctx = new AC();
+  if (!ctx && create) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      try { ctx = new AudioContextClass({ latencyHint: "interactive" }); }
+      catch { ctx = new AudioContextClass(); }
+    }
   }
   return ctx;
 }
 
-/* Browsers keep a freshly-created AudioContext suspended until a real user
-   gesture. Hover/scroll don't count, so the first click, key or tap unlocks
-   it once — without this, sound only started after toggling it off and on. */
-if (typeof window !== "undefined") {
-  const unlock = () => {
-    const c = getCtx();
-    if (c && c.state === "suspended") c.resume().catch(() => {});
-    ["pointerdown", "keydown", "touchstart"].forEach((ev) =>
-      window.removeEventListener(ev, unlock, true)
-    );
-  };
-  ["pointerdown", "keydown", "touchstart"].forEach((ev) =>
-    window.addEventListener(ev, unlock, true)
-  );
+/**
+ * Resume the shared context from a real tap/click/key event. The promise is
+ * shared so pointerdown + click cannot race or create duplicate contexts.
+ */
+export function unlockSound() {
+  if (!enabled) return Promise.resolve(null);
+  const audioContext = getCtx(true);
+  if (!audioContext) return Promise.resolve(null);
+  if (audioContext.state === "running") return Promise.resolve(audioContext);
+  if (resumePromise) return resumePromise;
+
+  const pending = audioContext.resume()
+    .then(() => audioContext.state === "running" ? audioContext : null)
+    .catch(() => null);
+  resumePromise = pending;
+  void pending.finally(() => {
+    if (resumePromise === pending) resumePromise = null;
+  });
+  return pending;
 }
 
-function noiseBurst(c, t, dur, vol, filterType, freq, q = 1) {
-  const len = Math.ceil(c.sampleRate * dur);
-  const buf = c.createBuffer(1, len, c.sampleRate);
-  const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) {
-    d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 1.8);
+/**
+ * Schedule a sound only after the one shared context is actually running.
+ * Hover/ambient sounds never create a context; direct controls may opt into
+ * unlock so the first real interaction produces its own feedback.
+ */
+export function withSoundContext(render, { unlock = false } = {}) {
+  if (!enabled) return;
+  const audioContext = getCtx(false);
+  if (audioContext?.state === "running") {
+    try { render(audioContext); } catch {}
+    return;
   }
-  const src = c.createBufferSource();
-  src.buffer = buf;
-  const f = c.createBiquadFilter();
-  f.type = filterType;
-  f.frequency.value = freq;
-  f.Q.value = q;
-  const g = c.createGain();
-  g.gain.value = vol;
-  src.connect(f).connect(g).connect(c.destination);
-  src.start(t);
+  if (!unlock) return;
+  void unlockSound().then((runningContext) => {
+    if (!enabled || !runningContext) return;
+    try { render(runningContext); } catch {}
+  });
 }
 
-// Realistic mouse click using the attached mp3.
+function getNoiseBuffer(audioContext) {
+  if (noiseBuffer && noiseBuffer.sampleRate === audioContext.sampleRate) return noiseBuffer;
+  const length = Math.ceil(audioContext.sampleRate * 0.5);
+  noiseBuffer = audioContext.createBuffer(1, length, audioContext.sampleRate);
+  const samples = noiseBuffer.getChannelData(0);
+  for (let index = 0; index < length; index += 1) {
+    samples[index] = Math.random() * 2 - 1;
+  }
+  return noiseBuffer;
+}
+
+function noiseBurst(audioContext, time, duration, volume, filterType, frequency, q = 1) {
+  const source = audioContext.createBufferSource();
+  const filter = audioContext.createBiquadFilter();
+  const gain = audioContext.createGain();
+  const buffer = getNoiseBuffer(audioContext);
+  const maxOffset = Math.max(0, buffer.duration - duration);
+
+  source.buffer = buffer;
+  filter.type = filterType;
+  filter.frequency.value = frequency;
+  filter.Q.value = q;
+  gain.gain.setValueAtTime(Math.max(0.0001, volume), time);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+  source.connect(filter).connect(gain).connect(audioContext.destination);
+  source.onended = () => {
+    try { source.disconnect(); filter.disconnect(); gain.disconnect(); } catch {}
+  };
+  source.start(time, Math.random() * maxOffset, duration);
+}
+
+function tick(audioContext, time, frequency, volume, duration = 0.05) {
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(frequency, time);
+  oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.82, time + duration);
+  gain.gain.setValueAtTime(0.0001, time);
+  gain.gain.exponentialRampToValueAtTime(volume, time + 0.004);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+  oscillator.connect(gain).connect(audioContext.destination);
+  oscillator.onended = () => {
+    try { oscillator.disconnect(); gain.disconnect(); } catch {}
+  };
+  oscillator.start(time);
+  oscillator.stop(time + duration + 0.01);
+}
+
+function clickGesture(audioContext) {
+  const time = audioContext.currentTime + 0.003;
+  noiseBurst(audioContext, time, 0.012, 0.045, "highpass", 3200, 0.7);
+  tick(audioContext, time, 1450, 0.035, 0.028);
+  tick(audioContext, time + 0.012, 620, 0.022, 0.038);
+}
+
+// Local synthesis removes a first-click network race and works offline.
 export function playClick() {
-  if (!enabled) return;
-  const a = getClickAudio();
-  if (!a) return;
-  try {
-    a.currentTime = 0;
-    a.play().catch(() => {});
-  } catch {}
+  withSoundContext(clickGesture, { unlock: true });
 }
 
-// Mechanical keyboard keypress (Cherry-MX-style): sharp click + plastic thock.
+// Mechanical keypress: a short high click plus a soft body transient.
 export function playType() {
-  if (!enabled) return;
-  const c = getCtx();
-  if (!c) return;
-  if (c.state === "suspended") c.resume();
-  const now = c.currentTime;
-  const body = 200 + Math.random() * 90;
+  withSoundContext((audioContext) => {
+    const now = audioContext.currentTime;
+    const body = 200 + Math.random() * 90;
 
-  // Sharp metallic click (high-passed noise ~7 kHz, ~5 ms)
-  noiseBurst(c, now, 0.006, 0.07, "highpass", 7000, 0.6);
+    noiseBurst(audioContext, now, 0.006, 0.055, "highpass", 7000, 0.6);
 
-  // Plastic thock (triangle pluck, ~200 Hz, short)
-  const o = c.createOscillator();
-  const og = c.createGain();
-  o.type = "triangle";
-  o.frequency.setValueAtTime(body, now);
-  o.frequency.exponentialRampToValueAtTime(body * 0.7, now + 0.03);
-  og.gain.setValueAtTime(0.0001, now);
-  og.gain.exponentialRampToValueAtTime(0.06, now + 0.002);
-  og.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
-  o.connect(og).connect(c.destination);
-  o.start(now);
-  o.stop(now + 0.045);
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(body, now);
+    oscillator.frequency.exponentialRampToValueAtTime(body * 0.7, now + 0.03);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.045, now + 0.002);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+    oscillator.connect(gain).connect(audioContext.destination);
+    oscillator.onended = () => {
+      try { oscillator.disconnect(); gain.disconnect(); } catch {}
+    };
+    oscillator.start(now);
+    oscillator.stop(now + 0.045);
 
-  // Soft clack (band-passed noise ~1.2 kHz)
-  noiseBurst(c, now + 0.003, 0.012, 0.03, "bandpass", 1200, 1.4);
+    noiseBurst(audioContext, now + 0.003, 0.012, 0.022, "bandpass", 1200, 1.4);
+  }, { unlock: true });
 }
 
-/* ── refined tactile UI palette ──
-   One sonic family: tiny sine ticks + filtered noise gestures.
-   All extremely short and quiet; hover is throttled. */
-
-function tick(c, t, freq, vol, dur = 0.05) {
-  const o = c.createOscillator();
-  const g = c.createGain();
-  o.type = "sine";
-  o.frequency.setValueAtTime(freq, t);
-  o.frequency.exponentialRampToValueAtTime(freq * 0.82, t + dur);
-  g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(vol, t + 0.004);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(g).connect(c.destination);
-  o.start(t);
-  o.stop(t + dur + 0.01);
-}
+/* One quiet sonic family: tiny sine ticks and filtered-noise gestures.
+   Hover is throttled and never creates or unlocks the audio context. */
 
 let lastHover = 0;
-// Tiny glassy tick for major nav / project hovers. Throttled.
 export function playHover() {
   if (!enabled) return;
   const now = performance.now();
   if (now - lastHover < 90) return;
   lastHover = now;
-  const c = getCtx();
-  if (!c) return;
-  if (c.state === "suspended") c.resume();
-  const t = c.currentTime;
-  tick(c, t, 2400 + Math.random() * 240, 0.028, 0.045);
+  withSoundContext((audioContext) => {
+    tick(audioContext, audioContext.currentTime, 2400 + Math.random() * 240, 0.022, 0.045);
+  });
 }
 
-// Low wooden tone — pointer crossing into a new numbered section (01–10).
 let lastSection = 0;
 export function playSectionEnter() {
   if (!enabled) return;
   const now = performance.now();
   if (now - lastSection < 260) return;
   lastSection = now;
-  const c = getCtx();
-  if (!c) return;
-  if (c.state === "suspended") c.resume();
-  const t = c.currentTime;
-  tick(c, t, 520, 0.035, 0.09);
-  tick(c, t + 0.05, 780, 0.02, 0.07);
+  withSoundContext((audioContext) => {
+    const time = audioContext.currentTime;
+    tick(audioContext, time, 520, 0.03, 0.09);
+    tick(audioContext, time + 0.05, 780, 0.018, 0.07);
+  });
 }
 
-// Low transient + high detail — fullscreen menu opening.
 export function playMenuOpen() {
-  if (!enabled) return;
-  const c = getCtx();
-  if (!c) return;
-  if (c.state === "suspended") c.resume();
-  const t = c.currentTime;
-  tick(c, t, 140, 0.06, 0.14);
-  tick(c, t + 0.05, 2900, 0.02, 0.04);
-  noiseBurst(c, t, 0.12, 0.018, "lowpass", 600, 0.8);
+  withSoundContext((audioContext) => {
+    const time = audioContext.currentTime;
+    tick(audioContext, time, 140, 0.05, 0.14);
+    tick(audioContext, time + 0.05, 2900, 0.018, 0.04);
+    noiseBurst(audioContext, time, 0.12, 0.015, "lowpass", 600, 0.8);
+  }, { unlock: true });
 }
 
-// Related downward gesture — menu closing.
 export function playMenuClose() {
-  if (!enabled) return;
-  const c = getCtx();
-  if (!c) return;
-  if (c.state === "suspended") c.resume();
-  const t = c.currentTime;
-  tick(c, t, 2900, 0.018, 0.04);
-  tick(c, t + 0.04, 110, 0.05, 0.12);
+  withSoundContext((audioContext) => {
+    const time = audioContext.currentTime;
+    tick(audioContext, time, 2900, 0.016, 0.04);
+    tick(audioContext, time + 0.04, 110, 0.045, 0.12);
+  }, { unlock: true });
 }
 
-// Subtle filtered sweep for page/section transitions.
 export function playTransition() {
-  if (!enabled) return;
-  const c = getCtx();
-  if (!c) return;
-  if (c.state === "suspended") c.resume();
-  const t = c.currentTime;
-  const len = Math.ceil(c.sampleRate * 0.28);
-  const buf = c.createBuffer(1, len, c.sampleRate);
-  const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) {
-    const p = i / len;
-    d[i] = (Math.random() * 2 - 1) * Math.sin(p * Math.PI) * 0.6;
-  }
-  const src = c.createBufferSource();
-  src.buffer = buf;
-  const f = c.createBiquadFilter();
-  f.type = "bandpass";
-  f.Q.value = 1.1;
-  f.frequency.setValueAtTime(400, t);
-  f.frequency.exponentialRampToValueAtTime(2200, t + 0.28);
-  const g = c.createGain();
-  g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(0.035, t + 0.06);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
-  src.connect(f).connect(g).connect(c.destination);
-  src.start(t);
+  withSoundContext((audioContext) => {
+    const time = audioContext.currentTime;
+    const length = Math.ceil(audioContext.sampleRate * 0.28);
+    const buffer = audioContext.createBuffer(1, length, audioContext.sampleRate);
+    const samples = buffer.getChannelData(0);
+    for (let index = 0; index < length; index += 1) {
+      const progress = index / length;
+      samples[index] = (Math.random() * 2 - 1) * Math.sin(progress * Math.PI) * 0.6;
+    }
+
+    const source = audioContext.createBufferSource();
+    const filter = audioContext.createBiquadFilter();
+    const gain = audioContext.createGain();
+    source.buffer = buffer;
+    filter.type = "bandpass";
+    filter.Q.value = 1.1;
+    filter.frequency.setValueAtTime(400, time);
+    filter.frequency.exponentialRampToValueAtTime(2200, time + 0.28);
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.exponentialRampToValueAtTime(0.03, time + 0.06);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.28);
+    source.connect(filter).connect(gain).connect(audioContext.destination);
+    source.onended = () => {
+      try { source.disconnect(); filter.disconnect(); gain.disconnect(); } catch {}
+    };
+    source.start(time);
+  });
 }
