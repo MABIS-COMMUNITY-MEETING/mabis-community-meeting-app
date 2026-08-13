@@ -51,7 +51,7 @@ SizeAttr.whitelist = null;
 Quill.register(SizeAttr, true);
 
 const FONTS = [
-  { label: "Iosevka", value: "'Iosevka', monospace" },
+  { label: "UnifontEX", value: "'UnifontEX', monospace" },
 ];
 
 const FontAttr = Quill.import("attributors/style/font");
@@ -275,7 +275,7 @@ export default function DocsEditor({
   const searchFromRef = useRef(0);
 
   const [uploading, setUploading] = useState(false);
-  const [fontLabel, setFontLabel] = useState("Iosevka");
+  const [fontLabel, setFontLabel] = useState("UnifontEX");
   const [sizeInput, setSizeInput] = useState("14");
   const [formats, setFormats] = useState(emptyFormats);
   const [painterArmed, setPainterArmed] = useState(false);
@@ -330,9 +330,9 @@ export default function DocsEditor({
       }
       if (format.font) {
         const font = FONTS.find((candidate) => candidate.value === format.font);
-        setFontLabel(font?.label || "Iosevka");
+        setFontLabel(font?.label || "UnifontEX");
       } else {
-        setFontLabel("Iosevka");
+        setFontLabel("UnifontEX");
       }
     } catch {
       // Selection changes can race a ReactQuill unmount in dialogs.
@@ -561,7 +561,7 @@ export default function DocsEditor({
   const downloadHtml = () => {
     const quill = getQuill();
     if (!quill) return;
-    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{max-width:760px;margin:48px auto;padding:0 24px;font:16px/1.65 Iosevka,monospace;color:#202124}img{max-width:100%}blockquote{border-left:3px solid #dadce0;margin-left:0;padding-left:16px;color:#5f6368}pre{white-space:pre-wrap;background:#f8f9fa;padding:12px;border-radius:8px}</style></head><body>${quill.root.innerHTML}</body></html>`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{max-width:760px;margin:48px auto;padding:0 24px;font:16px/1.65 UnifontEX,monospace;color:#202124}img{max-width:100%}blockquote{border-left:3px solid #dadce0;margin-left:0;padding-left:16px;color:#5f6368}pre{white-space:pre-wrap;background:#f8f9fa;padding:12px;border-radius:8px}</style></head><body>${quill.root.innerHTML}</body></html>`;
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -576,7 +576,7 @@ export default function DocsEditor({
     if (!quill) return;
     const popup = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
     if (!popup) return;
-    popup.document.write(`<!doctype html><html><head><title>${title}</title><style>@page{margin:18mm}body{max-width:760px;margin:0 auto;font:11pt/1.55 Iosevka,monospace;color:#111}img{max-width:100%;page-break-inside:avoid}blockquote{border-left:3px solid #aaa;margin-left:0;padding-left:14px}pre{white-space:pre-wrap}</style></head><body>${quill.root.innerHTML}</body></html>`);
+    popup.document.write(`<!doctype html><html><head><title>${title}</title><style>@page{margin:18mm}body{max-width:760px;margin:0 auto;font:11pt/1.55 UnifontEX,monospace;color:#111}img{max-width:100%;page-break-inside:avoid}blockquote{border-left:3px solid #aaa;margin-left:0;padding-left:14px}pre{white-space:pre-wrap}</style></head><body>${quill.root.innerHTML}</body></html>`);
     popup.document.close();
     popup.focus();
     popup.print();
@@ -959,7 +959,7 @@ export default function DocsEditor({
           --docs-blue: #0b57d0;
           --docs-blue-soft: color-mix(in srgb, var(--docs-blue) 12%, transparent);
           color: hsl(var(--foreground));
-          font-family: 'Iosevka', ui-monospace, monospace;
+          font-family: 'UnifontEX', ui-monospace, monospace;
         }
         .docs-docbar {
           min-height: 54px;
@@ -1131,7 +1131,7 @@ export default function DocsEditor({
           min-height: ${minHeight};
           padding: clamp(22px, 5vw, 48px) clamp(22px, 7vw, 64px);
           color: hsl(var(--foreground));
-          font-family: 'Iosevka', ui-monospace, monospace;
+          font-family: 'UnifontEX', ui-monospace, monospace;
           font-size: 14px;
           line-height: 1.65;
           overflow-y: visible;
@@ -1181,7 +1181,7 @@ export default function DocsEditor({
           border-radius: 6px;
           background: hsl(var(--muted));
           color: hsl(var(--foreground));
-          font-family: 'Iosevka', monospace;
+          font-family: 'UnifontEX', monospace;
           font-size: .9em;
         }
         .docs-quill .ql-editor img {
