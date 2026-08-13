@@ -41,4 +41,4 @@ export async function pushPrefs() {
   await base44.auth.updateMe({ ui_prefs: collectPrefs() });
 }
 
-export const PREF_EVENTS = ["themeChanged", MOTION_EVENT, "storage"];
+export const PREF_EVENTS = ["themeChanged", "fontChanged", MOTION_EVENT, "storage"];
