@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Plus, X, Calendar, Loader2, ScanText, Maximize2 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isFriday, getDay,
-  startOfWeek, endOfWeek, eachWeekOfInterval, addWeeks, startOfISOWeek, getISOWeek, getYear } from "date-fns";
+  startOfWeek, endOfWeek } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
