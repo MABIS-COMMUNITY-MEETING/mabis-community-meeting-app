@@ -54,7 +54,7 @@
        url(https://cdn.jsdelivr.net/fontsource/fonts/iosevka@5.3.0/latin-400-italic.woff) format('woff');
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Hina+Mincho&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hina+Mincho&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -87,9 +87,9 @@
     --ink: 222 22% 8%;
     --bone: 42 34% 96%;
 
-    --font-heading: 'Iosevka', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --font-body: 'Iosevka', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --font-display: 'Iosevka', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --font-heading: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', system-ui, sans-serif;
+    --font-body: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', system-ui, sans-serif;
+    --font-display: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', system-ui, sans-serif;
     --font-mono: 'Iosevka', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     --role-student: 348 74% 30%;
     --role-teacher: 165 55% 32%;
@@ -129,17 +129,20 @@
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   body {
     @apply bg-background text-foreground font-body antialiased;
-    font-feature-settings: "calt" 1, "liga" 1, "ss01" 0;
+    font-feature-settings: "palt" 1, "kern" 1, "liga" 1;
+    font-optical-sizing: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4 {
-    letter-spacing: -0.04em;
-    line-height: 0.98;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
     font-weight: 600;
+    text-wrap: balance;
   }
-  .font-display, .font-heading { letter-spacing: -0.04em; }
+  p { line-height: 1.8; }
+  .font-display, .font-heading { letter-spacing: -0.035em; }
   ::selection { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
 
   /* thin technical scrollbar */
@@ -185,11 +188,17 @@
 .cursor-ring.is-hover { width: 40px; height: 40px; background:transparent; }
 .cursor-ring.is-label { width: 56px; height: 56px; background:rgba(255,255,255,0.1); }
 
-/* ── japanese (Hina Mincho ships at one weight — thicken optically) ── */
-.font-jp { -webkit-text-stroke: 0.45px currentColor; paint-order: stroke fill; }
+/* ── Japanese editorial voice: Mincho is reserved for quiet secondary copy ── */
+.font-jp {
+  font-family: 'Hina Mincho', 'Yu Mincho', 'Hiragino Mincho ProN', serif;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  -webkit-text-stroke: 0.2px currentColor;
+  paint-order: stroke fill;
+}
 
-/* ── thin technical label ── */
-.tech-label { font-family:'Iosevka',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; font-weight:500; }
+/* ── technical metadata is the one place the mono voice stays dominant ── */
+.tech-label { font-family:'Iosevka',monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; font-weight:500; }
 
 /* ── vertical text ── */
 .vert-text { writing-mode: vertical-rl; text-orientation: mixed; }
@@ -484,8 +493,8 @@ input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius
   button, a, [role="button"] {
     transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
   }
-  button:not(:disabled):hover, a:hover, [role="button"]:hover { transform: translateY(-1px); }
-  button:not(:disabled):active, a:active, [role="button"]:active { transform: scale(0.97); transition: transform 0.06s ease; }
+  button:not(:disabled):hover, a:hover, [role="button"]:hover { transform: none; }
+  button:not(:disabled):active, a:active, [role="button"]:active { transform: none; opacity: 0.82; transition: opacity 0.08s ease; }
 
   input, textarea, select {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
