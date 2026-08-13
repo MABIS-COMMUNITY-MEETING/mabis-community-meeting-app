@@ -1,51 +1,35 @@
-import React, { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useSyncExternalStore } from "react";
+import { motion } from "framer-motion";
+import {
+  getLoadingState,
+  getServerLoadingState,
+  subscribeToLoadingState,
+} from "@/lib/loading-state";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 /**
- * Numeric loader. The selected UI font is loaded before this component mounts,
- * so the counter, metadata and wordmark never flash through a different face.
- * A hairline sweeps across while the wordmark assembles beneath it.
+ * Numeric loader. The selected UI font is captured for its full lifetime.
+ * Progress now comes from actual route/module/data preparation; there is no
+ * minimum animation delay holding the page after the useful work is ready.
  */
 export default function LoadingScreen() {
-  const [done, setDone] = useState(false);
+  const loading = useSyncExternalStore(
+    subscribeToLoadingState,
+    getLoadingState,
+    getServerLoadingState,
+  );
   const [loadingFont] = useState(() => {
     if (typeof document === "undefined") return "'GNUFreeMonoUI'";
     return getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'GNUFreeMonoUI'";
   });
-  const raf = useRef();
-  const countRef = useRef(null);
-  const wordmarkRef = useRef(null);
-  const lineRef = useRef(null);
-  const statusRef = useRef(null);
-
-  useEffect(() => {
-    const start = performance.now();
-    const dur = 1300;
-    let previous = -1;
-    const tick = (t) => {
-      const p = Math.min((t - start) / dur, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      const n = Math.round(eased * 100);
-      if (n !== previous) {
-        previous = n;
-        if (countRef.current) countRef.current.textContent = String(n).padStart(3, "0");
-        if (wordmarkRef.current) wordmarkRef.current.style.clipPath = `inset(0 ${(100 - n) * 0.6}% 0 0)`;
-        if (lineRef.current) lineRef.current.style.transform = `scaleX(${n / 100})`;
-        if (statusRef.current) statusRef.current.textContent = `LOADING ASSETS ${n}%`;
-      }
-      if (p < 1) raf.current = requestAnimationFrame(tick);
-      else setDone(true);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
-  }, []);
+  const progress = Math.max(0, Math.min(100, Math.round(loading.progress)));
 
   return (
     <div
       className="loading-screen fixed inset-0 overflow-hidden bg-ink text-bone"
       style={{ "--loading-font": loadingFont }}
+      aria-busy="true"
     >
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.4 }} transition={{ duration: 1 }} className="absolute inset-0 grid-bg" />
       {/* faint drifting glow */}
@@ -58,52 +42,58 @@ export default function LoadingScreen() {
       <div className="pointer-events-none absolute inset-5 sm:inset-8 corner-bracket" />
 
       {/* meta */}
-      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 tech-label text-bone/50"> INITIALISING</div>
+      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 tech-label text-bone/50">INITIALISING</div>
       <div className="absolute top-6 right-6 sm:top-8 sm:right-8 tech-label text-bone/50">MABIS 2026</div>
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center">
-        <AnimatePresence>
-          {!done && (
-            <motion.div
-              key="count"
-              exit={{ opacity: 0, scale: 1.04 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="flex items-baseline"
-            >
-              <span ref={countRef} className="font-display font-normal tracking-ultra text-[22vw] sm:text-[16vw] leading-none tabular-nums">
-                000
-              </span>
-              <span className="ml-2 tech-label text-primary">％</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <motion.div
+          layout
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          className="flex items-baseline"
+          aria-hidden
+        >
+          <span className="font-display font-normal tracking-ultra text-[22vw] sm:text-[16vw] leading-none tabular-nums">
+            {String(progress).padStart(3, "0")}
+          </span>
+          <span className="ml-2 tech-label text-primary">％</span>
+        </motion.div>
 
         {/* assembling wordmark behind counter */}
-        <span ref={wordmarkRef}
-          style={{ clipPath: "inset(0 100% 0 0)" }}
+        <span
+          style={{ clipPath: `inset(0 ${(100 - progress) * 0.6}% 0 0)` }}
           className="absolute font-display font-normal tracking-ultra text-bone/8 text-[18vw] leading-none select-none"
+          aria-hidden
         >
           COMMUNITY
         </span>
 
-        {/* sweeping line */}
-        <div className="relative mt-6 h-px w-56 overflow-hidden bg-bone/15">
-          <div ref={lineRef}
-            className="absolute inset-y-0 left-0 w-full origin-left bg-primary"
-            style={{ transform: "scaleX(0)" }}
+        {/* progress hairline */}
+        <div className="relative mt-6 h-px w-56 overflow-hidden bg-bone/15" aria-hidden>
+          <div
+            className="absolute inset-y-0 left-0 w-full origin-left bg-primary transition-transform duration-200"
+            style={{ transform: `scaleX(${progress / 100})` }}
           />
         </div>
 
         <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.18 }}
           className="mt-5 flex items-center gap-3 tech-label text-bone/45"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
         >
           <motion.span
             animate={{ rotate: 360 }}
             transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
-            className="inline-block h-2.5 w-2.5 border border-bone/40 border-t-primary"
+            className="inline-block h-2.5 w-2.5 shrink-0 border border-bone/40 border-t-primary"
+            aria-hidden
           />
-          <span ref={statusRef}>LOADING ASSETS 0%</span>
+          <span className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+            <span className="text-bone/70">{loading.label}</span>
+            <span className="tabular-nums">{loading.detail}</span>
+          </span>
         </motion.div>
       </div>
 
