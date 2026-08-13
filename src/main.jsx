@@ -20,7 +20,7 @@ async function bootstrap() {
   const fontLoad = applyFont(getStoredFont());
   await Promise.race([
     fontLoad,
-    new Promise((resolve) => window.setTimeout(resolve, 2200)),
+    new Promise((resolve) => window.setTimeout(resolve, 800)),
   ]);
   document.documentElement.classList.add('ui-font-ready');
 
