@@ -62,13 +62,19 @@ export default function Home() {
     queryFn: () => base44.entities.Member.list("name", 200)
   });
 
-  const userMatches = members.filter(m =>
-    (m.email && user?.email && m.email.toLowerCase() === user.email.toLowerCase()) ||
-    (m.name && user?.full_name && m.name.toLowerCase() === user.full_name.toLowerCase())
-  );
-  const ROLE_RANK = { admin: 5, editor: 4, chair: 3, minutes: 3, teacher: 2, student: 1 };
-  const userMember = [...userMatches].sort((a, b) => (ROLE_RANK[b.role] || 0) - (ROLE_RANK[a.role] || 0))[0];
-  const isMinutesTaker = userMatches.some(m => m.role === "minutes");
+  const { userMatches, userMember, isMinutesTaker } = useMemo(() => {
+    const matches = members.filter((member) =>
+      (member.email && user?.email && member.email.toLowerCase() === user.email.toLowerCase()) ||
+      (member.name && user?.full_name && member.name.toLowerCase() === user.full_name.toLowerCase())
+    );
+    const roleRank = { admin: 5, editor: 4, chair: 3, minutes: 3, teacher: 2, student: 1 };
+    const member = [...matches].sort((a, b) => (roleRank[b.role] || 0) - (roleRank[a.role] || 0))[0];
+    return {
+      userMatches: matches,
+      userMember: member,
+      isMinutesTaker: matches.some((candidate) => candidate.role === "minutes"),
+    };
+  }, [members, user?.email, user?.full_name]);
 
   const canPreview = userRole === "admin" || userRole === "minutes" || isSummerOrBenjamin || isMinutesTaker;
   const [previewRole, setPreviewRole] = useState(() => localStorage.getItem("mabis_preview_role") || "");
@@ -81,8 +87,6 @@ export default function Home() {
 
   const isAdmin = effectiveRole === "admin" || effectiveRole === "editor" || effectiveRole === "chair" || effectiveRole === "minutes" || isMinutesTaker || (isSummerOrBenjamin && effectiveRole !== "student" && effectiveRole !== "teacher");
   const canManage = ["admin", "editor", "chair", "minutes", "teacher"].includes(effectiveRole) || isMinutesTaker || (isSummerOrBenjamin && effectiveRole !== "student");
-  const [showDove, setShowDove] = useState(false);
-
   useEffect(() => {
     if (isSummerOrBenjamin && (!userRole || userRole === "user")) {
       base44.auth.updateMe({ role_override: "admin" }).then(() => refetchUser?.()).catch(() => {});
@@ -99,6 +103,7 @@ export default function Home() {
   const { data: newFeedback = [] } = useQuery({
     queryKey: ["feedback", "new"],
     queryFn: () => base44.entities.Feedback.filter({ status: "new" }),
+    enabled: canSeeInbox,
   });
   const hasNewFeedback = newFeedback.length > 0;
 
@@ -153,17 +158,24 @@ export default function Home() {
     </>
   );
 
-  const weekLabel = moment().format("YYYY-[W]WW");
-  const dateLabel = moment().format("DD.MM.YYYY");
+  const now = new Date();
+  const weekLabel = `${getISOWeekYear(now)}-W${String(getISOWeek(now)).padStart(2, "0")}`;
+  const dateLabel = format(now, "dd.MM.yyyy");
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <SiteHeader rightSlot={controls} />
       <ScrollSectionIndicator total={10} />
-      <ProfileEditor open={editingProfile} onClose={() => setEditingProfile(false)} />
-      <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} isAdmin={effectiveAdmin} />
-
-      {showDove && <DoveAnimation onComplete={() => setShowDove(false)} />}
+      {editingProfile && (
+        <Suspense fallback={null}>
+          <ProfileEditor open onClose={() => setEditingProfile(false)} />
+        </Suspense>
+      )}
+      {showSettings && (
+        <Suspense fallback={null}>
+          <SettingsModal open onClose={() => setShowSettings(false)} isAdmin={effectiveAdmin} />
+        </Suspense>
+      )}
 
       <main className="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
         <HomeMasthead week_label={weekLabel} date_label={dateLabel} />
