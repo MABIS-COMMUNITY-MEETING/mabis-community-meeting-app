@@ -16,7 +16,7 @@ export default function EditorialSection({ index = "00", label = "", children })
       whileInView="show"
       viewport={{ once: true, margin: "-8% 0px" }}
       variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
-      className="relative outline-none grid grid-cols-1 lg:grid-cols-[6.5rem_1fr] gap-x-8"
+      className="relative grid scroll-mt-20 grid-cols-1 gap-x-8 outline-none lg:grid-cols-[6.5rem_1fr]"
     >
       <div className="hidden lg:flex flex-col items-end select-none">
         <motion.span
@@ -35,11 +35,11 @@ export default function EditorialSection({ index = "00", label = "", children })
       <div className="min-w-0">
         <motion.header
           variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } } }}
-          className="mb-5 border-t jp-rule pt-3 grid grid-cols-[auto_1fr] sm:grid-cols-[4rem_1fr_auto] gap-x-3 sm:gap-x-5 items-start"
+          className="mb-4 grid grid-cols-[auto_1fr] items-start gap-x-3 border-t pt-3 jp-rule sm:mb-5 sm:grid-cols-[4rem_1fr_auto] sm:gap-x-5"
         >
           <span className="tech-label tabular-nums" style={{ color: flag }}>{index}</span>
           <div className="min-w-0">
-            <h2 className="font-display font-medium tracking-[-0.045em] text-2xl sm:text-[2.15rem] leading-none">
+            <h2 className="break-words font-display text-[clamp(1.45rem,7vw,2rem)] font-medium leading-[1.02] tracking-[-0.045em] sm:text-[2.15rem]">
               {label}
             </h2>
           </div>
@@ -48,6 +48,7 @@ export default function EditorialSection({ index = "00", label = "", children })
 
         <motion.div
           variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.55, ease: EASE } } }}
+          className="-mx-4 sm:mx-0"
         >
           {children}
         </motion.div>
