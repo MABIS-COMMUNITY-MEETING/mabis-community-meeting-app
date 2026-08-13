@@ -7,7 +7,7 @@
  */
 
 const HUE_CLUSTER_DEGREES = 24;
-const NEUTRAL_SATURATION = 30;
+const NEUTRAL_SATURATION = 28;
 
 function normalizeHex(value) {
     const hex = value.trim().toLowerCase();
@@ -175,19 +175,21 @@ function neutralBand(lightness) {
  */
 export function balancedPalette(
     colors,
-    { minChromatic = 2, maxNeutrals = 2 } = {},
+    { minChromatic = 2, maxNeutrals = 2, neutralSaturation = NEUTRAL_SATURATION } = {},
 ) {
     const entries = colors
         .filter(Boolean)
         .map((value, index) => ({ value, index, parts: colorParts(value) }))
         .filter((entry) => entry.parts);
 
+    if (entries.length === 0) return colors.filter(Boolean);
+
     const chromatic = [];
     const neutrals = new Map();
 
     for (const entry of entries) {
         const { h, s, l } = entry.parts;
-        if (s < NEUTRAL_SATURATION) {
+        if (s < neutralSaturation) {
             const key = neutralBand(l);
             const current = neutrals.get(key);
             if (!current || Math.abs(l - 50) > Math.abs(current.parts.l - 50)) {
@@ -217,8 +219,7 @@ export function balancedPalette(
         .slice(0, maxNeutrals)
         .map((entry) => entry.value);
 
-    const combined = [...chromaticValues, ...neutralValues];
-    return combined.length > 0 ? combined : colors.filter(Boolean);
+    return [...chromaticValues, ...neutralValues];
 }
 
 /** Pick a real palette colour that is visually distinct from existing roles. */
@@ -247,6 +248,10 @@ export function spreadBalancedPalette(colors, count = 8) {
     return Array.from({ length: count }, (_, index) => palette[index % palette.length]);
 }
 
-export function distinctChromaticCount(colors) {
-    return balancedPalette(colors, { minChromatic: Number.POSITIVE_INFINITY, maxNeutrals: 0 }).length;
+export function distinctChromaticCount(colors, { neutralSaturation = NEUTRAL_SATURATION } = {}) {
+    return balancedPalette(colors, {
+        minChromatic: Number.POSITIVE_INFINITY,
+        maxNeutrals: 0,
+        neutralSaturation,
+    }).length;
 }
