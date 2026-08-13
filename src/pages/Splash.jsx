@@ -115,7 +115,7 @@ export default function Splash() {
 
         <motion.div
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}
-          className="mb-4 flex max-w-full items-center gap-3 text-[9px] text-primary sm:mb-6 sm:tech-label"
+          className="mb-4 flex max-w-full items-center gap-3 tech-label text-primary sm:mb-6"
         >
           <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.55, duration: 0.6, ease: EASE }} className="block h-px w-8 bg-primary origin-left" /> 01 — SECONDARY COMMUNITY MEETING APP
         </motion.div>
