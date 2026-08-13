@@ -4,6 +4,24 @@ A shared workspace for Montessori Academy Bangkok International School community
 
 This README is also the project’s **design contract**. New pages and components should follow these rules so the app continues to feel like one coherent product rather than a pile of unrelated widgets.
 
+## Mandatory rule for AI contributors
+
+An AI agent, coding assistant, or generative model must **research Japanese web design in depth before writing or editing any project code**. Do not begin implementation from memory, stereotypes, a generic “Japanese-inspired” prompt, or the visual habits of Western SaaS products.
+
+The research pass must happen before code changes and should:
+
+- Study current, real Japanese websites across several categories, such as editorial publications, cultural institutions, schools, public services, studios, retail, and technology.
+- Prefer original Japanese sites, Japanese-language material, design-system documentation, case studies, and other primary or credible sources over mood boards, scraped galleries, AI summaries, or Pinterest-style collections.
+- Examine composition, grid behavior, density, typography, spacing, navigation, mobile layouts, forms, motion, color restraint, accessibility, and content hierarchy.
+- Compare several examples rather than copying one site.
+- Separate observed patterns from personal assumptions.
+- Check findings against the design contract in this README and the existing implementation before proposing changes.
+- Record the sources studied and a concise summary of the relevant findings in the working notes, pull request, issue, or change summary.
+
+Research does not grant permission to imitate a site pixel-for-pixel. The goal is to understand design principles and adapt them to this school community product.
+
+If the AI cannot access current research sources, it must stop and ask for research access or human direction instead of inventing a Japanese aesthetic. This rule applies before visual design, layout, typography, styling, motion, interaction, responsive behavior, or component work. For non-visual fixes, the AI must still read this design contract first and verify that the change does not accidentally alter the interface.
+
 ## Core product principles
 
 1. **Useful before decorative**  
