@@ -2,6 +2,12 @@ export const PERFORMANCE_TIER_EVENT = "mabis-performance-tier";
 
 let lowPower = false;
 
+export function isConstrainedNetwork() {
+  if (typeof navigator === "undefined") return false;
+  const connection = navigator.connection;
+  return connection?.saveData === true || ["slow-2g", "2g"].includes(connection?.effectiveType);
+}
+
 export function detectLowPowerDevice() {
   if (typeof navigator === "undefined") return false;
   const memory = navigator.deviceMemory;
