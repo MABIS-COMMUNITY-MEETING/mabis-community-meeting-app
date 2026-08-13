@@ -88,8 +88,11 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
     const dpr = window.devicePixelRatio || 1;
     canvas.width = size * dpr;
     canvas.height = size * dpr;
-    canvas.style.width = size + "px";
-    canvas.style.height = size + "px";
+    const parentWidth = canvas.parentElement?.clientWidth || size;
+    const viewportWidth = typeof window !== "undefined" ? window.innerWidth - 32 : size;
+    const displaySize = Math.min(size, parentWidth, viewportWidth);
+    canvas.style.width = `${displaySize}px`;
+    canvas.style.height = `${displaySize}px`;
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
@@ -152,9 +155,11 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
     const handler = () => drawWheel(rotationRef.current);
     window.addEventListener("themeChanged", handler);
     window.addEventListener("fontChanged", handler);
+    window.addEventListener("resize", handler);
     return () => {
       window.removeEventListener("themeChanged", handler);
       window.removeEventListener("fontChanged", handler);
+      window.removeEventListener("resize", handler);
     };
   }, [drawWheel]);
 
@@ -209,7 +214,7 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="relative inline-block">
+      <div className="relative inline-block w-full max-w-full">
         {/* Pointer at top — wheelofnames style */}
         <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 drop-shadow-lg"
           style={{ width: 0, height: 0, borderLeft: "14px solid transparent", borderRight: "14px solid transparent", borderTop: "28px solid hsl(var(--ring))" }} />
@@ -300,8 +305,8 @@ function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDe
   const canEdit = (a) => isAdmin || (currentUser?.email && a.assigned_to_email === currentUser.email);
 
   return (
-    <div className="border border-gray-200 rounded-xl overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="mobile-horizontal-scroll overflow-x-auto rounded-xl border border-gray-200">
+      <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr className="bg-gray-50 border-b border-gray-200">
             <th className="text-left px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase">Job</th>
@@ -613,7 +618,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
                       <button onClick={() => setRemovedIds([])} className="flex-1 text-[9px] font-bold text-white bg-[#951E3A] rounded py-1 hover:bg-[#7a1830] transition-colors">Add all</button>
                       <button onClick={() => setRemovedIds(studentMembers.map(m => m.id))} className="flex-1 text-[9px] font-bold text-[#951E3A] bg-[#951E3A]/10 rounded py-1 hover:bg-[#951E3A]/20 transition-colors">Clear all</button>
                     </div>
-                    <div className="grid grid-cols-3 gap-1">
+                    <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
                       {[...studentMembers].sort((a, b) => displayName(a).localeCompare(displayName(b))).map(m => {
                         const onWheel = !removedIds.includes(m.id);
                         return (
@@ -678,12 +683,12 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
   if (fullscreen) {
     return (
       <div className="fixed inset-0 bg-white z-50 flex flex-col">
-        <div className="bg-[#951E3A] px-8 py-4 flex items-center justify-between shrink-0">
+        <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex flex-col items-start gap-3 shrink-0 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="font-display font-bold text-white text-2xl">Jobs Assignment</h2>
+            <h2 className="mabis-widget-title font-display font-bold text-white text-2xl">Jobs Assignment</h2>
             <p className="text-white/60 text-sm">{formatWeekLabel(currentWeek)}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="mabis-widget-actions flex items-center gap-3">
             {isAdmin && currentAssignments.length > 0 && (
               <Button size="sm" variant="outline"
                 className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
@@ -696,7 +701,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
             </button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-8">{wheelAndTable(true)}</div>
+        <div className="mabis-widget-body flex-1 overflow-y-auto p-4 sm:p-8">{wheelAndTable(true)}</div>
       </div>
     );
   }
@@ -722,13 +727,13 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="bg-[#951E3A] px-6 py-4 flex items-center justify-between">
+    <div className="mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex flex-col items-start gap-3 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-display font-bold text-white text-xl">Jobs</h2>
+          <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Jobs</h2>
           <p className="text-white/60 text-xs mt-0.5">{formatWeekLabel(currentWeek)} — {currentAssignments.length}/{JOBS.length} assigned</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="mabis-widget-actions flex items-center gap-2">
           {isAdmin && currentAssignments.length > 0 && (
             <Button size="sm" variant="outline"
               className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
@@ -743,7 +748,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
           </Button>
         </div>
       </div>
-      <div className="p-6">{wheelAndTable(false)}</div>
+      <div className="mabis-widget-body p-4 sm:p-6">{wheelAndTable(false)}</div>
     </div>
   );
 }
