@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'abhaya_libreextrabold';
+    src: url('../abhayalibre-extrabold-webfont.woff2') format('woff2'),
+         url('../abhayalibre-extrabold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}

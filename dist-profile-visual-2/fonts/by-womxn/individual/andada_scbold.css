@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'andada_scbold';
+    src: url('../andadasc-bold-webfont.woff2') format('woff2'),
+         url('../andadasc-bold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

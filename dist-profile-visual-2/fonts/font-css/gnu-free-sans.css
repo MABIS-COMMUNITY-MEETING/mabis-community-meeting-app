@@ -1,0 +1,28 @@
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSans.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSansBold.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSansOblique.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSansBoldOblique.ttf?v=1') format('truetype');
+}

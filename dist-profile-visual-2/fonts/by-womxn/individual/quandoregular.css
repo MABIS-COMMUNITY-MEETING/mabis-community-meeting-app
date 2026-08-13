@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'quandoregular';
+    src: url('../quando-regular-webfont.woff2') format('woff2'),
+         url('../quando-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

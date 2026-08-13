@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'truenobold_outline';
+    src: url('../truenobdol-webfont.woff2') format('woff2'),
+         url('../truenobdol-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

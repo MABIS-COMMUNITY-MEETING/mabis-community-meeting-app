@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'montserrat_alternatesitalic';
+    src: url('../montserratalternates-italic-webfont.woff2') format('woff2'),
+         url('../montserratalternates-italic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

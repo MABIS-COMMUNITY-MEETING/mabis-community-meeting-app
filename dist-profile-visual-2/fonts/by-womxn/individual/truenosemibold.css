@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'truenosemibold';
+    src: url('../truenosbd-webfont.woff2') format('woff2'),
+         url('../truenosbd-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

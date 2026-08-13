@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'torrefarfan';
+    src: url('../torrefarfan_regular-webfont.woff2') format('woff2'),
+         url('../torrefarfan_regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

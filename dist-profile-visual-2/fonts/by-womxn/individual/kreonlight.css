@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'kreonlight';
+    src: url('../kreon-light-webfont.woff2') format('woff2'),
+         url('../kreon-light-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

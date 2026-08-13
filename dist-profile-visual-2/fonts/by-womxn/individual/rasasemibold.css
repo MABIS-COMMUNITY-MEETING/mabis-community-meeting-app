@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'rasasemibold';
+    src: url('../rasa-semibold-webfont.woff2') format('woff2'),
+         url('../rasa-semibold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
