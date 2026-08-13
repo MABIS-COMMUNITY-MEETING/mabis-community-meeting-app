@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { Palette, Inbox, Settings } from "lucide-react";
 import moment from "moment";
 import PageFooter from "@/components/PageFooter";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import EditorialSection from "@/components/home/EditorialSection";
@@ -163,75 +164,75 @@ export default function Home() {
       <main className="max-w-[1600px] mx-auto px-5 sm:px-10 pt-24 sm:pt-32 pb-8">
         <HomeMasthead week_label={weekLabel} date_label={dateLabel} />
 
-        {/* restrained typographic interlude: movement supports hierarchy instead of competing with it */}
-        <div className="-mx-5 sm:-mx-10 py-4 sm:py-6 overflow-hidden border-b border-foreground/10">
+        {/* velocity band — edge to edge, no container */}
+        <div className="-mx-5 sm:-mx-10 py-6 overflow-hidden">
           <ScrollVelocity
             text="SECONDARY COMMUNITY MEETING ／ FRIDAY ／ MABIS BANGKOK ／ "
-            className="font-display font-light tracking-[0.04em] text-foreground/16 text-[7vw] sm:text-[4.25vw]"
+            className="font-display font-thin tracking-ultra text-foreground/25 text-[8vw] sm:text-[5vw]"
           />
         </div>
 
         <ScrollScaleRitual />
 
-        <div className="pt-6 pb-10 sm:pb-14">
+        <div className="pt-2 pb-12">
           <BirthdayBanner />
         </div>
 
-        <div className="space-y-16 sm:space-y-24">
+        <div className="space-y-24 sm:space-y-36">
 
-        <EditorialSection index="01" label="MEETING MODE" jp="会議モード">
+        <EditorialSection index="01" label="MEETING MODE">
           <MeetingModeWidget canStart={canStartMeeting} onStartMeeting={() => {
             window.dispatchEvent(new CustomEvent("startMeetingMode"));
           }} />
         </EditorialSection>
 
-        <EditorialSection index="02" label="ANNOUNCEMENTS" jp="お知らせ">
+        <EditorialSection index="02" label="ANNOUNCEMENTS">
           <AnnouncementsWidget members={members} isAdmin={canManage} />
         </EditorialSection>
 
-        <EditorialSection index="03" label="DISCUSSION" jp="議題">
+        <EditorialSection index="03" label="DISCUSSION">
           <LazySection minHeight={560}>
             <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="04" label="JOBS ／ ROTATION" jp="当番">
+        <EditorialSection index="04" label="JOBS ／ ROTATION">
           <LazySection minHeight={560}>
             <JobsWidget members={members} isAdmin={canManage} compact={false} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="05" label="CALENDAR" jp="予定表">
+        <EditorialSection index="05" label="CALENDAR">
           <LazySection minHeight={620}>
             <CalendarWidget />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="06" label="SCHEDULE" jp="日程">
+        <EditorialSection index="06" label="SCHEDULE">
           <LazySection minHeight={420}>
             <ScheduleWidget isAdmin={canManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="07" label="LOST ／ FOUND" jp="落とし物">
+        <EditorialSection index="07" label="LOST ／ FOUND">
           <LazySection minHeight={420}>
             <MissingItemsWidget members={members} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="08" label="LUNCH MENU" jp="昼食">
+        <EditorialSection index="08" label="LUNCH MENU">
           <LazySection minHeight={420}>
             <LunchMenuWidget isAdmin={canManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="09" label="NEWS" jp="ニュース">
+        <EditorialSection index="09" label="NEWS">
           <LazySection minHeight={480}>
             <NewsWidget members={members} isAdmin={canManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="10" label="MEMBERS" jp="メンバー">
+        <EditorialSection index="10" label="MEMBERS">
           <LazySection minHeight={560}>
             <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
           </LazySection>

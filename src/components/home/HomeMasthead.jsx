@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import Tilt3D from "@/components/Tilt3D";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -20,28 +21,30 @@ export default function HomeMasthead({ week_label, date_label }) {
 					<span className="tech-label text-muted-foreground">LIVE ／ DASHBOARD</span>
 				</motion.div>
 
-				{/* oversized type is the composition; no 3D tilt competing with it */}
-				<h1 className="font-display font-normal tracking-[-0.055em] leading-[0.94]">
+				<Tilt3D max={7}>
+				{/* leading-[0.8] cropped ascenders inside the reveal masks — give the
+				    line box room so C/G/M read whole */}
+				<h1 className="font-display font-thin tracking-ultra leading-[1.02]">
 					<span className="reveal-mask">
 						<motion.span
-							initial={{ y: "102%" }} animate={{ y: 0 }}
-							transition={{ duration: 0.82, ease: EASE, delay: 0.08 }}
-							className="block text-[11.5vw] lg:text-[7.6vw] -ml-[0.035em] pb-[0.05em]"
+							initial={{ y: "110%" }} animate={{ y: 0 }}
+							transition={{ duration: 1, ease: EASE, delay: 0.1 }}
+							className="block text-[12vw] lg:text-[8.5vw] -ml-[0.06em] pb-[0.06em]"
 						>
 							COMMUNITY
 						</motion.span>
 					</span>
 					<span className="reveal-mask">
 						<motion.span
-							initial={{ y: "102%" }} animate={{ y: 0 }}
-							transition={{ duration: 0.82, ease: EASE, delay: 0.16 }}
-							className="block text-[11.5vw] lg:text-[7.6vw] -ml-[0.035em] pb-[0.05em] text-foreground/28"
+							initial={{ y: "110%" }} animate={{ y: 0 }}
+							transition={{ duration: 1, ease: EASE, delay: 0.2 }}
+							className="block text-[12vw] lg:text-[8.5vw] -ml-[0.06em] pb-[0.06em] text-stroke"
 						>
 							MEETING
 						</motion.span>
 					</span>
-					<span className="mt-5 block font-jp text-sm sm:text-base tracking-[0.22em] text-muted-foreground">コミュニティ会議</span>
 				</h1>
+				</Tilt3D>
 			</div>
 
 			<motion.aside
