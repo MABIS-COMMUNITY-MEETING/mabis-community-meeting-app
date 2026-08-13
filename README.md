@@ -662,6 +662,7 @@ AI and human contributors must preserve these rules:
 - Noncritical reminders and floating tools mount during browser idle time rather than competing with the first useful paint.
 - Long editorial sections and list cards use `content-visibility` and intrinsic-size containment where supported.
 - Decorative scroll indicators share one passive, animation-frame-throttled scroll signal and write to isolated DOM nodes without causing React renders on every scroll frame.
+- Native browser scrolling is never intercepted. Scroll-linked decoration stays on transform and opacity; document height is cached between resize notifications; expensive glass capture, full-viewport grain, and ambient loops yield only during active scroll and restore at scrollend.
 - Canvas animations must cache computed styles, avoid reallocating backing buffers per frame, cap unreasonable pixel density, and cancel animation frames on unmount.
 - Data queries that serve hidden tabs or unauthorized controls remain disabled until those surfaces are reachable.
 - Use `useMemo`, `useDeferredValue`, transitions, and component memoization only where they remove measured work. Do not scatter them ceremonially.
