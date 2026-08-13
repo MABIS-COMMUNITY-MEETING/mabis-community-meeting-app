@@ -18,16 +18,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="MABIS Community Meeting App" />
     <script type="application/ld+json">{"name":"MABIS Community Meeting App","logo":"https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png","@context":"https://schema.org","@type":"Organization"}</script>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="preconnect" href="https://media.base44.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-    <!-- the two weights the first paint actually uses — fetched in parallel with the CSS -->
-    <link rel="preload" as="font" type="font/woff2" crossorigin
-          href="https://cdn.jsdelivr.net/fontsource/fonts/iosevka@5.3.0/latin-400-normal.woff2" />
-    <link rel="preload" as="font" type="font/woff2" crossorigin
-          href="https://cdn.jsdelivr.net/fontsource/fonts/iosevka@5.3.0/latin-600-normal.woff2" />
+    <!-- Multilingual font is self-hosted so CJK and Thai never need a system fallback. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/UnifontExMono.woff2" />
     <link rel="manifest" href="/manifest.json" />
     <title>Home | MABIS Community Meeting App</title>
   </head>
