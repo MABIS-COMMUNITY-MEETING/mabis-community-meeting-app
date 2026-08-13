@@ -41,8 +41,8 @@ export const CURSOR = {
   motionExpansion: 0.065, // max whole-ring growth at full travel effort
   pressScale: 0.82,        // tactile squash around the ring centre
   idleReleaseDelay: 0.05,  // seconds before stale velocity begins releasing
-  /** maximum dot-to-ring-centre separation in CSS px; large enough to escape */
-  ringMaxLag: 46,
+  /** close tether: the dot may peek just beyond the deformed ring edge */
+  ringMaxLag: 24,
   /** tail chain */
   trailNodes: 12,
   trailLink: 7,
