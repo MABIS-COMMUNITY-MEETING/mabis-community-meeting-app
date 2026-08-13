@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search } from "lucide-react";
+import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search, MousePointer2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
+import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
 import { FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
 
 export default function SettingsModal({ open, onClose, isAdmin }) {
@@ -14,6 +15,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const [codeError, setCodeError] = useState(false);
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [animationsOff, setAnimationsOff] = useState(animationsDisabled());
+  const [customCursorOn, setCustomCursorOn] = useState(customCursorEnabled());
   const [currentFont, setCurrentFont] = useState(getStoredFont());
   const [fontAvailability, setFontAvailability] = useState({});
   const [fontSearch, setFontSearch] = useState("");
@@ -23,6 +25,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   useEffect(() => {
     if (!open) return;
     setCurrentFont(getStoredFont());
+    setCustomCursorOn(customCursorEnabled());
     if (!document.fonts) return;
     let cancelled = false;
     const aliases = {
@@ -285,6 +288,29 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   <span className="text-sm font-semibold text-gray-700">{animationsOff ? "Disabled" : "Enabled"}</span>
                   <span className={`relative w-10 h-6 rounded-full transition-colors ${animationsOff ? "bg-[#951E3A]" : "bg-gray-300"}`}>
                     <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${animationsOff ? "left-[18px]" : "left-0.5"}`} />
+                  </span>
+                </button>
+              </div>
+
+              {/* Custom cursor */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <MousePointer2 className={`w-4 h-4 ${customCursorOn ? "text-[#951E3A]" : "text-gray-400"}`} />
+                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Custom Cursor</h3>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Use the animated liquid cursor on mouse and trackpad devices. Turning it off restores the normal system cursor.</p>
+                <button
+                  onClick={() => {
+                    const value = !customCursorOn;
+                    setCustomCursorOn(value);
+                    setCustomCursorEnabled(value);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${customCursorOn ? "border-[#951E3A]/40 bg-[#951E3A]/5" : "border-gray-200"}`}
+                  aria-pressed={customCursorOn}
+                >
+                  <span className="text-sm font-semibold text-gray-700">{customCursorOn ? "Enabled" : "Disabled"}</span>
+                  <span className={`relative w-10 h-6 rounded-full transition-colors ${customCursorOn ? "bg-[#951E3A]" : "bg-gray-300"}`}>
+                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${customCursorOn ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                 </button>
               </div>
