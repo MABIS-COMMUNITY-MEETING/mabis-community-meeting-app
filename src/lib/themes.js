@@ -1,7 +1,7 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
-import { balancedPalette, bestForeground, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
+import { balancedPalette, contrastSafePair, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
 import { BY_WOMXN_FONTS } from "@/lib/by_womxn_fonts";
 
 // Theme definitions for MABIS platform
@@ -14,20 +14,30 @@ function toneVariant(hslStr, lightnessDelta) {
   return `${h} ${sat} ${newL}%`;
 }
 
+function keyColorPair(hsl) {
+  const [h, s] = hsl.split(" ").map((v) => parseInt(v));
+  return contrastSafePair(hsl, {
+    dark: `${h} ${Math.min(s, 40)}% 12%`,
+    light: "0 0% 100%",
+  });
+}
+
 function pastelTheme(key, name, p, s) {
   // Very light background tint from primary hue
   const [pH] = p.split(" ");
   const bg = `${pH} 25% 97%`;
+  const primaryPair = keyColorPair(p);
+  const secondaryPair = keyColorPair(s);
 
   return {
     name,
     vars: {
-      "--primary": p,
-      "--primary-foreground": onColor(p),
-      "--secondary": s,
-      "--secondary-foreground": onColor(s),
-      "--accent": s,
-      "--accent-foreground": onColor(s),
+      "--primary": primaryPair.fill,
+      "--primary-foreground": primaryPair.foreground,
+      "--secondary": secondaryPair.fill,
+      "--secondary-foreground": secondaryPair.foreground,
+      "--accent": secondaryPair.fill,
+      "--accent-foreground": secondaryPair.foreground,
       "--background": bg,
       "--foreground": "220 12% 22%",
       "--card": "0 0% 100%",
@@ -38,7 +48,7 @@ function pastelTheme(key, name, p, s) {
       "--muted-foreground": "220 8% 48%",
       "--border": `${pH} 12% 90%`,
       "--input": `${pH} 12% 90%`,
-      "--ring": p,
+      "--ring": primaryPair.fill,
       // Two-colour themes alternate their real hues evenly. Tone variants keep
       // badges distinct without inventing unrelated green, purple or orange.
       "--role-student": p,
@@ -52,15 +62,6 @@ function pastelTheme(key, name, p, s) {
     swatches: [`hsl(${p})`, `hsl(${s})`, "#ffffff"],
     dark: false,
   };
-}
-
-// Text colour that actually reads on a given "H S% L%" fill.
-function onColor(hsl) {
-  const [h, s] = hsl.split(" ").map((v) => parseInt(v));
-  return bestForeground(hsl, {
-    dark: `${h} ${Math.min(s, 40)}% 12%`,
-    light: "0 0% 100%",
-  });
 }
 
 /* Multi-colour brand theme: primary/secondary drive the UI tokens while the full
@@ -85,10 +86,9 @@ function paletteTheme(key, name, p, s, flagHexes) {
   t.vars["--input"] = `${pH} 12% 88%`;
   const tertiaryHex = pickDistinctPaletteColor(flagHexes, [p, s]);
   const tertiary = tertiaryHex ? hexToHsl(tertiaryHex) : s;
-  t.vars["--accent"] = tertiary;
-  t.vars["--primary-foreground"] = onColor(p);
-  t.vars["--secondary-foreground"] = onColor(s);
-  t.vars["--accent-foreground"] = onColor(tertiary);
+  const tertiaryPair = keyColorPair(tertiary);
+  t.vars["--accent"] = tertiaryPair.fill;
+  t.vars["--accent-foreground"] = tertiaryPair.foreground;
 
   // Roles cycle through each distinct usable palette hue in canonical order.
   // Repeated stripes and white/black no longer crowd out identity colours.
@@ -148,17 +148,20 @@ function gmkTheme(key) {
   const acc2 = hexToHsl(u.accent_secondary);
   const accentHex = u.accent_tertiary || pickDistinctPaletteColor(u.swatches, [acc, acc2], u.accent_secondary);
   const acc3 = hexToHsl(accentHex);
+  const primaryPair = keyColorPair(acc);
+  const secondaryPair = keyColorPair(acc2);
+  const accentPair = keyColorPair(acc3);
   const d = u.dark;
 
   const t = {
     name: u.name,
     vars: {
-      "--primary": acc,
-      "--primary-foreground": onColor(acc),
-      "--secondary": acc2,
-      "--secondary-foreground": onColor(acc2),
-      "--accent": acc3,
-      "--accent-foreground": onColor(acc3),
+      "--primary": primaryPair.fill,
+      "--primary-foreground": primaryPair.foreground,
+      "--secondary": secondaryPair.fill,
+      "--secondary-foreground": secondaryPair.foreground,
+      "--accent": accentPair.fill,
+      "--accent-foreground": accentPair.foreground,
       "--background": bg,
       "--foreground": fg,
       "--card": d ? nudgeL(u.surface, 5) : nudgeL(u.background, 5),
@@ -169,7 +172,7 @@ function gmkTheme(key) {
       "--muted-foreground": d ? nudgeL(u.foreground, -22) : nudgeL(u.foreground, 24),
       "--border": d ? nudgeL(u.surface, 14) : nudgeL(u.background, -12),
       "--input": d ? nudgeL(u.surface, 14) : nudgeL(u.background, -12),
-      "--ring": acc,
+      "--ring": primaryPair.fill,
     },
     bodyClass: `theme-${key}`,
     swatches: u.swatches,
