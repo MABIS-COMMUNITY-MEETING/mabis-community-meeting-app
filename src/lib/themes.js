@@ -581,6 +581,7 @@ const REQUESTED_FONTS = [
     name: "Transgender Grotesk",
     detail: "Default · licensed/local face · Iosevka fallback",
     source: "Featured",
+    family: "TransgenderGroteskUI",
     heading: "'TransgenderGroteskUI', 'IosevkaUI'",
     body: "'TransgenderGroteskUI', 'IosevkaUI'",
     mono: "'TransgenderGroteskUI', 'IosevkaUI'",
@@ -592,6 +593,7 @@ const REQUESTED_FONTS = [
     name: "Atlas Mono",
     detail: "Licensed/local face · Iosevka fallback",
     source: "Featured",
+    family: "AtlasMonoUI",
     heading: "'AtlasMonoUI', 'IosevkaUI'",
     body: "'AtlasMonoUI', 'IosevkaUI'",
     mono: "'AtlasMonoUI', 'IosevkaUI'",
@@ -603,6 +605,7 @@ const REQUESTED_FONTS = [
     name: "Iosevka",
     detail: "Embedded OFL · requested coding/editorial mono",
     source: "Featured",
+    family: "IosevkaUI",
     heading: "'IosevkaUI'",
     body: "'IosevkaUI'",
     mono: "'IosevkaUI'",
@@ -614,6 +617,7 @@ const REQUESTED_FONTS = [
     name: "Lilex",
     detail: "Embedded OFL · requested programming mono",
     source: "Featured",
+    family: "LilexUI",
     heading: "'LilexUI'",
     body: "'LilexUI'",
     mono: "'LilexUI'",
@@ -625,6 +629,7 @@ const REQUESTED_FONTS = [
     name: "UnifontEX",
     detail: "Embedded multilingual · English 日本語 中文 ไทย",
     source: "Featured",
+    family: "UnifontEX",
     heading: "'UnifontEX'",
     body: "'UnifontEX'",
     mono: "'UnifontEX'",
@@ -664,6 +669,14 @@ export function applyFont(key) {
   root.style.setProperty("--font-multilingual", "'UnifontEX'");
   root.dataset.uiFont = font.key;
   if (document.body) document.body.style.fontFamily = font.body;
+  if (document.fonts && font.family) {
+    document.fonts.load(`16px "${font.family}"`, FONT_PREVIEW_TEXT).then(() => {
+      if (root.dataset.uiFont === font.key) {
+        root.dataset.uiFontLoaded = font.key;
+        window.dispatchEvent(new CustomEvent("fontRendered", { detail: { key: font.key } }));
+      }
+    }).catch(() => {});
+  }
   localStorage.setItem("mabis-font", font.key);
   window.dispatchEvent(new CustomEvent("fontChanged", { detail: { key: font.key } }));
   window.dispatchEvent(new Event("themeChanged"));
