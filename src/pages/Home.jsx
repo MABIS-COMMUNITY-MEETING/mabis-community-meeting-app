@@ -214,7 +214,9 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="03" label="DISCUSSION">
-          <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
+          <Suspense fallback={<WidgetFallback minHeight={560} />}>
+            <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
+          </Suspense>
         </EditorialSection>
 
         <EditorialSection index="04" label="JOBS AND ROTATION">
