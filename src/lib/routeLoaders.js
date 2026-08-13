@@ -1,3 +1,5 @@
+import { allowSpeculativeFetch } from "@/lib/network-policy";
+
 const routeLoaders = {
   "/login": () => import("@/pages/Login"),
   "/register": () => import("@/pages/Register"),
@@ -16,6 +18,7 @@ export function loadRoute(pathname) {
 }
 
 export function preloadRoute(pathname) {
+  if (!allowSpeculativeFetch()) return;
   const loader = routeLoaders[pathname];
   if (!loader) return;
   void loader();
