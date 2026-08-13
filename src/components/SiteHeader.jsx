@@ -58,7 +58,7 @@ export default function SiteHeader({ rightSlot }) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
-        <Glass variant="navigation" tone="light" contentClassName="flex items-center justify-between px-5 sm:px-8 py-4">
+        <Glass variant="navigation" tone="light" contentClassName="flex items-center justify-between gap-3 px-3 py-3 sm:px-8 sm:py-4">
           <Link to="/" data-cursor="HOME" className="group flex items-center gap-3">
             <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden border border-foreground/30 bg-background">
               <img src={LOGO} alt="MABIS" className="h-6 w-6 object-contain transition-transform duration-500 group-hover:scale-110" />
@@ -69,10 +69,12 @@ export default function SiteHeader({ rightSlot }) {
             </span>
           </Link>
 
-          <div className="flex items-center gap-3 sm:gap-5">
-            <span ref={clockRef} className="hidden md:inline tech-label text-muted-foreground tabular-nums" />
-            <SoundToggle />
-            {rightSlot}
+          <div className="flex items-center gap-2 sm:gap-5">
+            <div className="hidden items-center gap-3 sm:flex sm:gap-5">
+              <span ref={clockRef} className="hidden md:inline tech-label text-muted-foreground tabular-nums" />
+              <SoundToggle />
+              {rightSlot}
+            </div>
             <button
               onClick={() => setOpen(v => { const next = !v; (next ? playMenuOpen : playMenuClose)(); return next; })}
               data-cursor={open ? "CLOSE" : "MENU"}
@@ -109,7 +111,7 @@ export default function SiteHeader({ rightSlot }) {
               INDEX
             </motion.span>
 
-            <div className="relative flex h-full flex-col justify-between px-5 sm:px-8 pt-28 pb-8">
+            <div className="relative flex h-full flex-col gap-7 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-24 sm:justify-between sm:gap-0 sm:px-8 sm:pb-8 sm:pt-28">
               <div className="flex items-start justify-between">
                 <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="flex items-center gap-3">
                   <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.15, duration: 0.6, ease: EASE }} className="block h-px w-10 bg-secondary origin-left" />
@@ -118,12 +120,14 @@ export default function SiteHeader({ rightSlot }) {
                 <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="tech-label vert-text text-bone/50 sm:hidden">MENU</motion.span>
               </div>
 
-              <nav className="flex flex-col gap-1 sm:gap-2 shrink-0">
+              <nav className="mt-1 flex shrink-0 flex-col gap-1 sm:mt-0 sm:gap-2">
                 {NAV.map((item, i) => {
                   const active = location.pathname === item.to;
                   // long labels ("Meeting History", "Feedback Inbox") would run
                   // past the rule on narrow phones — scale them down to fit
-                  const size = item.label.length > 12 ? "text-[6vw]" : "text-[7.5vw]";
+                  const size = item.label.length > 12
+                    ? "text-[clamp(1.45rem,7vw,2.15rem)]"
+                    : "text-[clamp(1.7rem,8.5vw,2.5rem)]";
                   return (
                     <motion.button
                       key={item.to}
@@ -134,9 +138,9 @@ export default function SiteHeader({ rightSlot }) {
                       transition={{ delay: 0.12 + i * 0.07, duration: 0.55, ease: EASE }}
                       data-cursor="OPEN"
                       onMouseEnter={playHover}
-                      className="group relative flex shrink-0 items-baseline gap-4 sm:gap-8 text-left"
+                      className="group relative flex shrink-0 items-baseline gap-3 text-left sm:gap-8"
                     >
-                      <span className="tech-label text-bone/40 pt-3 sm:pt-4 w-8 sm:w-10">{item.n}</span>
+                      <span className="w-7 pt-2 tech-label text-bone/40 sm:w-10 sm:pt-4">{item.n}</span>
                       <span className="relative flex-1 flex items-center gap-3 border-b border-bone/15 py-2 sm:py-3 overflow-hidden">
                         {active && (
                           <motion.span layoutId="nav-active" className="absolute left-0 top-0 bottom-0 w-[3px] bg-secondary" />
@@ -156,7 +160,15 @@ export default function SiteHeader({ rightSlot }) {
                 })}
               </nav>
 
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex items-end justify-between">
+              <div className="border-t border-bone/15 pt-4 sm:hidden">
+                <p className="tech-label text-bone/45">QUICK CONTROLS</p>
+                <div className="mobile-nav-controls mt-3 flex flex-wrap items-center gap-2">
+                  <SoundToggle />
+                  {rightSlot}
+                </div>
+              </div>
+
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-auto flex items-end justify-between pt-2 sm:mt-0 sm:pt-0">
                 <div className="tech-label text-bone/40">
                   SECONDARY COMMUNITY<br />MEETING APP 2026
                 </div>
