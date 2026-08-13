@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowUpRight, Plus, ArrowDown } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { isHackerMode } from "@/lib/hacker";
 import MagneticButton from "@/components/MagneticButton";
 import Marquee from "@/components/Marquee";
 import KineticBackground from "@/components/KineticBackground";
@@ -10,6 +10,14 @@ import KineticBackground from "@/components/KineticBackground";
 const LOGO = "/images/mabis-logo-128.webp";
 
 const EASE = [0.16, 1, 0.3, 1];
+
+function hasStoredSession() {
+  try {
+    return Boolean(localStorage.getItem("base44_access_token") || localStorage.getItem("token")) || isHackerMode();
+  } catch {
+    return false;
+  }
+}
 const charParent = (stagger, delay) => ({ hidden: {}, show: { transition: { staggerChildren: stagger, delayChildren: delay } } });
 const charChild = {
   hidden: { y: "115%", opacity: 0 },
@@ -36,7 +44,7 @@ function SplitChars({ text, stagger = 0.05, delay = 0, className = "" }) {
 
 export default function Splash() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const [hasSession] = useState(hasStoredSession);
   const [ready, setReady] = useState(false);
 
   // pointer parallax for the hero typography
@@ -65,7 +73,7 @@ export default function Splash() {
     return () => window.removeEventListener("mousemove", onMove);
   }, [mx, my]);
 
-  const enter = () => navigate(isAuthenticated ? "/home" : "/login");
+  const enter = () => navigate(hasStoredSession() ? "/home" : "/login");
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-ink text-bone">
@@ -160,7 +168,7 @@ export default function Splash() {
                 >
                   <span className="tech-label">N° 02</span>
                   <span className="text-lg sm:text-xl font-display font-normal tracking-tight">
-                    {isAuthenticated ? "ENTER START" : "ENTER LOG IN"}
+                    {hasSession ? "ENTER START" : "ENTER LOG IN"}
                   </span>
                   <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden">
                     <motion.span animate={{ y: ready ? 0 : -24 }} transition={{ duration: 0.5 }}>
