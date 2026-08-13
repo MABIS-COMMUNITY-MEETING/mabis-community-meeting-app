@@ -2,7 +2,7 @@ import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
 import { balancedPalette, contrastSafePair, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
-import { BY_WOMXN_FONTS } from "@/lib/by_womxn_fonts";
+import { DEFAULT_FONT, FONT_PREVIEW_TEXT, REQUESTED_FONTS, findRequestedFont } from "@/lib/font-definitions";
 import { networkState } from "@/lib/network-policy";
 
 // Theme definitions for MABIS platform
