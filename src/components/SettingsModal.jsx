@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search, MousePointer2 } from "lucide-react";
@@ -21,6 +21,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const [fontSearch, setFontSearch] = useState("");
   const [fontSource, setFontSource] = useState("featured");
   const [fontLimit, setFontLimit] = useState(18);
+  const deferredFontSearch = useDeferredValue(fontSearch);
 
   useEffect(() => {
     if (!open) return;
@@ -52,7 +53,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   }, [fontSearch, fontSource]);
 
   const filteredFonts = useMemo(() => {
-    const query = fontSearch.trim().toLowerCase();
+    const query = deferredFontSearch.trim().toLowerCase();
     return FONTS.filter((font) => {
       const matchesSource = fontSource === "all"
         || (fontSource === "featured" && font.featured)
@@ -60,7 +61,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
       const matchesSearch = !query || `${font.name} ${font.detail} ${font.source}`.toLowerCase().includes(query);
       return matchesSource && matchesSearch;
     });
-  }, [fontSearch, fontSource]);
+  }, [deferredFontSearch, fontSource]);
 
   const visibleFonts = filteredFonts.slice(0, fontLimit);
 
