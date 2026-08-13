@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Maximize2, X, ChevronLeft, ChevronRight, History, Pause, Play, Square, Loader2, UserCheck, RefreshCw, Pencil, UserPlus, MessagesSquare } from "lucide-react";
+import { Plus, Trash2, Maximize2, X, ChevronLeft, ChevronRight, History, Pause, Square, Loader2, UserCheck, RefreshCw, Pencil, UserPlus, MessagesSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
