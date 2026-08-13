@@ -14,6 +14,8 @@ export const MATERIAL = {
   precision: { omega: 32, zeta: 1.0 },
   /** outer cursor ring — close, fluid follow-through */
   glass: { omega: 23, zeta: 0.92 },
+  /** ring centre — visible elastic follow with a quick, quiet recapture */
+  follow: { omega: 15, zeta: 0.68 },
   /** travel-energy envelope — slow inhale, softly underdamped release */
   flow: { omega: 6, zeta: 0.88 },
   /** directional membrane stretch — one quiet wave, then stillness */
@@ -34,13 +36,13 @@ export const CURSOR = {
   tauMin: 0.004,
   tauMax: 0.012,
   /** deformation */
-  shearMax: 0.16,      // max |s| in the area-preserving matrix
-  shearAlpha: 0.00022, // speed → shear gain, fed through tanh
-  motionExpansion: 0.045, // max whole-body growth at full travel effort
-  pressScale: 0.82,       // tactile squash around the unchanged pointer origin
-  idleReleaseDelay: 0.05, // seconds before stale velocity begins releasing
-  /** how far the body may lag behind the core, px */
-  maxLag: 8,
+  shearMax: 0.16,       // max |s| in the area-preserving matrix
+  shearAlpha: 0.0006,     // speed → visible membrane stretch, fed through tanh
+  motionExpansion: 0.065, // max whole-ring growth at full travel effort
+  pressScale: 0.82,        // tactile squash around the ring centre
+  idleReleaseDelay: 0.05,  // seconds before stale velocity begins releasing
+  /** maximum dot-to-ring-centre separation in CSS px; large enough to escape */
+  ringMaxLag: 46,
   /** tail chain */
   trailNodes: 12,
   trailLink: 7,
