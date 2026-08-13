@@ -210,11 +210,18 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   {visibleFonts.map((font) => {
                     const selected = currentFont === font.key;
                     const available = font.localOnly ? fontAvailability[font.key] : true;
+                    const previewReady = font.localOnly
+                      || font.key === "gnu-free-mono"
+                      || selected
+                      || fontPreviewLoaded[font.key]
+                      || (font.stylesheet && isFontAssetLoaded(font.key));
                     return (
                       <button
                         key={font.key}
                         type="button"
                         onClick={() => handleFontSelect(font.key)}
+                        onPointerEnter={() => warmFontPreview(font)}
+                        onFocus={() => warmFontPreview(font)}
                         aria-pressed={selected}
                         className={`w-full text-left rounded-xl border-2 p-3.5 transition-colors ${selected ? "border-[#951E3A] bg-[#951E3A]/5" : "border-gray-200 hover:border-[#951E3A]/30"}`}
                       >
@@ -232,16 +239,23 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                           <div className="shrink-0 flex items-center gap-1.5">
                             <span className={`h-1.5 w-1.5 rounded-full ${available ? "bg-green-500" : available === false ? "bg-amber-400" : "bg-gray-300"}`} />
                             <span className="text-[9px] uppercase tracking-wider text-gray-400">
-                              {font.localOnly ? (available ? "Installed" : available === false ? "Fallback" : "Checking") : "Embedded"}
+                              {font.localOnly
+                                ? (available ? "Installed" : available === false ? "Fallback" : "Checking")
+                                : previewReady ? "Loaded" : "On demand"}
                             </span>
                           </div>
                         </div>
                         <div
                           className="rounded-lg border border-gray-200 bg-white px-3 py-3 text-[17px] leading-snug text-gray-900 break-words"
-                          style={{ fontFamily: font.body }}
+                          style={{ fontFamily: previewReady ? font.body : "var(--font-body)" }}
                         >
                           {FONT_PREVIEW_TEXT}
                         </div>
+                        {!previewReady && (
+                          <p className="mt-2 text-[10px] leading-4 text-gray-400">
+                            Preview stays unloaded to save data. Select this font to download it.
+                          </p>
+                        )}
                         {font.localOnly && available === false && (
                           <p className="mt-2 text-[10px] leading-4 text-amber-600">
                             This commercial face needs a licensed local/webfont copy. Go is active until that file is available.
