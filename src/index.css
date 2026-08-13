@@ -1,11 +1,17 @@
-@import url('/fonts/by-womxn/fonts.css');
-
 /* ──────────────────────────────────────────────────────────────
    UI TYPE SYSTEM
    GNU FreeMono is the embedded default. GNU FreeSerif, Torrefarfan, Go,
    Iosevka, Lilex and the libre catalogue are selectable; commercial faces resolve only to
    licensed local copies. UnifontEX is reserved for marked multilingual text.
    ────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'torrefarfan';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/by-womxn/torrefarfan_regular-webfont.woff2') format('woff2');
+}
+
 @font-face {
   font-family: 'TransgenderGroteskUI';
   font-style: normal;
@@ -193,28 +199,28 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMono.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeMono.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: normal;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBold.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeMonoBold.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: italic;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMonoOblique.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeMonoOblique.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: italic;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBoldOblique.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeMonoBoldOblique.woff2?v=2') format('woff2');
 }
 
 @font-face {
