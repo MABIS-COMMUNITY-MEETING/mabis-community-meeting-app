@@ -1056,23 +1056,56 @@ html.is-scrolling .widget-loading-shell {
 .lazy-section-placeholder { min-height: var(--lazy-min-height, 480px); }
 
 @media (max-width: 639px) {
-  html { scroll-padding-top: 4.5rem; }
+  html { scroll-padding-top: calc(4.5rem + env(safe-area-inset-top)); }
   body { overflow-x: clip; }
+
+  .editorial-home > main {
+    padding-top: calc(5rem + env(safe-area-inset-top)) !important;
+  }
+  .site-nav-panel {
+    padding-top: calc(6rem + env(safe-area-inset-top)) !important;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 
   .lazy-section-placeholder {
     min-height: min(var(--lazy-min-height, 480px), 42svh);
   }
 
+  .mobile-nav-controls {
+    display: grid !important;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+  }
   .mobile-nav-controls > button,
   .mobile-nav-controls > a,
   .mobile-nav-controls > div {
+    min-width: 0;
     min-height: 44px;
+    width: 100%;
   }
   .mobile-nav-controls > button,
   .mobile-nav-controls > a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+  .mobile-nav-controls > div > button:first-child {
+    width: 100%;
+    min-height: 44px;
+  }
+  .mobile-nav-controls > div:last-child {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    padding-left: 0;
+    border-top: 1px solid hsl(var(--bone) / 0.15);
   }
 
   .mabis-widget {
@@ -1085,6 +1118,9 @@ html.is-scrolling .widget-loading-shell {
     align-items: flex-start !important;
     gap: 0.75rem !important;
     padding: 0.875rem 1rem !important;
+  }
+  .mabis-widget-header > * {
+    min-width: 0;
   }
   .mabis-widget-title {
     font-size: 1.125rem !important;
@@ -1102,13 +1138,19 @@ html.is-scrolling .widget-loading-shell {
     min-width: 0;
     width: 100%;
   }
+  .mabis-widget-actions > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
   .mabis-widget-actions button,
   .mabis-widget-actions a {
     min-height: 44px;
     justify-content: center;
   }
   .mabis-widget-body {
+    min-width: 0;
+    max-width: 100%;
     padding: 1rem !important;
+    overflow-wrap: anywhere;
   }
 
   .mobile-sheet-backdrop {
@@ -1123,7 +1165,10 @@ html.is-scrolling .widget-loading-shell {
     border-radius: 1rem 1rem 0 0 !important;
   }
   .mobile-sheet-header { padding: 1rem !important; }
-  .mobile-sheet-body { padding: 1rem !important; }
+  .mobile-sheet-body {
+    padding: 1rem !important;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+  }
 
   .mobile-fab {
     bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
@@ -1141,6 +1186,7 @@ html.is-scrolling .widget-loading-shell {
     right: 0 !important;
     width: 100% !important;
     max-width: none !important;
+    padding-bottom: env(safe-area-inset-bottom);
     border-radius: 1rem 1rem 0 0 !important;
   }
   .mobile-assistant-panel {
