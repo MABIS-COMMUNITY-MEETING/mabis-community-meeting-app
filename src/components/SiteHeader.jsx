@@ -62,7 +62,7 @@ export default function SiteHeader({ rightSlot }) {
         <Glass variant="navigation" tone="light" contentClassName="flex items-center justify-between gap-3 px-3 py-3 sm:px-8 sm:py-4">
           <Link to="/" data-cursor="HOME" className="group flex items-center gap-3">
             <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden border border-foreground/30 bg-background">
-              <img src={LOGO} alt="MABIS" className="h-6 w-6 object-contain transition-transform duration-500 group-hover:scale-110" />
+              <img src={LOGO} alt="MABIS" width="24" height="24" decoding="async" fetchPriority="high" className="h-6 w-6 object-contain transition-transform duration-500 group-hover:scale-110" />
             </span>
             <span className="hidden sm:flex flex-col leading-none">
               <span className="tech-label text-foreground">MABIS</span>
