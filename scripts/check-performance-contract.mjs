@@ -31,6 +31,13 @@ const jobs = read("src/components/JobsWidget.jsx");
 const settings = read("src/components/SettingsModal.jsx");
 const css = read("src/index.css");
 const routeLoaders = read("src/lib/routeLoaders.js");
+const networkPolicy = read("src/lib/network-policy.js");
+const serviceWorker = read("src/lib/service-worker.js");
+const serviceWorkerGenerator = read("scripts/generate-service-worker.mjs");
+const indexHtml = read("index.html");
+const packageJson = read("package.json");
+const queryClient = read("src/lib/query-client.js");
+const sound = read("src/lib/sound.js");
 
 forbidText("src/pages/Home.jsx", home, 'from "moment"');
 forbidText("src/pages/Home.jsx", home, "from 'moment'");
@@ -41,7 +48,8 @@ forbidText("src/pages/Home.jsx", home, "from 'moment'");
   'lazy(() => import("@/components/CalendarWidget"))',
   'lazy(() => import("@/components/JobsWidget"))',
   'lazy(() => import("@/components/MembersWidget"))',
-  '<IdleMount timeout={1800}>',
+  '<IdleMount timeout={1800} constrainedTimeout={12000}>',
+  '<OnDemandTools />',
 ].forEach((text) => requireText("src/pages/Home.jsx", home, text));
 
 requireText("src/components/DiscussionWidget.jsx", discussion, 'lazy(() => import("@/components/DocsEditor"))');
@@ -52,6 +60,20 @@ requireText("src/components/SettingsModal.jsx", settings, "useDeferredValue(font
 requireText("src/App.jsx", app, "<OptionalCustomCursor />");
 requireText("src/components/OptionalCustomCursor.jsx", optionalCursor, 'lazy(() => import("@/components/CustomCursor"))');
 requireText("src/lib/routeLoaders.js", routeLoaders, "preloadRoute");
+requireText("src/lib/routeLoaders.js", routeLoaders, "allowSpeculativeFetch()");
+requireText("src/lib/network-policy.js", networkPolicy, 'connection?.saveData === true');
+requireText("src/lib/network-policy.js", networkPolicy, 'effectiveType === "slow-2g"');
+requireText("src/lib/network-policy.js", networkPolicy, 'root.classList.toggle("network-lite"');
+requireText("src/lib/service-worker.js", serviceWorker, 'navigator.serviceWorker.register("/sw.js"');
+requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, '/(?:api|auth|functions|integrations|entities)');
+requireText("package.json", packageJson, "node scripts/generate-service-worker.mjs");
+requireText("src/lib/query-client.js", queryClient, "networkMode: 'offlineFirst'");
+requireText("src/lib/query-client.js", queryClient, "gcTime: 2 * 60 * 60 * 1000");
+requireText("index.html", indexHtml, "/fonts/gnu-freefont/FreeMono-Core.woff2?v=3");
+forbidText("index.html", indexHtml, "FreeMono.ttf");
+forbidText("index.html", indexHtml, "FreeMonoBold.ttf");
+forbidText("src/index.css", css, "@import url('/fonts/by-womxn/fonts.css')");
+forbidText("src/lib/sound.js", sound, "media.base44.com");
 requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListener("scroll", schedule, { passive: true })');
 requireText("src/components/JobsWidget.jsx", jobs, "appearanceRef");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
@@ -61,8 +83,8 @@ requireText("src/index.css", css, "contain-intrinsic-size: auto 720px");
 if (failures.length > 0) {
   console.error("\nPerformance-contract check failed:\n");
   failures.forEach((failure) => console.error(`- ${failure}`));
-  console.error("\nRestore the lazy boundaries, idle mounting, shared scroll signal, canvas caching and rendering containment.\n");
+  console.error("\nRestore the lazy boundaries, data-saver policy, on-demand resources, safe cache generation, shared scroll signal, canvas caching and rendering containment.\n");
   process.exit(1);
 }
 
-console.log("React performance contract: lazy boundaries and runtime safeguards intact.");
+console.log("React performance contract: network adaptation, lazy boundaries and runtime safeguards intact.");
