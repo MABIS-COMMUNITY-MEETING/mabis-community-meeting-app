@@ -21,18 +21,18 @@ export default function NewsHistory() {
     <div className="min-h-screen bg-background">
       <PageNav label=" N°04 — NEWS" />
 
-      <main className="max-w-7xl mx-auto px-5 sm:px-8 pt-28 sm:pt-32 pb-2">
+      <main className="mx-auto max-w-7xl px-4 pb-2 pt-20 sm:px-8 sm:pt-32">
         <div className="mb-10 sm:mb-14">
           <div className="tech-label text-primary mb-4"> ARCHIVE — 04</div>
-          <h1 className="font-display font-light tracking-ultra text-5xl sm:text-7xl md:text-8xl leading-[0.9]">
+          <h1 className="font-display text-[clamp(2.65rem,13vw,4.5rem)] font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl">
             NEWS<br />HISTORY
           </h1>
-          <div className="mt-6 flex items-center gap-3 tech-label text-muted-foreground">
+          <div className="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
             <span>{allNews.length} ARTICLES</span><span className="h-1 w-1 bg-primary" /><span>GROUPED BY WEEK</span><span className="h-1 w-1 bg-primary" /><span>MABIS</span>
           </div>
         </div>
         {weeks.length === 0 && (
-          <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center">
+          <div className="border border-gray-200 bg-white p-8 text-center sm:rounded-2xl sm:p-16">
             <p className="text-gray-400 text-lg">No news yet</p>
             <p className="text-gray-300 text-sm mt-1">Published articles will be grouped here by week</p>
           </div>
@@ -43,9 +43,9 @@ export default function NewsHistory() {
             const isOpen = openWeeks[week];
             return (
               <div key={week} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                <button className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+                <button className="flex w-full flex-col items-stretch gap-3 px-4 py-4 text-left transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between sm:px-6"
                   onClick={() => setOpenWeeks(p => ({ ...p, [week]: !p[week] }))}>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     {isOpen ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
                     <div className="text-left">
                       <p className="font-semibold text-gray-800 text-base">{formatWeekFull(week)}</p>
@@ -54,10 +54,10 @@ export default function NewsHistory() {
                   </div>
                 </button>
                 {isOpen && (
-                  <div className="border-t border-gray-100 px-6 py-4 space-y-3">
+                  <div className="space-y-3 border-t border-gray-100 px-4 py-4 sm:px-6">
                     {items.map(n => (
                       <div key={n.id} className="rounded-xl border border-gray-100 p-3 bg-white">
-                        <div className="flex items-center gap-2 mb-0.5">
+                        <div className="mb-0.5 flex flex-wrap items-center gap-2">
                           <span className="font-semibold text-sm text-gray-800">{n.title}</span>
                           <span className="text-xs text-gray-400 ml-auto">{n.published_date || n.created_date ? format(new Date(n.published_date || n.created_date), "d MMM yyyy") : ""}</span>
                         </div>
