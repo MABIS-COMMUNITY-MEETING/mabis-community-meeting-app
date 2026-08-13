@@ -19,8 +19,11 @@
     <meta name="apple-mobile-web-app-title" content="MABIS Community Meeting App" />
     <script type="application/ld+json">{"name":"MABIS Community Meeting App","logo":"https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png","@context":"https://schema.org","@type":"Organization"}</script>
     <link rel="preconnect" href="https://media.base44.com" crossorigin />
-    <!-- Multilingual font is self-hosted so CJK and Thai never need a system fallback. -->
-    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/UnifontExMono.woff2" />
+    <!-- The default face is requested before the app module so the loader never
+         paints in a browser fallback and swaps a moment later. -->
+    <link rel="preload" as="font" type="font/ttf" crossorigin href="/fonts/go/Go-Regular.ttf?v=1" />
+    <link rel="preload" as="font" type="font/ttf" crossorigin href="/fonts/go/Go-Mono.ttf?v=1" />
+    <style>html,body,#root{min-height:100%;margin:0;background:#11131a}</style>
     <link rel="manifest" href="/manifest.json" />
     <title>Home | MABIS Community Meeting App</title>
   </head>
