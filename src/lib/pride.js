@@ -16,7 +16,7 @@
  * dark treatment.
  */
 import { tone, toneHex, surface } from "@/lib/color/oklch";
-import { balancedPalette } from "@/lib/color/themeBalance";
+import { balancedPalette, bestForeground } from "@/lib/color/themeBalance";
 
 /**
  * field — the theme's lighting geometry. Each entry is a soft radial light:
@@ -259,7 +259,7 @@ function applyExact(vars, s) {
   // page. In dark mode --foreground is near-white, so using it on a light flag
   // colour (the ADMIN badge on lesbian orange) washed the label out.
   const darkInk = surface(s.dominant, 0.20, 0.03);
-  const on = (hex) => (parseInt(hexToHslStr(hex).split(" ")[2]) > 58 ? darkInk : "0 0% 100%");
+  const on = (hex) => bestForeground(hex, { dark: darkInk, light: "0 0% 100%" });
   vars["--primary"] = hexToHslStr(s.dominant);
   vars["--primary-foreground"] = on(s.dominant);
   vars["--secondary"] = hexToHslStr(s.secondary);
@@ -325,6 +325,14 @@ function buildTheme(s) {
   const roleL = s.mode === "dark" ? 0.76 : 0.5;
   const mk = (mode) => {
     const vars = applyExact(mode === "dark" ? darkVars(s) : lightVars(s), s);
+    const darkInk = surface(s.dominant, 0.16, 0.014);
+    const lightInk = surface(s.dominant, 0.99, 0.004);
+    ["primary", "secondary", "accent"].forEach((token) => {
+      vars[`--${token}-foreground`] = bestForeground(vars[`--${token}`], {
+        dark: darkInk,
+        light: lightInk,
+      });
+    });
     // Role colours are used two ways: as small text on a surface, and as a
     // filled badge with white text on top. Distinct flag hues rotate evenly;
     // repeated stripes and white separators no longer consume extra roles.
