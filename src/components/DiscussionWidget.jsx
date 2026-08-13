@@ -553,6 +553,18 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
     setTitle(""); setDescription(""); setPriority("3");
     setSubmittedBy(""); setEditingTopicId(null); setShowForm(false);
   };
+  const toggleAddTopicForm = () => {
+    if (showForm && !editingTopicId) {
+      resetTopicForm();
+      return;
+    }
+    setEditingTopicId(null);
+    setTitle("");
+    setDescription("");
+    setSubmittedBy("");
+    setPriority("3");
+    setShowForm(true);
+  };
   const addMutation = useMutation({
     mutationFn: (data) => base44.entities.DiscussionTopic.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["topics"] }); resetTopicForm(); },
@@ -562,8 +574,12 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["topics"] }); resetTopicForm(); },
   });
   const handleEditTopic = (t) => {
-    setEditingTopicId(t.id); setTitle(t.title); setDescription(t.description || "");
-    setSubmittedBy(t.submitted_by); setPriority(String(t.priority || 3)); setShowForm(true);
+    setShowForm(false);
+    setEditingTopicId(t.id);
+    setTitle(t.title);
+    setDescription(t.description || "");
+    setSubmittedBy(t.submitted_by);
+    setPriority(String(t.priority || 3));
   };
   const toggleMutation = useMutation({
     mutationFn: ({ id, completed }) => base44.entities.DiscussionTopic.update(id, { completed }),
@@ -614,6 +630,22 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
       });
     }
   };
+
+  const inlineEditProps = (topic) => ({
+    isEditing: editingTopicId === topic.id,
+    editTitle: title,
+    editDescription: description,
+    editSubmittedBy: submittedBy,
+    editPriority: priority,
+    members,
+    onTitleChange: setTitle,
+    onDescriptionChange: setDescription,
+    onSubmittedByChange: setSubmittedBy,
+    onPriorityChange: setPriority,
+    onSave: handleAdd,
+    onCancel: resetTopicForm,
+    isSaving: updateTopicMutation.isPending,
+  });
 
   // ── MEETING MODE ──────────────────────────────────────────────────────────
   if (meetingMode) {
