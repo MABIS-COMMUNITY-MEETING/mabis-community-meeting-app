@@ -656,7 +656,7 @@ Performance is part of the Novesce design contract. A technically correct change
 AI and human contributors must preserve these rules:
 
 - Route modules use shared dynamic loaders so navigation targets can preload on pointer or keyboard intent.
-- Large Home widgets remain behind near-viewport `LazySection` and `React.lazy` boundaries. Delaying mount without splitting the import is not sufficient.
+- Discussion is the measured Home fast path: its small shell loads with Home and queries only the viewed week. Other large Home widgets remain behind near-viewport `LazySection` and `React.lazy` boundaries.
 - Rich-text editing, analytics charts, settings, profile editing, cursor physics, and floating assistant tools load only when their interaction requires them.
 - Noncritical reminders and floating tools mount during browser idle time rather than competing with the first useful paint.
 - Long editorial sections and list cards use `content-visibility` and intrinsic-size containment where supported.
@@ -668,7 +668,7 @@ AI and human contributors must preserve these rules:
 - The critical GNU FreeMono faces remain full-glyph WOFF2 files. Thai, Japanese/Chinese, and the optional Libre Fonts by Womxn catalogue load only when their actual text or settings surface requires them.
 - Production builds generate a revisioned offline shell from Vite's manifest. Register it after the `load` event, keep runtime caches bounded, and never put Base44 API, function, authorization, or cross-origin responses in Cache Storage.
 - Offline data is a progressive enhancement: persist only the explicit read-only query allowlist, scope snapshots to the authenticated user, cap them at 2 MiB and seven days, and erase them on logout. Online authorization always wins and `401`/`403` responses must never fall back to an offline session.
-- Respect Save-Data and 2G signals: avoid speculative route downloads, narrow below-fold preload distance, and postpone nonessential floating UI until interaction. Low-memory devices use a shorter inactive query lifetime.
+- Respect Save-Data and 2G signals: avoid speculative route downloads, preload the next visible section early enough to avoid blank shells, and postpone nonessential floating UI until interaction. Low-memory devices use a shorter inactive query lifetime.
 
 The production build enforces static performance boundaries and gzip budgets. Do not weaken or remove these checks merely to make an oversized change pass. Investigate the regression, preserve the intended lazy boundary, or obtain Novesce's explicit approval for a documented budget change.
 
