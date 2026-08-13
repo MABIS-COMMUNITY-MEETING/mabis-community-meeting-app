@@ -17,7 +17,7 @@ async function bootstrap() {
   applyAnimationPreference();
 
   const storedTheme = getStoredTheme();
-  applyTheme(storedTheme);
+  await applyTheme(storedTheme);
   const customColors = getStoredCustomColors();
   if (customColors) applyCustomColors(customColors.primary, customColors.secondary);
 
