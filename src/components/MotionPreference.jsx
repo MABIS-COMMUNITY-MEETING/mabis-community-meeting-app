@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MotionGlobalConfig } from "framer-motion";
+import { MotionGlobalConfig } from "@motion-global-config";
 import { animationsDisabled, applyAnimationPreference, MOTION_EVENT } from "@/lib/motion-preference";
 import { applyLowPowerMode, detectLowPowerDevice, monitorFrameBudget } from "@/lib/performance-tier";
 import { networkState, NETWORK_EVENT } from "@/lib/network-policy";
