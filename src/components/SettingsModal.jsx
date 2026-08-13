@@ -18,15 +18,20 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const [animationsOff, setAnimationsOff] = useState(animationsDisabled());
   const [customCursorOn, setCustomCursorOn] = useState(customCursorEnabled());
   const [currentFont, setCurrentFont] = useState(getStoredFont());
+  const [fontPreviewLoaded, setFontPreviewLoaded] = useState(() => ({ "gnu-free-mono": true, [getStoredFont()]: true }));
   const [fontAvailability, setFontAvailability] = useState({});
   const [fontSearch, setFontSearch] = useState("");
   const [fontSource, setFontSource] = useState("featured");
   const [fontLimit, setFontLimit] = useState(18);
+  const [dataSaver, setDataSaver] = useState(getDataSaverMode);
+  const [connection, setConnection] = useState(networkState);
   const deferredFontSearch = useDeferredValue(fontSearch);
 
   useEffect(() => {
     if (!open) return;
-    setCurrentFont(getStoredFont());
+    const storedFont = getStoredFont();
+    setCurrentFont(storedFont);
+    setFontPreviewLoaded((loaded) => ({ ...loaded, "gnu-free-mono": true, [storedFont]: true }));
     setCustomCursorOn(customCursorEnabled());
     if (!document.fonts) return;
     let cancelled = false;
@@ -53,6 +58,16 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
     setFontLimit(18);
   }, [fontSearch, fontSource]);
 
+  useEffect(() => {
+    const sync = (event) => {
+      setDataSaver(getDataSaverMode());
+      setConnection(event?.detail || networkState());
+    };
+    sync();
+    window.addEventListener(NETWORK_EVENT, sync);
+    return () => window.removeEventListener(NETWORK_EVENT, sync);
+  }, []);
+
   const filteredFonts = useMemo(() => {
     const query = deferredFontSearch.trim().toLowerCase();
     return FONTS.filter((font) => {
@@ -66,11 +81,19 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
 
   const visibleFonts = filteredFonts.slice(0, fontLimit);
 
+  const warmFontPreview = async (font) => {
+    if (!allowSpeculativeFetch() || fontPreviewLoaded[font.key]) return;
+    await preloadFont(font.key);
+    setFontPreviewLoaded((loaded) => ({ ...loaded, [font.key]: true }));
+  };
+
   const handleFontSelect = (key) => {
     localStorage.setItem("mabis-font-picker-version", "7");
     localStorage.setItem("mabis-font-updated-at", String(Date.now()));
     setCurrentFont(key);
-    applyFont(key);
+    applyFont(key).finally(() => {
+      setFontPreviewLoaded((loaded) => ({ ...loaded, [key]: true }));
+    });
   };
 
   const handleSaveCode = () => {
