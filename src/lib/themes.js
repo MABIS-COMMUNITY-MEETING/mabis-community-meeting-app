@@ -635,7 +635,7 @@ export async function preloadFont(key) {
 }
 
 export async function applyFont(key) {
-  const font = FONTS.find(f => f.key === key) || FONTS[0];
+  const font = await resolveFont(key);
   const root = document.documentElement;
   const thaiFallback = "'GNUFreeSerifThai'";
   const headingStack = `${font.heading}, ${thaiFallback}`;
@@ -688,5 +688,7 @@ export function getStoredFont() {
   }
 
   const stored = localStorage.getItem("mabis-font");
-  return FONTS.some((font) => font.key === stored) ? stored : "gnu-free-mono";
+  return findRequestedFont(stored) || (typeof stored === "string" && stored.startsWith("byw-"))
+    ? stored
+    : "gnu-free-mono";
 }
