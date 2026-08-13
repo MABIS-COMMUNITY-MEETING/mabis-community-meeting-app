@@ -573,7 +573,7 @@ export function deleteSavedTheme(name) {
 // Commercial families are never redistributed: they resolve to a user's own
 // licensed local copy. GNU FreeSerif is the embedded default; Torrefarfan, Go,
 // Iosevka, Lilex and the libre catalogue remain selectable. UnifontEX is isolated to
-// explicitly multilingual Japanese, Chinese and Thai text.
+// explicitly marked Japanese and Chinese text; GNU FreeSerif handles Thai.
 export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International School";
 
 const REQUESTED_FONTS = [
@@ -728,6 +728,7 @@ export function applyFont(key) {
   root.style.setProperty("--font-display", font.heading);
   root.style.setProperty("--font-mono", font.mono);
   root.style.setProperty("--font-multilingual", "'UnifontEX'");
+  root.style.setProperty("--font-thai", "'GNUFreeSerifUI'");
   root.dataset.uiFont = font.key;
   if (document.body) document.body.style.fontFamily = font.body;
 
