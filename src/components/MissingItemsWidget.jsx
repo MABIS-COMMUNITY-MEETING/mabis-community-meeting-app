@@ -79,7 +79,7 @@ export default function MissingItemsWidget({ members }) {
     <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
       <Input placeholder="Item name (e.g. Water bottle)..." value={itemName}
         onChange={(e) => setItemName(e.target.value)} className="rounded-lg" />
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Input placeholder="Colors (e.g. Blue, red cap)..." value={colors}
           onChange={(e) => setColors(e.target.value)} className="rounded-lg" />
         <Input list="missing-locations" placeholder="Last seen (e.g. MPR, Lounge)..." value={lastSeen}
@@ -161,15 +161,15 @@ export default function MissingItemsWidget({ members }) {
   );
 
   return (
-    <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
-      <div className="bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between sticky top-0 z-10">
+    <div className={`mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
+      <div className="mabis-widget-header bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between sticky top-0 z-10">
         <div className="min-w-0">
-          <h2 className="font-display font-bold text-white text-xl flex items-center gap-2">
+          <h2 className="mabis-widget-title font-display font-bold text-white text-xl flex items-center gap-2">
             <Search className="w-5 h-5" /> Missing Items
           </h2>
           <p className="text-white/60 text-xs mt-0.5">{activeItems.length} active · {foundItems.length} found</p>
         </div>
-        <div className="flex items-center flex-wrap gap-2 shrink-0">
+        <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
           <Button size="sm" variant="outline"
             className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
             onClick={() => setShowForm(s => !s)}>
@@ -196,7 +196,7 @@ export default function MissingItemsWidget({ members }) {
         </div>
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="mabis-widget-body p-4 space-y-4 sm:p-5">
         {showForm && renderAddForm()}
 
         {isLoading ? (
