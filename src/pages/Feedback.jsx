@@ -45,14 +45,14 @@ export default function Feedback() {
     updateMutation.mutate({ id: f.id, data: { status: "archived" } });
   };
 
-  if (!isAdmin) return <Navigate to="/home" replace />;
-
   const deferredFilter = useDeferredValue(filter);
   const filtered = useMemo(() => deferredFilter === "archived"
     ? feedback.filter(f => f.status === "archived")
     : deferredFilter === "all"
       ? feedback.filter(f => f.status !== "archived")
       : feedback.filter(f => f.type === deferredFilter && f.status !== "archived"), [deferredFilter, feedback]);
+
+  if (!isAdmin) return <Navigate to="/home" replace />;
 
   const statusColors = {
     new: "bg-blue-100 text-blue-700",
