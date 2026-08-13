@@ -12,6 +12,7 @@ import { subscribe, wake } from "@/lib/physics/scheduler";
 
 export const pointer = {
   rawX: 0, rawY: 0,        // last measured sample
+  movedAt: 0,              // performance-clock time of that sample, seconds
   x: 0, y: 0,              // filtered position
   vx: 0, vy: 0,            // filtered velocity (px/s)
   ax: 0, ay: 0,            // filtered acceleration (px/s²)
@@ -120,6 +121,7 @@ function sample(x, y, t) {
   const dt = lastT ? t - lastT : 1 / 120;
   lastT = t;
   pointer.rawX = x; pointer.rawY = y;
+  pointer.movedAt = performance.now() / 1000;
   ex.update(x, dt);
   ey.update(y, dt);
 
