@@ -4,12 +4,15 @@ import App from '@/App.jsx'
 import '@/index.css'
 import { applyTheme, getStoredTheme, getStoredCustomColors, applyCustomColors, applyFont, getStoredFont } from '@/lib/themes';
 import { applyAnimationPreference } from '@/lib/motion-preference';
+import { applyNetworkPreference, startNetworkMonitoring } from '@/lib/network-policy';
 
 async function bootstrap() {
   // Every visual preference is resolved before React paints the loading screen.
   // Previously the loader mounted in the CSS default font, then PrefsSync
   // replaced it with the saved font after authentication, causing a visible
   // typeface flash.
+  const network = applyNetworkPreference({ notify: false });
+  startNetworkMonitoring();
   applyAnimationPreference();
 
   const storedTheme = getStoredTheme();
@@ -20,7 +23,10 @@ async function bootstrap() {
   const fontLoad = applyFont(getStoredFont());
   await Promise.race([
     fontLoad,
-    new Promise((resolve) => window.setTimeout(resolve, 2200)),
+    // A slow connection must never stare at an empty root while a decorative
+    // webfont downloads. The compact fallback is metrically close enough for
+    // the first paint; the selected face settles in when its bytes arrive.
+    new Promise((resolve) => window.setTimeout(resolve, network.constrained ? 280 : 950)),
   ]);
   document.documentElement.classList.add('ui-font-ready');
 
