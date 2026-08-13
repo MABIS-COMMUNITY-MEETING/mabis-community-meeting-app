@@ -19,10 +19,13 @@ import IdleMount from "@/components/IdleMount";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import RolePreviewToggle from "@/components/RolePreviewToggle";
 import BirthdayBanner from "@/components/BirthdayBanner";
-import DiscussionWidget from "@/components/DiscussionWidget";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
 
 const AnnouncementsWidget = lazy(() => import("@/components/AnnouncementsWidget"));
+// Discussion is visible early and user-critical. Start its split chunk as soon
+// as Home evaluates, rather than waiting for React render or scroll proximity.
+const discussionModule = import("@/components/DiscussionWidget");
+const DiscussionWidget = lazy(() => discussionModule);
 const MembersWidget = lazy(() => import("@/components/MembersWidget"));
 const CalendarWidget = lazy(() => import("@/components/CalendarWidget"));
 const JobsWidget = lazy(() => import("@/components/JobsWidget"));
