@@ -434,6 +434,8 @@ function applyCharacterTokens(character) {
   }
 }
 
+let themeShiftTimer = 0;
+
 export function applyTheme(themeKey) {
   const theme = THEMES[themeKey] || THEMES.default;
   const root = document.documentElement;
@@ -445,8 +447,8 @@ export function applyTheme(themeKey) {
   // border and accent interpolates, so switching palettes reads as one continuous
   // shift instead of a hard repaint.
   document.body.classList.add("theme-shifting");
-  clearTimeout(applyTheme._t);
-  applyTheme._t = setTimeout(() => document.body.classList.remove("theme-shifting"), 760);
+  clearTimeout(themeShiftTimer);
+  themeShiftTimer = setTimeout(() => document.body.classList.remove("theme-shifting"), 760);
 
   Object.entries(vars).forEach(([key, value]) => {
     root.style.setProperty(key, value);
