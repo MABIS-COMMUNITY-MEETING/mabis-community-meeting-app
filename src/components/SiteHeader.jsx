@@ -58,7 +58,7 @@ export default function SiteHeader({ rightSlot }) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50">
+      <header className="site-header-shell fixed top-0 left-0 right-0 z-50">
         <Glass variant="navigation" tone="light" contentClassName="flex items-center justify-between gap-3 px-3 py-3 sm:px-8 sm:py-4">
           <Link to="/" data-cursor="HOME" className="group flex items-center gap-3">
             <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden border border-foreground/30 bg-background">
@@ -71,6 +71,7 @@ export default function SiteHeader({ rightSlot }) {
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-5">
+            <SoundToggle className="sm:hidden" />
             <div className="hidden items-center gap-3 sm:flex sm:gap-5">
               <span ref={clockRef} className="hidden md:inline tech-label text-muted-foreground tabular-nums" />
               <SoundToggle />
@@ -112,7 +113,7 @@ export default function SiteHeader({ rightSlot }) {
               INDEX
             </motion.span>
 
-            <div className="relative flex h-full flex-col gap-7 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-24 sm:justify-between sm:gap-0 sm:px-8 sm:pb-8 sm:pt-28">
+            <div className="site-nav-panel relative flex h-full flex-col gap-7 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-24 sm:justify-between sm:gap-0 sm:px-8 sm:pb-8 sm:pt-28">
               <div className="flex items-start justify-between">
                 <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="flex items-center gap-3">
                   <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.15, duration: 0.6, ease: EASE }} className="block h-px w-10 bg-secondary origin-left" />
