@@ -208,49 +208,65 @@ export default function Home() {
 
         <EditorialSection index="03" label="DISCUSSION">
           <LazySection minHeight={560}>
-            <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
+            <Suspense fallback={<WidgetFallback minHeight={560} />}>
+              <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
+            </Suspense>
           </LazySection>
         </EditorialSection>
 
         <EditorialSection index="04" label="JOBS AND ROTATION">
           <LazySection minHeight={560}>
-            <JobsWidget members={members} isAdmin={canManage} compact={false} />
+            <Suspense fallback={<WidgetFallback minHeight={560} />}>
+              <JobsWidget members={members} isAdmin={canManage} compact={false} />
+            </Suspense>
           </LazySection>
         </EditorialSection>
 
         <EditorialSection index="05" label="CALENDAR">
           <LazySection minHeight={620}>
-            <CalendarWidget />
+            <Suspense fallback={<WidgetFallback minHeight={620} />}>
+              <CalendarWidget />
+            </Suspense>
           </LazySection>
         </EditorialSection>
 
         <EditorialSection index="06" label="SCHEDULE">
           <LazySection minHeight={420}>
-            <ScheduleWidget isAdmin={canManage} />
+            <Suspense fallback={<WidgetFallback minHeight={420} />}>
+              <ScheduleWidget isAdmin={canManage} />
+            </Suspense>
           </LazySection>
         </EditorialSection>
 
         <EditorialSection index="07" label="LOST AND FOUND">
           <LazySection minHeight={420}>
-            <MissingItemsWidget members={members} />
+            <Suspense fallback={<WidgetFallback minHeight={420} />}>
+              <MissingItemsWidget members={members} />
+            </Suspense>
           </LazySection>
         </EditorialSection>
 
         <EditorialSection index="08" label="LUNCH MENU">
           <LazySection minHeight={420}>
-            <LunchMenuWidget isAdmin={canManage} />
+            <Suspense fallback={<WidgetFallback minHeight={420} />}>
+              <LunchMenuWidget isAdmin={canManage} />
+            </Suspense>
           </LazySection>
         </EditorialSection>
 
         <EditorialSection index="09" label="NEWS">
           <LazySection minHeight={480}>
-            <NewsWidget members={members} isAdmin={canManage} />
+            <Suspense fallback={<WidgetFallback minHeight={480} />}>
+              <NewsWidget members={members} isAdmin={canManage} />
+            </Suspense>
           </LazySection>
         </EditorialSection>
 
         <EditorialSection index="10" label="MEMBERS">
           <LazySection minHeight={560}>
-            <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
+            <Suspense fallback={<WidgetFallback minHeight={560} />}>
+              <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
+            </Suspense>
           </LazySection>
         </EditorialSection>
 
@@ -258,8 +274,12 @@ export default function Home() {
 
         <PageFooter />
       </main>
-      <JobReminder />
-      <MabisAIAssistant />
-      <FeedbackWidget />
+      <IdleMount timeout={1800}>
+        <Suspense fallback={null}>
+          <JobReminder />
+          <MabisAIAssistant />
+          <FeedbackWidget />
+        </Suspense>
+      </IdleMount>
     </div>);
 }
