@@ -53,6 +53,136 @@
 }
 
 @font-face {
+  font-family: 'GoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/go/Go-Regular.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/go/Go-Bold.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/go/Go-Italic.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/go/Go-Bold-Italic.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoMonoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/go/Go-Mono.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GoMonoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/go/Go-Mono-Bold.ttf?v=1') format('truetype');
+}
+
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSans.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSansBold.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSansOblique.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSansUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSansBoldOblique.ttf?v=1') format('truetype');
+}
+
+@font-face {
+  font-family: 'GNUFreeSerifUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSerif.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSerifUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSerifBold.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSerifUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSerifItalic.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeSerifUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSerifBoldItalic.ttf?v=1') format('truetype');
+}
+
+@font-face {
+  font-family: 'GNUFreeMonoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeMono.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeMonoUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeMonoBold.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeMonoUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeMonoOblique.ttf?v=1') format('truetype');
+}
+@font-face {
+  font-family: 'GNUFreeMonoUI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeMonoBoldOblique.ttf?v=1') format('truetype');
+}
+
+@font-face {
   font-family: 'UnifontEX';
   font-style: normal;
   font-display: swap;
@@ -91,10 +221,10 @@
     --ink: 222 22% 8%;
     --bone: 42 34% 96%;
 
-    --font-heading: 'TransgenderGroteskUI', 'IosevkaUI';
-    --font-body: 'TransgenderGroteskUI', 'IosevkaUI';
-    --font-display: 'TransgenderGroteskUI', 'IosevkaUI';
-    --font-mono: 'TransgenderGroteskUI', 'IosevkaUI';
+    --font-heading: 'GoUI';
+    --font-body: 'GoUI';
+    --font-display: 'GoUI';
+    --font-mono: 'GoMonoUI';
     --font-multilingual: 'UnifontEX';
     --role-student: 348 74% 30%;
     --role-teacher: 165 55% 32%;
