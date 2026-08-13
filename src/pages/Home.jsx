@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Palette, Inbox, Settings } from "lucide-react";
-import moment from "moment";
+import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import PageFooter from "@/components/PageFooter";
 import { Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
@@ -13,27 +13,32 @@ import HomeMasthead from "@/components/home/HomeMasthead";
 import ScrollVelocity from "@/components/ScrollVelocity";
 import ScrollScaleRitual from "@/components/home/ScrollScaleRitual";
 import ScrollSectionIndicator from "@/components/ScrollSectionIndicator";
-import DiscussionWidget from "@/components/DiscussionWidget";
-import MembersWidget from "@/components/MembersWidget";
-import CalendarWidget from "@/components/CalendarWidget";
-import JobsWidget from "@/components/JobsWidget";
 import AnnouncementsWidget from "@/components/AnnouncementsWidget";
-import NewsWidget from "@/components/NewsWidget";
-import MissingItemsWidget from "@/components/MissingItemsWidget";
-import LunchMenuWidget from "@/components/LunchMenuWidget";
-import ScheduleWidget from "@/components/ScheduleWidget";
 import MeetingModeWidget from "@/components/MeetingModeWidget";
-import DoveAnimation from "@/components/DoveAnimation";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
-import MabisAIAssistant from "@/components/MabisAIAssistant";
-import FeedbackWidget from "@/components/FeedbackWidget";
+import IdleMount from "@/components/IdleMount";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import RolePreviewToggle from "@/components/RolePreviewToggle";
-import ProfileEditor from "@/components/ProfileEditor";
 import BirthdayBanner from "@/components/BirthdayBanner";
-import JobReminder from "@/components/JobReminder";
-import SettingsModal from "@/components/SettingsModal";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
+
+const DiscussionWidget = lazy(() => import("@/components/DiscussionWidget"));
+const MembersWidget = lazy(() => import("@/components/MembersWidget"));
+const CalendarWidget = lazy(() => import("@/components/CalendarWidget"));
+const JobsWidget = lazy(() => import("@/components/JobsWidget"));
+const NewsWidget = lazy(() => import("@/components/NewsWidget"));
+const MissingItemsWidget = lazy(() => import("@/components/MissingItemsWidget"));
+const LunchMenuWidget = lazy(() => import("@/components/LunchMenuWidget"));
+const ScheduleWidget = lazy(() => import("@/components/ScheduleWidget"));
+const MabisAIAssistant = lazy(() => import("@/components/MabisAIAssistant"));
+const FeedbackWidget = lazy(() => import("@/components/FeedbackWidget"));
+const ProfileEditor = lazy(() => import("@/components/ProfileEditor"));
+const JobReminder = lazy(() => import("@/components/JobReminder"));
+const SettingsModal = lazy(() => import("@/components/SettingsModal"));
+
+function WidgetFallback({ minHeight = 320 }) {
+  return <div className="widget-loading-shell" style={{ "--widget-fallback-height": `${minHeight}px` }} aria-hidden />;
+}
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
