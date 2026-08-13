@@ -959,7 +959,7 @@ export default function DocsEditor({
           --docs-blue: #0b57d0;
           --docs-blue-soft: color-mix(in srgb, var(--docs-blue) 12%, transparent);
           color: hsl(var(--foreground));
-          font-family: 'UnifontEX';
+          font-family: var(--font-body);
         }
         .docs-docbar {
           min-height: 54px;
