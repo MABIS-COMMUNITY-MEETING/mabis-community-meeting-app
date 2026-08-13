@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
 import '@/index.css'
+import '@/styles/editorial-home.css'
 import { applyTheme, getStoredTheme, getStoredCustomColors, applyCustomColors, applyFont, getStoredFont } from '@/lib/themes';
 import { applyAnimationPreference } from '@/lib/motion-preference';
 
