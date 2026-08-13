@@ -30,7 +30,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
 
   const { data: announcements = [] } = useQuery({
     queryKey: ["announcements"],
-    queryFn: () => base44.entities.Announcement.list("-created_date", 50)
+    queryFn: () => base44.entities.Announcement.list("-created_date", 25)
   });
 
   const addMutation = useMutation({
