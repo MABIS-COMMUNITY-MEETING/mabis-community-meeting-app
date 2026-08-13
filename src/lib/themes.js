@@ -578,9 +578,21 @@ export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International Schoo
 
 const REQUESTED_FONTS = [
   {
+    key: "torrefarfan",
+    name: "Torrefarfan",
+    detail: "Default · embedded editorial serif from Libre Fonts by Womxn",
+    source: "Featured",
+    family: "torrefarfan",
+    heading: "'torrefarfan'",
+    body: "'torrefarfan'",
+    mono: "'torrefarfan'",
+    localOnly: false,
+    featured: true,
+  },
+  {
     key: "go",
     name: "Go",
-    detail: "Default · embedded Go typeface with Go Mono for technical labels",
+    detail: "Embedded Go typeface with Go Mono for technical labels",
     source: "Featured",
     family: "GoUI",
     heading: "'GoUI'",
@@ -740,15 +752,15 @@ export function applyFont(key) {
 
 export function getStoredFont() {
   const migration = localStorage.getItem("mabis-font-default-version");
-  if (migration !== "go-v1") {
+  if (migration !== "torrefarfan-v1") {
     const now = String(Date.now());
-    localStorage.setItem("mabis-font-default-version", "go-v1");
-    localStorage.setItem("mabis-font-picker-version", "4");
+    localStorage.setItem("mabis-font-default-version", "torrefarfan-v1");
+    localStorage.setItem("mabis-font-picker-version", "5");
     localStorage.setItem("mabis-font-updated-at", now);
-    localStorage.setItem("mabis-font", "go");
-    return "go";
+    localStorage.setItem("mabis-font", "torrefarfan");
+    return "torrefarfan";
   }
 
   const stored = localStorage.getItem("mabis-font");
-  return FONTS.some((font) => font.key === stored) ? stored : "go";
+  return FONTS.some((font) => font.key === stored) ? stored : "torrefarfan";
 }
