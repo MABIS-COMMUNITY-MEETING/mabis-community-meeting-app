@@ -19,10 +19,10 @@ import IdleMount from "@/components/IdleMount";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import RolePreviewToggle from "@/components/RolePreviewToggle";
 import BirthdayBanner from "@/components/BirthdayBanner";
+import DiscussionWidget from "@/components/DiscussionWidget";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
 
 const AnnouncementsWidget = lazy(() => import("@/components/AnnouncementsWidget"));
-const DiscussionWidget = lazy(() => import("@/components/DiscussionWidget"));
 const MembersWidget = lazy(() => import("@/components/MembersWidget"));
 const CalendarWidget = lazy(() => import("@/components/CalendarWidget"));
 const JobsWidget = lazy(() => import("@/components/JobsWidget"));
@@ -211,11 +211,7 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="03" label="DISCUSSION">
-          <LazySection minHeight={560}>
-            <Suspense fallback={<WidgetFallback minHeight={560} />}>
-              <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
-            </Suspense>
-          </LazySection>
+          <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
         </EditorialSection>
 
         <EditorialSection index="04" label="JOBS AND ROTATION">
