@@ -63,7 +63,7 @@ for (const rule of agentRules) {
     requireText("AGENTS.md", agents, rule);
 }
 
-const cursorTrackingRule = "The custom cursor's visual origin must stay on browser `clientX`/`clientY` without positional smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling.";
+const cursorTrackingRule = "The custom cursor's core dot must stay on browser `clientX`/`clientY` without smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling; the outer ring may use bounded spring-follow displacement so the dot can briefly escape it.";
 const cursorContractFiles = [
     ["README.md", readme],
     ["AGENTS.md", agents],
