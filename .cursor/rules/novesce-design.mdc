@@ -19,6 +19,7 @@ Never perform an unsolicited redesign, modernization, simplification, font chang
 Always preserve unless explicitly instructed otherwise:
 - contemporary Japanese editorial composition
 - visible outlines, thin rules, crisp edges, compact controls, and restrained radii
+- Preserve the Home editorial normalization in `src/styles/editorial-home.css`: neutral ruled content planes, restrained radii, no widget elevation, and edge-to-edge mobile modules.
 - GNU FreeMono as the default UI font
 - GNU FreeSerif as the Thai-only fallback
 - UnifontEX only for explicitly marked Japanese and Chinese
