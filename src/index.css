@@ -159,10 +159,12 @@
 
 /* ── grain / noise overlay ── */
 .grain-layer {
-  position: fixed; inset: -50%;
+  /* 116% covers every stepped offset; the former 200% layer rasterized four
+     viewports for the same visible grain. */
+  position: fixed; inset: -8%;
   pointer-events: none; z-index: 9998;
   opacity: 0.045; mix-blend-mode: multiply;
-  will-change: transform; transform: translateZ(0); contain: strict;
+  will-change: transform; contain: strict;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: grain-shift 0.7s steps(4) infinite;
 }
@@ -175,7 +177,7 @@
 }
 
 /* ── custom cursor ── */
-.cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; mix-blend-mode: difference; }
+.cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; mix-blend-mode: difference; contain: strict; will-change: transform, opacity; }
 .cursor-dot { width: 5px; height: 5px; background: #fff; transform: translate(-50%,-50%); }
 .cursor-ring { width: 34px; height: 34px; border: 1px solid rgb(255 255 255 / 0.82); transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:'Iosevka',monospace; font-size:9px; letter-spacing:0.08em; color:#fff; text-transform:uppercase; }
 .cursor-label { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; font-family: 'Iosevka', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; white-space: nowrap; }
@@ -388,6 +390,36 @@ body.pride-active .cursor-ring {
   color: var(--pride-highlight);
 }
 body.pride-active .cursor-trail { background: var(--pride-highlight); mix-blend-mode: normal; }
+
+/* Pride ambience uses compositor transforms instead of Framer's perpetual JS
+   animation loop. The expensive blur is constant and rasterized only inside
+   each bounded light, while x/y retain independent drift periods. */
+.pride-ambience { contain: strict; isolation: isolate; }
+.pride-field-x { animation: pride-field-x var(--field-speed) ease-in-out infinite; }
+.pride-field-y { animation: pride-field-y var(--field-y-speed) ease-in-out infinite; }
+.pride-field-light { filter: blur(24px); opacity: var(--field-alpha); transition: opacity 1.2s ease-out; }
+.pride-ambience.is-energized .pride-field-light { opacity: calc(var(--field-alpha) * 1.45); transition-duration: .35s; }
+.pride-orbit { animation: pride-orbit 260s linear infinite; }
+.pride-chevron { animation: pride-chevron 34s ease-in-out infinite; }
+@keyframes pride-field-x {
+  0%,100% { transform: translate3d(0,0,0); }
+  33% { transform: translate3d(var(--field-x-positive),0,0); }
+  66% { transform: translate3d(var(--field-x-negative),0,0); }
+}
+@keyframes pride-field-y {
+  0%,100% { transform: translate3d(0,0,0); }
+  33% { transform: translate3d(0,var(--field-y-negative),0); }
+  66% { transform: translate3d(0,var(--field-y-positive),0); }
+}
+@keyframes pride-orbit {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.035); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+@keyframes pride-chevron {
+  0%,100% { transform: translate3d(-6%,0,0); opacity: .5; }
+  50% { transform: translate3d(2%,0,0); opacity: .75; }
+}
 
 /* selection, focus and scroll: theme light rather than theme fill */
 body.pride-active ::selection { background: var(--pride-glow); color: hsl(var(--background)); }

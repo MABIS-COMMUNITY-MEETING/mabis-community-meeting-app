@@ -45,6 +45,9 @@ export default function CustomCursor() {
     let theta = 0;     // deformation orientation (deg)
     let visible = false;
     let lastLabel = "";
+    let prevCoreX = cx, prevCoreY = cy, prevBodyX = cx, prevBodyY = cy;
+    let prevShear = 0, prevTheta = 0, prevGlow = 0;
+    let lastHover = false, lastIsLabel = false, lastDotOpacity = "", lastRingOpacity = "", lastColor = "";
 
     // scratch — the hot loop allocates nothing
     const f = { tx: 1, ty: 0, nx: 0, ny: 1 };
@@ -55,9 +58,15 @@ export default function CustomCursor() {
 
       if (!visible) {
         visible = true;
-        coreX.x = bodyX.x = pointer.x;
-        coreY.x = bodyY.x = pointer.y;
+        coreX.x = bodyX.x = prevCoreX = prevBodyX = pointer.x;
+        coreY.x = bodyY.x = prevCoreY = prevBodyY = pointer.y;
       }
+
+      // Retain only the previous simulation pose; render interpolation makes the
+      // 120 Hz physics visually continuous on 144/165/240 Hz displays.
+      prevCoreX = coreX.x; prevCoreY = coreY.x;
+      prevBodyX = bodyX.x; prevBodyY = bodyY.x;
+      prevShear = shear.x; prevTheta = theta; prevGlow = glow.x;
 
       // ── CORE ────────────────────────────────────────────────────────
       const P = MATERIAL.precision;
@@ -109,32 +118,45 @@ export default function CustomCursor() {
       }
     };
 
-    const render = () => {
+    const render = (alpha = 1) => {
       if (!visible) return;
       const d = dotRef.current, r = ringRef.current;
+      const a = clamp(alpha, 0, 1);
+      const ix = prevCoreX + (coreX.x - prevCoreX) * a;
+      const iy = prevCoreY + (coreY.x - prevCoreY) * a;
+      const bx = prevBodyX + (bodyX.x - prevBodyX) * a;
+      const by = prevBodyY + (bodyY.x - prevBodyY) * a;
+      const sh = prevShear + (shear.x - prevShear) * a;
+      const th = prevTheta + angleDelta(theta, prevTheta) * a;
+      const gl = prevGlow + (glow.x - prevGlow) * a;
 
       if (d) {
-        d.style.opacity = pointer.inside ? "1" : "0";
-        d.style.transform = `translate3d(${coreX.x.toFixed(2)}px, ${coreY.x.toFixed(2)}px, 0) translate(-50%,-50%)`;
+        const opacity = pointer.inside ? "1" : "0";
+        if (opacity !== lastDotOpacity) { d.style.opacity = opacity; lastDotOpacity = opacity; }
+        d.style.transform = `translate3d(${ix.toFixed(2)}px, ${iy.toFixed(2)}px, 0) translate(-50%,-50%)`;
       }
 
       if (r) {
         // R(θ)·diag(eˢ, e⁻ˢ)·R(−θ) — determinant 1, so area is preserved
-        const rad = (theta * Math.PI) / 180;
+        const rad = (th * Math.PI) / 180;
         const c = Math.cos(rad), sn2 = Math.sin(rad);
-        const ep = Math.exp(shear.x), em = Math.exp(-shear.x);
+        const ep = Math.exp(sh), em = Math.exp(-sh);
         const m11 = ep * c * c + em * sn2 * sn2;
         const m12 = (ep - em) * c * sn2;
         const m22 = ep * sn2 * sn2 + em * c * c;
-        r.style.transform = `translate3d(${bodyX.x.toFixed(2)}px, ${bodyY.x.toFixed(2)}px, 0) translate(-50%,-50%) matrix(${m11.toFixed(4)}, ${m12.toFixed(4)}, ${m12.toFixed(4)}, ${m22.toFixed(4)}, 0, 0)`;
-        r.classList.toggle("is-hover", !!pointer.target && !pointer.label);
-        r.classList.toggle("is-label", !!pointer.label);
-        r.style.opacity = pointer.down ? "0.5" : pointer.inside ? "1" : "0";
+        r.style.transform = `translate3d(${bx.toFixed(2)}px, ${by.toFixed(2)}px, 0) translate(-50%,-50%) matrix(${m11.toFixed(4)}, ${m12.toFixed(4)}, ${m12.toFixed(4)}, ${m22.toFixed(4)}, 0, 0)`;
+        const hover = !!pointer.target && !pointer.label;
+        const isLabel = !!pointer.label;
+        if (hover !== lastHover) { r.classList.toggle("is-hover", hover); lastHover = hover; }
+        if (isLabel !== lastIsLabel) { r.classList.toggle("is-label", isLabel); lastIsLabel = isLabel; }
+        const opacity = pointer.down ? "0.5" : pointer.inside ? "1" : "0";
+        if (opacity !== lastRingOpacity) { r.style.opacity = opacity; lastRingOpacity = opacity; }
 
         const text = pointer.label || lastLabel;
         if (r.textContent !== text) r.textContent = text;
         if (pointer.label) lastLabel = pointer.label;
-        r.style.color = `rgba(255,255,255,${glow.x.toFixed(3)})`;
+        const color = `rgba(255,255,255,${gl.toFixed(3)})`;
+        if (color !== lastColor) { r.style.color = color; lastColor = color; }
       }
     };
 

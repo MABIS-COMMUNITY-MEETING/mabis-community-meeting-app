@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
@@ -25,12 +25,16 @@ const EASE = [0.16, 1, 0.3, 1];
  */
 export default function SiteHeader({ rightSlot }) {
   const [open, setOpen] = useState(false);
-  const [time, setTime] = useState("");
+  const clockRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const tick = () => setTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+    // The clock is isolated text; updating it directly avoids reconciling the
+    // entire header and its control slot every second.
+    const tick = () => {
+      if (clockRef.current) clockRef.current.textContent = new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
@@ -66,7 +70,7 @@ export default function SiteHeader({ rightSlot }) {
           </Link>
 
           <div className="flex items-center gap-3 sm:gap-5">
-            <span className="hidden md:inline tech-label text-muted-foreground tabular-nums">{time}</span>
+            <span ref={clockRef} className="hidden md:inline tech-label text-muted-foreground tabular-nums" />
             <SoundToggle />
             {rightSlot}
             <button

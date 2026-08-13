@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { animationsDisabled } from "@/lib/motion-preference";
+import { subscribe, wake } from "@/lib/physics/scheduler";
 /**
  * Inertial smooth scrolling, tuned per input device:
  * - Mouse wheels (Windows/Linux/Mac mice) get the rAF-eased inertial scroll.
@@ -17,8 +18,8 @@ export default function SmoothScroll() {
 
     let target = window.scrollY;
     let current = target;
-    let raf = null;
     let running = false;
+    let needsWrite = false;
 
     const maxScroll = () => document.documentElement.scrollHeight - window.innerHeight;
 
@@ -54,23 +55,25 @@ export default function SmoothScroll() {
       return trackpadScore >= 2;
     };
 
-    const stop = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = null;
-      running = false;
-    };
+    const stop = () => { running = false; needsWrite = false; };
 
-    const loop = () => {
-      current += (target - current) * 0.14;
-      if (Math.abs(target - current) < 0.5) {
-        current = target;
-        running = false;
+    const unsubscribe = subscribe({
+      step: (dt) => {
+        if (!running) return;
+        // Same 60 Hz feel as the former 0.14 lerp, now fixed-step and shared
+        // with the rest of the real-time systems.
+        const gain = 1 - Math.pow(0.86, dt * 60);
+        current += (target - current) * gain;
+        if (Math.abs(target - current) < 0.5) { current = target; running = false; }
+        needsWrite = true;
+      },
+      render: () => {
+        if (!needsWrite) return;
+        needsWrite = false;
         window.scrollTo({ top: current, behavior: "instant" });
-        return;
-      }
-      window.scrollTo({ top: current, behavior: "instant" });
-      raf = requestAnimationFrame(loop);
-    };
+      },
+      settled: () => !running && !needsWrite,
+    });
 
     const onWheel = (e) => {
       if (e.ctrlKey) return; // pinch-zoom
@@ -82,8 +85,8 @@ export default function SmoothScroll() {
       if (!running) {
         running = true;
         current = window.scrollY;
-        raf = requestAnimationFrame(loop);
       }
+      wake();
     };
 
     // keep target in sync when scroll happens by other means (keyboard, anchors, trackpad)
@@ -93,6 +96,7 @@ export default function SmoothScroll() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       stop();
+      unsubscribe();
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("scroll", onScroll);
     };

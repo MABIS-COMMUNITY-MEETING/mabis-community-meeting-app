@@ -1,7 +1,7 @@
 import AxisEstimator from "@/lib/physics/estimator";
 import { MAGNET, CURSOR } from "@/lib/physics/tokens";
 import { clamp, smoothstep, tanhSat } from "@/lib/physics/math";
-import { wake } from "@/lib/physics/scheduler";
+import { subscribe, wake } from "@/lib/physics/scheduler";
 
 /**
  * Global pointer state: sampling → estimation → prediction → potential field.
@@ -33,6 +33,7 @@ let lastT = 0;
 let heldEl = null;
 let heldScore = 0;
 const box = { cx: 0, cy: 0, sigma: 0, depth: 0 };
+const candBox = { cx: 0, cy: 0, sigma: 0, depth: 0 };
 
 const SELECTOR = "a, button, [role='button'], [data-cursor], [data-magnet], input, textarea, select, label";
 
@@ -52,41 +53,51 @@ function depthFor(el) {
  * actively heading toward scores higher — so sweeping toward a button engages
  * it slightly early, which is what makes magnetism feel intentional.
  */
-function score(el) {
+function measure(el, out) {
   const b = el.getBoundingClientRect();
-  if (b.width === 0 || b.height === 0) return 0;
-  const cx = b.left + b.width / 2;
-  const cy = b.top + b.height / 2;
-  const sigma = clamp(Math.max(b.width, b.height) * 0.45, MAGNET.sigmaMin, MAGNET.sigmaMax);
-  const dx = cx - pointer.x, dy = cy - pointer.y;
+  if (b.width === 0 || b.height === 0) return false;
+  out.cx = b.left + b.width / 2;
+  out.cy = b.top + b.height / 2;
+  out.sigma = clamp(Math.max(b.width, b.height) * 0.45, MAGNET.sigmaMin, MAGNET.sigmaMax);
+  out.depth = depthFor(el);
+  return true;
+}
+
+function scoreGeometry(g) {
+  const dx = g.cx - pointer.x, dy = g.cy - pointer.y;
   const d2 = dx * dx + dy * dy;
-  const gauss = Math.exp(-d2 / (2 * sigma * sigma));
+  const gauss = Math.exp(-d2 / (2 * g.sigma * g.sigma));
   let aim = 1;
   if (pointer.speed > 40) {
     const d = Math.sqrt(d2) || 1;
     const dot = (dx / d) * (pointer.vx / pointer.speed) + (dy / d) * (pointer.vy / pointer.speed);
     aim = 1 + 0.35 * clamp(dot, 0, 1);
   }
-  box.cx = cx; box.cy = cy; box.sigma = sigma; box.depth = depthFor(el);
-  return gauss * box.depth * aim;
+  return gauss * g.depth * aim;
 }
 
 function selectTarget(el) {
-  // candidate = element under the pointer; incumbent keeps its well until a
-  // rival is clearly stronger, which prevents flicker between neighbours
-  const candScore = el ? score(el) : 0;
-  const candCx = box.cx, candCy = box.cy, candSigma = box.sigma, candDepth = box.depth;
+  // Stable targets reuse their measured geometry. This avoids a synchronous
+  // layout read on every pointer frame while preserving the potential field.
+  if (el && el === heldEl && heldEl.isConnected) {
+    heldScore = scoreGeometry(box);
+    return;
+  }
+  const hasCandidate = !!el && measure(el, candBox);
+  const candScore = hasCandidate ? scoreGeometry(candBox) : 0;
 
   if (heldEl && heldEl !== el && heldEl.isConnected) {
-    const incumbent = score(heldEl);
+    const incumbent = scoreGeometry(box);
     if (incumbent > 0.02 && candScore < incumbent * MAGNET.hysteresis) {
       heldScore = incumbent;
-      return; // box already holds the incumbent's geometry
+      return;
     }
   }
-  heldEl = el;
+  heldEl = hasCandidate ? el : null;
   heldScore = candScore;
-  box.cx = candCx; box.cy = candCy; box.sigma = candSigma; box.depth = candDepth;
+  if (hasCandidate) {
+    box.cx = candBox.cx; box.cy = candBox.cy; box.sigma = candBox.sigma; box.depth = candBox.depth;
+  }
 }
 
 /**
@@ -159,36 +170,56 @@ export function startPointerEngine() {
   if (started) return () => {};
   started = true;
 
-  const onMove = (e) => {
-    // coalesced samples give us the full high-rate pointer trace on displays
-    // that deliver more input events than frames — better derivative estimates
-    const events = e.getCoalescedEvents ? e.getCoalescedEvents() : null;
-    if (events && events.length > 1) {
-      for (const c of events) sample(c.clientX, c.clientY, c.timeStamp / 1000);
-    } else {
-      sample(e.clientX, e.clientY, e.timeStamp / 1000);
-    }
+  let latestX = 0, latestY = 0, latestT = 0, latestEl = null;
+  let inputDirty = false, geometryDirty = false, retarget = false;
 
+  // Pointer events only publish the newest sample. Filtering, magnetic geometry
+  // reads and prediction run once in the scheduler's read phase, not at USB rate.
+  const onMove = (e) => {
+    const events = e.getCoalescedEvents?.();
+    const latest = events?.length ? events[events.length - 1] : e;
+    latestX = latest.clientX;
+    latestY = latest.clientY;
+    latestT = latest.timeStamp / 1000;
+    latestEl = e.target.closest?.(SELECTOR) || null;
+    inputDirty = true;
+    pointer.inside = true;
+    wake();
+  };
+
+  const processInput = () => {
+    if (!inputDirty) return;
+    inputDirty = false;
     if (!pointer.seen) {
       pointer.seen = true;
-      ex.reset(e.clientX); ey.reset(e.clientY);
-      pointer.x = e.clientX; pointer.y = e.clientY;
+      ex.reset(latestX); ey.reset(latestY);
+      pointer.x = latestX; pointer.y = latestY;
     }
-    pointer.inside = true;
-
-    const el = e.target.closest?.(SELECTOR) || null;
-    selectTarget(el);
+    sample(latestX, latestY, latestT);
+    if (retarget) {
+      latestEl = document.elementFromPoint(latestX, latestY)?.closest?.(SELECTOR) || null;
+      retarget = false;
+    }
+    if (geometryDirty && heldEl?.isConnected && measure(heldEl, box)) geometryDirty = false;
+    selectTarget(latestEl);
     pointer.target = heldEl;
     pointer.label = heldEl?.getAttribute?.("data-cursor") || null;
     computeTarget();
-    wake();
   };
+
+  const unsubscribeInput = subscribe({
+    sample: processInput,
+    step: () => {},
+    render: () => {},
+    settled: () => !inputDirty,
+  });
 
   const onDown = () => { pointer.down = true; wake(); };
   const onUp = () => { pointer.down = false; wake(); };
   const onLeave = () => { pointer.inside = false; heldEl = null; pointer.target = null; pointer.label = null; wake(); };
   const onEnter = () => { pointer.inside = true; wake(); };
-  const onReset = () => { lastT = 0; heldEl = null; pointer.target = null; ex.initialised = false; ey.initialised = false; };
+  const onReset = () => { lastT = 0; heldEl = null; pointer.target = null; ex.initialised = false; ey.initialised = false; geometryDirty = true; };
+  const onScroll = () => { geometryDirty = true; retarget = true; inputDirty = pointer.seen; wake(); };
 
   window.addEventListener("pointermove", onMove, { passive: true });
   window.addEventListener("pointerdown", onDown, { passive: true });
@@ -196,16 +227,19 @@ export function startPointerEngine() {
   document.addEventListener("pointerleave", onLeave, { passive: true });
   document.addEventListener("pointerenter", onEnter, { passive: true });
   window.addEventListener("resize", onReset, { passive: true });
+  window.addEventListener("scroll", onScroll, { passive: true, capture: true });
   window.addEventListener("blur", onReset);
 
   return () => {
     started = false;
+    unsubscribeInput();
     window.removeEventListener("pointermove", onMove);
     window.removeEventListener("pointerdown", onDown);
     window.removeEventListener("pointerup", onUp);
     document.removeEventListener("pointerleave", onLeave);
     document.removeEventListener("pointerenter", onEnter);
     window.removeEventListener("resize", onReset);
+    window.removeEventListener("scroll", onScroll, true);
     window.removeEventListener("blur", onReset);
   };
 }

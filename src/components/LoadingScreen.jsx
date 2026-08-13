@@ -9,25 +9,34 @@ const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6
  * beneath — then resolves toward the app. Not a generic spinner.
  */
 export default function LoadingScreen() {
-  const [n, setN] = useState(0);
   const [done, setDone] = useState(false);
   const raf = useRef();
+  const countRef = useRef(null);
+  const wordmarkRef = useRef(null);
+  const lineRef = useRef(null);
+  const statusRef = useRef(null);
 
   useEffect(() => {
     const start = performance.now();
     const dur = 1300;
+    let previous = -1;
     const tick = (t) => {
       const p = Math.min((t - start) / dur, 1);
       const eased = 1 - Math.pow(1 - p, 3);
-      setN(Math.round(eased * 100));
+      const n = Math.round(eased * 100);
+      if (n !== previous) {
+        previous = n;
+        if (countRef.current) countRef.current.textContent = String(n).padStart(3, "0");
+        if (wordmarkRef.current) wordmarkRef.current.style.clipPath = `inset(0 ${(100 - n) * 0.6}% 0 0)`;
+        if (lineRef.current) lineRef.current.style.transform = `scaleX(${n / 100})`;
+        if (statusRef.current) statusRef.current.textContent = `LOADING ASSETS ／ ${n}%`;
+      }
       if (p < 1) raf.current = requestAnimationFrame(tick);
       else setDone(true);
     };
     raf.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf.current);
   }, []);
-
-  const pad = String(n).padStart(3, "0");
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-ink text-bone">
@@ -54,8 +63,8 @@ export default function LoadingScreen() {
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="flex items-baseline"
             >
-              <span className="font-display font-thin tracking-ultra text-[22vw] sm:text-[16vw] leading-none tabular-nums">
-                {pad}
+              <span ref={countRef} className="font-display font-thin tracking-ultra text-[22vw] sm:text-[16vw] leading-none tabular-nums">
+                000
               </span>
               <span className="ml-2 tech-label text-primary">％</span>
             </motion.div>
@@ -63,20 +72,18 @@ export default function LoadingScreen() {
         </AnimatePresence>
 
         {/* assembling wordmark behind counter */}
-        <motion.span
-          initial={{ clipPath: "inset(0 100% 0 0)" }}
-          animate={{ clipPath: `inset(0 ${(100 - n) * 0.6}% 0 0)` }}
-          transition={{ ease: "linear" }}
+        <span ref={wordmarkRef}
+          style={{ clipPath: "inset(0 100% 0 0)" }}
           className="absolute font-display font-thin tracking-ultra text-bone/8 text-[18vw] leading-none select-none"
         >
           COMMUNITY
-        </motion.span>
+        </span>
 
         {/* sweeping line */}
         <div className="relative mt-6 h-px w-56 overflow-hidden bg-bone/15">
-          <motion.div
-            className="absolute inset-y-0 left-0 bg-primary"
-            style={{ width: `${n}%` }}
+          <div ref={lineRef}
+            className="absolute inset-y-0 left-0 w-full origin-left bg-primary"
+            style={{ transform: "scaleX(0)" }}
           />
         </div>
 
@@ -89,7 +96,7 @@ export default function LoadingScreen() {
             transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
             className="inline-block h-2.5 w-2.5 border border-bone/40 border-t-primary"
           />
-          <span>LOADING ASSETS ／ {n}%</span>
+          <span ref={statusRef}>LOADING ASSETS ／ 0%</span>
         </motion.div>
       </div>
 

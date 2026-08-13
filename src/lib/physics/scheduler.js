@@ -2,9 +2,10 @@
  * One global animation clock for all custom physics.
  *
  * Contract per subscriber:
- *   step(dt)  — called with a FIXED dt (seconds) 0..N times per frame
- *   render()  — called once per frame after stepping
- *   settled() — optional; when every subscriber returns true the loop sleeps
+ *   sample(now) — optional input/read phase, once per display frame
+ *   step(dt)    — called with a FIXED dt (seconds) 0..N times per frame
+ *   render(a)   — write phase, once per frame; a is interpolation alpha
+ *   settled()   — optional; when every subscriber returns true the loop sleeps
  *
  * A fixed timestep with an accumulator keeps behaviour identical at 60/120/240Hz.
  * The accumulator is clamped so a stalled tab can never trigger a burst of
@@ -26,6 +27,10 @@ function frame(now) {
   if (!(elapsed > 0)) elapsed = FIXED_DT;
   if (elapsed > MAX_FRAME) elapsed = MAX_FRAME;
 
+  // All high-frequency input and geometry reads happen before simulation and
+  // DOM writes, preventing read/write interleaving from forcing layout.
+  for (const s of subs) if (s.sample) s.sample(now);
+
   acc += elapsed;
   let steps = 0;
   while (acc >= FIXED_DT && steps < 12) {
@@ -36,8 +41,9 @@ function frame(now) {
   if (steps === 12) acc = 0; // drop the backlog rather than chase it
 
   let allSettled = true;
+  const alpha = acc / FIXED_DT;
   for (const s of subs) {
-    s.render();
+    s.render(alpha);
     if (!s.settled || !s.settled()) allSettled = false;
   }
 

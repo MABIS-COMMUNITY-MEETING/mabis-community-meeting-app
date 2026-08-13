@@ -29,8 +29,9 @@
   isolation: isolate;
   /* NOTE: no transform at rest — a transformed element becomes a backdrop
      root, which would blank out the edge-lens pass below */
-  transition: box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1),
-              backdrop-filter 0.42s ease;
+  /* Blur is intentionally constant between frames; interpolating a backdrop
+     filter forces repeated rasterization of the whole glass surface. */
+  transition: box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 
   /* the fill is a directional wedge, not a flat white wash — the
      surface is brighter where the light enters it */
@@ -83,8 +84,9 @@
   z-index: 0;
   pointer-events: none;
   border-radius: inherit;
-  backdrop-filter: blur(var(--glass_lens)) brightness(1.05);
-  -webkit-backdrop-filter: blur(var(--glass_lens)) brightness(1.05);
+  /* The primary surface already captures the backdrop. A second masked
+     backdrop-filter here doubled raster work on wide navigation glass; the
+     same rim is retained as a cached texture/highlight layer instead. */
   -webkit-mask-image: radial-gradient(120% 160% at 50% 50%, transparent 34%, rgba(0,0,0,0.35) 62%, #000 100%);
   mask-image: radial-gradient(120% 160% at 50% 50%, transparent 34%, rgba(0,0,0,0.35) 62%, #000 100%);
   /* restrained material noise kills gradient banding without graining the UI */
