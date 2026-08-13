@@ -18,9 +18,9 @@ export default function RemoveMemberPanel({ members, onDelete }) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
       <Select value={selectedId} onValueChange={setSelectedId}>
-        <SelectTrigger className="rounded-xl border-gray-200 flex-1 min-w-[180px]">
+        <SelectTrigger className="w-full min-w-0 flex-1 rounded-xl border-gray-200 sm:min-w-[180px]">
           <SelectValue placeholder="Select a member to remove..." />
         </SelectTrigger>
         <SelectContent>
@@ -30,7 +30,7 @@ export default function RemoveMemberPanel({ members, onDelete }) {
         </SelectContent>
       </Select>
       <Button onClick={handleRemove} disabled={!selected}
-        className="bg-red-600 hover:bg-red-700 text-white rounded-xl gap-1.5 shrink-0">
+        className="w-full shrink-0 gap-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 sm:w-auto">
         <UserMinus className="w-4 h-4" /> Remove
       </Button>
     </div>
