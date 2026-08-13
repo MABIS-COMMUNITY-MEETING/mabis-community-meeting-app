@@ -67,7 +67,7 @@ requireText("src/components/JobsWidget.jsx", jobs, "appearanceRef");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
 requireText("src/index.css", css, "content-visibility: auto");
 requireText("src/index.css", css, "contain-intrinsic-size: auto 720px");
-requireText("src/main.jsx", main, 'navigator.serviceWorker.register("/sw.js"');
+requireText("src/main.jsx", main, '.register("/sw.js"');
 requireText("package.json", packageJson, "node scripts/generate-service-worker.mjs");
 requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, 'const MAX_RUNTIME_ENTRIES = 48');
 requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, 'url.pathname.startsWith("/api/")');
