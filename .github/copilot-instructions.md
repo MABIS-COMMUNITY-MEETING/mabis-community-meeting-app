@@ -8,7 +8,7 @@ Do not perform unsolicited redesigns or change the default font, script fallback
 
 Preserve the contemporary Japanese editorial direction; visible outlines and thin rules; GNU FreeMono default; GNU FreeSerif Thai fallback; UnifontEX isolation for marked Japanese and Chinese; semantic design tokens; first-paint font stability; restrained Apple-style optical glass; optional custom cursor; inline editing; responsive, keyboard, touch, dark-theme, alternate-theme, and reduced-motion behavior.
 
-The custom cursor's core dot must stay on browser `clientX`/`clientY` without smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling; the outer ring may use bounded spring-follow displacement so the dot can briefly escape it. Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.
+The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement. Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.
 
 Visual work requires current research on real Japanese websites before implementation, with sources and conclusions recorded. If research access is unavailable, stop and ask instead of inventing a Japanese aesthetic.
 
