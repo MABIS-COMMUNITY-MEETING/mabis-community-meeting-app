@@ -80,19 +80,43 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
   const rotationRef = useRef(0);
   const spinningRef = useRef(false);
   const rafRef = useRef(null);
+  const appearanceRef = useRef({
+    primary: "#951E3A",
+    secondary: "#EACE54",
+    ring: "#7a1830",
+    font: "'GNUFreeMonoUI'",
+  });
   const [isSpinning, setIsSpinning] = useState(false);
+
+  const refreshAppearance = useCallback(() => {
+    const styles = getComputedStyle(document.documentElement);
+    const themeColor = (name, fallback) => {
+      const value = styles.getPropertyValue(name).trim();
+      return value ? `hsl(${value})` : fallback;
+    };
+    appearanceRef.current = {
+      primary: themeColor("--primary", "#951E3A"),
+      secondary: themeColor("--secondary", "#EACE54"),
+      ring: themeColor("--ring", "#7a1830"),
+      font: styles.getPropertyValue("--font-body").trim() || "'GNUFreeMonoUI'",
+    };
+  }, []);
 
   const drawWheel = useCallback((rotation) => {
     const canvas = canvasRef.current;
     if (!canvas || members.length === 0) return;
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const backingSize = Math.round(size * dpr);
+    if (canvas.width !== backingSize || canvas.height !== backingSize) {
+      canvas.width = backingSize;
+      canvas.height = backingSize;
+    }
     const parentWidth = canvas.parentElement?.clientWidth || size;
     const viewportWidth = typeof window !== "undefined" ? window.innerWidth - 32 : size;
     const displaySize = Math.min(size, parentWidth, viewportWidth);
-    canvas.style.width = `${displaySize}px`;
-    canvas.style.height = `${displaySize}px`;
+    const cssSize = `${displaySize}px`;
+    if (canvas.style.width !== cssSize) canvas.style.width = cssSize;
+    if (canvas.style.height !== cssSize) canvas.style.height = cssSize;
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
@@ -100,9 +124,12 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
     const arc = (2 * Math.PI) / members.length;
     ctx.clearRect(0, 0, size, size);
 
-    const primaryColor = getThemeColor("--primary", "#951E3A");
-    const secondaryColor = getThemeColor("--secondary", "#EACE54");
-    const primaryDark = getThemeColor("--ring", "#7a1830");
+    const {
+      primary: primaryColor,
+      secondary: secondaryColor,
+      ring: primaryDark,
+      font: uiFont,
+    } = appearanceRef.current;
 
     members.forEach((m, i) => {
       const s = rotation + i * arc;
@@ -123,7 +150,6 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
       ctx.rotate(s + arc / 2);
       ctx.textAlign = "right";
       const fontSize = members.length > 20 ? 9 : members.length > 14 ? 11 : 13;
-      const uiFont = getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'GNUFreeMonoUI'";
       ctx.font = `700 ${fontSize}px ${uiFont}`;
       ctx.shadowColor = "rgba(0,0,0,0.45)";
       ctx.shadowBlur = 2;
@@ -151,17 +177,26 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
   }, [members, size]);
 
   useEffect(() => {
+    refreshAppearance();
     drawWheel(rotationRef.current);
-    const handler = () => drawWheel(rotationRef.current);
-    window.addEventListener("themeChanged", handler);
-    window.addEventListener("fontChanged", handler);
-    window.addEventListener("resize", handler);
-    return () => {
-      window.removeEventListener("themeChanged", handler);
-      window.removeEventListener("fontChanged", handler);
-      window.removeEventListener("resize", handler);
+    const redraw = () => drawWheel(rotationRef.current);
+    const refreshAndRedraw = () => {
+      refreshAppearance();
+      redraw();
     };
-  }, [drawWheel]);
+    window.addEventListener("themeChanged", refreshAndRedraw);
+    window.addEventListener("fontChanged", refreshAndRedraw);
+    window.addEventListener("resize", redraw, { passive: true });
+    return () => {
+      window.removeEventListener("themeChanged", refreshAndRedraw);
+      window.removeEventListener("fontChanged", refreshAndRedraw);
+      window.removeEventListener("resize", redraw);
+    };
+  }, [drawWheel, refreshAppearance]);
+
+  useEffect(() => () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+  }, []);
 
   // Pointer at top (12 o'clock = -π/2) — wheelofnames style
   const POINTER_ANGLE = -Math.PI / 2;
