@@ -2,6 +2,7 @@ import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
 import { balancedPalette, contrastSafePair, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
+import { BY_WOMXN_FONTS } from "@/lib/by_womxn_fonts";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
@@ -434,8 +435,6 @@ function applyCharacterTokens(character) {
   }
 }
 
-let themeShiftTimer = 0;
-
 export function applyTheme(themeKey) {
   const theme = THEMES[themeKey] || THEMES.default;
   const root = document.documentElement;
@@ -447,8 +446,8 @@ export function applyTheme(themeKey) {
   // border and accent interpolates, so switching palettes reads as one continuous
   // shift instead of a hard repaint.
   document.body.classList.add("theme-shifting");
-  clearTimeout(themeShiftTimer);
-  themeShiftTimer = setTimeout(() => document.body.classList.remove("theme-shifting"), 760);
+  clearTimeout(applyTheme._t);
+  applyTheme._t = setTimeout(() => document.body.classList.remove("theme-shifting"), 760);
 
   Object.entries(vars).forEach(([key, value]) => {
     root.style.setProperty(key, value);
@@ -707,18 +706,29 @@ const REQUESTED_FONTS = [
   },
 ];
 
-// Keep the large optional font catalogue out of the critical entry chunk. The
-// Settings surface imports it with its own lazy chunk, while a saved catalogue
-// choice is resolved only when that specific font is needed.
-export const CORE_FONTS = REQUESTED_FONTS;
+const requestedNames = new Set(REQUESTED_FONTS.map((font) => font.name.toLowerCase().replace(/[^a-z0-9]/g, "")));
+const libraryFonts = BY_WOMXN_FONTS
+  .filter((font) => !requestedNames.has(font.name.toLowerCase().replace(/[^a-z0-9]/g, "")))
+  .map((font) => ({
+    ...font,
+    detail: "Embedded libre webfont · Libre Fonts by Womxn",
+    heading: `'${font.family}', 'GoUI'`,
+    body: `'${font.family}', 'GoUI'`,
+    mono: `'${font.family}', 'GoMonoUI'`,
+    localOnly: false,
+    featured: false,
+  }));
+
+export const FONTS = [...REQUESTED_FONTS, ...libraryFonts];
 
 export const FONT_LIBRARIES = [
   { key: "featured", name: "Featured", detail: `${REQUESTED_FONTS.length} requested fonts` },
-  { key: "by-womxn", name: "Libre Fonts by Womxn", detail: "Embedded libre webfonts · loaded on demand", url: "https://gitlab.com/lfurter/by-womxn" },
+  { key: "by-womxn", name: "Libre Fonts by Womxn", detail: `${libraryFonts.length} embedded libre webfonts`, url: "https://gitlab.com/lfurter/by-womxn" },
   { key: "flintype", name: "FLINT*ype", detail: "FLINTA* discovery archive. Its current site is moving, so indexed commercial fonts are not mirrored without their licences.", url: "https://flintype.com/" },
 ];
 
-function applyResolvedFont(font) {
+export function applyFont(key) {
+  const font = FONTS.find(f => f.key === key) || FONTS[0];
   const root = document.documentElement;
   const thaiFallback = "'GNUFreeSerifThai'";
   const headingStack = `${font.heading}, ${thaiFallback}`;
@@ -738,9 +748,8 @@ function applyResolvedFont(font) {
     const bodyLoad = document.fonts.load(`400 16px ${bodyStack}`, FONT_PREVIEW_TEXT);
     const headingLoad = document.fonts.load(`700 16px ${headingStack}`, FONT_PREVIEW_TEXT);
     const monoLoad = document.fonts.load(`400 16px ${monoStack}`, "MABIS 0123456789");
-    // The Thai fallback has a unicode-range and is loaded by the browser only
-    // when Thai is present. Eagerly requesting it added 1.3 MB to English loads.
-    loadPromise = Promise.all([bodyLoad, headingLoad, monoLoad]).then((loaded) => {
+    const thaiLoad = document.fonts.load(`400 16px ${thaiFallback}`, "ภาษาไทย");
+    loadPromise = Promise.all([bodyLoad, headingLoad, monoLoad, thaiLoad]).then((loaded) => {
       if (root.dataset.uiFont === font.key) {
         root.dataset.uiFontLoaded = font.key;
         window.dispatchEvent(new CustomEvent("fontRendered", { detail: { key: font.key } }));
@@ -755,22 +764,6 @@ function applyResolvedFont(font) {
   return loadPromise;
 }
 
-export function applyFont(key) {
-  const coreFont = CORE_FONTS.find((font) => font.key === key);
-  if (coreFont) return applyResolvedFont(coreFont);
-
-  if (/^byw-[a-z0-9-]+$/.test(key || "")) {
-    return import("@/lib/font-catalog").then(async ({ ensureFontCatalogStyles, findCatalogFont }) => {
-      const font = findCatalogFont(key);
-      if (!font) return applyResolvedFont(CORE_FONTS[0]);
-      await ensureFontCatalogStyles();
-      return applyResolvedFont(font);
-    });
-  }
-
-  return applyResolvedFont(CORE_FONTS[0]);
-}
-
 export function getStoredFont() {
   const migration = localStorage.getItem("mabis-font-default-version");
   if (migration !== "gnu-free-mono-v1") {
@@ -783,7 +776,5 @@ export function getStoredFont() {
   }
 
   const stored = localStorage.getItem("mabis-font");
-  const isCoreFont = CORE_FONTS.some((font) => font.key === stored);
-  const isCatalogueFont = /^byw-[a-z0-9-]+$/.test(stored || "");
-  return isCoreFont || isCatalogueFont ? stored : "gnu-free-mono";
+  return FONTS.some((font) => font.key === stored) ? stored : "gnu-free-mono";
 }

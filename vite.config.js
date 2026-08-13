@@ -16,10 +16,5 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
-  ],
-  build: {
-    // The service-worker generator reads Vite's exact hashed entry files so it
-    // can precache a tiny, revision-correct app shell without Workbox runtime.
-    manifest: true,
-  },
+  ]
 });

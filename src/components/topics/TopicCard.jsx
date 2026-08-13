@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ThumbsUp, Clock, CheckCircle2 } from "lucide-react";
+import { ThumbsUp, MessageCircle, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import MemberAvatar from "@/components/shared/MemberAvatar";

@@ -27,23 +27,6 @@ async function bootstrap() {
   ReactDOM.createRoot(document.getElementById('root')).render(
     <App />
   );
-
-  // Installing after load keeps precache traffic out of the critical path.
-  // The worker is a progressive enhancement and never intercepts Base44 APIs.
-  if (import.meta.env.PROD && "serviceWorker" in navigator) {
-    const register = () => {
-      const run = () => navigator.serviceWorker
-        .register("/sw.js", { scope: "/", updateViaCache: "none" })
-        .catch(() => {});
-      if ("requestIdleCallback" in window) {
-        window.requestIdleCallback(run, { timeout: 3000 });
-      } else {
-        window.setTimeout(run, 1000);
-      }
-    };
-    if (document.readyState === "complete") register();
-    else window.addEventListener("load", register, { once: true });
-  }
 }
 
 bootstrap();

@@ -3,9 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
 import { isHackerMode, disableHackerMode, HACKER_USER } from '@/lib/hacker';
-import { queryClientInstance } from '@/lib/query-client';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -19,39 +18,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkAppState();
   }, []);
-
-  useEffect(() => {
-    if (!user?.id || user.id === HACKER_USER.id) return undefined;
-    let stop = () => {};
-    let cancelled = false;
-
-    import('@/lib/offline-cache').then(({ startOfflineQueryPersistence }) => {
-      if (!cancelled) stop = startOfflineQueryPersistence(queryClientInstance, user.id);
-    });
-
-    return () => {
-      cancelled = true;
-      stop();
-    };
-  }, [user?.id]);
-
-  const recoverOfflineState = async (error) => {
-    if (!appParams.token || error?.status === 401 || error?.status === 403) return false;
-    if (navigator.onLine !== false && error?.status && error.status < 500) return false;
-
-    const { restoreOfflineQueries, restoreOfflineUser } = await import('@/lib/offline-cache');
-    const offlineUser = restoreOfflineUser(appParams.token);
-    if (!offlineUser) return false;
-
-    await restoreOfflineQueries(queryClientInstance, offlineUser.id);
-    setUser(offlineUser);
-    setIsAuthenticated(true);
-    setIsLoadingAuth(false);
-    setIsLoadingPublicSettings(false);
-    setAuthChecked(true);
-    setAuthError(null);
-    return true;
-  };
 
   const checkAppState = async () => {
     try {
@@ -91,7 +57,6 @@ export const AuthProvider = ({ children }) => {
         setIsLoadingPublicSettings(false);
       } catch (appError) {
         console.error('App state check failed:', appError);
-        if (await recoverOfflineState(appError)) return;
         
         // Handle app-level errors
         if (appError.status === 403 && appError.data?.extra_data?.reason) {
@@ -123,7 +88,6 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Unexpected error:', error);
-      if (await recoverOfflineState(error)) return;
       setAuthError({
         type: 'unknown',
         message: error.message || 'An unexpected error occurred'
@@ -139,16 +103,12 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
       disableHackerMode();
-      const { restoreOfflineQueries, saveOfflineUser } = await import('@/lib/offline-cache');
-      await restoreOfflineQueries(queryClientInstance, currentUser.id);
-      saveOfflineUser(currentUser, appParams.token);
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
       setAuthChecked(true);
     } catch (error) {
       console.error('User auth check failed:', error);
-      if (await recoverOfflineState(error)) return;
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       setAuthChecked(true);
@@ -163,10 +123,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async (shouldRedirect = true) => {
-    const { clearOfflineData } = await import('@/lib/offline-cache');
-    await clearOfflineData();
-    queryClientInstance.clear();
+  const logout = (shouldRedirect = true) => {
     if (user?.id === HACKER_USER.id) {
       disableHackerMode();
       setUser(null);
@@ -198,8 +155,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const currentUser = await base44.auth.me();
       disableHackerMode();
-      const { saveOfflineUser } = await import('@/lib/offline-cache');
-      saveOfflineUser(currentUser, appParams.token);
       setUser(currentUser);
     } catch (e) { /* ignore */ }
   };

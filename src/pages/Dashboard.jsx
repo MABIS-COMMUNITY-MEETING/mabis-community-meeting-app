@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CalendarDays, MessageSquare, Trophy, Users, ArrowRight } from "lucide-react";
+import { CalendarDays, MessageSquare, Trophy, Users, Zap, ArrowRight, CheckCircle2, Clock } from "lucide-react";
 import { format } from "date-fns";
 import XpBadge from "@/components/shared/XpBadge";
 import MemberAvatar from "@/components/shared/MemberAvatar";

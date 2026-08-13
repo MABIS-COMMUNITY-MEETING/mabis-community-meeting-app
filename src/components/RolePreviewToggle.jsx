@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Shield, Pencil, BookOpen, GraduationCap, Gavel, ClipboardList, Check } from "lucide-react";
+import { Eye, EyeOff, Shield, Pencil, BookOpen, GraduationCap, Gavel, ClipboardList, ChevronDown, Check } from "lucide-react";
 
 const PREVIEW_ROLES = [
   { key: "student", label: "Student", icon: GraduationCap, colorVar: "--role-student" },

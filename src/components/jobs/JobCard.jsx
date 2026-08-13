@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Clock, Play } from "lucide-react";
+import { CheckCircle2, Clock, Play, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import MemberAvatar from "@/components/shared/MemberAvatar";
