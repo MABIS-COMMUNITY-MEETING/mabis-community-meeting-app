@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png" />
+    <link rel="icon" type="image/png" href="/images/mabis-logo-64.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Home on MABIS Community Meeting App. MABIS Community Meeting App ✨." />
     <meta property="og:title" content="Home | MABIS Community Meeting App" />
@@ -18,17 +18,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="MABIS Community Meeting App" />
     <script type="application/ld+json">{"name":"MABIS Community Meeting App","logo":"https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png","@context":"https://schema.org","@type":"Organization"}</script>
-    <link rel="preconnect" href="https://media.base44.com" crossorigin />
-    <!-- The default face is requested before the app module so the loader never
-         paints in a browser fallback and swaps a moment later. -->
-    <link rel="preload" as="font" type="font/ttf" crossorigin href="/fonts/gnu-freefont/FreeMono.ttf?v=1" />
-    <link rel="preload" as="font" type="font/ttf" crossorigin href="/fonts/gnu-freefont/FreeMonoBold.ttf?v=1" />
+    <!-- Only the compact regular core is critical. Bold, Thai, multilingual and
+         selectable catalogue faces load when actual content requests them. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin fetchpriority="high" href="/fonts/gnu-freefont/FreeMono-Core.woff2?v=3" />
+    <link rel="preload" as="image" type="image/webp" fetchpriority="high" href="/images/mabis-logo-128.webp" />
     <style>html,body,#root{min-height:100%;margin:0;background:#11131a}</style>
     <link rel="manifest" href="/manifest.json" />
     <title>Home | MABIS Community Meeting App</title>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/main.jsx" fetchpriority="high"></script>
   </body>
 </html>
