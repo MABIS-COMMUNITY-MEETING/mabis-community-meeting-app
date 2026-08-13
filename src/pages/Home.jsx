@@ -104,7 +104,7 @@ export default function Home() {
   const controls = (
     <>
       {canSeeInbox && (
-        <Link to="/feedback" data-cursor="INBOX" title="Feedback & Bug Reports" className="relative hidden sm:flex h-9 w-9 items-center justify-center border border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors">
+        <Link to="/feedback" data-cursor="INBOX" title="Feedback & Bug Reports" className="relative flex h-9 w-9 items-center justify-center border border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors">
           <Inbox className="w-4 h-4" />
           {hasNewFeedback && <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-primary" />}
         </Link>
@@ -126,7 +126,7 @@ export default function Home() {
       <button onClick={() => setShowSettings(true)} data-cursor="SET" title="Settings" className="h-9 w-9 flex items-center justify-center border border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors">
         <Settings className="w-4 h-4" />
       </button>
-      <div className="hidden sm:flex items-center gap-2.5 pl-1">
+      <div className="flex items-center gap-2.5 pl-1">
         <div className="relative shrink-0">
           <div className="h-9 w-9 overflow-hidden flex items-center justify-center bg-card"
             style={{ border: `2px solid ${roleColor}`, boxSizing: "border-box" }}>
@@ -160,24 +160,24 @@ export default function Home() {
 
       {showDove && <DoveAnimation onComplete={() => setShowDove(false)} />}
 
-      <main className="max-w-[1600px] mx-auto px-5 sm:px-10 pt-24 sm:pt-32 pb-8">
+      <main className="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
         <HomeMasthead week_label={weekLabel} date_label={dateLabel} />
 
         {/* restrained editorial interlude */}
-        <div className="-mx-5 sm:-mx-10 py-4 sm:py-5 overflow-hidden border-b jp-rule">
+        <div className="-mx-4 overflow-hidden border-b py-3 jp-rule sm:-mx-10 sm:py-5">
           <ScrollVelocity
             items={["MABIS", "COMMUNITY", "FRIDAY", "BANGKOK"]}
-            className="font-display font-light tracking-[-0.035em] text-foreground/16 text-[7vw] sm:text-[4.2vw]"
+            className="font-display font-light tracking-[-0.035em] text-foreground/16 text-[clamp(1.35rem,7vw,2.15rem)] sm:text-[4.2vw]"
           />
         </div>
 
         <ScrollScaleRitual />
 
-        <div className="pt-6 pb-10 sm:pb-14">
+        <div className="pb-8 pt-4 sm:pb-14 sm:pt-6">
           <BirthdayBanner />
         </div>
 
-        <div className="space-y-16 sm:space-y-24">
+        <div className="space-y-12 sm:space-y-24">
 
         <EditorialSection index="01" label="MEETING MODE">
           <MeetingModeWidget canStart={canStartMeeting} onStartMeeting={() => {
