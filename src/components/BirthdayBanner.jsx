@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Cake, X, Sparkles } from "lucide-react";
+import { Cake, X } from "lucide-react";
 import { format } from "date-fns";
 
 export default function BirthdayBanner() {
@@ -32,27 +32,34 @@ export default function BirthdayBanner() {
   const handleDismiss = () => { localStorage.setItem(todayKey, "true"); setDismissed(true); };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 rounded-2xl p-4 shadow-lg flex items-center gap-3 text-white relative overflow-hidden">
-      <motion.div className="absolute inset-0 pointer-events-none"
-        animate={{ opacity: [0, 0.15, 0] }}
-        transition={{ duration: 3, repeat: Infinity }}
-        style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)" }} />
-      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center shrink-0 backdrop-blur-sm relative z-10">
-        <Cake className="w-6 h-6" />
+    <motion.aside
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="birthday-notice"
+      aria-label="Birthday notice"
+    >
+      <div className="birthday-notice__mark" aria-hidden>
+        <Cake className="h-5 w-5" />
       </div>
-      <div className="flex-1 min-w-0 relative z-10">
-        <p className="font-display font-black text-lg leading-tight flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4" /> Happy Birthday!
+      <div className="min-w-0">
+        <p className="tech-label mb-1 text-muted-foreground">
+          Birthday / {format(today, "dd.MM")}
         </p>
-        <p className="text-white/90 text-sm font-medium truncate">
-          {todayBirthdays.map(b => b.name).join(", ")} 🎉
+        <p className="font-display text-lg font-medium leading-tight tracking-[-0.03em]">
+          Happy birthday
+        </p>
+        <p className="mt-1 truncate text-sm text-muted-foreground">
+          {todayBirthdays.map(b => b.name).join(", ")}
         </p>
       </div>
-      <button onClick={handleDismiss} className="p-1.5 rounded-lg hover:bg-white/20 transition-colors shrink-0 relative z-10">
-        <X className="w-5 h-5" />
+      <button
+        type="button"
+        onClick={handleDismiss}
+        className="birthday-notice__close"
+        aria-label="Dismiss birthday notice"
+      >
+        <X className="h-4 w-4" />
       </button>
-    </motion.div>
+    </motion.aside>
   );
 }
