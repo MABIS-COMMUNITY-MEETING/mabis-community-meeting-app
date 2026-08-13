@@ -108,7 +108,7 @@ export default function LoadingScreen() {
       </div>
 
       <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-8 tech-label text-bone/40">
-        <img src={LOGO} alt="" className="h-5 w-5 object-contain opacity-70 inline-block mr-2 align-middle" />
+        <img src={LOGO} alt="" width="20" height="20" decoding="async" fetchPriority="high" className="h-5 w-5 object-contain opacity-70 inline-block mr-2 align-middle" />
         SECONDARY COMMUNITY MEETING
       </div>
     </div>
