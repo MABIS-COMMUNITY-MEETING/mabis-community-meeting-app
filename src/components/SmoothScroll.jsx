@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { animationsDisabled } from "@/lib/motion-preference";
 import { subscribe, wake } from "@/lib/physics/scheduler";
+import { lowPowerMode } from "@/lib/performance-tier";
 /**
  * Inertial smooth scrolling, tuned per input device:
  * - Mouse wheels (Windows/Linux/Mac mice) get the rAF-eased inertial scroll.
@@ -76,7 +77,7 @@ export default function SmoothScroll() {
     });
 
     const onWheel = (e) => {
-      if (e.ctrlKey) return; // pinch-zoom
+      if (e.ctrlKey || lowPowerMode()) return; // native scrolling is cheapest
       if (looksLikeTrackpad(e)) { stop(); return; } // native inertia is better
       if (scrollableParent(e.target)) return;
       e.preventDefault();

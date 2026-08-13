@@ -591,6 +591,31 @@ html.animations-disabled .cursor-ring {
   .group:hover .group-hover\:-translate-x-1 { transform: none !important; }
 }
 
+/* ── automatic low-power mode ────────────────────────────────────────
+   Activated only for genuinely constrained hardware or sustained missed
+   frames. Content and controls stay identical; decorative motion, custom
+   pointer work and live backdrop capture yield to native/static rendering. */
+html.performance-lite { scroll-behavior: auto !important; }
+html.performance-lite *:not(.loading-progress),
+html.performance-lite *:not(.loading-progress)::before,
+html.performance-lite *:not(.loading-progress)::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+html.performance-lite .grain-layer,
+html.performance-lite .cursor-dot,
+html.performance-lite .cursor-ring,
+html.performance-lite .cursor-trail,
+html.performance-lite .cursor-label { display: none !important; }
+html.performance-lite .pride-field-x:nth-child(n+3) { display: none !important; }
+html.performance-lite .pride-field-light { filter: blur(14px); }
+html.performance-lite .lg-surface {
+  background: hsl(var(--background) / 0.96) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 /* ── reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }

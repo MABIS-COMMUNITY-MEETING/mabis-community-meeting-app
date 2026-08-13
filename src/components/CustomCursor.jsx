@@ -4,6 +4,7 @@ import { subscribe } from "@/lib/physics/scheduler";
 import { pointer, startPointerEngine } from "@/lib/physics/pointer";
 import { MATERIAL, CURSOR, SLEEP } from "@/lib/physics/tokens";
 import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math";
+import { lowPowerMode, PERFORMANCE_TIER_EVENT } from "@/lib/performance-tier";
 
 /**
  * The cursor is simulated as a small swimming organism.
@@ -22,11 +23,19 @@ export default function CustomCursor() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
   const [enabled, setEnabled] = useState(false);
+  const [lowPower, setLowPower] = useState(lowPowerMode);
 
   useEffect(() => {
+    const updateTier = (event) => setLowPower(event.detail);
+    window.addEventListener(PERFORMANCE_TIER_EVENT, updateTier);
+    return () => window.removeEventListener(PERFORMANCE_TIER_EVENT, updateTier);
+  }, []);
+
+  useEffect(() => {
+    setEnabled(false);
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!fine || reduced) return;
+    if (!fine || reduced || lowPower) return;
     setEnabled(true);
     document.body.classList.add("cursor-ready");
 
@@ -179,7 +188,7 @@ export default function CustomCursor() {
       stopPointer();
       document.body.classList.remove("cursor-ready");
     };
-  }, []);
+  }, [lowPower]);
 
   if (!enabled) return null;
   return createPortal(

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MotionConfig, MotionGlobalConfig } from "framer-motion";
 import { animationsDisabled, applyAnimationPreference, MOTION_EVENT } from "@/lib/motion-preference";
+import { applyLowPowerMode, detectLowPowerDevice, monitorFrameBudget } from "@/lib/performance-tier";
 
 /* Motion off = everything simply exists: framer skips every animation
    (including ones with their own explicit transition, like the section
@@ -11,20 +12,28 @@ if (typeof window !== "undefined") {
 
 export default function MotionPreference({ children }) {
   const [disabled, setDisabled] = useState(animationsDisabled);
+  const [lowPower, setLowPower] = useState(detectLowPowerDevice);
+  const effectiveDisabled = disabled || lowPower;
 
   useEffect(() => {
-    MotionGlobalConfig.skipAnimations = disabled;
+    applyLowPowerMode(lowPower);
+  }, [lowPower]);
+
+  useEffect(() => monitorFrameBudget(() => setLowPower(true)), []);
+
+  useEffect(() => {
+    MotionGlobalConfig.skipAnimations = effectiveDisabled;
     applyAnimationPreference(disabled);
     const update = (event) => setDisabled(event.detail);
     window.addEventListener(MOTION_EVENT, update);
     return () => window.removeEventListener(MOTION_EVENT, update);
-  }, [disabled]);
+  }, [disabled, effectiveDisabled]);
 
   return (
     <MotionConfig
-      key={disabled ? "static" : "motion"}
-      reducedMotion={disabled ? "always" : "user"}
-      transition={disabled ? { duration: 0, delay: 0 } : undefined}
+      key={effectiveDisabled ? "static" : "motion"}
+      reducedMotion={effectiveDisabled ? "always" : "user"}
+      transition={effectiveDisabled ? { duration: 0, delay: 0 } : undefined}
     >
       {children}
     </MotionConfig>

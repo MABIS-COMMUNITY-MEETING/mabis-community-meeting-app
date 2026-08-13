@@ -16,6 +16,7 @@ let dirty = false, fast = "0", bound = false;
 let unsubscribe = null, settleTimer = null;
 
 function onMove(e) {
+	if (document.documentElement.classList.contains("performance-lite")) return;
 	const events = e.getCoalescedEvents?.();
 	const latest = events?.length ? events[events.length - 1] : e;
 	px = latest.clientX;
