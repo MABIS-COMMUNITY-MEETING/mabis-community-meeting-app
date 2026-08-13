@@ -22,6 +22,145 @@ Research does not grant permission to imitate a site pixel-for-pixel. The goal i
 
 If the AI cannot access current research sources, it must stop and ask for research access or human direction instead of inventing a Japanese aesthetic. This rule applies before visual design, layout, typography, styling, motion, interaction, responsive behavior, or component work. For non-visual fixes, the AI must still read this design contract first and verify that the change does not accidentally alter the interface.
 
+## Novesce UI mandate
+
+This section records how **Novesce wants the interface to look and behave**. It is a higher-priority design requirement than an AI model’s personal taste, framework defaults, generic best practices, template conventions, trend reports, or an attempt to make the product look more conventional.
+
+An AI must not quietly reinterpret, modernize away, simplify, normalize, or replace these preferences. When a requested change conflicts with this mandate, follow the explicit request. When the conflict is unclear, stop and ask Novesce before changing the design system.
+
+### The overall feeling
+
+Novesce prefers a UI that feels:
+
+- contemporary Japanese editorial rather than generic Western SaaS
+- precise, deliberate, slightly unusual, and strongly art-directed
+- information-dense but calm
+- technical and typographic rather than illustration-heavy
+- feminine or queer when a theme calls for it, without turning into an uncontrolled rainbow gradient
+- modern and polished without losing outlines, structure, or personality
+
+The visual language should use asymmetric grids, large cropped type, small index numbers, thin structural rules, compact labels, measured whitespace, paper-and-ink contrast, and carefully placed accent colors.
+
+Do not convert the product into a soft collection of identical rounded cards. Do not replace its personality with a stock component-library look. Do not default to the visual grammar of a startup landing page, an admin template, Material Design, or a generic dashboard.
+
+### Japanese influence
+
+Japanese influence must come from researched composition, pacing, density, typography, hierarchy, navigation, and material restraint. It must not come from random kanji, fake Japanese copy, anime decoration, red-circle motifs, or stereotypical visual shorthand.
+
+- No romaji decoration.
+- No random Japanese labels.
+- Keep English interface labels clear and functional.
+- Real Japanese, Chinese, or Thai content is welcome when it is actual content and receives the correct language metadata.
+- Decorative separators must be drawn with CSS, not typed as `/`, `／`, or another font-dependent glyph.
+
+### Shape, outlines, and surfaces
+
+Novesce prefers visible structure.
+
+- Preserve outlines and borders. Do not erase them merely to make the UI look softer.
+- Use crisp edges and small radii for ordinary content.
+- Reserve pills for statuses, filters, and genuinely pill-shaped controls.
+- Avoid excessive shadows, inflated spacing, and card-inside-card construction.
+- A component should earn its container. Do not wrap every line of content in a panel.
+- Keep the editorial content plane crisp and readable.
+
+### Liquid glass
+
+Liquid glass should feel closer to **Apple-style optical liquid glass** than Frutiger Aero.
+
+It should have restrained transparency, edge refraction, directional highlights, clear outlines, depth appropriate to the control, and readable content. It must not become blue-green bubble glass, wet plastic, glossy skeuomorphism, or a blur pasted onto every surface.
+
+- Use glass mainly for floating navigation, compact controls, toolbars, overlays, and special control planes.
+- Keep outlines and edge definition.
+- Do not nest backdrop filters.
+- Do not apply glass to long text, discussion bodies, lists, or every card.
+- Preserve the existing glass architecture in `src/styles/glass.css` unless Novesce explicitly requests a redesign.
+
+### Color
+
+The base design uses ink, bone, MABIS maroon, and gold, while the theme system may introduce Pride, GMK, Linux, console, character, and custom palettes.
+
+- Neutral surfaces should carry most of the page.
+- Theme colors should arrive through edges, rules, small fills, indicators, cursor light, and focused interaction states.
+- Do not flood every surface with the active accent.
+- Preserve the recognizable source colors of themed palettes while maintaining contrast.
+- For feminine or transfeminine treatments, deliberate pink accents are preferred over generic pastel gradients.
+- Never hard-code a color when a semantic token already expresses its role.
+
+### Font contract
+
+Typography is part of the interface architecture, not a decorative afterthought.
+
+**GNU FreeMono is the default UI font.** It must remain the default until Novesce explicitly asks to change it.
+
+The current script rules are mandatory:
+
+- English and ordinary Latin UI use the selected UI font.
+- Thai falls back to the Thai-only **GNU FreeSerif** face.
+- Japanese and Chinese use **UnifontEX** only when the content is explicitly marked for those scripts.
+- Multilingual fallbacks must never leak into ordinary English UI.
+
+Every component must use the shared font variables or matching Tailwind utilities. Do not hard-code a font family inside a page, modal, loading screen, canvas, export routine, or component.
+
+The customizable font system must remain available. Featured choices include GNU FreeMono, GNU FreeSerif, GNU FreeSans, Go, Iosevka, Lilex, UnifontEX, Torrefarfan, and the legally embeddable Libre Fonts by Womxn catalogue. Commercial choices such as Atlas Mono or Transgender Grotesk may appear only as licensed/local options unless the correct webfont license and files are supplied.
+
+When selecting new fonts, prefer work from **publicly self-identified LGBTQ+, trans, non-binary, intersex, or FLINTA designers** when authorship, identity, licensing, and script support can be verified from reliable public sources. Never guess or infer a designer’s identity.
+
+The font picker must keep the preview sentence:
+
+> Montessori Acadamy Bangkok International School
+
+Font implementation rules:
+
+- Apply the saved font before React paints.
+- Preload the active default faces needed for first paint.
+- Prevent font flashes on the loading screen.
+- Keep the loading screen on one captured selected family throughout its animation.
+- Make canvas-rendered text read the active CSS font variable.
+- Verify regular and bold faces.
+- Keep user choices synced to the signed-in account.
+- Do not silently replace a missing commercial font with a visually identical-looking label. Clearly report that its fallback is active.
+
+### Motion and cursor
+
+Motion should feel physical, restrained, and responsive. It may use springs, reveals, small transformations, and pointer-aware material behavior, but it must not become a carnival of perpetual animation.
+
+The custom liquid cursor is a distinctive part of the desktop experience. Preserve it, including its outlines and physical behavior, unless Novesce explicitly requests a redesign. It must also remain optional:
+
+- The Settings toggle must disable it immediately.
+- The native cursor must return when it is disabled.
+- The physics loop must stop rather than continue invisibly.
+- Touch devices, reduced-motion environments, and low-power modes must receive safe fallbacks.
+- The animation preference must continue to disable nonessential motion.
+
+### Interaction behavior
+
+Novesce prefers direct manipulation over page jumps and detached forms.
+
+- Edit an item inside its own card or row.
+- Keep the page at the current scroll position while editing.
+- Use the top form only for creating a new item when that is the established pattern.
+- Put actions close to the object they affect.
+- Keep controls compact, but preserve accessible touch targets.
+- Never hide an essential action behind hover alone.
+- Avoid destructive rewrites of working interaction code when a surgical fix is possible.
+
+### AI enforcement procedure
+
+Before an AI changes this project, it must complete all of the following:
+
+1. Read this entire README, especially the AI research rule and Novesce UI mandate.
+2. Perform the required research on real Japanese web design before visual work.
+3. Inspect the existing design tokens, typography variables, theme system, glass styles, and reference components.
+4. State in its working notes which Novesce preferences are relevant to the requested change.
+5. Make the smallest coherent change that satisfies the request.
+6. Preserve the font picker, script fallbacks, loading-font bootstrap, theme compatibility, cursor toggle, inline editing, and responsive behavior unless the request explicitly changes them.
+7. Run the production build and relevant lint checks.
+8. Test at least one mobile width, one alternate theme, the selected default font, Thai fallback behavior, custom cursor off, and reduced motion when the change can affect those systems.
+9. Summarize what changed and identify any deliberate deviation from this mandate.
+
+An AI must not change the default font, typography fallback rules, liquid-glass philosophy, Japanese editorial direction, cursor behavior, theme architecture, or interaction model as an unsolicited cleanup. A direct request from Novesce may change these rules. When that happens, update this README in the same change so it remains the source of truth.
+
 ## Core product principles
 
 1. **Useful before decorative**  
@@ -544,6 +683,11 @@ Repository changes sync to the Base44 Builder. Publish the tested version from B
 
 Before merging a visual change, ask:
 
+- Did the contributor read and follow the Novesce UI mandate?
+- If the contributor is an AI, did it research real Japanese web design and record its sources and findings before implementation?
+- Would Novesce recognize this as the same product rather than a generic redesign?
+- Did GNU FreeMono remain the default unless Novesce explicitly requested otherwise?
+- Are GNU FreeSerif Thai fallback and UnifontEX Japanese/Chinese handling still isolated correctly?
 - Does it still look coherent in a different theme?
 - Does it respect the selected UI font?
 - Does it remain readable with Thai, Japanese, or Chinese text?
