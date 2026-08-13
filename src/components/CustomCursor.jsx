@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { subscribe } from "@/lib/physics/scheduler";
 import { pointer, startPointerEngine } from "@/lib/physics/pointer";
-import { CURSOR } from "@/lib/physics/tokens";
+import { MATERIAL, CURSOR } from "@/lib/physics/tokens";
 import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math";
 import { lowPowerMode, PERFORMANCE_TIER_EVENT } from "@/lib/performance-tier";
 import { customCursorEnabled, CURSOR_EVENT } from "@/lib/cursor-preference";
@@ -15,9 +15,9 @@ import { customCursorEnabled, CURSOR_EVENT } from "@/lib/cursor-preference";
  *              Those CSS-pixel coordinates already include the OS sensitivity
  *              and acceleration; extra smoothing, prediction, or DPR scaling
  *              would make the visual pointer diverge from the native pointer.
- *   MATERIAL — the ring deforms from estimated speed using an area-preserving
- *              matrix (det = 1), so it stays expressive without moving the
- *              cursor's actual point of aim.
+ *   MATERIAL — bounded underdamped springs shape the ring like a soft
+ *              membrane, producing one gentle rebound before settling without
+ *              moving the cursor's actual point of aim.
  *
  * Deformation integrates on the shared fixed-timestep scheduler, so behaviour
  * is identical at 60Hz and 240Hz and the system sleeps when it settles.
@@ -56,13 +56,14 @@ export default function CustomCursor() {
 
     // ── state ─────────────────────────────────────────────────────────
     const shear = { x: 0, v: 0 };
+    const scale = { x: 1, v: 0 };           // press + travel expansion
     const glow = { x: 0, v: 0 };            // label opacity
     const swim = { x: 0, v: 0 };            // 0..1 travel effort
 
     let theta = 0;     // deformation orientation (deg)
     let visible = false;
     let lastLabel = "";
-    let prevShear = 0, prevTheta = 0, prevGlow = 0;
+    let prevShear = 0, prevScale = 1, prevTheta = 0, prevGlow = 0;
     let lastHover = false, lastIsLabel = false, lastDotOpacity = "", lastRingOpacity = "", lastColor = "";
 
     const step = (dt) => {
@@ -72,15 +73,26 @@ export default function CustomCursor() {
 
       // Only the material response is interpolated. Position stays on the most
       // recent browser pointer sample so the page adds no sensitivity or lag.
-      prevShear = shear.x; prevTheta = theta; prevGlow = glow.x;
+      prevShear = shear.x; prevScale = scale.x; prevTheta = theta; prevGlow = glow.x;
 
-      const s = pointer.speed;
+      // A velocity estimate belongs to the last input sample. Release it after
+      // a brief grace period so deformation cannot loop forever while idle.
+      const idleFor = performance.now() / 1000 - pointer.movedAt;
+      const s = idleFor <= CURSOR.idleReleaseDelay ? pointer.speed : 0;
       const effort = tanhSat(CURSOR.shearAlpha * s);
-      integrateSpring(swim, effort, 5.5, 1.0, dt);
-      // Drive deformation from smoothed effort, never the raw sample. This
-      // changes the ring's shape only; its centre stays at the OS pointer.
-      integrateSpring(shear, pointer.label ? 0 : CURSOR.shearMax * swim.x, 7, 1.0, dt);
-      integrateSpring(glow, pointer.label ? 1 : 0, 22, 1.0, dt);
+      integrateSpring(swim, effort, MATERIAL.flow.omega, MATERIAL.flow.zeta, dt);
+      // Drive deformation from the bounded effort envelope. The membrane gets
+      // one soft overshoot while its centre stays exactly at the OS pointer.
+      integrateSpring(
+        shear,
+        pointer.label ? 0 : CURSOR.shearMax * swim.x,
+        MATERIAL.liquid.omega,
+        MATERIAL.liquid.zeta,
+        dt
+      );
+      const scaleTarget = pointer.down ? CURSOR.pressScale : 1 + CURSOR.motionExpansion * swim.x;
+      integrateSpring(scale, scaleTarget, MATERIAL.bounce.omega, MATERIAL.bounce.zeta, dt);
+      integrateSpring(glow, pointer.label ? 1 : 0, MATERIAL.glass.omega, MATERIAL.glass.zeta, dt);
 
       if (s > 140) {
         const want = (Math.atan2(pointer.vy, pointer.vx) * 180) / Math.PI;
@@ -95,20 +107,22 @@ export default function CustomCursor() {
       const px = pointer.rawX;
       const py = pointer.rawY;
       const sh = prevShear + (shear.x - prevShear) * a;
+      const sc = prevScale + (scale.x - prevScale) * a;
       const th = prevTheta + angleDelta(theta, prevTheta) * a;
       const gl = prevGlow + (glow.x - prevGlow) * a;
 
       if (d) {
         const opacity = pointer.inside ? "1" : "0";
         if (opacity !== lastDotOpacity) { d.style.opacity = opacity; lastDotOpacity = opacity; }
-        d.style.transform = `translate3d(${px.toFixed(2)}px, ${py.toFixed(2)}px, 0) translate(-50%,-50%)`;
+        d.style.transform = `translate3d(${px.toFixed(2)}px, ${py.toFixed(2)}px, 0) translate(-50%,-50%) scale(${sc.toFixed(4)})`;
       }
 
       if (r) {
-        // R(θ)·diag(eˢ, e⁻ˢ)·R(−θ) — determinant 1, so area is preserved
+        // Uniform bounce multiplies the area-preserving directional membrane.
+        // Translation remains separate and continues to use raw clientX/Y.
         const rad = (th * Math.PI) / 180;
         const c = Math.cos(rad), sn2 = Math.sin(rad);
-        const ep = Math.exp(sh), em = Math.exp(-sh);
+        const ep = sc * Math.exp(sh), em = sc * Math.exp(-sh);
         const m11 = ep * c * c + em * sn2 * sn2;
         const m12 = (ep - em) * c * sn2;
         const m22 = ep * sn2 * sn2 + em * c * c;
@@ -135,6 +149,8 @@ export default function CustomCursor() {
         Math.abs(swim.v) < 0.01 &&
         Math.abs(shear.x) < 0.004 &&
         Math.abs(shear.v) < 0.01 &&
+        Math.abs(scale.x - (pointer.down ? CURSOR.pressScale : 1)) < 0.002 &&
+        Math.abs(scale.v) < 0.01 &&
         Math.abs(glow.v) < 0.01
       );
     };
