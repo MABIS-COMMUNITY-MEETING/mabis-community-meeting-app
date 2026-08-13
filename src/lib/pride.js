@@ -38,12 +38,13 @@ const SPECS = [
   {
     key: "lesbian", name: "Lesbian", no: "02", mode: "dark",
     flag: ["#D52D00", "#EF7627", "#FF9A56", "#FFFFFF", "#D162A4", "#B55690", "#A30262"],
-    dominant: "#D52D00", secondary: "#FF9A56", accent: "#A30262",
-    note: "warm/cool contrast — ember orange against deep rose surfaces",
+    dominant: "#A30262", secondary: "#EF7627", accent: "#D162A4",
+    note: "deep rose and vivid orange share the interface, with soft pink as the connecting light",
     field: [
-      { c: 1, x: 6, y: 92, r: 52, a: 0.26, d: 7, s: 54 },
-      { c: 6, x: 92, y: 14, r: 44, a: 0.24, d: 6, s: 71 },
-      { c: 4, x: 50, y: 50, r: 30, a: 0.10, d: 9, s: 93 },
+      { c: 6, x: 10, y: 14, r: 44, a: 0.24, d: 6, s: 57 },
+      { c: 1, x: 90, y: 84, r: 46, a: 0.24, d: 7, s: 69 },
+      { c: 4, x: 72, y: 24, r: 30, a: 0.13, d: 8, s: 89 },
+      { c: 2, x: 24, y: 92, r: 30, a: 0.13, d: 8, s: 97 },
     ],
   },
   {
