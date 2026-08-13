@@ -451,12 +451,12 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
   const currentWeek = getCurrentWeekLabel();
 
   const { data: assignments = [] } = useQuery({
-    queryKey: ["assignments"],
-    queryFn: () => base44.entities.JobAssignment.list("-created_date", 300),
+    queryKey: ["assignments", currentWeek],
+    queryFn: () => base44.entities.JobAssignment.filter({ week_label: currentWeek }),
   });
 
   const studentMembers = members.filter(m => !m.role || m.role === "student");
-  const currentAssignments = assignments.filter(a => a.week_label === currentWeek);
+  const currentAssignments = assignments;
   const assignedJobLabels = currentAssignments.map(a => a.job_title);
   const assignedMemberNames = currentAssignments.map(a => a.assigned_to_name);
   const selectedJob = JOBS.find(j => j.id === selectedJobId) || JOBS[0];
@@ -495,14 +495,20 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
   });
 
   const carryMutation = useMutation({
-    mutationFn: (data) => base44.entities.JobAssignment.create(data),
+    mutationFn: async (data) => {
+      const existing = await base44.entities.JobAssignment.filter({
+        week_label: data.week_label,
+        job_title: data.job_title,
+        assigned_to_name: data.assigned_to_name,
+      });
+      if (existing.length > 0) return existing[0];
+      return base44.entities.JobAssignment.create(data);
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["assignments"] }),
   });
 
   const carryToNextWeek = (a) => {
     const nextWeek = getNextWeekLabel(currentWeek);
-    const exists = assignments.some(x => x.week_label === nextWeek && x.job_title === a.job_title && x.assigned_to_name === a.assigned_to_name);
-    if (exists) return;
     carryMutation.mutate({
       job_title: a.job_title, assigned_to_name: a.assigned_to_name,
       assigned_to_email: a.assigned_to_email || "", week_label: nextWeek,
