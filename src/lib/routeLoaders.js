@@ -16,6 +16,7 @@ export function loadRoute(pathname) {
 }
 
 export function preloadRoute(pathname) {
+  if (navigator.connection?.saveData === true) return;
   const loader = routeLoaders[pathname];
   if (!loader) return;
   void loader();
