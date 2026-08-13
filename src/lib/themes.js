@@ -571,16 +571,28 @@ export function deleteSavedTheme(name) {
 
 // ── Fonts ──
 // Commercial families are never redistributed: they resolve to a user's own
-// licensed local copy. Torrefarfan is the embedded default; Go, GNU FreeFont,
+// licensed local copy. GNU FreeSerif is the embedded default; Torrefarfan, Go,
 // Iosevka, Lilex and the libre catalogue remain selectable. UnifontEX is isolated to
 // explicitly multilingual Japanese, Chinese and Thai text.
 export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International School";
 
 const REQUESTED_FONTS = [
   {
+    key: "gnu-free-serif",
+    name: "GNU FreeSerif",
+    detail: "Default · embedded GNU FreeFont serif family",
+    source: "Featured",
+    family: "GNUFreeSerifUI",
+    heading: "'GNUFreeSerifUI'",
+    body: "'GNUFreeSerifUI'",
+    mono: "'GNUFreeSerifUI'",
+    localOnly: false,
+    featured: true,
+  },
+  {
     key: "torrefarfan",
     name: "Torrefarfan",
-    detail: "Default · embedded editorial serif from Libre Fonts by Womxn",
+    detail: "Embedded editorial serif from Libre Fonts by Womxn",
     source: "Featured",
     family: "torrefarfan",
     heading: "'torrefarfan'",
@@ -609,18 +621,6 @@ const REQUESTED_FONTS = [
     family: "GNUFreeSansUI",
     heading: "'GNUFreeSansUI'",
     body: "'GNUFreeSansUI'",
-    mono: "'GNUFreeMonoUI'",
-    localOnly: false,
-    featured: true,
-  },
-  {
-    key: "gnu-free-serif",
-    name: "GNU FreeSerif",
-    detail: "Embedded GNU FreeFont serif family",
-    source: "Featured",
-    family: "GNUFreeSerifUI",
-    heading: "'GNUFreeSerifUI'",
-    body: "'GNUFreeSerifUI'",
     mono: "'GNUFreeMonoUI'",
     localOnly: false,
     featured: true,
@@ -752,15 +752,15 @@ export function applyFont(key) {
 
 export function getStoredFont() {
   const migration = localStorage.getItem("mabis-font-default-version");
-  if (migration !== "torrefarfan-v1") {
+  if (migration !== "gnu-free-serif-v1") {
     const now = String(Date.now());
-    localStorage.setItem("mabis-font-default-version", "torrefarfan-v1");
-    localStorage.setItem("mabis-font-picker-version", "5");
+    localStorage.setItem("mabis-font-default-version", "gnu-free-serif-v1");
+    localStorage.setItem("mabis-font-picker-version", "6");
     localStorage.setItem("mabis-font-updated-at", now);
-    localStorage.setItem("mabis-font", "torrefarfan");
-    return "torrefarfan";
+    localStorage.setItem("mabis-font", "gnu-free-serif");
+    return "gnu-free-serif";
   }
 
   const stored = localStorage.getItem("mabis-font");
-  return FONTS.some((font) => font.key === stored) ? stored : "torrefarfan";
+  return FONTS.some((font) => font.key === stored) ? stored : "gnu-free-serif";
 }
