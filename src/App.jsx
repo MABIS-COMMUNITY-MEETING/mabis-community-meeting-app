@@ -3,7 +3,6 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
@@ -30,6 +29,7 @@ const History = lazy(routeModules['/history']);
 const AnnouncementsHistory = lazy(routeModules['/history/announcements']);
 const NewsHistory = lazy(routeModules['/history/news']);
 const Feedback = lazy(routeModules['/feedback']);
+const PageNotFound = lazy(() => import('@/lib/PageNotFound'));
 import LoadingScreen from '@/components/LoadingScreen';
 import MotionPreference from '@/components/MotionPreference';
 import PrefsSync from '@/components/PrefsSync';
