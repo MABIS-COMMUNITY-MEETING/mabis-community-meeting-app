@@ -5,7 +5,6 @@ import { base44 } from "@/api/base44Client";
 import { Palette, Inbox, Settings } from "lucide-react";
 import moment from "moment";
 import PageFooter from "@/components/PageFooter";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import EditorialSection from "@/components/home/EditorialSection";
