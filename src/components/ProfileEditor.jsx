@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Upload, Palette, X, RotateCcw, History } from "lucide-react";
+import { Upload, Palette, X, History } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
