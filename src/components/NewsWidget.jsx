@@ -30,7 +30,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
 
   const { data: news = [], isLoading } = useQuery({
     queryKey: ["news"],
-    queryFn: () => base44.entities.NewsItem.list("-created_date", 100),
+    queryFn: () => base44.entities.NewsItem.list("-created_date", 25),
   });
 
   const createMutation = useMutation({
