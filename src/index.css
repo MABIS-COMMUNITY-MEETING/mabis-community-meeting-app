@@ -27,7 +27,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeSerif.woff2?v=2') format('woff2');
+  src: url('/fonts/gnu-freefont/FreeSerif-Thai.woff2?v=3') format('woff2');
   unicode-range: U+0E00-0E7F;
 }
 @font-face {
@@ -35,7 +35,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeSerifBold.woff2?v=2') format('woff2');
+  src: url('/fonts/gnu-freefont/FreeSerifBold-Thai.woff2?v=3') format('woff2');
   unicode-range: U+0E00-0E7F;
 }
 @font-face {
@@ -43,7 +43,7 @@
   font-style: italic;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeSerifItalic.woff2?v=2') format('woff2');
+  src: url('/fonts/gnu-freefont/FreeSerifItalic-Thai.woff2?v=3') format('woff2');
   unicode-range: U+0E00-0E7F;
 }
 @font-face {
@@ -51,7 +51,7 @@
   font-style: italic;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeSerifBoldItalic.woff2?v=2') format('woff2');
+  src: url('/fonts/gnu-freefont/FreeSerifBoldItalic-Thai.woff2?v=3') format('woff2');
   unicode-range: U+0E00-0E7F;
 }
 
@@ -60,28 +60,28 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMono.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeMono-Core.woff2?v=3') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: normal;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBold.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeMonoBold-Core.woff2?v=3') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: italic;
   font-display: swap;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMonoOblique.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeMonoOblique-Core.woff2?v=3') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: italic;
   font-display: swap;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBoldOblique.ttf?v=1') format('truetype');
+  src: url('/fonts/gnu-freefont/FreeMonoBoldOblique-Core.woff2?v=3') format('woff2');
 }
 
 @font-face {
