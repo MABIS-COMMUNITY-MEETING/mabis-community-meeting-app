@@ -12,7 +12,14 @@ export function isHackerMode() {
 }
 
 export function enableHackerMode() {
-  try { localStorage.setItem(KEY, "1"); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(KEY, "1");
+    // Hacker mode is an explicit alternate session, never an overlay on top of
+    // a real MABIS account. Clearing the stored SDK token keeps the two modes
+    // mutually exclusive and prevents ambiguous identity state after reload.
+    localStorage.removeItem("base44_access_token");
+    localStorage.removeItem("token");
+  } catch { /* ignore */ }
 }
 
 export function disableHackerMode() {
