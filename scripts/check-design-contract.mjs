@@ -63,6 +63,18 @@ for (const rule of agentRules) {
     requireText("AGENTS.md", agents, rule);
 }
 
+const cursorTrackingRule = "The custom cursor's visual origin must stay on browser `clientX`/`clientY` without positional smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling.";
+for (const [relativePath, content] of [
+    ["README.md", readme],
+    ["AGENTS.md", agents],
+    ["CLAUDE.md", claude],
+    ["GEMINI.md", gemini],
+    [".cursor/rules/novesce-design.mdc", cursorRule],
+    [".github/copilot-instructions.md", copilot],
+]) {
+    requireText(relativePath, content, cursorTrackingRule);
+}
+
 requireText("CLAUDE.md", claude, "@README.md");
 requireText("CLAUDE.md", claude, "@AGENTS.md");
 requireText("GEMINI.md", gemini, "The Novesce UI mandate is an always-on project requirement");
