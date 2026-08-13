@@ -38,7 +38,7 @@ Unless Novesce explicitly requests a change:
 - Use shared font variables and semantic color tokens. Never hard-code a normal component to a specific UI font.
 - Preserve first-paint font loading and prevent loading-screen font flashes.
 - Preserve the optional custom cursor, its outlines, its immediate off switch, and native-cursor fallback.
-- The custom cursor's core dot must stay on browser `clientX`/`clientY` without smoothing, prediction, magnetic displacement, or device-pixel-ratio scaling; the outer ring may use bounded spring-follow displacement so the dot can briefly escape it.
+- The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement.
 - Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.
 - Preserve reduced-motion, touch, keyboard, mobile, dark-theme, and alternate-theme behavior.
 - Edit existing items in place. Do not introduce scroll-jumping edit forms.
