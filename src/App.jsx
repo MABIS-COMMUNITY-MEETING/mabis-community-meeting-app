@@ -1,5 +1,4 @@
 import "@/styles/glass.css";
-import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -16,6 +15,7 @@ import OptionalPrideAmbience from '@/components/OptionalPrideAmbience';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PageTransition from '@/components/PageTransition';
 import { lazy, Suspense } from 'react';
+import IdleMount from '@/components/IdleMount';
 import { routeModules } from '@/lib/routeLoaders';
 // Route loaders are shared with intent prefetching in SiteHeader. Hovering or
 // focusing a destination warms the same module promise React.lazy will consume.
@@ -30,6 +30,7 @@ const AnnouncementsHistory = lazy(routeModules['/history/announcements']);
 const NewsHistory = lazy(routeModules['/history/news']);
 const Feedback = lazy(routeModules['/feedback']);
 const PageNotFound = lazy(() => import('@/lib/PageNotFound'));
+const Toaster = lazy(() => import('@/components/ui/toaster').then((module) => ({ default: module.Toaster })));
 import LoadingScreen from '@/components/LoadingScreen';
 import MotionPreference from '@/components/MotionPreference';
 import PrefsSync from '@/components/PrefsSync';
@@ -86,7 +87,9 @@ function App() {
             <ScrollProgress />
             <AuthenticatedApp />
           </Router>
-          <Toaster />
+          <IdleMount timeout={1600} constrainedTimeout={8000}>
+            <Suspense fallback={null}><Toaster /></Suspense>
+          </IdleMount>
         </QueryClientProvider>
       </AuthProvider>
     </MotionPreference>
