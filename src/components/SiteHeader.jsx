@@ -5,6 +5,7 @@ import { ArrowUpRight } from "lucide-react";
 import SoundToggle from "@/components/SoundToggle";
 import Glass from "@/components/glass/Glass";
 import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
+import { preloadRoute } from "@/lib/routeLoaders";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
@@ -132,6 +133,8 @@ export default function SiteHeader({ rightSlot }) {
                     <motion.button
                       key={item.to}
                       onClick={() => go(item.to)}
+                      onPointerEnter={() => preloadRoute(item.to)}
+                      onFocus={() => preloadRoute(item.to)}
                       initial={{ y: 60, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       exit={{ y: 30, opacity: 0 }}
