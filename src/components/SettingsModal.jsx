@@ -62,7 +62,8 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const visibleFonts = filteredFonts.slice(0, fontLimit);
 
   const handleFontSelect = (key) => {
-    localStorage.setItem("mabis-font-picker-version", "2");
+    localStorage.setItem("mabis-font-picker-version", "3");
+    localStorage.setItem("mabis-font-updated-at", String(Date.now()));
     setCurrentFont(key);
     applyFont(key);
   };
