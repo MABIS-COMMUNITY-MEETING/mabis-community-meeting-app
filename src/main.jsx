@@ -5,6 +5,7 @@ import '@/index.css'
 import { applyTheme, getStoredTheme, getStoredCustomColors, applyCustomColors, applyFont, getStoredFont } from '@/lib/themes';
 import { applyAnimationPreference } from '@/lib/motion-preference';
 import { applyNetworkPreference, startNetworkMonitoring } from '@/lib/network-policy';
+import { registerServiceWorker } from '@/lib/service-worker';
 
 async function bootstrap() {
   // Every visual preference is resolved before React paints the loading screen.
@@ -33,6 +34,7 @@ async function bootstrap() {
   ReactDOM.createRoot(document.getElementById('root')).render(
     <App />
   );
+  registerServiceWorker();
 }
 
 bootstrap();
