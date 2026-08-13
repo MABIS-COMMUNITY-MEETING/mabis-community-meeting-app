@@ -31,6 +31,8 @@ const cursorPreference = read("src/lib/cursor-preference.js");
 const themeBalance = read("src/lib/color/themeBalance.js");
 const themeBalanceCheck = read("scripts/check-theme-balance.mjs");
 const packageJson = read("package.json");
+const performanceContract = read("scripts/check-performance-contract.mjs");
+const bundleBudget = read("scripts/check-bundle-budget.mjs");
 
 const readmeRules = [
     "## Mandatory rule for AI contributors",
@@ -77,7 +79,10 @@ requireText("src/lib/cursor-preference.js", cursorPreference, "mabis_custom_curs
 requireText("src/lib/color/themeBalance.js", themeBalance, "contrastSafePair");
 requireText("src/lib/color/themeBalance.js", themeBalance, "spreadBalancedPalette");
 requireText("scripts/check-theme-balance.mjs", themeBalanceCheck, "Theme balance:");
-requireText("package.json", packageJson, "npm run check:design && npm run check:themes");
+requireText("package.json", packageJson, "npm run check:design && npm run check:themes && npm run check:performance");
+requireText("package.json", packageJson, "node scripts/check-bundle-budget.mjs");
+requireText("scripts/check-performance-contract.mjs", performanceContract, "React performance contract:");
+requireText("scripts/check-bundle-budget.mjs", bundleBudget, "Bundle budgets passed:");
 
 if (failures.length > 0) {
     console.error("\nNovesce design-contract check failed:\n");
