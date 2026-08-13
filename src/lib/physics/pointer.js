@@ -174,6 +174,7 @@ export function startPointerEngine() {
 
   let latestX = 0, latestY = 0, latestT = 0, latestEl = null;
   let inputDirty = false, geometryDirty = false, retarget = false;
+  let scrollRetargetTimer = 0;
 
   // Pointer events only publish the newest sample. Filtering, magnetic geometry
   // reads and prediction run once in the scheduler's read phase, not at USB rate.
@@ -221,7 +222,21 @@ export function startPointerEngine() {
   const onLeave = () => { pointer.inside = false; heldEl = null; pointer.target = null; pointer.label = null; wake(); };
   const onEnter = () => { pointer.inside = true; wake(); };
   const onReset = () => { lastT = 0; heldEl = null; pointer.target = null; ex.initialised = false; ey.initialised = false; geometryDirty = true; };
-  const onScroll = () => { geometryDirty = true; retarget = true; inputDirty = pointer.seen; wake(); };
+  const flushScrollRetarget = () => {
+    scrollRetargetTimer = 0;
+    inputDirty = pointer.seen;
+    if (inputDirty) wake();
+  };
+  const onScroll = () => {
+    geometryDirty = true;
+    retarget = true;
+    // Content moves beneath a stationary pointer while scrolling, but a layout
+    // read on every scroll event competes with the browser's compositor. Keep
+    // labels accurate at a calm 20 Hz and always flush shortly after scrolling.
+    if (pointer.seen && !scrollRetargetTimer) {
+      scrollRetargetTimer = window.setTimeout(flushScrollRetarget, 50);
+    }
+  };
 
   window.addEventListener("pointermove", onMove, { passive: true });
   window.addEventListener("pointerdown", onDown, { passive: true });
@@ -243,6 +258,7 @@ export function startPointerEngine() {
     window.removeEventListener("resize", onReset);
     window.removeEventListener("scroll", onScroll, true);
     window.removeEventListener("blur", onReset);
+    if (scrollRetargetTimer) window.clearTimeout(scrollRetargetTimer);
   };
 }
 
