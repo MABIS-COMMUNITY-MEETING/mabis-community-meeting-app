@@ -164,75 +164,75 @@ export default function Home() {
       <main className="max-w-[1600px] mx-auto px-5 sm:px-10 pt-24 sm:pt-32 pb-8">
         <HomeMasthead week_label={weekLabel} date_label={dateLabel} />
 
-        {/* velocity band — edge to edge, no container */}
-        <div className="-mx-5 sm:-mx-10 py-6 overflow-hidden">
+        {/* restrained editorial interlude */}
+        <div className="-mx-5 sm:-mx-10 py-4 sm:py-5 overflow-hidden border-b jp-rule">
           <ScrollVelocity
-            text="SECONDARY COMMUNITY MEETING ／ FRIDAY ／ MABIS BANGKOK ／ "
-            className="font-display font-thin tracking-ultra text-foreground/25 text-[8vw] sm:text-[5vw]"
+            text="MABIS ／ KAIGI ／ COMMUNITY ／ FRIDAY ／ BANGKOK ／ "
+            className="font-display font-light tracking-[-0.035em] text-foreground/16 text-[7vw] sm:text-[4.2vw]"
           />
         </div>
 
         <ScrollScaleRitual />
 
-        <div className="pt-2 pb-12">
+        <div className="pt-6 pb-10 sm:pb-14">
           <BirthdayBanner />
         </div>
 
-        <div className="space-y-24 sm:space-y-36">
+        <div className="space-y-16 sm:space-y-24">
 
-        <EditorialSection index="01" label="MEETING MODE">
+        <EditorialSection index="01" label="MEETING MODE" sublabel="KAIGI">
           <MeetingModeWidget canStart={canStartMeeting} onStartMeeting={() => {
             window.dispatchEvent(new CustomEvent("startMeetingMode"));
           }} />
         </EditorialSection>
 
-        <EditorialSection index="02" label="ANNOUNCEMENTS">
+        <EditorialSection index="02" label="ANNOUNCEMENTS" sublabel="OSHIRASE">
           <AnnouncementsWidget members={members} isAdmin={canManage} />
         </EditorialSection>
 
-        <EditorialSection index="03" label="DISCUSSION">
+        <EditorialSection index="03" label="DISCUSSION" sublabel="GIRON">
           <LazySection minHeight={560}>
             <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="04" label="JOBS ／ ROTATION">
+        <EditorialSection index="04" label="JOBS ／ ROTATION" sublabel="TOBAN">
           <LazySection minHeight={560}>
             <JobsWidget members={members} isAdmin={canManage} compact={false} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="05" label="CALENDAR">
+        <EditorialSection index="05" label="CALENDAR" sublabel="KOYOMI">
           <LazySection minHeight={620}>
             <CalendarWidget />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="06" label="SCHEDULE">
+        <EditorialSection index="06" label="SCHEDULE" sublabel="YOTEI">
           <LazySection minHeight={420}>
             <ScheduleWidget isAdmin={canManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="07" label="LOST ／ FOUND">
+        <EditorialSection index="07" label="LOST ／ FOUND" sublabel="OTOSHIMONO">
           <LazySection minHeight={420}>
             <MissingItemsWidget members={members} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="08" label="LUNCH MENU">
+        <EditorialSection index="08" label="LUNCH MENU" sublabel="HIRUGOHAN">
           <LazySection minHeight={420}>
             <LunchMenuWidget isAdmin={canManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="09" label="NEWS">
+        <EditorialSection index="09" label="NEWS" sublabel="NYUSU">
           <LazySection minHeight={480}>
             <NewsWidget members={members} isAdmin={canManage} />
           </LazySection>
         </EditorialSection>
 
-        <EditorialSection index="10" label="MEMBERS">
+        <EditorialSection index="10" label="MEMBERS" sublabel="MENBA">
           <LazySection minHeight={560}>
             <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
           </LazySection>
