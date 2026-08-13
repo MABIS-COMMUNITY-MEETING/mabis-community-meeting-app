@@ -127,13 +127,13 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
   };
 
   const renderAddForm = (defaultRole = "student") => (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
       <Input placeholder="Full name..." value={name} onChange={(e) => setName(e.target.value)}
-        className="rounded-xl border-gray-200 flex-1 min-w-[130px]" />
+        className="rounded-xl border-gray-200 flex-1 min-w-0 sm:min-w-[130px]" />
       <Input placeholder="Email..." value={email} onChange={(e) => setEmail(e.target.value)}
-        className="rounded-xl border-gray-200 flex-1 min-w-[130px]" />
+        className="rounded-xl border-gray-200 flex-1 min-w-0 sm:min-w-[130px]" />
       <Select value={newRole} onValueChange={setNewRole}>
-        <SelectTrigger className="rounded-xl border-gray-200 w-28">
+        <SelectTrigger className="w-full rounded-xl border-gray-200 sm:w-28">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -144,22 +144,22 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
       </Select>
       <Button onClick={() => addMutation.mutate({ name: name.trim(), email: email.trim(), role: newRole })}
         disabled={!name.trim() || addMutation.isPending}
-        className="bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-xl shrink-0">
+        className="w-full bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-xl shrink-0 sm:w-auto">
         <Plus className="w-4 h-4" />
       </Button>
     </div>
   );
 
   return (
-    <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
-      <div className="bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+    <div className={`mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
+      <div className="mabis-widget-header bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <div className="min-w-0">
-          <h2 className="font-display font-bold text-white text-xl flex items-center gap-2">
+          <h2 className="mabis-widget-title font-display font-bold text-white text-xl flex items-center gap-2">
             <Users className="w-5 h-5" /> Community Members
           </h2>
           <p className="text-white/60 text-xs mt-0.5">{members.length} members</p>
         </div>
-        <div className="flex items-center flex-wrap gap-2 shrink-0">
+        <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
           {fullscreen ? (
             <Button size="sm" variant="outline"
               className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
@@ -176,7 +176,7 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
         </div>
       </div>
 
-      <div className="p-5 space-y-5">
+      <div className="mabis-widget-body p-4 space-y-5 sm:p-5">
         {/* Add member — admin only (top) */}
         {isAdmin && (
           <div className="pb-4 border-b border-gray-100 space-y-2">
