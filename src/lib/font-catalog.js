@@ -35,7 +35,9 @@ export function ensureFontCatalogStyles() {
   if (typeof document === "undefined") return Promise.resolve();
   if (stylesheetPromise) return stylesheetPromise;
 
-  const existing = document.querySelector('link[data-mabis-font-catalog]');
+  const existing = /** @type {HTMLLinkElement | null} */ (
+    document.querySelector('link[data-mabis-font-catalog]')
+  );
   if (existing?.sheet) return Promise.resolve();
 
   stylesheetPromise = new Promise((resolve, reject) => {
