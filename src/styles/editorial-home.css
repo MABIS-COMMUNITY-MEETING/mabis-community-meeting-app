@@ -1,0 +1,249 @@
+/* Contemporary Japanese-editorial normalization for the Home route.
+   This is a structural vocabulary: neutral planes, rules, compact controls,
+   restrained radii and one accent. It deliberately adds no cultural copy or
+   decorative imitation, and stays scoped away from admin/auth surfaces. */
+
+.editorial-home {
+  --editorial-rule: hsl(var(--foreground) / 0.16);
+  --editorial-rule-strong: hsl(var(--foreground) / 0.32);
+  --editorial-wash: hsl(var(--foreground) / 0.025);
+  --editorial-wash-active: hsl(var(--foreground) / 0.055);
+  --editorial-radius: 2px;
+}
+
+.editorial-home [data-gp-section] {
+  border-bottom: 1px solid var(--editorial-rule);
+  padding-bottom: clamp(1.75rem, 3vw, 3.5rem);
+}
+
+/* One crisp information plane per module. The section grid supplies depth and
+   hierarchy, so widget shadows and inflated card radii are unnecessary. */
+.editorial-home .mabis-widget {
+  isolation: isolate;
+  color: hsl(var(--card-foreground));
+  background: hsl(var(--card)) !important;
+  border: 1px solid var(--editorial-rule-strong) !important;
+  border-radius: var(--editorial-radius) !important;
+  box-shadow: none !important;
+}
+
+.editorial-home .mabis-widget:hover {
+  transform: none !important;
+  border-color: hsl(var(--foreground) / 0.46) !important;
+  box-shadow: none !important;
+}
+
+/* Headers read as publication furniture instead of branded SaaS banners. */
+.editorial-home .mabis-widget-header,
+.editorial-home div.mabis-widget-header[class*="bg-"] {
+  position: relative;
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--card)) !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--editorial-rule-strong) !important;
+  box-shadow: none !important;
+}
+
+.editorial-home .mabis-widget-header::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: clamp(3.5rem, 9vw, 7rem);
+  height: 2px;
+  background: hsl(var(--primary));
+  pointer-events: none;
+}
+
+.editorial-home .mabis-widget-title {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.editorial-home .mabis-widget-header .text-white,
+.editorial-home .mabis-widget-header .text-white\/90,
+.editorial-home .mabis-widget-header .text-white\/80,
+.editorial-home .mabis-widget-header .text-white\/70,
+.editorial-home .mabis-widget-header .text-white\/60,
+.editorial-home .mabis-widget-header button,
+.editorial-home .mabis-widget-header svg {
+  color: hsl(var(--foreground)) !important;
+}
+
+.editorial-home .mabis-widget-header [class*="bg-white/"] {
+  color: hsl(var(--foreground)) !important;
+  background: var(--editorial-wash-active) !important;
+  border-color: var(--editorial-rule) !important;
+}
+
+.editorial-home .mabis-widget-header .bg-white {
+  color: hsl(var(--background)) !important;
+  background: hsl(var(--foreground)) !important;
+}
+
+.editorial-home .mabis-widget-header .bg-white svg {
+  color: currentColor !important;
+}
+
+.editorial-home .mabis-widget-actions {
+  row-gap: 0.4rem;
+}
+
+.editorial-home .mabis-widget-header :is(button, a, [role="button"]):not(.rounded-full) {
+  border-radius: var(--editorial-radius) !important;
+  box-shadow: none !important;
+}
+
+/* Widget interiors keep useful density while separating records with rules. */
+.editorial-home .mabis-widget-body {
+  color: hsl(var(--foreground));
+  background: hsl(var(--card));
+}
+
+.editorial-home .mabis-widget :is(.rounded-2xl, .rounded-xl, .rounded-lg, .rounded-md) {
+  border-radius: var(--editorial-radius) !important;
+}
+
+.editorial-home .mabis-widget [class*="shadow"] {
+  box-shadow: none !important;
+}
+
+.editorial-home .mabis-widget [class*="hover:shadow"]:hover {
+  box-shadow: none !important;
+}
+
+.editorial-home .mabis-widget [class*="hover:scale"]:hover {
+  transform: translateY(-1px) !important;
+}
+
+.editorial-home .mabis-widget :is(.bg-gray-50, .bg-gray-100) {
+  background: var(--editorial-wash) !important;
+}
+
+.editorial-home .mabis-widget :is(.border-gray-100, .border-gray-200, .border-gray-300) {
+  border-color: var(--editorial-rule) !important;
+}
+
+.editorial-home .mabis-widget :is(button, a, [role="button"]):not(.rounded-full) {
+  border-radius: var(--editorial-radius) !important;
+  box-shadow: none !important;
+}
+
+.editorial-home .mabis-widget button[class*="bg-[#951E3A]"],
+.editorial-home .mabis-widget [role="button"][class*="bg-[#951E3A]"] {
+  min-height: 2.25rem;
+  border: 1px solid hsl(var(--primary));
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.editorial-home .mabis-widget :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]) {
+  border-radius: var(--editorial-radius) !important;
+  border-color: var(--editorial-rule) !important;
+  background: hsl(var(--card)) !important;
+  box-shadow: none !important;
+}
+
+.editorial-home .mabis-widget :is(input, textarea, select):focus {
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: inset 2px 0 0 hsl(var(--primary)) !important;
+}
+
+.editorial-home .mabis-widget table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.editorial-home .mabis-widget th {
+  background: transparent !important;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.editorial-home .mabis-widget :is(th, td) {
+  border-color: var(--editorial-rule) !important;
+}
+
+/* Birthday notices use the same editorial system instead of a novelty gradient. */
+.editorial-home .birthday-notice {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  overflow: hidden;
+  padding: 1rem;
+  color: hsl(var(--foreground));
+  background: hsl(var(--card));
+  border-block: 1px solid var(--editorial-rule-strong);
+}
+
+.editorial-home .birthday-notice::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: hsl(var(--primary));
+}
+
+.editorial-home .birthday-notice__mark {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  color: hsl(var(--primary));
+  border: 1px solid var(--editorial-rule-strong);
+}
+
+.editorial-home .birthday-notice__close {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-left: 1px solid var(--editorial-rule);
+  color: hsl(var(--muted-foreground));
+}
+
+.editorial-home .birthday-notice__close:hover {
+  color: hsl(var(--foreground));
+  background: var(--editorial-wash-active);
+}
+
+@media (max-width: 639px) {
+  .editorial-home [data-gp-section] {
+    padding-bottom: 2rem;
+  }
+
+  .editorial-home .mabis-widget {
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .editorial-home .mabis-widget-header::before {
+    width: 3.75rem;
+  }
+
+  .editorial-home .birthday-notice {
+    margin-inline: -1rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    padding-inline: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editorial-home .mabis-widget,
+  .editorial-home .mabis-widget *,
+  .editorial-home .birthday-notice,
+  .editorial-home .birthday-notice * {
+    scroll-behavior: auto;
+  }
+}
