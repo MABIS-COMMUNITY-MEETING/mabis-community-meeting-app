@@ -2,8 +2,8 @@
 
 /* ──────────────────────────────────────────────────────────────
    UI TYPE SYSTEM
-   GNU FreeSerif is the embedded default. Torrefarfan, Go, Iosevka,
-   Lilex and the libre catalogue are selectable; commercial faces resolve only to
+   GNU FreeMono is the embedded default. GNU FreeSerif, Torrefarfan, Go,
+   Iosevka, Lilex and the libre catalogue are selectable; commercial faces resolve only to
    licensed local copies. UnifontEX is reserved for marked multilingual text.
    ────────────────────────────────────────────────────────────── */
 @font-face {
@@ -256,10 +256,10 @@
     --ink: 222 22% 8%;
     --bone: 42 34% 96%;
 
-    --font-heading: 'GNUFreeSerifUI', 'GNUFreeSerifThai';
-    --font-body: 'GNUFreeSerifUI', 'GNUFreeSerifThai';
-    --font-display: 'GNUFreeSerifUI', 'GNUFreeSerifThai';
-    --font-mono: 'GNUFreeSerifUI', 'GNUFreeSerifThai';
+    --font-heading: 'GNUFreeMonoUI', 'GNUFreeSerifThai';
+    --font-body: 'GNUFreeMonoUI', 'GNUFreeSerifThai';
+    --font-display: 'GNUFreeMonoUI', 'GNUFreeSerifThai';
+    --font-mono: 'GNUFreeMonoUI', 'GNUFreeSerifThai';
     --font-multilingual: 'UnifontEX';
     --font-thai: 'GNUFreeSerifThai';
     --role-student: 348 74% 30%;
