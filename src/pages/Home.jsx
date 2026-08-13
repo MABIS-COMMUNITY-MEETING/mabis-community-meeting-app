@@ -16,6 +16,7 @@ import ScrollSectionIndicator from "@/components/ScrollSectionIndicator";
 import MeetingModeWidget from "@/components/MeetingModeWidget";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import IdleMount from "@/components/IdleMount";
+import OnDemandTools from "@/components/home/OnDemandTools";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import RolePreviewToggle from "@/components/RolePreviewToggle";
 import BirthdayBanner from "@/components/BirthdayBanner";
@@ -30,8 +31,6 @@ const NewsWidget = lazy(() => import("@/components/NewsWidget"));
 const MissingItemsWidget = lazy(() => import("@/components/MissingItemsWidget"));
 const LunchMenuWidget = lazy(() => import("@/components/LunchMenuWidget"));
 const ScheduleWidget = lazy(() => import("@/components/ScheduleWidget"));
-const MabisAIAssistant = lazy(() => import("@/components/MabisAIAssistant"));
-const FeedbackWidget = lazy(() => import("@/components/FeedbackWidget"));
 const ProfileEditor = lazy(() => import("@/components/ProfileEditor"));
 const JobReminder = lazy(() => import("@/components/JobReminder"));
 const SettingsModal = lazy(() => import("@/components/SettingsModal"));
@@ -278,12 +277,11 @@ export default function Home() {
 
         <PageFooter />
       </main>
-      <IdleMount timeout={1800}>
+      <IdleMount timeout={1800} constrainedTimeout={12000}>
         <Suspense fallback={null}>
           <JobReminder />
-          <MabisAIAssistant />
-          <FeedbackWidget />
         </Suspense>
       </IdleMount>
+      <OnDemandTools />
     </div>);
 }
