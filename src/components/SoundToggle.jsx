@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState } from "react";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 
+const BAR_SCALES = [0.5, 1, 0.72];
+
 /**
- * Minimal persistent audio control — "SND 01" / "SND 00" with an animated
- * state roll and a tiny 3-bar level indicator. Persists via lib/sound.
+ * Minimal persistent audio control. The level bars move only when state changes
+ * so a visible toggle does not keep a perpetual animation running on phones.
  */
 export default function SoundToggle({ className = "" }) {
   const [on, setOn] = useState(isSoundEnabled());
 
   useEffect(() => {
-    const h = (e) => setOn(!!e.detail);
-    window.addEventListener("mabis-sound-changed", h);
-    return () => window.removeEventListener("mabis-sound-changed", h);
+    const handleChange = (event) => setOn(!!event.detail);
+    window.addEventListener("mabis-sound-changed", handleChange);
+    return () => window.removeEventListener("mabis-sound-changed", handleChange);
   }, []);
 
   const toggle = () => {
@@ -27,31 +28,19 @@ export default function SoundToggle({ className = "" }) {
       data-cursor={on ? "MUTE" : "SND"}
       aria-label={on ? "Turn sound off" : "Turn sound on"}
       aria-pressed={on}
-      className={`flex h-9 items-center gap-2 border border-foreground/30 bg-background px-2.5 sm:px-3 tech-label text-foreground hover:bg-foreground hover:text-background transition-colors ${className}`}
+      className={`sound-toggle flex h-9 items-center gap-2 border border-foreground/30 bg-background px-2.5 sm:px-3 tech-label text-foreground hover:bg-foreground hover:text-background transition-colors ${className}`}
     >
-      <span className="flex items-end gap-[2px] h-3" aria-hidden>
-        {[0.5, 1, 0.7].map((h, i) => (
-          <motion.span
-            key={i}
-            className="w-[2px] bg-current"
-            animate={on ? { height: [3, 10 * h + 2, 3] } : { height: 2 }}
-            transition={on ? { duration: 0.9 + i * 0.18, repeat: Infinity, ease: "easeInOut" } : { duration: 0.25 }}
+      <span className="flex h-3 items-end gap-[2px]" aria-hidden>
+        {BAR_SCALES.map((scale, index) => (
+          <span
+            key={index}
+            className="block h-[10px] w-[2px] origin-bottom bg-current transition-transform duration-300 [transition-timing-function:cubic-bezier(.16,1,.3,1)]"
+            style={{ transform: `scaleY(${on ? scale : 0.2})` }}
           />
         ))}
       </span>
-      <span className="relative block h-3 overflow-hidden w-[52px]">
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.span
-            key={on ? "on" : "off"}
-            initial={{ y: 12 }}
-            animate={{ y: 0 }}
-            exit={{ y: -12 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 tabular-nums"
-          >
-            {on ? "SND 01" : "SND 00"}
-          </motion.span>
-        </AnimatePresence>
+      <span className="block w-[52px] tabular-nums" aria-live="polite">
+        {on ? "SND 01" : "SND 00"}
       </span>
     </button>
   );
