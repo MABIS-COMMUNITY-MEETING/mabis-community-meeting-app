@@ -569,16 +569,38 @@ export function deleteSavedTheme(name) {
 }
 
 // ── Fonts ──
-// One verified LGBTQ-created Unicode family is used for every script so the
-// browser never falls through to an unrelated system font for CJK or Thai.
+// Paid families are referenced with local() only: the app never redistributes
+// their font files. UnifontEX is the self-hosted multilingual safety net for
+// Japanese, Chinese and Thai glyphs whenever a selected Latin face lacks them.
+export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International School";
+
 export const FONTS = [
+  {
+    key: "transgender-grotesk",
+    name: "Transgender Grotesk",
+    detail: "Default · wide grotesk · local/licensed copy",
+    heading: "'TransgenderGroteskUI', 'UnifontEX'",
+    body: "'TransgenderGroteskUI', 'UnifontEX'",
+    mono: "'TransgenderGroteskUI', 'UnifontEX'",
+    localOnly: true,
+  },
+  {
+    key: "atlas-mono",
+    name: "Atlas Mono",
+    detail: "Editorial mono · Giulia Boggio · local/licensed copy",
+    heading: "'AtlasMonoUI', 'UnifontEX'",
+    body: "'AtlasMonoUI', 'UnifontEX'",
+    mono: "'AtlasMonoUI', 'UnifontEX'",
+    localOnly: true,
+  },
   {
     key: "unifontex",
     name: "UnifontEX",
-    detail: "English ／ 日本語 ／ 中文 ／ ไทย",
+    detail: "Embedded multilingual · English ／ 日本語 ／ 中文 ／ ไทย",
     heading: "'UnifontEX'",
     body: "'UnifontEX'",
     mono: "'UnifontEX'",
+    localOnly: false,
   },
 ];
 
@@ -590,9 +612,16 @@ export function applyFont(key) {
   root.style.setProperty("--font-display", font.heading);
   root.style.setProperty("--font-mono", font.mono);
   localStorage.setItem("mabis-font", font.key);
+  window.dispatchEvent(new CustomEvent("fontChanged", { detail: { key: font.key } }));
   window.dispatchEvent(new Event("themeChanged"));
 }
 
 export function getStoredFont() {
-  return localStorage.getItem("mabis-font") || "unifontex";
+  const stored = localStorage.getItem("mabis-font");
+  const pickerVersion = localStorage.getItem("mabis-font-picker-version");
+  // Before the picker existed, everybody was forced onto UnifontEX. Treat that
+  // legacy value as the old default so this release can move to Transgender
+  // Grotesk without overriding a choice somebody explicitly makes afterward.
+  if (!pickerVersion && (!stored || stored === "unifontex")) return "transgender-grotesk";
+  return FONTS.some((font) => font.key === stored) ? stored : "transgender-grotesk";
 }
