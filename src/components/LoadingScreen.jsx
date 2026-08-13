@@ -11,8 +11,8 @@ const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6
 export default function LoadingScreen() {
   const [done, setDone] = useState(false);
   const [loadingFont] = useState(() => {
-    if (typeof document === "undefined") return "'GNUFreeSerifUI'";
-    return getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'GNUFreeSerifUI'";
+    if (typeof document === "undefined") return "'GNUFreeMonoUI'";
+    return getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'GNUFreeMonoUI'";
   });
   const raf = useRef();
   const countRef = useRef(null);
