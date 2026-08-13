@@ -11,17 +11,36 @@ if (!fs.existsSync(manifestPath)) {
 }
 
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-const entry = manifest["index.html"] || Object.values(manifest).find((item) => item.isEntry);
-if (!entry?.file) throw new Error("Unable to find the Vite HTML entry in the build manifest.");
+const entryKey = manifest["index.html"]
+  ? "index.html"
+  : Object.keys(manifest).find((key) => manifest[key].isEntry);
+if (!entryKey) throw new Error("Unable to find the Vite HTML entry in the build manifest.");
 
 const precache = new Set([
   "/index.html",
   "/manifest.json",
-  `/${entry.file}`,
-  ...(entry.css || []).map((file) => `/${file}`),
   "/fonts/gnu-freefont/FreeMono.woff2?v=2",
   "/fonts/gnu-freefont/FreeMonoBold.woff2?v=2",
 ]);
+
+function addManifestEntry(key, visited = new Set()) {
+  if (visited.has(key)) return;
+  visited.add(key);
+  const item = manifest[key];
+  if (!item?.file) throw new Error(`Offline manifest entry missing: ${key}`);
+  precache.add(`/${item.file}`);
+  for (const file of item.css || []) precache.add(`/${file}`);
+  for (const importedKey of item.imports || []) addManifestEntry(importedKey, visited);
+}
+
+addManifestEntry(entryKey);
+const homeKey = Object.keys(manifest).find((key) => manifest[key].name === "Home");
+if (!homeKey) throw new Error("Home route missing from the Vite manifest.");
+addManifestEntry(homeKey);
+
+const offlineCacheKey = "src/lib/offline-cache.js";
+if (!manifest[offlineCacheKey]) throw new Error("Offline data module missing from the Vite manifest.");
+addManifestEntry(offlineCacheKey);
 
 const revision = crypto.createHash("sha256");
 for (const url of precache) {
