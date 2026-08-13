@@ -656,7 +656,8 @@ Performance is part of the Novesce design contract. A technically correct change
 AI and human contributors must preserve these rules:
 
 - Route modules use shared dynamic loaders so navigation targets can preload on pointer or keyboard intent.
-- Discussion is the measured Home fast path: its small shell loads with Home and queries only the viewed week. Other large Home widgets remain behind near-viewport `LazySection` and `React.lazy` boundaries.
+- Large Home widgets remain behind near-viewport `LazySection` and `React.lazy` boundaries. Delaying mount without splitting the import is not sufficient.
+- Discussion is the explicit measured exception: its small shell loads with Home and queries only the viewed week, while its rich editor remains lazy.
 - Rich-text editing, analytics charts, settings, profile editing, cursor physics, and floating assistant tools load only when their interaction requires them.
 - Noncritical reminders and floating tools mount during browser idle time rather than competing with the first useful paint.
 - Long editorial sections and list cards use `content-visibility` and intrinsic-size containment where supported.
