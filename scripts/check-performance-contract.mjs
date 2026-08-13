@@ -69,10 +69,12 @@ requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, '/(?:
 requireText("package.json", packageJson, "node scripts/generate-service-worker.mjs");
 requireText("src/lib/query-client.js", queryClient, "networkMode: 'offlineFirst'");
 requireText("src/lib/query-client.js", queryClient, "gcTime: 2 * 60 * 60 * 1000");
-requireText("index.html", indexHtml, "/fonts/gnu-freefont/FreeMono-Core.woff2?v=3");
+requireText("index.html", indexHtml, "/fonts/gnu-freefont/FreeMono-Basic.woff2?v=4");
 forbidText("index.html", indexHtml, "FreeMono.ttf");
 forbidText("index.html", indexHtml, "FreeMonoBold.ttf");
 forbidText("src/index.css", css, "@import url('/fonts/by-womxn/fonts.css')");
+forbidText("src/lib/themes.js", read("src/lib/themes.js"), 'from "@/lib/by_womxn_fonts"');
+requireText("src/lib/themes.js", read("src/lib/themes.js"), 'import("@/lib/font-catalog")');
 forbidText("src/lib/sound.js", sound, "media.base44.com");
 requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListener("scroll", schedule, { passive: true })');
 requireText("src/components/JobsWidget.jsx", jobs, "appearanceRef");
