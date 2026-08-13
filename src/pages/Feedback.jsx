@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { lazy, startTransition, Suspense, useDeferredValue, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Navigate } from "react-router-dom";
 import PageNav from "@/components/PageNav";
 import { useAuth } from "@/lib/AuthContext";
 import { Star, Bug, CheckCircle2, Eye, Loader2, BarChart3, Trash2, Archive } from "lucide-react";
-import AnalyticsTab from "@/components/AnalyticsTab";
-import PasswordModal from "@/components/PasswordModal";
+const AnalyticsTab = lazy(() => import("@/components/AnalyticsTab"));
+const PasswordModal = lazy(() => import("@/components/PasswordModal"));
 
 export default function Feedback() {
   const { user } = useAuth();
@@ -24,6 +24,7 @@ export default function Feedback() {
   const { data: members = [] } = useQuery({
     queryKey: ["members"],
     queryFn: () => base44.entities.Member.list("name", 200),
+    enabled: filter === "analytics",
   });
 
   const updateMutation = useMutation({
@@ -46,11 +47,12 @@ export default function Feedback() {
 
   if (!isAdmin) return <Navigate to="/home" replace />;
 
-  const filtered = filter === "archived"
+  const deferredFilter = useDeferredValue(filter);
+  const filtered = useMemo(() => deferredFilter === "archived"
     ? feedback.filter(f => f.status === "archived")
-    : filter === "all"
+    : deferredFilter === "all"
       ? feedback.filter(f => f.status !== "archived")
-      : feedback.filter(f => f.type === filter && f.status !== "archived");
+      : feedback.filter(f => f.type === deferredFilter && f.status !== "archived"), [deferredFilter, feedback]);
 
   const statusColors = {
     new: "bg-blue-100 text-blue-700",
@@ -80,7 +82,7 @@ export default function Feedback() {
 
         <div className="mobile-horizontal-scroll mb-6 flex w-full gap-1 overflow-x-auto border border-foreground/15 bg-card p-1 sm:w-fit sm:flex-wrap sm:overflow-visible">
           {["all", "feedback", "bug", "archived", "analytics"].map(f => (
-            <button key={f} onClick={() => setFilter(f)}
+            <button key={f} onClick={() => startTransition(() => setFilter(f))}
               className={`flex shrink-0 items-center gap-1.5 px-4 py-2 tech-label transition-colors ${filter === f ? "bg-foreground text-bone" : "text-muted-foreground hover:bg-foreground/5"}`}>
               {f === "all" ? "ALL" : f === "feedback" ? "FEEDBACK" : f === "bug" ? "BUGS" : f === "archived" ? "ARCHIVED" : <><BarChart3 className="w-3.5 h-3.5" /> ANALYTICS</>}
             </button>
@@ -88,7 +90,9 @@ export default function Feedback() {
         </div>
 
         {filter === "analytics" ? (
-          <AnalyticsTab feedback={feedback} members={members} />
+          <Suspense fallback={<div className="widget-loading-shell" style={{ "--widget-fallback-height": "520px" }} aria-hidden />}>
+            <AnalyticsTab feedback={feedback} members={members} />
+          </Suspense>
         ) : isLoading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-[#951E3A]" />
@@ -98,7 +102,7 @@ export default function Feedback() {
         ) : (
           <div className="space-y-3">
             {filtered.map(f => (
-              <div key={f.id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <div key={f.id} className="perf-list-item bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-start gap-3">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${f.type === "feedback" ? "bg-amber-50" : "bg-red-50"}`}>
                     {f.type === "feedback" ? <Star className="w-4 h-4 text-amber-500" /> : <Bug className="w-4 h-4 text-red-500" />}
@@ -156,9 +160,13 @@ export default function Feedback() {
           </div>
         )}
       </main>
-      <PasswordModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)}
-        onSuccess={() => { if (deleteTarget) deleteMutation.mutate(deleteTarget.id); }}
-        title="Delete Entry" />
+      {deleteTarget && (
+        <Suspense fallback={null}>
+          <PasswordModal open onClose={() => setDeleteTarget(null)}
+            onSuccess={() => { if (deleteTarget) deleteMutation.mutate(deleteTarget.id); }}
+            title="Delete Entry" />
+        </Suspense>
+      )}
     </div>
   );
 }
