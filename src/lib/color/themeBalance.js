@@ -6,8 +6,8 @@
  * roles such as primary/secondary/accent, member badges and legacy accent slots.
  */
 
-const HUE_CLUSTER_DEGREES = 18;
-const NEUTRAL_SATURATION = 16;
+const HUE_CLUSTER_DEGREES = 24;
+const NEUTRAL_SATURATION = 25;
 
 function normalizeHex(value) {
     const hex = value.trim().toLowerCase();
