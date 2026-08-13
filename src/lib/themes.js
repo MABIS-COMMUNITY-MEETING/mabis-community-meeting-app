@@ -571,21 +571,21 @@ export function deleteSavedTheme(name) {
 
 // ── Fonts ──
 // Commercial families are never redistributed: they resolve to a user's own
-// licensed local copy. GNU FreeSerif is the embedded default; Torrefarfan, Go,
-// Iosevka, Lilex and the libre catalogue remain selectable. UnifontEX is isolated to
-// explicitly marked Japanese and Chinese text; GNU FreeSerif handles Thai.
+// licensed local copy. GNU FreeMono is the embedded default; GNU FreeSerif,
+// Torrefarfan, Go, Iosevka, Lilex and the libre catalogue remain selectable.
+// UnifontEX handles marked Japanese and Chinese text; GNU FreeSerif handles Thai.
 export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International School";
 
 const REQUESTED_FONTS = [
   {
-    key: "gnu-free-serif",
-    name: "GNU FreeSerif",
-    detail: "Default · embedded GNU FreeFont serif family",
+    key: "gnu-free-mono",
+    name: "GNU FreeMono",
+    detail: "Default · embedded GNU FreeFont monospaced family",
     source: "Featured",
-    family: "GNUFreeSerifUI",
-    heading: "'GNUFreeSerifUI'",
-    body: "'GNUFreeSerifUI'",
-    mono: "'GNUFreeSerifUI'",
+    family: "GNUFreeMonoUI",
+    heading: "'GNUFreeMonoUI'",
+    body: "'GNUFreeMonoUI'",
+    mono: "'GNUFreeMonoUI'",
     localOnly: false,
     featured: true,
   },
@@ -626,14 +626,14 @@ const REQUESTED_FONTS = [
     featured: true,
   },
   {
-    key: "gnu-free-mono",
-    name: "GNU FreeMono",
-    detail: "Embedded GNU FreeFont monospaced family",
+    key: "gnu-free-serif",
+    name: "GNU FreeSerif",
+    detail: "Embedded GNU FreeFont serif family",
     source: "Featured",
-    family: "GNUFreeMonoUI",
-    heading: "'GNUFreeMonoUI'",
-    body: "'GNUFreeMonoUI'",
-    mono: "'GNUFreeMonoUI'",
+    family: "GNUFreeSerifUI",
+    heading: "'GNUFreeSerifUI'",
+    body: "'GNUFreeSerifUI'",
+    mono: "'GNUFreeSerifUI'",
     localOnly: false,
     featured: true,
   },
@@ -759,15 +759,15 @@ export function applyFont(key) {
 
 export function getStoredFont() {
   const migration = localStorage.getItem("mabis-font-default-version");
-  if (migration !== "gnu-free-serif-v1") {
+  if (migration !== "gnu-free-mono-v1") {
     const now = String(Date.now());
-    localStorage.setItem("mabis-font-default-version", "gnu-free-serif-v1");
-    localStorage.setItem("mabis-font-picker-version", "6");
+    localStorage.setItem("mabis-font-default-version", "gnu-free-mono-v1");
+    localStorage.setItem("mabis-font-picker-version", "7");
     localStorage.setItem("mabis-font-updated-at", now);
-    localStorage.setItem("mabis-font", "gnu-free-serif");
-    return "gnu-free-serif";
+    localStorage.setItem("mabis-font", "gnu-free-mono");
+    return "gnu-free-mono";
   }
 
   const stored = localStorage.getItem("mabis-font");
-  return FONTS.some((font) => font.key === stored) ? stored : "gnu-free-serif";
+  return FONTS.some((font) => font.key === stored) ? stored : "gnu-free-mono";
 }
