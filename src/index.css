@@ -153,6 +153,41 @@
   src: url('/fonts/gnu-freefont/FreeSerifBoldItalic.woff2?v=2') format('woff2');
 }
 
+/* Thai-only alias. Appending this family to every selectable UI stack gives
+   Thai an automatic GNU FreeSerif fallback without touching Latin glyphs. */
+@font-face {
+  font-family: 'GNUFreeSerifThai';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSerif.woff2?v=2') format('woff2');
+  unicode-range: U+0E00-0E7F;
+}
+@font-face {
+  font-family: 'GNUFreeSerifThai';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSerifBold.woff2?v=2') format('woff2');
+  unicode-range: U+0E00-0E7F;
+}
+@font-face {
+  font-family: 'GNUFreeSerifThai';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/gnu-freefont/FreeSerifItalic.woff2?v=2') format('woff2');
+  unicode-range: U+0E00-0E7F;
+}
+@font-face {
+  font-family: 'GNUFreeSerifThai';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/gnu-freefont/FreeSerifBoldItalic.woff2?v=2') format('woff2');
+  unicode-range: U+0E00-0E7F;
+}
+
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: normal;
@@ -221,12 +256,12 @@
     --ink: 222 22% 8%;
     --bone: 42 34% 96%;
 
-    --font-heading: 'GNUFreeSerifUI';
-    --font-body: 'GNUFreeSerifUI';
-    --font-display: 'GNUFreeSerifUI';
-    --font-mono: 'GNUFreeSerifUI';
+    --font-heading: 'GNUFreeSerifUI', 'GNUFreeSerifThai';
+    --font-body: 'GNUFreeSerifUI', 'GNUFreeSerifThai';
+    --font-display: 'GNUFreeSerifUI', 'GNUFreeSerifThai';
+    --font-mono: 'GNUFreeSerifUI', 'GNUFreeSerifThai';
     --font-multilingual: 'UnifontEX';
-    --font-thai: 'GNUFreeSerifUI';
+    --font-thai: 'GNUFreeSerifThai';
     --role-student: 348 74% 30%;
     --role-teacher: 165 55% 32%;
     --role-chair: 38 78% 48%;
