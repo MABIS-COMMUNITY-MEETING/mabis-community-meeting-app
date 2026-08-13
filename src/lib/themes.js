@@ -734,8 +734,9 @@ export function applyFont(key) {
   let loadPromise = Promise.resolve([]);
   if (document.fonts) {
     const bodyLoad = document.fonts.load(`400 16px ${font.body}`, FONT_PREVIEW_TEXT);
+    const headingLoad = document.fonts.load(`700 16px ${font.heading}`, FONT_PREVIEW_TEXT);
     const monoLoad = document.fonts.load(`400 16px ${font.mono}`, "MABIS 0123456789");
-    loadPromise = Promise.all([bodyLoad, monoLoad]).then((loaded) => {
+    loadPromise = Promise.all([bodyLoad, headingLoad, monoLoad]).then((loaded) => {
       if (root.dataset.uiFont === font.key) {
         root.dataset.uiFontLoaded = font.key;
         window.dispatchEvent(new CustomEvent("fontRendered", { detail: { key: font.key } }));
