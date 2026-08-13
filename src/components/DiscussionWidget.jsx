@@ -97,7 +97,7 @@ function TopicItem({
 
   if (isEditing) {
     return (
-      <div className="flex items-start gap-3 rounded-xl border-2 border-[#951E3A]/35 bg-[#951E3A]/[0.025] p-4 shadow-sm">
+      <div className="flex items-start gap-2 rounded-xl border-2 border-[#951E3A]/35 bg-[#951E3A]/[0.025] p-3 shadow-sm sm:gap-3 sm:p-4">
         <div className={`w-1 self-stretch rounded-full shrink-0 ${PRIORITY_DOT[parseInt(editPriority) || 3]}`} />
         <div className="min-w-0 flex-1 space-y-4">
           <div className="flex items-center justify-between gap-3">
@@ -181,7 +181,7 @@ function TopicItem({
   }
 
   return (
-    <div className={`flex items-start gap-3 p-4 rounded-xl border transition-all group
+    <div className={`group flex items-start gap-2 rounded-xl border p-3 transition-all sm:gap-3 sm:p-4
       ${topic.completed ? "bg-gray-50 border-gray-100 opacity-60" : "bg-white border-gray-200 hover:border-[#951E3A]/20"}`}>
       {/* Priority color bar */}
       <div className={`w-1 self-stretch rounded-full shrink-0 ${PRIORITY_DOT[priority]}`} />
@@ -309,13 +309,13 @@ function AttendancePanel({ members, weekLabel }) {
   const present = allPeople.filter(m => isPresent(m)).length;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50">
+    <div className="mabis-widget bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <div className="flex flex-col gap-2 border-b border-gray-100 bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div className="flex items-center gap-2">
           <UserCheck className="w-4 h-4 text-[#951E3A]" />
           <span className="font-semibold text-sm text-gray-800">Attendance</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-gray-500 font-medium">{present} / {allPeople.length} present</span>
           <button onClick={() => setShowAdd(s => !s)}
             className="flex items-center gap-1 text-[11px] font-semibold text-[#951E3A] hover:bg-[#951E3A]/5 px-2 py-1 rounded-lg border border-[#951E3A]/30">
@@ -330,9 +330,9 @@ function AttendancePanel({ members, weekLabel }) {
           <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-gray-50 border border-gray-200 rounded-xl">
             <Input placeholder="Name..." value={newName} onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddPerson()}
-              className="rounded-lg border-gray-200 bg-white h-9 flex-1 min-w-[140px] text-sm" />
+              className="rounded-lg border-gray-200 bg-white h-9 w-full flex-1 min-w-0 text-sm sm:min-w-[140px]" />
             <Select value={newKind} onValueChange={setNewKind}>
-              <SelectTrigger className="h-9 w-28 rounded-lg bg-white text-sm"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-full rounded-lg bg-white text-sm sm:w-28"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="student">Student</SelectItem>
                 <SelectItem value="teacher">Teacher</SelectItem>
@@ -342,7 +342,7 @@ function AttendancePanel({ members, weekLabel }) {
             </Select>
             {newKind === "other" && (
               <Input placeholder="Type (e.g. Parent)..." value={newOtherType} onChange={(e) => setNewOtherType(e.target.value)}
-                className="rounded-lg border-gray-200 bg-white h-9 w-32 text-sm" />
+                className="rounded-lg border-gray-200 bg-white h-9 w-full text-sm sm:w-32" />
             )}
             <Button onClick={handleAddPerson} disabled={!newName.trim()}
               className="bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg h-9 text-sm">Add</Button>
@@ -378,8 +378,8 @@ function AttendancePanel({ members, weekLabel }) {
             </p>
 
             {chairAbsent && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-orange-700 font-medium w-28 shrink-0">Replacement Chair:</span>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <span className="text-xs text-orange-700 font-medium sm:w-28 sm:shrink-0">Replacement Chair:</span>
                 <Select value={replacementChair} onValueChange={setReplacementChair}>
                   <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-white border-orange-200">
                     <SelectValue placeholder="Pick someone..." />
@@ -394,8 +394,8 @@ function AttendancePanel({ members, weekLabel }) {
               </div>
             )}
             {minutesAbsent && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-orange-700 font-medium w-28 shrink-0">Replacement Minutes:</span>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <span className="text-xs text-orange-700 font-medium sm:w-28 sm:shrink-0">Replacement Minutes:</span>
                 <Select value={replacementMinutes} onValueChange={setReplacementMinutes}>
                   <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-white border-orange-200">
                     <SelectValue placeholder="Pick someone..." />
