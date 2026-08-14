@@ -20,9 +20,10 @@ Always preserve unless explicitly instructed otherwise:
 - contemporary Japanese editorial composition
 - visible outlines, thin rules, crisp edges, compact controls, and restrained radii
 - Preserve the Home editorial normalization in `src/styles/editorial-home.css`: neutral ruled content planes, restrained radii, no widget elevation, and edge-to-edge mobile modules.
-- GNU FreeMono as the default UI font
+- GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.
 - GNU FreeSerif as the Thai-only fallback
-- UnifontEX only for explicitly marked Japanese and Chinese
+- Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.
+- The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.
 - semantic color and font variables
 - first-paint font loading without flashes
 - Apple-style optical liquid glass only on floating control planes
