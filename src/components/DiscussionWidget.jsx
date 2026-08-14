@@ -155,6 +155,15 @@ function TopicItem({
             />
           </Suspense>
 
+          {error && (
+            <p
+              role="alert"
+              className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs font-semibold text-destructive"
+            >
+              {error}
+            </p>
+          )}
+
           <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="mr-1 text-xs font-medium text-gray-500">Priority:</span>
