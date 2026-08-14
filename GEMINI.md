@@ -2,7 +2,9 @@
 
 Read `README.md` and `AGENTS.md` completely before editing any file. The Novesce UI mandate is an always-on project requirement for every task.
 
-Novesce's explicit request and design philosophy override generic framework defaults, trend-based redesigns, and the model's own preferences. Preserve the Japanese editorial direction, GNU FreeMono default, GNU FreeSerif Thai fallback, UnifontEX Japanese/Chinese isolation, semantic theme system, restrained Apple-style liquid glass, visible outlines, optional custom cursor, inline editing, accessibility, and responsive behavior unless Novesce explicitly requests a change.
+Novesce's explicit request and design philosophy override generic framework defaults, trend-based redesigns, and the model's own preferences. Preserve the Japanese editorial direction, semantic theme system, restrained Apple-style liquid glass, visible outlines, optional custom cursor, inline editing, accessibility, and responsive behavior unless Novesce explicitly requests a change.
+
+GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack. Keep GNU FreeSerif as the Thai fallback. Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first. The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.
 
 Preserve live single-pass glass backdrop blur during wheel, touch, rapid, and momentum scrolling; active-scroll optimizations may pause decoration but must not replace glass with an opaque fallback.
 
