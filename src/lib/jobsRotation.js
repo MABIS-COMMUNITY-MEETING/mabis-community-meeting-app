@@ -1,6 +1,7 @@
 import {
   addDays,
   addMonths,
+  addWeeks,
   endOfMonth,
   format,
   getDay,
@@ -61,6 +62,28 @@ export function getCurrentWeekLabel(date = new Date()) {
   return `${getYear(friday)}-W${String(getISOWeek(friday)).padStart(2, "0")}`;
 }
 
+export function weekLabelToDate(label) {
+  const [year, weekPart] = label.split("-W");
+  const week = Number.parseInt(weekPart, 10);
+  const jan4 = new Date(Number.parseInt(year, 10), 0, 4);
+  const monday = new Date(jan4);
+  monday.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
+  return addDays(monday, (week - 1) * 7 + 4);
+}
+
+export function formatWeekLabel(label) {
+  try {
+    return format(weekLabelToDate(label), "d MMMM yyyy");
+  } catch {
+    return label;
+  }
+}
+
+export function getNextWeekLabel(label) {
+  const next = addWeeks(weekLabelToDate(label), 1);
+  return `${getYear(next)}-W${String(getISOWeek(next)).padStart(2, "0")}`;
+}
+
 export function getVisibleWeekDates(monthLabel, referenceDate = new Date()) {
   const monday = startOfWeek(referenceDate, { weekStartsOn: 1 });
   return WEEKDAYS.map((day, index) => {
@@ -112,7 +135,15 @@ export function timeKeeperKeysForYear(assignments, year) {
   );
 }
 
-export function assignmentBelongsToMonth(assignment, monthLabel, currentWeekLabel) {
-  if (assignment?.month_label) return assignment.month_label === monthLabel;
-  return assignment?.week_label === currentWeekLabel;
+export function jobPeriod(jobOrAssignment) {
+  if (jobOrAssignment?.assignment_period === "monthly" || jobOrAssignment?.period === "monthly") return "monthly";
+  if (jobOrAssignment?.assignment_period === "weekly" || jobOrAssignment?.period === "weekly") return "weekly";
+  const title = jobOrAssignment?.job_title || jobOrAssignment?.label || jobOrAssignment || "";
+  return isTimeKeeperJob(title) ? "monthly" : "weekly";
+}
+
+export function assignmentIsCurrent(assignment, weekLabel, monthLabel) {
+  return jobPeriod(assignment) === "monthly"
+    ? assignment?.month_label === monthLabel || (!assignment?.month_label && assignment?.week_label === weekLabel)
+    : assignment?.week_label === weekLabel;
 }
