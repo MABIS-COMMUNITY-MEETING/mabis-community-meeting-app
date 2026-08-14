@@ -757,13 +757,12 @@ body .text-gray-300, body .text-gray-400, body .text-gray-500 { color: hsl(var(-
    colour arrives as edge light, hairlines and tiny details on interactive
    parts, while surfaces stay neutral and the page keeps its whitespace. */
 
-/* palette transition — colour travels through the interface instead of snapping */
-body.theme-shifting,
-body.theme-shifting *:not(.cursor-dot):not(.cursor-ring):not(.cursor-trail) {
-  transition: background-color .62s cubic-bezier(.16,1,.3,1),
-              border-color .62s cubic-bezier(.16,1,.3,1),
-              color .5s cubic-bezier(.16,1,.3,1),
-              fill .5s ease, stroke .5s ease, box-shadow .62s ease !important;
+/* Theme selection is one atomic paint, not a page-wide transition fan-out. */
+html.theme-committing,
+html.theme-committing *,
+html.theme-committing *::before,
+html.theme-committing *::after {
+  transition: none !important;
 }
 
 body.pride-active .cursor-dot {
