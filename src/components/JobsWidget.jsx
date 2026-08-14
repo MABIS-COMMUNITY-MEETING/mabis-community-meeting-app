@@ -75,6 +75,7 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
   const rotationRef = useRef(0);
   const spinningRef = useRef(false);
   const rafRef = useRef(null);
+  const appearanceRafRef = useRef(null);
   const appearanceRef = useRef({
     primary: "#951E3A",
     secondary: "#EACE54",
@@ -175,17 +176,22 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
     refreshAppearance();
     drawWheel(rotationRef.current);
     const redraw = () => drawWheel(rotationRef.current);
-    const refreshAndRedraw = () => {
-      refreshAppearance();
-      redraw();
+    const scheduleAppearanceRedraw = () => {
+      if (appearanceRafRef.current) return;
+      appearanceRafRef.current = requestAnimationFrame(() => {
+        appearanceRafRef.current = null;
+        refreshAppearance();
+        redraw();
+      });
     };
-    window.addEventListener("themeChanged", refreshAndRedraw);
-    window.addEventListener("fontChanged", refreshAndRedraw);
+    window.addEventListener("themeChanged", scheduleAppearanceRedraw);
+    window.addEventListener("fontChanged", scheduleAppearanceRedraw);
     window.addEventListener("resize", redraw, { passive: true });
     return () => {
-      window.removeEventListener("themeChanged", refreshAndRedraw);
-      window.removeEventListener("fontChanged", refreshAndRedraw);
+      window.removeEventListener("themeChanged", scheduleAppearanceRedraw);
+      window.removeEventListener("fontChanged", scheduleAppearanceRedraw);
       window.removeEventListener("resize", redraw);
+      if (appearanceRafRef.current) cancelAnimationFrame(appearanceRafRef.current);
     };
   }, [drawWheel, refreshAppearance]);
 
