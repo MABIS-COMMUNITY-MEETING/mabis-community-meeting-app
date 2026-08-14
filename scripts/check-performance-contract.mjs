@@ -77,7 +77,8 @@ requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const INITIAL_TH
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const ThemeOption = memo");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "new IntersectionObserver");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "THEME_ENTRIES.slice(0, themeLimit)");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "stripe: paletteStripe(theme.swatches)");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const THEME_STRIPES = new WeakMap();");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "style={{ background: paletteStripe(theme) }}");
 forbidText("src/components/ThemeSwitcher.jsx", themeSwitcher, "theme.swatches.map");
 requireText("src/lib/motion-preference.js", motionPreferenceLib, 'MOTION_STORAGE_KEY = "mabis_animations_enabled"');
 requireText("src/lib/motion-preference.js", motionPreferenceLib, 'localStorage.getItem(MOTION_STORAGE_KEY) === "false"');
