@@ -24,6 +24,17 @@ module.exports = {
                 ring: 'hsl(var(--ring))',
                 ink: 'hsl(var(--ink))',
                 bone: 'hsl(var(--bone))',
+                // Role identity hues already defined in index.css. Exposed as
+                // utilities so components stop reaching for raw amber/blue/green
+                // to distinguish a chair from a minutes taker from a teacher.
+                role: {
+                    student: 'hsl(var(--role-student))',
+                    teacher: 'hsl(var(--role-teacher))',
+                    chair: 'hsl(var(--role-chair))',
+                    minutes: 'hsl(var(--role-minutes))',
+                    admin: 'hsl(var(--role-admin))',
+                    editor: 'hsl(var(--role-editor))',
+                },
                 mabis: 'hsl(var(--primary))',
                 golden: 'hsl(var(--secondary))',
             },
