@@ -67,7 +67,15 @@ export default function JobCard({ job, onStatusChange, index }) {
           className="w-full mt-4 rounded-xl"
           onClick={() => onStatusChange(job, nextStatus[job.status])}
         >
-          {job.status === "assigned" ? "▶️ Start" : "✅ Complete"}
+          {job.status === "assigned" ? (
+            <>
+              <Play className="mr-1.5 h-3.5 w-3.5" /> Start
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Complete
+            </>
+          )}
         </Button>
       )}
     </motion.div>
