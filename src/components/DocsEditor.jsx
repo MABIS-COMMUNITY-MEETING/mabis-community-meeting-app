@@ -79,18 +79,34 @@ const SIZE_PRESETS = [8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96];
 const LINE_HEIGHTS = ["1", "1.15", "1.5", "2"];
 const ZOOM_LEVELS = [75, 90, 100, 110, 125, 150];
 
+// Ink and highlight are applied as CLASSES, not inline styles.
+//
+// The previous approach wrote style="color: hsl(var(--editor-ink-primary))"
+// and relied on the guards in index.css
+//   .theme-rich-text [style*="color"]:not([style*="--editor-ink"]) { … !important }
+// to spare it. That guard substring-matches the *serialised* style attribute,
+// so any browser normalisation of the var() expression makes it miss — and the
+// !important rule then repaints the user's colour back to the default ink.
+// A class cannot be normalised away, and it keeps the colour bound to the
+// theme token, so every one of the 133 themes stays contrast-correct.
+const Parchment = Quill.import("parchment");
+const ThemeInkClass = new Parchment.Attributor.Class("themeInk", "ql-ink", { scope: Parchment.Scope.INLINE });
+const ThemeHighlightClass = new Parchment.Attributor.Class("themeHighlight", "ql-hl", { scope: Parchment.Scope.INLINE });
+Quill.register(ThemeInkClass, true);
+Quill.register(ThemeHighlightClass, true);
+
 const THEME_TEXT_COLORS = [
-  { label: "Default text", token: null },
-  { label: "Primary theme ink", token: "--editor-ink-primary" },
-  { label: "Secondary theme ink", token: "--editor-ink-secondary" },
-  { label: "Accent theme ink", token: "--editor-ink-accent" },
+  { label: "Default text", value: null, token: null },
+  { label: "Primary theme ink", value: "primary", token: "--editor-ink-primary" },
+  { label: "Secondary theme ink", value: "secondary", token: "--editor-ink-secondary" },
+  { label: "Accent theme ink", value: "accent", token: "--editor-ink-accent" },
 ];
 
 const THEME_HIGHLIGHTS = [
-  { label: "No highlight", fill: null, foreground: null },
-  { label: "Primary theme highlight", fill: "--editor-highlight-primary", foreground: "--editor-highlight-primary-foreground" },
-  { label: "Secondary theme highlight", fill: "--editor-highlight-secondary", foreground: "--editor-highlight-secondary-foreground" },
-  { label: "Accent theme highlight", fill: "--editor-highlight-accent", foreground: "--editor-highlight-accent-foreground" },
+  { label: "No highlight", value: null, token: null },
+  { label: "Primary theme highlight", value: "primary", token: "--editor-highlight-primary" },
+  { label: "Secondary theme highlight", value: "secondary", token: "--editor-highlight-secondary" },
+  { label: "Accent theme highlight", value: "accent", token: "--editor-highlight-accent" },
 ];
 
 const themeColor = (token) => token ? `hsl(var(${token}))` : false;
@@ -349,8 +365,8 @@ export default function DocsEditor({
         header: format.header || false,
         align: format.align || false,
         list: format.list || false,
-        color: format.color || false,
-        background: format.background || false,
+        color: format.themeInk || false,
+        background: format.themeHighlight || false,
       });
       if (format.size) {
         const parsed = Number.parseInt(format.size, 10);
@@ -424,12 +440,13 @@ export default function DocsEditor({
     syncFormats();
   };
 
+  // The highlight class carries its own readable foreground in CSS, so there is
+  // no second colour format to keep in sync.
   const applyThemeHighlight = (highlight) => {
     const quill = getQuill();
     if (!quill) return;
     quill.focus();
-    quill.format("background", themeColor(highlight.fill), "user");
-    quill.format("color", themeColor(highlight.foreground), "user");
+    quill.format("themeHighlight", highlight.value || false, "user");
     syncFormats();
   };
 
@@ -552,8 +569,8 @@ export default function DocsEditor({
         italic: format.italic || false,
         underline: format.underline || false,
         strike: format.strike || false,
-        color: format.color || false,
-        background: format.background || false,
+        color: format.themeInk || false,
+        background: format.themeHighlight || false,
         size: format.size || false,
         font: format.font || false,
       };
@@ -897,10 +914,10 @@ export default function DocsEditor({
               <MenuItem
                 key={color.label}
                 label={color.label}
-                active={color.token ? formats.color === themeColor(color.token) : !formats.color}
+                active={color.value ? formats.color === color.value : !formats.color}
                 icon={<span className="docs-palette-swatch" style={{ background: color.token ? themeColor(color.token) : "hsl(var(--card-foreground))" }} />}
                 onClick={() => {
-                  focusAndFormat("color", themeColor(color.token));
+                  focusAndFormat("themeInk", color.value || false);
                   close();
                 }}
               />
@@ -922,8 +939,8 @@ export default function DocsEditor({
               <MenuItem
                 key={highlight.label}
                 label={highlight.label}
-                active={highlight.fill ? formats.background === themeColor(highlight.fill) : !formats.background}
-                icon={<span className="docs-palette-swatch" style={{ background: highlight.fill ? themeColor(highlight.fill) : "transparent" }} />}
+                active={highlight.value ? formats.background === highlight.value : !formats.background}
+                icon={<span className="docs-palette-swatch" style={{ background: highlight.token ? themeColor(highlight.token) : "transparent" }} />}
                 onClick={() => {
                   applyThemeHighlight(highlight);
                   close();
