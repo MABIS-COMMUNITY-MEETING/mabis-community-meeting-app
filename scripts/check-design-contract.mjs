@@ -25,6 +25,14 @@ function forbidText(relativePath, content, forbiddenText) {
     }
 }
 
+function listSourceFiles(relativeDir) {
+    const absoluteDir = path.join(root, relativeDir);
+    return fs.readdirSync(absoluteDir, { withFileTypes: true }).flatMap((entry) => {
+        const relativePath = path.join(relativeDir, entry.name);
+        return entry.isDirectory() ? listSourceFiles(relativePath) : [relativePath];
+    });
+}
+
 const readme = read("README.md");
 const agents = read("AGENTS.md");
 const claude = read("CLAUDE.md");
@@ -46,6 +54,9 @@ const cjkFontLoader = read("src/components/CjkFontLoader.jsx");
 const login = read("src/pages/Login.jsx");
 const app = read("src/App.jsx");
 const routeLoaders = read("src/lib/routeLoaders.js");
+const openMoji = read("src/components/OpenMoji.jsx");
+const team = read("src/pages/Team.jsx");
+const openMojiLicense = read("public/openmoji/LICENSE.txt");
 
 const readmeRules = [
     "## Mandatory rule for AI contributors",
@@ -55,6 +66,8 @@ const readmeRules = [
     "Thai falls back to the Thai-only **GNU FreeSerif** face",
     "Explicitly marked Chinese, Japanese, and Korean text uses **Maple Mono** first",
     "The public authentication surface is Google-only",
+    "### Emoji and iconography",
+    "All app-authored emoji must use pinned, production-ready OpenMoji color SVGs",
     "Apple-style optical liquid glass",
     "No romaji decoration",
     "Preserve outlines and borders",
@@ -116,10 +129,12 @@ for (const [relativePath, content] of editorialContractFiles) {
 const fontStackRule = "GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.";
 const mapleCjkRule = "Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.";
 const googleAuthRule = "The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.";
+const openMojiRule = "All app-authored emoji must use pinned, production-ready OpenMoji color SVGs; do not rely on platform-native emoji glyphs.";
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, fontStackRule);
     requireText(relativePath, content, mapleCjkRule);
     requireText(relativePath, content, googleAuthRule);
+    requireText(relativePath, content, openMojiRule);
 }
 
 requireText("CLAUDE.md", claude, "@README.md");
@@ -151,6 +166,26 @@ requireText("src/App.jsx", app, '<Route path="/reset-password" element={<Navigat
 forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/Register")');
 forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/ForgotPassword")');
 forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/ResetPassword")');
+requireText("src/components/OpenMoji.jsx", openMoji, 'OPENMOJI_VERSION = "17.0.0"');
+requireText("src/components/OpenMoji.jsx", openMoji, 'aria-hidden={label ? undefined : true}');
+requireText("src/pages/Team.jsx", team, 'import OpenMoji from "@/components/OpenMoji"');
+requireText("src/pages/Team.jsx", team, '<OpenMoji hexcode={level.openMoji}');
+requireText("public/openmoji/LICENSE.txt", openMojiLicense, "Attribution-ShareAlike 4.0 International");
+
+const openMojiAssets = ["1F331", "2694", "1F6E1", "1F3C5", "1F451", "1F525"];
+for (const hexcode of openMojiAssets) {
+    const assetPath = `public/openmoji/17.0.0/${hexcode}.svg`;
+    if (!fs.existsSync(path.join(root, assetPath))) failures.push(`Missing pinned OpenMoji asset: ${assetPath}`);
+}
+
+const nativeEmojiPattern = /\p{Extended_Pictographic}/u;
+for (const sourceFile of listSourceFiles("src").filter((file) => /\.(?:js|jsx|ts|tsx)$/.test(file))) {
+    const source = fs.readFileSync(path.join(root, sourceFile), "utf8");
+    if (nativeEmojiPattern.test(source)) {
+        failures.push(`${sourceFile} contains a platform-native emoji glyph; use OpenMoji.jsx with a pinned SVG asset`);
+    }
+}
+
 requireText("src/styles/editorial-home.css", editorialHomeCss, ".editorial-home .mabis-widget-header");
 requireText("src/main.jsx", main, "import '@/styles/editorial-home.css'");
 requireText("src/pages/Home.jsx", home, 'className="editorial-home min-h-screen');
