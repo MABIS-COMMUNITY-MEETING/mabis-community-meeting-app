@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/AuthContext";
 import TopicCard from "@/components/topics/TopicCard";
+import OpenMoji from "@/components/OpenMoji";
 
 export default function Topics() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -101,9 +102,24 @@ export default function Topics() {
       <Tabs value={filter} onValueChange={setFilter}>
         <TabsList className="bg-secondary rounded-xl">
           <TabsTrigger value="all" className="rounded-lg">All</TabsTrigger>
-          <TabsTrigger value="pending" className="rounded-lg">🔥 Pending</TabsTrigger>
-          <TabsTrigger value="discussed" className="rounded-lg">✅ Discussed</TabsTrigger>
-          <TabsTrigger value="deferred" className="rounded-lg">⏳ Deferred</TabsTrigger>
+          <TabsTrigger value="pending" className="rounded-lg">
+            <span className="flex items-center gap-1.5">
+              <OpenMoji hexcode="1F525" className="h-4 w-4" />
+              Pending
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="discussed" className="rounded-lg">
+            <span className="flex items-center gap-1.5">
+              <OpenMoji hexcode="2705" className="h-4 w-4" />
+              Discussed
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="deferred" className="rounded-lg">
+            <span className="flex items-center gap-1.5">
+              <OpenMoji hexcode="23F3" className="h-4 w-4" />
+              Deferred
+            </span>
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
