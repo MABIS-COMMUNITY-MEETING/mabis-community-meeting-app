@@ -61,37 +61,37 @@ export default function AnalyticsTab({ feedback, members = [] }) {
     <div className="space-y-6">
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+        <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
-            <Eye className="w-4 h-4 text-[#951E3A]" />
-            <p className="text-xs font-bold text-gray-400 uppercase">Page Visits</p>
+            <Eye className="w-4 h-4 text-primary" />
+            <p className="text-xs font-bold text-muted-foreground uppercase">Page Visits</p>
           </div>
-          <p className="text-3xl font-display font-bold text-gray-800">{visits}</p>
+          <p className="text-3xl font-display font-bold text-foreground">{visits}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+        <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <Star className="w-4 h-4 text-amber-500" />
-            <p className="text-xs font-bold text-gray-400 uppercase">Avg Rating</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase">Avg Rating</p>
           </div>
-          <p className="text-3xl font-display font-bold text-gray-800">
-            {avgRating}<span className="text-base text-gray-400">/10</span>
+          <p className="text-3xl font-display font-bold text-foreground">
+            {avgRating}<span className="text-base text-muted-foreground">/10</span>
           </p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+        <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <MessageSquare className="w-4 h-4 text-blue-500" />
-            <p className="text-xs font-bold text-gray-400 uppercase">Feedback</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase">Feedback</p>
           </div>
-          <p className="text-3xl font-display font-bold text-gray-800">{feedbackCount}</p>
+          <p className="text-3xl font-display font-bold text-foreground">{feedbackCount}</p>
           <p className="text-[10px] text-red-500 mt-0.5">{bugCount} bugs</p>
         </div>
       </div>
 
       {/* Rating distribution chart */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-        <p className="text-sm font-bold text-gray-700 mb-4">Rating Distribution</p>
+      <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
+        <p className="text-sm font-bold text-foreground mb-4">Rating Distribution</p>
         {ratedFeedback.length === 0 ? (
-          <p className="text-gray-400 text-sm text-center py-8">No ratings yet</p>
+          <p className="text-muted-foreground text-sm text-center py-8">No ratings yet</p>
         ) : (
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={ratingData}>
@@ -106,10 +106,10 @@ export default function AnalyticsTab({ feedback, members = [] }) {
       </div>
 
       {/* Feedback over time */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-        <p className="text-sm font-bold text-gray-700 mb-4">Feedback Activity (Last 8 Weeks)</p>
+      <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
+        <p className="text-sm font-bold text-foreground mb-4">Feedback Activity (Last 8 Weeks)</p>
         {feedback.length === 0 ? (
-          <p className="text-gray-400 text-sm text-center py-8">No feedback yet</p>
+          <p className="text-muted-foreground text-sm text-center py-8">No feedback yet</p>
         ) : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={weekData}>
@@ -124,37 +124,37 @@ export default function AnalyticsTab({ feedback, members = [] }) {
       </div>
 
       {/* Per-member breakdown */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+      <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <Users className="w-4 h-4 text-[#951E3A]" />
-          <p className="text-sm font-bold text-gray-700">Member Activity</p>
+          <Users className="w-4 h-4 text-primary" />
+          <p className="text-sm font-bold text-foreground">Member Activity</p>
         </div>
         {memberStats.length === 0 ? (
-          <p className="text-gray-400 text-sm text-center py-8">No data yet</p>
+          <p className="text-muted-foreground text-sm text-center py-8">No data yet</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left py-2 px-2 text-xs font-bold text-gray-400 uppercase">Member</th>
-                  <th className="text-center py-2 px-2 text-xs font-bold text-gray-400 uppercase">Total</th>
-                  <th className="text-center py-2 px-2 text-xs font-bold text-gray-400 uppercase">Feedback</th>
-                  <th className="text-center py-2 px-2 text-xs font-bold text-gray-400 uppercase">Bugs</th>
-                  <th className="text-center py-2 px-2 text-xs font-bold text-gray-400 uppercase">Avg Rating</th>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 px-2 text-xs font-bold text-muted-foreground uppercase">Member</th>
+                  <th className="text-center py-2 px-2 text-xs font-bold text-muted-foreground uppercase">Total</th>
+                  <th className="text-center py-2 px-2 text-xs font-bold text-muted-foreground uppercase">Feedback</th>
+                  <th className="text-center py-2 px-2 text-xs font-bold text-muted-foreground uppercase">Bugs</th>
+                  <th className="text-center py-2 px-2 text-xs font-bold text-muted-foreground uppercase">Avg Rating</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {memberStats.map(s => (
-                  <tr key={s.name} className="hover:bg-gray-50">
+                  <tr key={s.name} className="hover:bg-muted">
                     <td className="py-2 px-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-[#951E3A] flex items-center justify-center shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
                           <span className="text-white text-[9px] font-bold">{s.name[0]}</span>
                         </div>
-                        <span className="font-medium text-gray-700 text-xs">{s.name}</span>
+                        <span className="font-medium text-foreground text-xs">{s.name}</span>
                       </div>
                     </td>
-                    <td className="text-center py-2 px-2 font-bold text-gray-800">{s.total}</td>
+                    <td className="text-center py-2 px-2 font-bold text-foreground">{s.total}</td>
                     <td className="text-center py-2 px-2 text-blue-600">{s.feedback}</td>
                     <td className="text-center py-2 px-2 text-red-500">{s.bugs}</td>
                     <td className="text-center py-2 px-2 font-semibold text-amber-600">{s.avg}</td>

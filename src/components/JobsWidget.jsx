@@ -241,7 +241,7 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
       </div>
 
       <Button onClick={handleSpin} disabled={isSpinning || members.length === 0 || disabled}
-        className="bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-xl px-10 text-base font-bold w-full" size="lg">
+        className="bg-primary hover:bg-primary/90 text-white rounded-xl px-10 text-base font-bold w-full" size="lg">
         {isSpinning ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Spinning...</> : "Spin"}
       </Button>
     </div>
@@ -259,15 +259,15 @@ function WinnerBanner({ winner, jobLabel, onConfirm, onRemoveAndNext, onReject, 
         {isAdmin ? (
           <div className="flex flex-col sm:flex-row gap-2 justify-center">
             <button onClick={onConfirm} disabled={!canAssign}
-              className="flex-1 bg-white text-[#951E3A] font-bold py-2.5 px-5 rounded-xl hover:bg-[#EACE54] transition-colors text-sm disabled:cursor-not-allowed disabled:opacity-55">
+              className="flex-1 bg-card text-primary font-bold py-2.5 px-5 rounded-xl hover:bg-[#EACE54] transition-colors text-sm disabled:cursor-not-allowed disabled:opacity-55">
               {canAssign ? "Assign this job" : "Extra spin only"}
             </button>
             <button onClick={onRemoveAndNext}
-              className="flex-1 bg-white/20 hover:bg-white/30 text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm border border-white/30">
+              className="flex-1 bg-card/20 hover:bg-card/30 text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm border border-white/30">
               Remove from wheel
             </button>
             <button onClick={onReject}
-              className="flex-1 bg-white/10 hover:bg-white/20 text-white/80 font-bold py-2.5 px-5 rounded-xl transition-colors text-sm">
+              className="flex-1 bg-card/10 hover:bg-card/20 text-white/80 font-bold py-2.5 px-5 rounded-xl transition-colors text-sm">
               Re-spin
             </button>
           </div>
@@ -305,7 +305,7 @@ function DayStatus({ assignment, canEdit, onDayStatus, currentMonth }) {
             className={`min-w-9 h-9 px-1 rounded-lg text-[10px] font-bold flex items-center justify-center border-2 transition-all
               ${state === "yes" ? "bg-green-500 border-green-500 text-white"
                 : state === "no" ? "bg-red-500 border-red-500 text-white"
-                : "border-gray-200 text-gray-400 bg-white hover:border-[#951E3A]/30"}
+                : "border-border text-muted-foreground bg-card hover:border-primary/30"}
               ${canEdit ? "hover:scale-110 cursor-pointer" : "cursor-default opacity-60"}`}>
             {state === "yes" ? "✓" : state === "no" ? "✗" : compactLabel}
           </button>
@@ -318,7 +318,7 @@ function DayStatus({ assignment, canEdit, onDayStatus, currentMonth }) {
 // ─── Job Schedule Table ─────────────────────────────────────────────────────
 function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDelete, currentMonth }) {
   if (assignments.length === 0) return (
-    <p className="text-gray-400 text-sm text-center py-10">
+    <p className="text-muted-foreground text-sm text-center py-10">
       {isAdmin ? "No jobs assigned yet — spin the wheel!" : "No jobs assigned yet."}
     </p>
   );
@@ -326,14 +326,14 @@ function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDe
   const canEdit = (a) => isAdmin || (currentUser?.email && a.assigned_to_email === currentUser.email);
 
   return (
-    <div className="mobile-horizontal-scroll overflow-x-auto rounded-xl border border-gray-200">
+    <div className="mobile-horizontal-scroll overflow-x-auto rounded-xl border border-border">
       <table className="w-full min-w-[640px] text-sm">
         <thead>
-          <tr className="bg-gray-50 border-b border-gray-200">
-            <th className="text-left px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase">Job</th>
-            <th className="text-left px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase">Person</th>
-            <th className="text-center px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase">This Week</th>
-            <th className="text-center px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase">Carry</th>
+          <tr className="bg-muted border-b border-border">
+            <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase">Job</th>
+            <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase">Person</th>
+            <th className="text-center px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase">This Week</th>
+            <th className="text-center px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase">Carry</th>
             {isAdmin && <th className="w-8" />}
           </tr>
         </thead>
@@ -348,18 +348,18 @@ function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDe
             const allDone = scheduled.length > 0 && scheduled.every((day) => done.includes(day));
             const hasNotDone = notDoneDays.length > 0;
             return (
-              <tr key={a.id} className={`hover:bg-gray-50 group transition-colors ${allDone ? "bg-green-50/50" : ""} ${hasNotDone ? "bg-red-50/30" : ""}`}>
-                <td className={`px-3 py-3 font-medium text-xs ${allDone ? "text-green-600" : "text-gray-700"}`}>
+              <tr key={a.id} className={`hover:bg-muted group transition-colors ${allDone ? "bg-green-50/50" : ""} ${hasNotDone ? "bg-red-50/30" : ""}`}>
+                <td className={`px-3 py-3 font-medium text-xs ${allDone ? "text-green-600" : "text-foreground"}`}>
                   {normalizeJobTitle(a.job_title)}
                   <p className="text-[9px] text-muted-foreground mt-0.5">{monthly ? `Monthly · ${formatMonthLabel(a.month_label || currentMonth)}` : "Weekly"}</p>
                   {a.carried_over && !hasNotDone && <p className="text-[9px] text-amber-600 mt-0.5">carried over</p>}
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-6 h-6 rounded-full bg-[#951E3A] flex items-center justify-center shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
                       <span className="text-white text-[9px] font-bold">{(a.assigned_to_name || "?")[0]}</span>
                     </div>
-                    <span className="text-gray-700 text-xs">{a.assigned_to_name}</span>
+                    <span className="text-foreground text-xs">{a.assigned_to_name}</span>
                   </div>
                 </td>
                 <td className="px-3 py-3 text-center">
@@ -373,7 +373,7 @@ function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDe
                       {monthly ? "Next Month" : "Next Week"}
                     </span>
                   ) : (
-                    <span className="text-gray-300 text-xs">—</span>
+                    <span className="text-muted-foreground text-xs">—</span>
                   )}
                 </td>
                 {isAdmin && (
@@ -396,12 +396,12 @@ function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDe
 // ─── Spinning For selector (enlarged) ────────────────────────────────────────
 function SpinningForTable({ jobs, assignedJobLabels, selectedJobId, onSelect, isAdmin }) {
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
+    <div className="border border-border rounded-xl overflow-hidden">
       <table className="w-full text-sm">
         <thead>
-          <tr className="bg-gray-50 border-b border-gray-200">
-            <th className="text-left px-3 py-2 font-semibold text-gray-500 uppercase text-[11px]">Job</th>
-            <th className="text-center px-2 py-2 font-semibold text-gray-500 uppercase text-[11px] w-20">Choose</th>
+          <tr className="bg-muted border-b border-border">
+            <th className="text-left px-3 py-2 font-semibold text-muted-foreground uppercase text-[11px]">Job</th>
+            <th className="text-center px-2 py-2 font-semibold text-muted-foreground uppercase text-[11px] w-20">Choose</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -409,8 +409,8 @@ function SpinningForTable({ jobs, assignedJobLabels, selectedJobId, onSelect, is
             const taken = assignedJobLabels.includes(job.label);
             const selected = selectedJobId === job.id;
             return (
-              <tr key={job.id} className={taken ? "bg-gray-50" : ""}>
-                <td className={`px-3 py-2.5 ${taken ? "text-gray-300 line-through" : "text-gray-700"}`}>
+              <tr key={job.id} className={taken ? "bg-muted" : ""}>
+                <td className={`px-3 py-2.5 ${taken ? "text-muted-foreground line-through" : "text-foreground"}`}>
                   {job.label}
                   <span className="ml-2 text-[9px] uppercase tracking-wide text-muted-foreground">{job.period || "weekly"}</span>
                 </td>
@@ -419,9 +419,9 @@ function SpinningForTable({ jobs, assignedJobLabels, selectedJobId, onSelect, is
                     onClick={() => isAdmin && !taken && onSelect(job.id)}
                     disabled={taken || !isAdmin}
                     className={`w-full text-xs font-bold py-1.5 rounded-lg border-2 transition-all
-                      ${taken ? "bg-gray-100 text-gray-300 border-gray-100"
-                        : selected ? "bg-[#951E3A] text-white border-[#951E3A] scale-105 shadow"
-                        : "bg-white text-gray-600 border-gray-200 hover:border-[#951E3A]/40 cursor-pointer hover:scale-102"}`}>
+                      ${taken ? "bg-muted text-muted-foreground border-border"
+                        : selected ? "bg-primary text-white border-primary scale-105 shadow"
+                        : "bg-card text-muted-foreground border-border hover:border-primary/40 cursor-pointer hover:scale-102"}`}>
                     {taken ? "Done" : selected ? "Active" : "Choose"}
                   </button>
                 </td>
@@ -749,12 +749,12 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
             {/* Manage Students — admin only, popup over wheel */}
             <div className="w-full flex justify-center mb-2">
               <button onClick={() => setShowStudentMgr(s => !s)}
-                className="flex items-center gap-1 text-xs text-[#951E3A] hover:bg-[#951E3A]/5 px-3 py-1.5 rounded-lg border border-[#951E3A]/30 font-semibold transition-colors">
+                className="flex items-center gap-1 text-xs text-primary hover:bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/30 font-semibold transition-colors">
                 <UserPlus className="w-3.5 h-3.5" /> Manage Students
               </button>
             </div>
             {wheelMembers.length > 0 && (
-              <p className="text-xs text-gray-400 font-medium text-center">
+              <p className="text-xs text-muted-foreground font-medium text-center">
                 {wheelMembers.length} student{wheelMembers.length !== 1 ? "s" : ""} on the wheel
                 {repeatSpinMode ? " · extra spins are unlimited" : ""}
               </p>
@@ -762,17 +762,17 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
             {wheelMembers.length > 0 ? (
               <div className="relative w-full flex flex-col items-center gap-4">
                 {showStudentMgr && (
-                  <div className="w-full max-w-[420px] bg-white rounded-xl shadow-sm border border-gray-200 p-2.5 max-h-64 overflow-y-auto">
+                  <div className="w-full max-w-[420px] bg-card rounded-xl shadow-sm border border-border p-2.5 max-h-64 overflow-y-auto">
                     <div className="flex items-center justify-between mb-1.5">
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">{studentMembers.length} Students</p>
-                      <button onClick={() => setShowStudentMgr(false)} className="text-gray-400 hover:text-gray-600">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{studentMembers.length} Students</p>
+                      <button onClick={() => setShowStudentMgr(false)} className="text-muted-foreground hover:text-muted-foreground">
                         <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <p className="text-[9px] text-gray-400 mb-1.5">✓ = on wheel</p>
+                    <p className="text-[9px] text-muted-foreground mb-1.5">✓ = on wheel</p>
                     <div className="flex gap-1 mb-1.5">
-                      <button onClick={() => setRemovedIds([])} className="flex-1 text-[9px] font-bold text-white bg-[#951E3A] rounded py-1 hover:bg-[#7a1830] transition-colors">Add all</button>
-                      <button onClick={() => setRemovedIds(studentMembers.map(m => m.id))} className="flex-1 text-[9px] font-bold text-[#951E3A] bg-[#951E3A]/10 rounded py-1 hover:bg-[#951E3A]/20 transition-colors">Clear all</button>
+                      <button onClick={() => setRemovedIds([])} className="flex-1 text-[9px] font-bold text-white bg-primary rounded py-1 hover:bg-primary/90 transition-colors">Add all</button>
+                      <button onClick={() => setRemovedIds(studentMembers.map(m => m.id))} className="flex-1 text-[9px] font-bold text-primary bg-primary/10 rounded py-1 hover:bg-primary/20 transition-colors">Clear all</button>
                     </div>
                     <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
                       {[...studentMembers].sort((a, b) => displayName(a).localeCompare(displayName(b))).map((member) => {
@@ -785,9 +785,9 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
                               checked={onWheel}
                               disabled={!hardEligible}
                               onChange={() => setRemovedIds((ids) => ids.includes(member.id) ? ids.filter((id) => id !== member.id) : [...ids, member.id])}
-                              className="w-3 h-3 rounded accent-[#951E3A] shrink-0"
+                              className="w-3 h-3 rounded accent-primary shrink-0"
                             />
-                            <span className={`text-[11px] font-medium ${onWheel ? "text-gray-800" : "text-gray-400"}`}>
+                            <span className={`text-[11px] font-medium ${onWheel ? "text-foreground" : "text-muted-foreground"}`}>
                               {displayName(member)}
                               {!hardEligible && selectingTimeKeeper ? " · already served" : ""}
                             </span>
@@ -805,7 +805,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
                 />
               </div>
             ) : studentMembers.length === 0 ? (
-              <div className="h-40 flex items-center justify-center text-gray-400 text-sm">No students on the rotation yet. Add people in the Members section.</div>
+              <div className="h-40 flex items-center justify-center text-muted-foreground text-sm">No students on the rotation yet. Add people in the Members section.</div>
             ) : (
               <div className="h-40 flex flex-col items-center justify-center text-center gap-2">
                 <CheckCircle2 className="w-10 h-10 text-green-400" />
@@ -819,7 +819,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
           {/* Spinning For — right side, admin only */}
           <div className="xl:w-72 shrink-0 w-full">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Spinning for:</p>
+              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Spinning for:</p>
               <button
                 type="button"
                 onClick={() => {
@@ -899,7 +899,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
 
       {/* Bottom: Jobs table — shown for everyone, larger for non-admins */}
       <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
           Week of {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments.length}/{allJobs.length} assigned
         </p>
         <JobScheduleTable
@@ -916,8 +916,8 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
 
   if (fullscreen) {
     return (
-      <div className="fixed inset-0 bg-white z-50 flex flex-col">
-        <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex flex-col items-start gap-3 shrink-0 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
+      <div className="fixed inset-0 bg-card z-50 flex flex-col">
+        <div className="mabis-widget-header bg-primary px-4 py-4 flex flex-col items-start gap-3 shrink-0 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="mabis-widget-title font-display font-bold text-white text-2xl">Jobs Assignment</h2>
             <p className="text-white/60 text-sm">Weekly jobs: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)}</p>
@@ -925,12 +925,12 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
           <div className="mabis-widget-actions flex items-center gap-3">
             {isAdmin && currentAssignments.length > 0 && (
               <Button size="sm" variant="outline"
-                className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
+                className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
                 onClick={handleClearAll}>
                 <Trash2 className="w-3.5 h-3.5" /> Clear All
               </Button>
             )}
-            <button onClick={() => setFullscreen(false)} className="text-white/70 hover:text-white p-2 rounded-lg hover:bg-white/10">
+            <button onClick={() => setFullscreen(false)} className="text-white/70 hover:text-white p-2 rounded-lg hover:bg-card/10">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -944,8 +944,8 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
     return (
       <div>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Current jobs — {currentAssignments.length}/{allJobs.length}</p>
-          <button onClick={() => setFullscreen(true)} className="flex items-center gap-1 text-xs text-[#951E3A] hover:underline">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Current jobs — {currentAssignments.length}/{allJobs.length}</p>
+          <button onClick={() => setFullscreen(true)} className="flex items-center gap-1 text-xs text-primary hover:underline">
             <Maximize2 className="w-3 h-3" /> Full Screen
           </button>
         </div>
@@ -962,8 +962,8 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
   }
 
   return (
-    <div className="mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex flex-col items-start gap-3 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+      <div className="mabis-widget-header bg-primary px-4 py-4 flex flex-col items-start gap-3 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Jobs</h2>
           <p className="text-white/60 text-xs mt-0.5">Weekly: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments.length}/{allJobs.length} assigned</p>
@@ -971,13 +971,13 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
         <div className="mabis-widget-actions flex items-center gap-2">
           {isAdmin && currentAssignments.length > 0 && (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
+              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={handleClearAll}>
               <Trash2 className="w-3.5 h-3.5" /> Clear All
             </Button>
           )}
           <Button size="sm" variant="outline"
-            className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
+            className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
             onClick={() => setFullscreen(true)}>
             <Maximize2 className="w-3.5 h-3.5" /> Full Screen
           </Button>

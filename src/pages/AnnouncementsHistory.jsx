@@ -32,9 +32,9 @@ export default function AnnouncementsHistory() {
           </div>
         </div>
         {weeks.length === 0 && (
-          <div className="border border-gray-200 bg-white p-8 text-center sm:rounded-2xl sm:p-16">
-            <p className="text-gray-400 text-lg">No announcements yet</p>
-            <p className="text-gray-300 text-sm mt-1">Posted announcements will be grouped here by week</p>
+          <div className="border border-border bg-card p-8 text-center sm:rounded-2xl sm:p-16">
+            <p className="text-muted-foreground text-lg">No announcements yet</p>
+            <p className="text-muted-foreground text-sm mt-1">Posted announcements will be grouped here by week</p>
           </div>
         )}
 
@@ -43,30 +43,30 @@ export default function AnnouncementsHistory() {
             const isOpen = openWeeks[week];
             const pinned = items.filter(a => a.pinned).length;
             return (
-              <div key={week} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                <button className="flex w-full flex-col items-stretch gap-3 px-4 py-4 text-left transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+              <div key={week} className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+                <button className="flex w-full flex-col items-stretch gap-3 px-4 py-4 text-left transition-colors hover:bg-muted sm:flex-row sm:items-center sm:justify-between sm:px-6"
                   onClick={() => setOpenWeeks(p => ({ ...p, [week]: !p[week] }))}>
                   <div className="flex items-center gap-2 sm:gap-3">
-                    {isOpen ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                    {isOpen ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
                     <div className="text-left">
-                      <p className="font-semibold text-gray-800 text-base">{formatWeekFull(week)}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{items.length} announcement{items.length !== 1 ? "s" : ""}{pinned > 0 ? ` · ${pinned} pinned` : ""}</p>
+                      <p className="font-semibold text-foreground text-base">{formatWeekFull(week)}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{items.length} announcement{items.length !== 1 ? "s" : ""}{pinned > 0 ? ` · ${pinned} pinned` : ""}</p>
                     </div>
                   </div>
                 </button>
                 {isOpen && (
-                  <div className="space-y-3 border-t border-gray-100 px-4 py-4 sm:px-6">
+                  <div className="space-y-3 border-t border-border px-4 py-4 sm:px-6">
                     {items.map(a => (
-                      <div key={a.id} className="rounded-xl border border-gray-100 p-3 bg-white">
+                      <div key={a.id} className="rounded-xl border border-border p-3 bg-card">
                         <div className="mb-0.5 flex flex-wrap items-center gap-2">
-                          <span className="font-semibold text-sm text-gray-800">{a.title}</span>
-                          {a.pinned && <span className="text-[10px] font-bold bg-[#951E3A] text-white px-1.5 py-0.5 rounded-full uppercase">Pinned</span>}
-                          <span className="text-xs text-gray-400 ml-auto">{a.published_date || a.created_date ? format(new Date(a.published_date || a.created_date), "d MMM yyyy") : ""}</span>
+                          <span className="font-semibold text-sm text-foreground">{a.title}</span>
+                          {a.pinned && <span className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-full uppercase">Pinned</span>}
+                          <span className="text-xs text-muted-foreground ml-auto">{a.published_date || a.created_date ? format(new Date(a.published_date || a.created_date), "d MMM yyyy") : ""}</span>
                         </div>
-                        {a.body && <p className="text-sm text-gray-600">{a.body}</p>}
+                        {a.body && <p className="text-sm text-muted-foreground">{a.body}</p>}
                         {a.image_url && <img src={a.image_url} alt={a.title} className="mt-2 rounded-lg max-h-40 object-cover" />}
                         {a.video_url && <video src={a.video_url} controls className="mt-2 rounded-lg max-h-40 w-full" />}
-                        <p className="text-[11px] text-gray-400 mt-0.5">— {a.author_name}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">— {a.author_name}</p>
                       </div>
                     ))}
                   </div>

@@ -95,33 +95,33 @@ export default function Feedback() {
           </Suspense>
         ) : isLoading ? (
           <div className="flex justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-[#951E3A]" />
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-gray-400 py-20">No feedback yet</p>
+          <p className="text-center text-muted-foreground py-20">No feedback yet</p>
         ) : (
           <div className="space-y-3">
             {filtered.map(f => (
-              <div key={f.id} className="perf-list-item bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <div key={f.id} className="perf-list-item bg-card rounded-xl border border-border p-4 shadow-sm">
                 <div className="flex items-start gap-3">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${f.type === "feedback" ? "bg-amber-50" : "bg-red-50"}`}>
                     {f.type === "feedback" ? <Star className="w-4 h-4 text-amber-500" /> : <Bug className="w-4 h-4 text-red-500" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-sm font-bold text-gray-800">{f.submitted_by_name}</span>
+                      <span className="text-sm font-bold text-foreground">{f.submitted_by_name}</span>
                       {f.type === "feedback" && f.rating != null && (
-                        <span className="text-xs font-bold text-[#951E3A] bg-[#951E3A]/10 px-2 py-0.5 rounded-full">{f.rating}/10</span>
+                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{f.rating}/10</span>
                       )}
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${statusColors[f.status] || statusColors.new}`}>{f.status || "new"}</span>
-                      <span className="text-[10px] text-gray-400 ml-auto">{formatDate(f.created_date)}</span>
+                      <span className="text-[10px] text-muted-foreground ml-auto">{formatDate(f.created_date)}</span>
                     </div>
-                    <p className="text-sm text-gray-600 whitespace-pre-wrap">{f.message}</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{f.message}</p>
                     {f.image_url && (
-                      <img src={f.image_url} alt="Attachment" className="mt-2 rounded-lg border border-gray-200 max-h-48 object-cover" />
+                      <img src={f.image_url} alt="Attachment" className="mt-2 rounded-lg border border-border max-h-48 object-cover" />
                     )}
                     {f.submitted_by_email && (
-                      <p className="text-[10px] text-gray-400 mt-2">{f.submitted_by_email}</p>
+                      <p className="text-[10px] text-muted-foreground mt-2">{f.submitted_by_email}</p>
                     )}
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {f.status !== "reviewed" && f.status !== "resolved" && (
@@ -144,7 +144,7 @@ export default function Feedback() {
                       )}
                       {f.status !== "archived" && (
                         <button onClick={() => handleArchive(f)}
-                          className="text-[10px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 px-2.5 py-1 rounded-md flex items-center gap-1">
+                          className="text-[10px] font-bold text-muted-foreground bg-muted hover:bg-muted px-2.5 py-1 rounded-md flex items-center gap-1">
                           <Archive className="w-3 h-3" /> Archive
                         </button>
                       )}

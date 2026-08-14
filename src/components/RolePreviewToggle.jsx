@@ -26,11 +26,11 @@ export default function RolePreviewToggle({ value, onChange, realRole }) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
+        className="w-9 h-9 rounded-lg border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors shadow-sm"
         style={active ? { borderColor: activeColor, color: activeColor } : undefined}
         title={active ? `Viewing as ${activeRole?.label}` : "Preview the app as another role"}
       >
-        {active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-gray-600" />}
+        {active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
       </button>
 
       <AnimatePresence>
@@ -42,9 +42,9 @@ export default function RolePreviewToggle({ value, onChange, realRole }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 p-1.5 z-50 w-44"
+              className="absolute top-full right-0 mt-2 bg-card rounded-xl shadow-xl border border-border p-1.5 z-50 w-44"
             >
-              <p className="px-2 pt-1 pb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wide">Preview as role</p>
+              <p className="px-2 pt-1 pb-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Preview as role</p>
               {PREVIEW_ROLES.map(r => {
                 const Icon = r.icon;
                 const isActive = value === r.key || (!value && r.key === realRole);
@@ -54,7 +54,7 @@ export default function RolePreviewToggle({ value, onChange, realRole }) {
                     key={r.key}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleSelect(r.key)}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors text-gray-600 hover:bg-gray-100"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors text-muted-foreground hover:bg-muted"
                     style={isActive ? { backgroundColor: color, color: "white" } : {}}
                   >
                     <Icon className="w-3.5 h-3.5" />

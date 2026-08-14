@@ -73,8 +73,8 @@ export default function NewsWidget({ members, isAdmin, limit }) {
   const displayNews = limit && !fullscreen ? sortedNews.slice(0, limit) : sortedNews;
 
   return (
-    <div className={`mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
-      <div className="mabis-widget-header bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+    <div className={`mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
+      <div className="mabis-widget-header bg-primary px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <div className="min-w-0">
           <h2 className="mabis-widget-title font-display font-bold text-white text-xl flex items-center gap-2">
             <Newspaper className="w-5 h-5" /> News
@@ -84,24 +84,24 @@ export default function NewsWidget({ members, isAdmin, limit }) {
         <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
             <Link to="/history/news">
               <Button size="sm" variant="outline"
-                className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5">
+                className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5">
                 <History className="w-3.5 h-3.5" /> History
               </Button>
             </Link>
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
+              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={() => setShowForm(s => !s)}>
               <Plus className="w-3.5 h-3.5" /> {showForm ? "Cancel" : "Add News"}
             </Button>
           {fullscreen ? (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
+              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={() => setFullscreen(false)}>
               <X className="w-3.5 h-3.5" /> Close
             </Button>
           ) : (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
+              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={() => setFullscreen(true)}>
               <Maximize2 className="w-3.5 h-3.5" />
             </Button>
@@ -111,24 +111,24 @@ export default function NewsWidget({ members, isAdmin, limit }) {
 
       <div className="mabis-widget-body p-4 space-y-4 sm:p-5">
         {showForm && (
-          <div className="border border-gray-200 rounded-xl p-3 space-y-3 bg-gray-50 sm:p-4">
+          <div className="border border-border rounded-xl p-3 space-y-3 bg-muted sm:p-4">
             <Input placeholder="News title..." value={title} onChange={(e) => setTitle(e.target.value)}
               className="rounded-lg" />
             <DocsEditor initialHtml={body} onChange={setBody} placeholder="Write the news…" minHeight="140px" title={title || "Untitled news"} />
             <div className="flex flex-wrap gap-2">
-              <label className="flex items-center gap-1.5 cursor-pointer px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-600">
+              <label className="flex items-center gap-1.5 cursor-pointer px-3 py-2 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-muted-foreground">
                 <ImageIcon className="w-3.5 h-3.5" />
                 {imageUrl ? "Image ✓" : "Add Image"}
                 <input type="file" accept="image/*" className="hidden"
                   onChange={(e) => handleFileUpload(e.target.files[0], "image")} />
               </label>
-              <label className="flex items-center gap-1.5 cursor-pointer px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-600">
+              <label className="flex items-center gap-1.5 cursor-pointer px-3 py-2 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-muted-foreground">
                 <Video className="w-3.5 h-3.5" />
                 {videoUrl ? "Video ✓" : "Add Video"}
                 <input type="file" accept="video/*" className="hidden"
                   onChange={(e) => handleFileUpload(e.target.files[0], "video")} />
               </label>
-              {uploading && <Loader2 className="w-4 h-4 animate-spin text-[#951E3A] self-center" />}
+              {uploading && <Loader2 className="w-4 h-4 animate-spin text-primary self-center" />}
             </div>
             {imageUrl && (
               <div className="relative">
@@ -139,7 +139,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
               </div>
             )}
             <Button onClick={handleSubmit} disabled={!title.trim() || !body.trim() || createMutation.isPending}
-              className="bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg w-full">
+              className="bg-primary hover:bg-primary/90 text-white rounded-lg w-full">
               {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               Publish
             </Button>
@@ -147,16 +147,16 @@ export default function NewsWidget({ members, isAdmin, limit }) {
         )}
 
         {isLoading ? (
-          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#951E3A]" /></div>
+          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
         ) : news.length === 0 ? (
-          <p className="text-center text-gray-400 py-8">No news posted yet.</p>
+          <p className="text-center text-muted-foreground py-8">No news posted yet.</p>
         ) : (
           <>
           <div className="space-y-3">
             {displayNews.map((n) => (
               <motion.div key={n.id} layout
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow group">
+                className="border border-border rounded-xl overflow-hidden hover:shadow-md transition-shadow group">
                 {n.image_url && (
                   <img src={n.image_url} alt={n.title} className="w-full max-h-56 object-cover" />
                 )}
@@ -165,20 +165,20 @@ export default function NewsWidget({ members, isAdmin, limit }) {
                 )}
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <div className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-white" style={{ border: "2px solid hsl(var(--primary))" }}>
+                    <div className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-card" style={{ border: "2px solid hsl(var(--primary))" }}>
                       <img src={MABIS_LOGO} alt="" className="w-full h-full object-contain p-0.5" />
                     </div>
-                    <span className="text-xs font-bold text-gray-700">{n.author_name}</span>
-                    <span className="text-[10px] text-gray-400 ml-auto">{formatDate(n.published_date || n.created_date)}</span>
+                    <span className="text-xs font-bold text-foreground">{n.author_name}</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">{formatDate(n.published_date || n.created_date)}</span>
                     {isAdmin && (
                       <button onClick={() => deleteMutation.mutate(n.id)}
-                        className="p-1 rounded text-gray-300 hover:text-destructive transition-colors">
+                        className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
-                  <h3 className="font-display font-bold text-gray-800 text-base mb-1">{n.title}</h3>
-                  <div className="theme-rich-text text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none
+                  <h3 className="font-display font-bold text-foreground text-base mb-1">{n.title}</h3>
+                  <div className="theme-rich-text text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none
                     [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2
                     [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1
                     [&_li]:my-0.5 [&_h1]:text-base [&_h1]:font-bold [&_h2]:text-sm [&_h2]:font-semibold [&_p]:my-1
@@ -190,7 +190,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
           </div>
           {limit && !fullscreen && news.length > limit && (
             <button onClick={() => setFullscreen(true)}
-              className="w-full mt-3 py-2.5 rounded-xl border border-[#951E3A]/30 text-[#951E3A] hover:bg-[#951E3A]/5 text-sm font-semibold transition-colors">
+              className="w-full mt-3 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 text-sm font-semibold transition-colors">
               More News ({news.length - limit} more)
             </button>
           )}

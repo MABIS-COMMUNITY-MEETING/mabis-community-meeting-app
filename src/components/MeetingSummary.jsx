@@ -44,7 +44,7 @@ ${topics}`;
 
   if (loading) {
     return (
-      <div className="px-6 py-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-100 flex items-center gap-3">
+      <div className="px-6 py-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-border flex items-center gap-3">
         <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
         <span className="text-sm text-purple-600 font-medium">Generating meeting summary…</span>
       </div>
@@ -53,7 +53,7 @@ ${topics}`;
 
   if (error) {
     return (
-      <div className="px-6 py-4 bg-red-50 border-b border-gray-100 flex items-center justify-between gap-3">
+      <div className="px-6 py-4 bg-red-50 border-b border-border flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-red-600 text-sm">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>Couldn't generate summary.</span>
@@ -66,17 +66,17 @@ ${topics}`;
   }
 
   return (
-    <div className="px-6 py-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-100">
+    <div className="px-6 py-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-border">
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-purple-500" />
           <span className="text-xs font-bold text-purple-600 uppercase tracking-wide">AI Meeting Summary</span>
         </div>
-        <button onClick={generate} className="text-gray-400 hover:text-purple-500 transition-colors" title="Regenerate summary">
+        <button onClick={generate} className="text-muted-foreground hover:text-purple-500 transition-colors" title="Regenerate summary">
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
       </div>
-      <p className="text-sm text-gray-700 leading-relaxed">{summary}</p>
+      <p className="text-sm text-foreground leading-relaxed">{summary}</p>
     </div>
   );
 }

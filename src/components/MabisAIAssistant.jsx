@@ -258,7 +258,7 @@ ${recentHistory || "(just started)"}`;
                   {messages.map((msg, i) => (
                     msg.role === "user" ? (
                       <div key={i} className="flex justify-end">
-                        <div className="max-w-[80%] rounded-xl bg-white border border-black/5 px-3.5 py-2.5 text-[14px] leading-relaxed text-[#3D3929] whitespace-pre-wrap">
+                        <div className="max-w-[80%] rounded-xl bg-card border border-black/5 px-3.5 py-2.5 text-[14px] leading-relaxed text-[#3D3929] whitespace-pre-wrap">
                           {msg.content}
                         </div>
                       </div>
@@ -292,7 +292,7 @@ ${recentHistory || "(just started)"}`;
 
             {/* Composer — rounded card, send button tucked bottom-right */}
             <div className="shrink-0 px-4 pb-4 pt-1">
-              <div className="max-w-[46rem] mx-auto w-full rounded-2xl bg-white border border-black/10 shadow-sm p-2.5 focus-within:border-black/20 transition-colors">
+              <div className="max-w-[46rem] mx-auto w-full rounded-2xl bg-card border border-black/10 shadow-sm p-2.5 focus-within:border-black/20 transition-colors">
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}

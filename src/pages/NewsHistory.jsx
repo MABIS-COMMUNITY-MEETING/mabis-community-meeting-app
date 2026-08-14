@@ -32,9 +32,9 @@ export default function NewsHistory() {
           </div>
         </div>
         {weeks.length === 0 && (
-          <div className="border border-gray-200 bg-white p-8 text-center sm:rounded-2xl sm:p-16">
-            <p className="text-gray-400 text-lg">No news yet</p>
-            <p className="text-gray-300 text-sm mt-1">Published articles will be grouped here by week</p>
+          <div className="border border-border bg-card p-8 text-center sm:rounded-2xl sm:p-16">
+            <p className="text-muted-foreground text-lg">No news yet</p>
+            <p className="text-muted-foreground text-sm mt-1">Published articles will be grouped here by week</p>
           </div>
         )}
 
@@ -42,29 +42,29 @@ export default function NewsHistory() {
           {weeks.map(([week, items]) => {
             const isOpen = openWeeks[week];
             return (
-              <div key={week} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                <button className="flex w-full flex-col items-stretch gap-3 px-4 py-4 text-left transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+              <div key={week} className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+                <button className="flex w-full flex-col items-stretch gap-3 px-4 py-4 text-left transition-colors hover:bg-muted sm:flex-row sm:items-center sm:justify-between sm:px-6"
                   onClick={() => setOpenWeeks(p => ({ ...p, [week]: !p[week] }))}>
                   <div className="flex items-center gap-2 sm:gap-3">
-                    {isOpen ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                    {isOpen ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
                     <div className="text-left">
-                      <p className="font-semibold text-gray-800 text-base">{formatWeekFull(week)}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{items.length} article{items.length !== 1 ? "s" : ""}</p>
+                      <p className="font-semibold text-foreground text-base">{formatWeekFull(week)}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{items.length} article{items.length !== 1 ? "s" : ""}</p>
                     </div>
                   </div>
                 </button>
                 {isOpen && (
-                  <div className="space-y-3 border-t border-gray-100 px-4 py-4 sm:px-6">
+                  <div className="space-y-3 border-t border-border px-4 py-4 sm:px-6">
                     {items.map(n => (
-                      <div key={n.id} className="rounded-xl border border-gray-100 p-3 bg-white">
+                      <div key={n.id} className="rounded-xl border border-border p-3 bg-card">
                         <div className="mb-0.5 flex flex-wrap items-center gap-2">
-                          <span className="font-semibold text-sm text-gray-800">{n.title}</span>
-                          <span className="text-xs text-gray-400 ml-auto">{n.published_date || n.created_date ? format(new Date(n.published_date || n.created_date), "d MMM yyyy") : ""}</span>
+                          <span className="font-semibold text-sm text-foreground">{n.title}</span>
+                          <span className="text-xs text-muted-foreground ml-auto">{n.published_date || n.created_date ? format(new Date(n.published_date || n.created_date), "d MMM yyyy") : ""}</span>
                         </div>
-                        {n.body && <p className="text-sm text-gray-600 whitespace-pre-wrap">{n.body}</p>}
+                        {n.body && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{n.body}</p>}
                         {n.image_url && <img src={n.image_url} alt={n.title} className="mt-2 rounded-lg max-h-40 object-cover" />}
                         {n.video_url && <video src={n.video_url} controls className="mt-2 rounded-lg max-h-40 w-full" />}
-                        <p className="text-[11px] text-gray-400 mt-0.5">— {n.author_name}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">— {n.author_name}</p>
                       </div>
                     ))}
                   </div>

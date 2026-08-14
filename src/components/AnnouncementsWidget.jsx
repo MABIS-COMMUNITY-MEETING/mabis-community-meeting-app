@@ -95,8 +95,8 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
   });
 
   return (
-    <div className={`mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
-      <div className="mabis-widget-header bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+    <div className={`mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
+      <div className="mabis-widget-header bg-primary px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <div className="flex items-center gap-3 min-w-0">
           <Megaphone className="w-5 h-5 text-white" />
           <div>
@@ -107,24 +107,24 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
         <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
           <Link to="/history/announcements">
             <Button size="sm" variant="outline"
-            className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1">
+            className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1">
               <History className="w-3.5 h-3.5" /> History
             </Button>
           </Link>
           <Button size="sm" variant="outline"
-          className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1"
+          className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1"
           onClick={() => setShowForm((f) => !f)}>
             <Plus className="w-3.5 h-3.5" /> Post
           </Button>
           {fullscreen ?
           <Button size="sm" variant="outline"
-          className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1"
+          className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1"
           onClick={() => setFullscreen(false)}>
               <X className="w-3.5 h-3.5" /> Close
             </Button> :
 
           <Button size="sm" variant="outline"
-          className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1"
+          className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1"
           onClick={() => setFullscreen(true)}>
               <Maximize2 className="w-3.5 h-3.5" />
             </Button>
@@ -140,11 +140,11 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3 overflow-hidden sm:rounded-2xl sm:p-5">
+            className="border border-border rounded-xl p-4 bg-muted space-y-3 overflow-hidden sm:rounded-2xl sm:p-5">
             
               {/* Author */}
               <Select value={authorName} onValueChange={setAuthorName}>
-                <SelectTrigger className="rounded-lg border-gray-300 bg-white">
+                <SelectTrigger className="rounded-lg border-border bg-card">
                   <SelectValue placeholder="Your name..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -155,7 +155,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
               </Select>
 
               <Input placeholder="Announcement title..." value={title} onChange={(e) => setTitle(e.target.value)}
-            className="rounded-lg border-gray-300 bg-white font-semibold" />
+            className="rounded-lg border-border bg-card font-semibold" />
 
               <DocsEditor initialHtml={body} onChange={setBody} placeholder="Write your announcement…" minHeight="120px" title="Announcement" />
             
@@ -163,7 +163,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
               {/* Media preview */}
               {imagePreview &&
             <div className="relative inline-block">
-                  <img src={imagePreview} alt="preview" className="h-28 rounded-lg object-cover border border-gray-200" />
+                  <img src={imagePreview} alt="preview" className="h-28 rounded-lg object-cover border border-border" />
                   <button onClick={() => {setImageFile(null);setImagePreview(null);}}
               className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
                     <X className="w-3 h-3" />
@@ -171,10 +171,10 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
                 </div>
             }
               {videoFile &&
-            <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-100 rounded-lg px-3 py-2">
-                  <Video className="w-3.5 h-3.5 text-[#951E3A]" />
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted rounded-lg px-3 py-2">
+                  <Video className="w-3.5 h-3.5 text-primary" />
                   {videoFile.name}
-                  <button onClick={() => setVideoFile(null)} className="ml-auto text-gray-400 hover:text-red-500">
+                  <button onClick={() => setVideoFile(null)} className="ml-auto text-muted-foreground hover:text-red-500">
                     <X className="w-3 h-3" />
                   </button>
                 </div>
@@ -182,11 +182,11 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <button onClick={() => imgRef.current?.click()}
-              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#951E3A] px-2 py-1.5 rounded-lg border border-gray-200 hover:border-[#951E3A]/30 transition-colors">
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary px-2 py-1.5 rounded-lg border border-border hover:border-primary/30 transition-colors">
                   <ImageIcon className="w-3.5 h-3.5" /> Image
                 </button>
                 <button onClick={() => vidRef.current?.click()}
-              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#951E3A] px-2 py-1.5 rounded-lg border border-gray-200 hover:border-[#951E3A]/30 transition-colors">
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary px-2 py-1.5 rounded-lg border border-border hover:border-primary/30 transition-colors">
                   <Video className="w-3.5 h-3.5" /> Video
                 </button>
                 <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
@@ -195,7 +195,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
                   <Button variant="outline" size="sm" onClick={resetForm} className="text-xs rounded-lg">Cancel</Button>
                   <Button size="sm" onClick={handleSubmit}
                 disabled={!title.trim() || !authorName.trim() || uploading || addMutation.isPending}
-                className="bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg text-xs">
+                className="bg-primary hover:bg-primary/90 text-white rounded-lg text-xs">
                     {uploading || addMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Post"}
                   </Button>
                 </div>
@@ -206,7 +206,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
 
         {/* Announcements list */}
         {sorted.length === 0 &&
-        <p className="text-center text-gray-400 text-sm py-8">No announcements yet — be the first to post!</p>
+        <p className="text-center text-muted-foreground text-sm py-8">No announcements yet — be the first to post!</p>
         }
 
         <div className="space-y-3">
@@ -216,26 +216,26 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className={`rounded-xl border p-4 group transition-all ${ann.pinned ? "bg-[#951E3A]/8 border-[#951E3A]/40" : "bg-white border-gray-200"}`}>
+            className={`rounded-xl border p-4 group transition-all ${ann.pinned ? "bg-primary/8 border-primary/40" : "bg-card border-border"}`}>
 
                 <div className="flex items-start gap-3">
                   {/* Avatar */}
-                  <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0 mt-0.5 bg-white" style={{ border: "2px solid hsl(var(--primary))" }}>
+                  <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0 mt-0.5 bg-card" style={{ border: "2px solid hsl(var(--primary))" }}>
                     <img src={MABIS_LOGO} alt="" className="w-full h-full object-contain p-0.5" />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                      <span className="font-bold text-sm text-gray-900">{ann.author_name}</span>
+                      <span className="font-bold text-sm text-foreground">{ann.author_name}</span>
                       {ann.pinned &&
-                    <span className="text-[10px] font-bold bg-[#951E3A] text-white px-1.5 py-0.5 rounded-full uppercase tracking-wide">PINNED</span>
+                    <span className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-full uppercase tracking-wide">PINNED</span>
                     }
-                      <span className="text-xs text-gray-400 ml-auto">
+                      <span className="text-xs text-muted-foreground ml-auto">
                         {ann.published_date || ann.created_date ? format(new Date(ann.published_date || ann.created_date), "d MMM yyyy") : ""}
                       </span>
                     </div>
-                    <p className="font-semibold text-gray-800 text-sm">{ann.title}</p>
-                    {ann.body && <div className="theme-rich-text text-sm text-gray-600 mt-1 leading-relaxed prose prose-sm max-w-none
+                    <p className="font-semibold text-foreground text-sm">{ann.title}</p>
+                    {ann.body && <div className="theme-rich-text text-sm text-muted-foreground mt-1 leading-relaxed prose prose-sm max-w-none
                       [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2
                       [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1
                       [&_li]:my-0.5 [&_h1]:text-base [&_h1]:font-bold [&_h2]:text-sm [&_h2]:font-semibold [&_p]:my-1
@@ -244,21 +244,21 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
 
                     {ann.image_url &&
                   <img src={ann.image_url} alt={ann.title}
-                  className="mt-3 rounded-xl max-h-64 object-cover border border-gray-100 w-full" />
+                  className="mt-3 rounded-xl max-h-64 object-cover border border-border w-full" />
                   }
                     {ann.video_url &&
-                  <video src={ann.video_url} controls className="mt-3 rounded-xl max-h-64 w-full border border-gray-100" />
+                  <video src={ann.video_url} controls className="mt-3 rounded-xl max-h-64 w-full border border-border" />
                   }
                   </div>
 
                   {isAdmin &&
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                       <button onClick={() => pinMutation.mutate({ id: ann.id, pinned: !ann.pinned })}
-                  className={`p-1.5 rounded-lg transition-colors ${ann.pinned ? "text-[#951E3A] bg-[#951E3A]/10" : "text-gray-300 hover:text-[#951E3A] hover:bg-[#951E3A]/10"}`}>
+                  className={`p-1.5 rounded-lg transition-colors ${ann.pinned ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-primary/10"}`}>
                         <Pin className="w-3.5 h-3.5" />
                       </button>
                       <button onClick={() => deleteMutation.mutate(ann.id)}
-                  className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors">
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-50 transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>

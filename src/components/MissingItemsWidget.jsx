@@ -76,7 +76,7 @@ export default function MissingItemsWidget({ members }) {
   };
 
   const renderAddForm = () => (
-    <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
+    <div className="border border-border rounded-xl p-4 space-y-3 bg-muted">
       <Input placeholder="Item name (e.g. Water bottle)..." value={itemName}
         onChange={(e) => setItemName(e.target.value)} className="rounded-lg" />
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -97,13 +97,13 @@ export default function MissingItemsWidget({ members }) {
       </datalist>
       <Input type="date" value={dateLost} onChange={(e) => setDateLost(e.target.value)} className="rounded-lg" />
       <div className="flex flex-wrap gap-2">
-        <label className="flex items-center gap-1.5 cursor-pointer px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-600">
+        <label className="flex items-center gap-1.5 cursor-pointer px-3 py-2 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-muted-foreground">
           <ImageIcon className="w-3.5 h-3.5" />
           {imageUrl ? "Photo ✓" : "Add Photo"}
           <input type="file" accept="image/*" className="hidden"
             onChange={(e) => handleFileUpload(e.target.files[0])} />
         </label>
-        {uploading && <Loader2 className="w-4 h-4 animate-spin text-[#951E3A] self-center" />}
+        {uploading && <Loader2 className="w-4 h-4 animate-spin text-primary self-center" />}
       </div>
       {imageUrl && (
         <div className="relative">
@@ -114,7 +114,7 @@ export default function MissingItemsWidget({ members }) {
         </div>
       )}
       <Button onClick={handleSubmit} disabled={!itemName.trim() || createMutation.isPending}
-        className="bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg w-full">
+        className="bg-primary hover:bg-primary/90 text-white rounded-lg w-full">
         {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
         Add to Missing Items
       </Button>
@@ -130,11 +130,11 @@ export default function MissingItemsWidget({ members }) {
       )}
       <div className="p-4">
         <div className="flex items-center gap-2 mb-1.5">
-          <div className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-white" style={{ border: "2px solid hsl(var(--primary))" }}>
+          <div className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-card" style={{ border: "2px solid hsl(var(--primary))" }}>
             <img src={MABIS_LOGO} alt="" className="w-full h-full object-contain p-0.5" />
           </div>
-          <span className="text-xs font-bold text-gray-700">{item.reported_by_name}</span>
-          <span className="text-[10px] text-gray-400 ml-auto">{formatDate(item.created_date)}</span>
+          <span className="text-xs font-bold text-foreground">{item.reported_by_name}</span>
+          <span className="text-[10px] text-muted-foreground ml-auto">{formatDate(item.created_date)}</span>
           {isActive && (
             <button onClick={() => foundMutation.mutate(item.id)}
               className="p-1 rounded text-green-500 hover:text-green-600 hover:bg-green-50 transition-colors" title="Mark found">
@@ -142,16 +142,16 @@ export default function MissingItemsWidget({ members }) {
             </button>
           )}
           <button onClick={() => deleteMutation.mutate(item.id)}
-            className="p-1 rounded text-gray-300 hover:text-red-500 transition-colors" title="Delete">
+            className="p-1 rounded text-muted-foreground hover:text-red-500 transition-colors" title="Delete">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
-        <h3 className={`font-display font-bold text-base mb-1 ${isActive ? "text-gray-800" : "text-gray-500 line-through"}`}>
+        <h3 className={`font-display font-bold text-base mb-1 ${isActive ? "text-foreground" : "text-muted-foreground line-through"}`}>
           {item.item_name}
         </h3>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {item.colors && (
-            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{item.colors}</span>
+            <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-full text-[10px]">{item.colors}</span>
           )}
           {item.last_seen && <span>Last seen: {item.last_seen}</span>}
           {item.date_lost && <span>Lost: {formatDate(item.date_lost)}</span>}
@@ -161,8 +161,8 @@ export default function MissingItemsWidget({ members }) {
   );
 
   return (
-    <div className={`mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
-      <div className="mabis-widget-header bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between sticky top-0 z-10">
+    <div className={`mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
+      <div className="mabis-widget-header bg-primary px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between sticky top-0 z-10">
         <div className="min-w-0">
           <h2 className="mabis-widget-title font-display font-bold text-white text-xl flex items-center gap-2">
             <Search className="w-5 h-5" /> Missing Items
@@ -171,24 +171,24 @@ export default function MissingItemsWidget({ members }) {
         </div>
         <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
           <Button size="sm" variant="outline"
-            className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
+            className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
             onClick={() => setShowForm(s => !s)}>
             <Plus className="w-3.5 h-3.5" /> {showForm ? "Cancel" : "Report"}
           </Button>
           <Button size="sm" variant="outline"
-            className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
+            className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
             onClick={() => setShowFound(s => !s)}>
             <History className="w-3.5 h-3.5" /> {showFound ? "Hide" : "Found"}
           </Button>
           {fullscreen ? (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
+              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={() => setFullscreen(false)}>
               <X className="w-3.5 h-3.5" /> Close
             </Button>
           ) : (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1.5"
+              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={() => setFullscreen(true)}>
               <Maximize2 className="w-3.5 h-3.5" />
             </Button>
@@ -200,9 +200,9 @@ export default function MissingItemsWidget({ members }) {
         {showForm && renderAddForm()}
 
         {isLoading ? (
-          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#951E3A]" /></div>
+          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
         ) : activeItems.length === 0 && foundItems.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-8 text-gray-400">
+          <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
             <PackageSearch className="w-10 h-10 opacity-40" />
             <p className="text-sm">Nothing reported lost yet. If you have lost something, add it above.</p>
           </div>
@@ -221,12 +221,12 @@ export default function MissingItemsWidget({ members }) {
                 {showFound && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden border-t border-gray-100 pt-3 space-y-3">
-                    <p className="flex items-center gap-1.5 text-xs font-bold text-gray-500 mb-1">
+                    className="overflow-hidden border-t border-border pt-3 space-y-3">
+                    <p className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground mb-1">
                       <History className="w-3.5 h-3.5" /> Found / Archived ({foundItems.length})
                     </p>
                     {foundItems.length === 0
-                      ? <p className="text-center text-gray-400 text-sm py-4">Nothing has been handed in yet.</p>
+                      ? <p className="text-center text-muted-foreground text-sm py-4">Nothing has been handed in yet.</p>
                       : foundItems.map(item => renderItemCard(item, false))}
                   </motion.div>
                 )}

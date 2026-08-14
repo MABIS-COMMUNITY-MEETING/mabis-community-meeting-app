@@ -54,8 +54,8 @@ export default function LunchMenuWidget({ isAdmin }) {
   const setVal = (field, val) => setDraft(d => ({ ...d, [field]: val }));
 
   return (
-    <div className="mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex items-center gap-3 sm:px-6">
+    <div className="mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+      <div className="mabis-widget-header bg-primary px-4 py-4 flex items-center gap-3 sm:px-6">
         <UtensilsCrossed className="w-5 h-5 text-white" />
         <div>
           <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Snacks &amp; Lunch</h2>
@@ -66,33 +66,33 @@ export default function LunchMenuWidget({ isAdmin }) {
       <div className="mabis-widget-body p-4 sm:p-5">
         {isLoading ? (
           <div className="flex justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-[#951E3A]" />
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         ) : (
           <>
             <div className="mobile-horizontal-scroll flex snap-x gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 md:grid-cols-5">
               {DAYS.map(([key, label]) => (
-                <div key={key} className="w-[82vw] max-w-[18rem] shrink-0 snap-start overflow-hidden rounded-xl border border-gray-200 sm:w-auto sm:max-w-none">
-                  <div className="bg-[#951E3A]/10 px-3 py-2 text-center">
-                    <span className="text-xs font-bold text-[#951E3A] uppercase tracking-wide">{label}</span>
+                <div key={key} className="w-[82vw] max-w-[18rem] shrink-0 snap-start overflow-hidden rounded-xl border border-border sm:w-auto sm:max-w-none">
+                  <div className="bg-primary/10 px-3 py-2 text-center">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wide">{label}</span>
                   </div>
                   <div className="p-2.5 space-y-2">
                     <div>
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Snack</p>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase mb-1">Snack</p>
                       {isAdmin ? (
                         <textarea value={draft[`${key}_snack`] || ""} onChange={(e) => setVal(`${key}_snack`, e.target.value)} rows={2}
-                          placeholder="—" className="w-full text-xs rounded-lg border border-gray-200 px-2 py-1.5 resize-none focus:outline-none focus:border-[#951E3A]/50" />
+                          placeholder="—" className="w-full text-xs rounded-lg border border-border px-2 py-1.5 resize-none focus:outline-none focus:border-primary/50" />
                       ) : (
-                        <p className="text-sm text-gray-700 min-h-[2.5rem] whitespace-pre-wrap">{draft[`${key}_snack`] || "—"}</p>
+                        <p className="text-sm text-foreground min-h-[2.5rem] whitespace-pre-wrap">{draft[`${key}_snack`] || "—"}</p>
                       )}
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Lunch</p>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase mb-1">Lunch</p>
                       {isAdmin ? (
                         <textarea value={draft[`${key}_lunch`] || ""} onChange={(e) => setVal(`${key}_lunch`, e.target.value)} rows={2}
-                          placeholder="—" className="w-full text-xs rounded-lg border border-gray-200 px-2 py-1.5 resize-none focus:outline-none focus:border-[#951E3A]/50" />
+                          placeholder="—" className="w-full text-xs rounded-lg border border-border px-2 py-1.5 resize-none focus:outline-none focus:border-primary/50" />
                       ) : (
-                        <p className="text-sm text-gray-700 min-h-[2.5rem] whitespace-pre-wrap">{draft[`${key}_lunch`] || "—"}</p>
+                        <p className="text-sm text-foreground min-h-[2.5rem] whitespace-pre-wrap">{draft[`${key}_lunch`] || "—"}</p>
                       )}
                     </div>
                   </div>
@@ -103,7 +103,7 @@ export default function LunchMenuWidget({ isAdmin }) {
             {isAdmin && (
               <div className="flex justify-stretch mt-4 sm:justify-end">
                 <button onClick={() => upsertMutation.mutate(draft)} disabled={upsertMutation.isPending}
-                  className="flex w-full items-center justify-center gap-1.5 bg-[#951E3A] hover:bg-[#7a1830] text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors disabled:opacity-60 sm:w-auto">
+                  className="flex w-full items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors disabled:opacity-60 sm:w-auto">
                   {upsertMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save Menu
                 </button>

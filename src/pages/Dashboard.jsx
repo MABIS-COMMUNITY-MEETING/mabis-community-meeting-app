@@ -16,7 +16,7 @@ function StatCard({ icon: Icon, label, value, gradient, link }) {
         whileHover={{ y: -2 }}
         className={`relative overflow-hidden rounded-2xl p-5 text-white ${gradient} shadow-lg cursor-pointer group`}
       >
-        <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/10 -translate-y-6 translate-x-6" />
+        <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-card/10 -translate-y-6 translate-x-6" />
         <Icon className="w-6 h-6 mb-3 opacity-90" />
         <p className="text-3xl font-display font-bold">{value}</p>
         <p className="text-sm opacity-80 mt-1">{label}</p>

@@ -22,15 +22,15 @@ export default function HighlightPicker({ onHighlight }) {
     <div className="relative" ref={ref}>
       <button type="button" title="Highlight color"
         onMouseDown={(e) => { e.preventDefault(); setOpen(o => !o); }}
-        className="h-7 min-w-[28px] px-1.5 rounded flex items-center justify-center text-sm transition-colors hover:bg-gray-200 text-gray-700">
+        className="h-7 min-w-[28px] px-1.5 rounded flex items-center justify-center text-sm transition-colors hover:bg-muted text-foreground">
         <Highlighter className="w-3.5 h-3.5" />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-2 flex gap-1 z-50">
+        <div className="absolute top-full left-0 mt-1 bg-card rounded-lg shadow-lg border border-border p-2 flex gap-1 z-50">
           {HIGHLIGHT_COLORS.map(color => (
             <button key={color} type="button" title={color}
               onMouseDown={(e) => { e.preventDefault(); onHighlight(color); setOpen(false); }}
-              className="w-5 h-5 rounded border border-gray-300 hover:scale-110 transition-transform"
+              className="w-5 h-5 rounded border border-border hover:scale-110 transition-transform"
               style={{ backgroundColor: color }} />
           ))}
         </div>
