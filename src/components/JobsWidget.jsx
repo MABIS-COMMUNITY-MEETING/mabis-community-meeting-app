@@ -251,7 +251,7 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
 }
 
 // ─── Winner Banner ──────────────────────────────────────────────────────────
-function WinnerBanner({ winner, jobLabel, onConfirm, onRemoveAndNext, onReject, isAdmin }) {
+function WinnerBanner({ winner, jobLabel, onConfirm, onRemoveAndNext, onReject, isAdmin, canAssign = true }) {
   return createPortal(
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
       <div className="rounded-2xl p-8 text-center text-white shadow-2xl w-full max-w-md" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--ring)))" }}>
@@ -260,9 +260,9 @@ function WinnerBanner({ winner, jobLabel, onConfirm, onRemoveAndNext, onReject, 
         <p className="text-sm opacity-80 mb-5">→ <span className="font-semibold">{jobLabel}</span></p>
         {isAdmin ? (
           <div className="flex flex-col sm:flex-row gap-2 justify-center">
-            <button onClick={onConfirm}
-              className="flex-1 bg-white text-[#951E3A] font-bold py-2.5 px-5 rounded-xl hover:bg-[#EACE54] transition-colors text-sm">
-              Assign this job
+            <button onClick={onConfirm} disabled={!canAssign}
+              className="flex-1 bg-white text-[#951E3A] font-bold py-2.5 px-5 rounded-xl hover:bg-[#EACE54] transition-colors text-sm disabled:cursor-not-allowed disabled:opacity-55">
+              {canAssign ? "Assign this job" : "Extra spin only"}
             </button>
             <button onClick={onRemoveAndNext}
               className="flex-1 bg-white/20 hover:bg-white/30 text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm border border-white/30">
@@ -276,6 +276,7 @@ function WinnerBanner({ winner, jobLabel, onConfirm, onRemoveAndNext, onReject, 
         ) : (
           <p className="text-white/60 text-xs">Waiting for admin to confirm...</p>
         )}
+        {isAdmin && !canAssign && <p className="mt-3 text-xs text-white/70">This person or job is already assigned. Re-spin as often as you like.</p>}
       </div>
     </div>, document.body
   );
