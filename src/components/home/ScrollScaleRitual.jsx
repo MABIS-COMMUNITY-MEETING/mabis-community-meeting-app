@@ -1,8 +1,9 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import JapaneseText from "@/components/JapaneseText";
 
 /*
- * "A WEEKLY RITUAL" — the line grows as it travels up the viewport. Scroll
+ * "VOICE YOUR WORDS" — the line grows as it travels up the viewport. Scroll
  * frames only update transform and opacity, keeping the effect composited
  * instead of triggering text layout on every frame.
  */
@@ -19,7 +20,7 @@ export default function ScrollScaleRitual() {
 				style={{ scale, opacity }}
 				className="font-display font-thin tracking-[0.08em] text-foreground/80 text-[7vw] sm:text-[4vw] leading-none whitespace-nowrap origin-center will-change-transform"
 			>
-				A WEEKLY RITUAL
+				<JapaneseText ja="あなたの言葉を届けよう">VOICE YOUR WORDS</JapaneseText>
 			</motion.p>
 		</div>
 	);
