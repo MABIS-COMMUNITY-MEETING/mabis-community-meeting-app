@@ -793,6 +793,37 @@ body .text-accent { color: hsl(var(--editor-ink-accent)) !important; }
   background-color: hsl(var(--editor-highlight-secondary)) !important;
 }
 
+/* Selectable ink and highlight, written by DocsEditor as classes rather than
+   inline styles. The two rules above substring-match a serialised style
+   attribute, which is fragile; a class cannot be normalised away, so a user's
+   chosen colour survives. Every value is a theme token, and
+   scripts/check-theme-balance.mjs enforces their contrast against --card for
+   all themes, so these stay readable in every palette.
+   Highlight rules follow the ink rules deliberately: when a span carries both,
+   the highlight's own guaranteed-readable foreground must win. */
+.theme-rich-text .ql-ink-primary { color: hsl(var(--editor-ink-primary)); }
+.theme-rich-text .ql-ink-secondary { color: hsl(var(--editor-ink-secondary)); }
+.theme-rich-text .ql-ink-accent { color: hsl(var(--editor-ink-accent)); }
+
+.theme-rich-text .ql-hl-primary,
+.theme-rich-text .ql-hl-secondary,
+.theme-rich-text .ql-hl-accent {
+  border-radius: 2px;
+  padding: 0 0.12em;
+}
+.theme-rich-text .ql-hl-primary {
+  background-color: hsl(var(--editor-highlight-primary));
+  color: hsl(var(--editor-highlight-primary-foreground));
+}
+.theme-rich-text .ql-hl-secondary {
+  background-color: hsl(var(--editor-highlight-secondary));
+  color: hsl(var(--editor-highlight-secondary-foreground));
+}
+.theme-rich-text .ql-hl-accent {
+  background-color: hsl(var(--editor-highlight-accent));
+  color: hsl(var(--editor-highlight-accent-foreground));
+}
+
 /* ── THE PRIDE COLLECTION ─────────────────────────────────────────────
    Flagship palettes. Their advantage is art direction, not saturation: the
    colour arrives as edge light, hairlines and tiny details on interactive
