@@ -647,7 +647,7 @@ When redesigning, do not break these product expectations:
 - font selection changes the entire interface
 - Thai uses GNU FreeSerif fallback
 - Chinese, Japanese, and Korean use explicit Maple Mono multilingual handling
-- the public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there
+- The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.
 - the custom cursor can be disabled
 - animation and sound can be disabled independently
 - canvas-rendered text follows the selected UI font
