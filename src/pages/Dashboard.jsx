@@ -7,6 +7,7 @@ import { CalendarDays, MessageSquare, Trophy, Users, ArrowRight } from "lucide-r
 import { format } from "date-fns";
 import XpBadge from "@/components/shared/XpBadge";
 import MemberAvatar from "@/components/shared/MemberAvatar";
+import OpenMoji from "@/components/OpenMoji";
 
 function StatCard({ icon: Icon, label, value, gradient, link }) {
   return (
@@ -98,7 +99,10 @@ export default function Dashboard() {
         {/* Leaderboard */}
         <div className="bg-card rounded-2xl border border-border p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display font-bold text-lg">🏆 Leaderboard</h2>
+            <h2 className="flex items-center gap-2 font-display font-bold text-lg">
+              <OpenMoji hexcode="1F3C6" className="h-5 w-5" />
+              Leaderboard
+            </h2>
             <Link to="/team" className="text-sm text-primary hover:underline">View all</Link>
           </div>
           {topMembers.length === 0 ? (
@@ -107,8 +111,15 @@ export default function Dashboard() {
             <div className="space-y-3">
               {topMembers.map((m, i) => (
                 <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary/50 transition-colors">
-                  <span className="w-6 text-center font-display font-bold text-muted-foreground">
-                    {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}`}
+                  <span className="flex w-6 items-center justify-center text-center font-display font-bold text-muted-foreground">
+                    {i < 3 ? (
+                      <OpenMoji
+                        hexcode={["1F947", "1F948", "1F949"][i]}
+                        className="h-5 w-5"
+                      />
+                    ) : (
+                      i + 1
+                    )}
                   </span>
                   <MemberAvatar name={m.name} size="sm" />
                   <div className="flex-1 min-w-0">
