@@ -99,6 +99,7 @@ function TopicItem({
   onSave,
   onCancel,
   isSaving,
+  error,
 }) {
   const priority = topic.priority || 3;
 
@@ -177,7 +178,10 @@ function TopicItem({
               <Button
                 type="button"
                 onClick={onSave}
-                disabled={!editTitle.trim() || !editSubmittedBy.trim() || isSaving}
+                /* Only blocked while the request is in flight. An empty field
+                   now explains itself on click instead of leaving a dead
+                   button the user cannot diagnose. */
+                disabled={isSaving}
                 className="flex-1 rounded-lg bg-[#951E3A] text-white hover:bg-[#7a1830] sm:flex-none"
               >
                 {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Changes"}
