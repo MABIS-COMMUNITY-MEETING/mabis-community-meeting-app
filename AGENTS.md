@@ -34,9 +34,10 @@ Unless Novesce explicitly requests a change:
 - Do not turn the app into a generic rounded-card SaaS dashboard.
 - Preserve Apple-style optical liquid glass only on floating control planes. Do not spread glass across content.
 - Preserve live single-pass glass backdrop blur during wheel, touch, rapid, and momentum scrolling; active-scroll optimizations may pause decoration but must not replace glass with an opaque fallback.
-- Keep GNU FreeMono as the default UI font.
+- GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.
 - Keep GNU FreeSerif isolated as the Thai fallback.
-- Keep UnifontEX isolated to explicitly marked Japanese and Chinese content.
+- Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.
+- The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.
 - Use shared font variables and semantic color tokens. Never hard-code a normal component to a specific UI font.
 - Preserve first-paint font loading and prevent loading-screen font flashes.
 - Preserve the optional custom cursor, its outlines, its immediate off switch, and native-cursor fallback.
