@@ -34,7 +34,6 @@ export default function MotionPreference({ children }) {
 
   return (
     <MotionConfig
-      key={effectiveDisabled ? "static" : "motion"}
       reducedMotion={effectiveDisabled ? "always" : "user"}
       transition={effectiveDisabled ? { duration: 0, delay: 0 } : undefined}
     >
