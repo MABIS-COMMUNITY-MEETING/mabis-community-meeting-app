@@ -28,6 +28,8 @@ function paletteStripe(theme) {
 }
 
 const THEME_ENTRIES = Object.entries(THEMES);
+const SIMPLE_THEME_KEYS = ["default", "sage", "sky", "sakura", "midnight", "lesbian"];
+const SIMPLE_THEME_ENTRIES = SIMPLE_THEME_KEYS.map((key) => [key, THEMES[key]]).filter(([, theme]) => theme);
 
 const ThemeOption = memo(function ThemeOption({ entry, active, onSelect }) {
   const [key, theme] = entry;
@@ -70,13 +72,24 @@ export default function ThemeSwitcher() {
   const [themeName, setThemeName] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [themeLimit, setThemeLimit] = useState(INITIAL_THEME_LIMIT);
+  const [showAllThemes, setShowAllThemes] = useState(false);
   const menuRef = useRef(null);
   const loadMoreRef = useRef(null);
-  const visibleThemes = THEME_ENTRIES.slice(0, themeLimit);
-  const hasMoreThemes = themeLimit < THEME_ENTRIES.length;
+  const visibleThemes = showAllThemes ? THEME_ENTRIES.slice(0, themeLimit) : SIMPLE_THEME_ENTRIES;
+  const hasMoreThemes = showAllThemes && themeLimit < THEME_ENTRIES.length;
 
   const loadNextThemeBatch = useCallback(() => {
     setThemeLimit((limit) => Math.min(limit + THEME_BATCH_SIZE, THEME_ENTRIES.length));
+  }, []);
+
+  useEffect(() => {
+    const openFromSettings = () => {
+      setThemeLimit(INITIAL_THEME_LIMIT);
+      setShowAllThemes(false);
+      setOpen(true);
+    };
+    window.addEventListener("openThemeSwitcher", openFromSettings);
+    return () => window.removeEventListener("openThemeSwitcher", openFromSettings);
   }, []);
 
   useEffect(() => {
@@ -150,14 +163,18 @@ export default function ThemeSwitcher() {
       <button
         type="button"
         onClick={() => {
-          if (!open) setThemeLimit(INITIAL_THEME_LIMIT);
+          if (!open) {
+            setThemeLimit(INITIAL_THEME_LIMIT);
+            setShowAllThemes(false);
+          }
           setOpen((value) => !value);
         }}
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
-        title="Change theme">
-        <Palette className="w-4 h-4 text-gray-600" />
+        className="flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"
+        title="Change colors">
+        <Palette className="w-4 h-4" />
+        <span className="hidden text-[10px] font-bold uppercase tracking-wide lg:inline">Colors</span>
       </button>
       {open && (
         <>
@@ -166,12 +183,17 @@ export default function ThemeSwitcher() {
             ref={menuRef}
             role="dialog"
             aria-label="Choose a theme"
-            className="fixed left-1/2 -translate-x-1/2 top-16 w-[min(18rem,calc(100vw-1.5rem))] sm:absolute sm:left-auto sm:translate-x-0 sm:top-full sm:right-0 sm:mt-2 sm:w-72 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 z-50 max-h-[75vh] overflow-y-auto overscroll-contain"
+            className="fixed left-1/2 -translate-x-1/2 top-16 w-[min(20rem,calc(100vw-1.5rem))] sm:absolute sm:left-auto sm:translate-x-0 sm:top-full sm:right-0 sm:mt-2 sm:w-80 bg-popover text-popover-foreground border border-border p-4 z-50 max-h-[75vh] overflow-y-auto overscroll-contain shadow-xl"
             style={{ contain: "layout style" }}
           >
-            <div className="flex items-center gap-2 mb-4">
-              <Palette className="w-4 h-4 text-[#951E3A]" />
-              <h3 className="text-sm font-bold text-gray-800">Themes</h3>
+            <div className="mb-4 border-b border-border pb-3">
+              <div className="flex items-center gap-2">
+                <Palette className="w-4 h-4 text-primary" />
+                <h3 className="text-base font-bold text-foreground">Choose your colors</h3>
+              </div>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Pick one of the easy choices. Your current choice is {THEMES[currentTheme]?.name || "Custom"}.
+              </p>
             </div>
 
             {/* Theme presets */}
@@ -185,15 +207,35 @@ export default function ThemeSwitcher() {
                 />
               ))}
             </div>
-            {hasMoreThemes && (
-              <div ref={loadMoreRef} className="mb-4">
+            {!showAllThemes ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAllThemes(true);
+                  setThemeLimit(INITIAL_THEME_LIMIT);
+                }}
+                className="mb-4 min-h-11 w-full border border-border px-3 text-sm font-bold text-foreground hover:bg-muted"
+              >
+                Browse all themes · {THEME_ENTRIES.length}
+              </button>
+            ) : (
+              <div ref={loadMoreRef} className="mb-4 space-y-2">
                 <button
                   type="button"
-                  onClick={loadNextThemeBatch}
-                  className="min-h-10 w-full border border-gray-200 px-3 text-xs font-bold text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-800"
+                  onClick={() => setShowAllThemes(false)}
+                  className="min-h-10 w-full border border-border px-3 text-xs font-bold text-foreground hover:bg-muted"
                 >
-                  Show more themes ({visibleThemes.length}/{THEME_ENTRIES.length})
+                  Back to easy choices
                 </button>
+                {hasMoreThemes && (
+                  <button
+                    type="button"
+                    onClick={loadNextThemeBatch}
+                    className="min-h-10 w-full border border-border px-3 text-xs font-bold text-foreground hover:bg-muted"
+                  >
+                    Show more themes ({visibleThemes.length}/{THEME_ENTRIES.length})
+                  </button>
+                )}
               </div>
             )}
 
@@ -234,7 +276,7 @@ export default function ThemeSwitcher() {
                     <div className="w-4 h-4 rounded-full border border-gray-200" style={{ background: customPrimary }} />
                     <div className="w-4 h-4 rounded-full border border-gray-200" style={{ background: customSecondary }} />
                   </div>
-                  <span className="text-xs font-bold text-gray-700">Custom</span>
+                  <span className="text-xs font-bold text-gray-700">Make your own colors · Advanced</span>
                 </span>
                 {customActive && (
                   <button onClick={(e) => { e.stopPropagation(); handleSelectTheme(currentTheme); }}
