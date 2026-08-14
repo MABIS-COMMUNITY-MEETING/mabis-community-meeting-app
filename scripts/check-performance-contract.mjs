@@ -96,7 +96,7 @@ requireText("src/lib/routeLoaders.js", routeLoaders, "HOME_WARMUP_BUDGET_MS");
 requireText("src/lib/routeLoaders.js", routeLoaders, "waitWithinBudget");
 requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "isConstrainedNetwork()");
 requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "queryClientInstance.prefetchQuery");
-requireText("src/components/LoadingScreen.jsx", loadingScreen, "LOADING SHADERS");
+requireText("src/components/LoadingScreen.jsx", loadingScreen, "CACHING STUFF");
 forbidText("src/lib/home-route-warmup.js", homeRouteWarmup, 'from "three"');
 forbidText("src/App.jsx", app, "<SmoothScroll />");
 forbidText("src/components/SmoothScroll.jsx", smoothScroll, 'addEventListener("wheel"');
