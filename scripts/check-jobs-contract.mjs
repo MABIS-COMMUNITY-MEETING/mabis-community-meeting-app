@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {
-  assignmentBelongsToMonth,
+  assignmentIsCurrent,
   formatMonthLabel,
   getCurrentWeekLabel,
   getMonthLabel,
@@ -34,7 +34,9 @@ const served = timeKeeperKeysForYear([
 ], "2026");
 assert.deepEqual([...served], ["a@example.com"]);
 assert.equal(normalizeJobTitle("Time Taker (2)"), "Time Keeper (2)");
-assert.equal(assignmentBelongsToMonth({ week_label: "2026-W33" }, "2026-08", "2026-W33"), true);
-assert.equal(assignmentBelongsToMonth({ month_label: "2026-08" }, "2026-08", "2026-W33"), true);
+assert.equal(assignmentIsCurrent({ job_title: "Water Plants (1)", week_label: "2026-W33" }, "2026-W33", "2026-08"), true);
+assert.equal(assignmentIsCurrent({ job_title: "Time Keeper (1)", month_label: "2026-08" }, "2026-W33", "2026-08"), true);
+assert.equal(assignmentIsCurrent({ job_title: "Time Taker (2)", week_label: "2026-W33" }, "2026-W33", "2026-08"), true);
+assert.equal(assignmentIsCurrent({ job_title: "Clean Lounge (1)", week_label: "2026-W32" }, "2026-W33", "2026-08"), false);
 
-console.log("Jobs contract: monthly rotation, dated tracking, legacy compatibility, and annual Time Keeper exclusion passed.");
+console.log("Jobs contract: weekly defaults, configurable periods, monthly Time Keepers, dated tracking, legacy compatibility, and annual exclusion passed.");
