@@ -105,18 +105,18 @@ function TopicItem({
 
   if (isEditing) {
     return (
-      <div className="flex items-start gap-2 rounded-xl border-2 border-[#951E3A]/35 bg-[#951E3A]/[0.025] p-3 shadow-sm sm:gap-3 sm:p-4">
+      <div className="flex items-start gap-2 rounded-xl border-2 border-primary/35 bg-primary/[0.025] p-3 shadow-sm sm:gap-3 sm:p-4">
         <div className={`w-1 self-stretch rounded-full shrink-0 ${PRIORITY_DOT[parseInt(editPriority) || 3]}`} />
         <div className="min-w-0 flex-1 space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#951E3A]">Editing topic</p>
-              <p className="mt-0.5 text-xs text-gray-400">Changes stay attached to this discussion card.</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Editing topic</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">Changes stay attached to this discussion card.</p>
             </div>
             <button
               type="button"
               onClick={onCancel}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-800"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:border-border hover:text-foreground"
               title="Cancel editing"
             >
               <X className="h-4 w-4" />
@@ -125,7 +125,7 @@ function TopicItem({
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Select value={editSubmittedBy} onValueChange={onSubmittedByChange}>
-              <SelectTrigger className="rounded-lg border-gray-300 bg-white">
+              <SelectTrigger className="rounded-lg border-border bg-card">
                 <SelectValue placeholder="Name..." />
               </SelectTrigger>
               <SelectContent>
@@ -140,7 +140,7 @@ function TopicItem({
               placeholder="Topic title..."
               value={editTitle}
               onChange={(event) => onTitleChange(event.target.value)}
-              className="rounded-lg border-gray-300 bg-white"
+              className="rounded-lg border-border bg-card"
             />
           </div>
 
@@ -166,7 +166,7 @@ function TopicItem({
 
           <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-xs font-medium text-gray-500">Priority:</span>
+              <span className="mr-1 text-xs font-medium text-muted-foreground">Priority:</span>
               {[1, 2, 3, 4, 5].map((level) => (
                 <button
                   key={level}
@@ -174,7 +174,7 @@ function TopicItem({
                   onClick={() => onPriorityChange(String(level))}
                   className={`rounded-full border-2 px-2.5 py-1 text-xs font-bold transition-all ${editPriority === String(level)
                     ? `${PRIORITY_COLORS[level]} scale-105 border-transparent shadow`
-                    : "border-gray-200 bg-white text-gray-400 hover:border-gray-300"}`}
+                    : "border-border bg-card text-muted-foreground hover:border-border"}`}
                 >
                   {PRIORITY_LABELS[level]}
                 </button>
@@ -191,7 +191,7 @@ function TopicItem({
                    now explains itself on click instead of leaving a dead
                    button the user cannot diagnose. */
                 disabled={isSaving}
-                className="flex-1 rounded-lg bg-[#951E3A] text-white hover:bg-[#7a1830] sm:flex-none"
+                className="flex-1 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 sm:flex-none"
               >
                 {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Changes"}
               </Button>
@@ -204,21 +204,21 @@ function TopicItem({
 
   return (
     <div className={`group flex items-start gap-2 rounded-xl border p-3 transition-all sm:gap-3 sm:p-4
-      ${topic.completed ? "bg-gray-50 border-gray-100 opacity-60" : "bg-white border-gray-200 hover:border-[#951E3A]/20"}`}>
+      ${topic.completed ? "bg-muted border-border opacity-60" : "bg-card border-border hover:border-primary/20"}`}>
       {/* Priority color bar */}
       <div className={`w-1 self-stretch rounded-full shrink-0 ${PRIORITY_DOT[priority]}`} />
       <input type="checkbox" checked={!!topic.completed} onChange={(e) => onToggle(topic.id, e.target.checked)}
-        className="mt-1 w-4 h-4 rounded accent-[#951E3A] cursor-pointer shrink-0" />
+        className="mt-1 w-4 h-4 rounded accent-primary cursor-pointer shrink-0" />
       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => isAdmin && onEdit(topic)}>
         {/* Submitted by at top — bold and larger */}
-        <p className="text-sm font-bold text-[#951E3A] mb-0.5">{topic.submitted_by}</p>
+        <p className="text-sm font-bold text-primary mb-0.5">{topic.submitted_by}</p>
         {/* Title — clickable to edit */}
-        <p className={`font-bold ${compact ? "text-xl" : "text-lg"} leading-snug ${topic.completed ? "line-through text-gray-400" : "text-gray-800"} ${isAdmin ? "hover:text-[#951E3A] cursor-pointer" : ""}`}>
+        <p className={`font-bold ${compact ? "text-xl" : "text-lg"} leading-snug ${topic.completed ? "line-through text-muted-foreground" : "text-foreground"} ${isAdmin ? "hover:text-primary cursor-pointer" : ""}`}>
           {topic.title}
         </p>
         {/* Description — clickable to edit */}
         {topic.description && (
-          <div className={`theme-rich-text mt-2 pt-2 border-t border-gray-100 text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none
+          <div className={`theme-rich-text mt-2 pt-2 border-t border-border text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none
             [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2
             [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1
             [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1
@@ -226,19 +226,19 @@ function TopicItem({
             [&_h1]:text-base [&_h1]:font-bold [&_h1]:mt-2 [&_h1]:mb-1
             [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mt-1.5 [&_h2]:mb-1
             [&_p]:my-0.5
-            [&_strong]:font-semibold [&_strong]:text-gray-800
-            [&_em]:italic ${isAdmin ? "hover:bg-[#951E3A]/5 rounded-lg -mx-1 px-1 cursor-pointer" : ""}`}
+            [&_strong]:font-semibold [&_strong]:text-foreground
+            [&_em]:italic ${isAdmin ? "hover:bg-primary/5 rounded-lg -mx-1 px-1 cursor-pointer" : ""}`}
             dangerouslySetInnerHTML={{ __html: topic.description }} />
         )}
       </div>
       {isAdmin && (
         <div className="flex flex-col gap-1.5 shrink-0 mt-0.5">
           <button onClick={(event) => { event.stopPropagation(); onEdit(topic); }} title="Edit topic"
-            className="w-7 h-7 flex items-center justify-center rounded-md bg-[#951E3A] text-white hover:bg-[#7a1830] transition-colors">
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button onClick={(event) => { event.stopPropagation(); onDelete(topic.id); }} title="Delete topic"
-            className="w-7 h-7 flex items-center justify-center rounded-md bg-[#951E3A] text-white hover:bg-[#7a1830] transition-colors">
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -334,16 +334,16 @@ function AttendancePanel({ members, weekLabel }) {
   const present = allPeople.filter(m => isPresent(m)).length;
 
   return (
-    <div className="mabis-widget bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      <div className="flex flex-col gap-2 border-b border-gray-100 bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+    <div className="mabis-widget bg-card rounded-2xl border border-border overflow-hidden">
+      <div className="flex flex-col gap-2 border-b border-border bg-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div className="flex items-center gap-2">
-          <UserCheck className="w-4 h-4 text-[#951E3A]" />
-          <span className="font-semibold text-sm text-gray-800">Attendance</span>
+          <UserCheck className="w-4 h-4 text-primary" />
+          <span className="font-semibold text-sm text-foreground">Attendance</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-gray-500 font-medium">{present} / {allPeople.length} present</span>
+          <span className="text-xs text-muted-foreground font-medium">{present} / {allPeople.length} present</span>
           <button onClick={() => setShowAdd(s => !s)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-[#951E3A] hover:bg-[#951E3A]/5 px-2 py-1 rounded-lg border border-[#951E3A]/30">
+            className="flex items-center gap-1 text-[11px] font-semibold text-primary hover:bg-primary/5 px-2 py-1 rounded-lg border border-primary/30">
             <UserPlus className="w-3 h-3" /> Add
           </button>
         </div>
@@ -352,12 +352,12 @@ function AttendancePanel({ members, weekLabel }) {
       <div className="p-4">
         {/* Add person form */}
         {showAdd && (
-          <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+          <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-muted border border-border rounded-xl">
             <Input placeholder="Name..." value={newName} onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddPerson()}
-              className="rounded-lg border-gray-200 bg-white h-9 w-full flex-1 min-w-0 text-sm sm:min-w-[140px]" />
+              className="rounded-lg border-border bg-card h-9 w-full flex-1 min-w-0 text-sm sm:min-w-[140px]" />
             <Select value={newKind} onValueChange={setNewKind}>
-              <SelectTrigger className="h-9 w-full rounded-lg bg-white text-sm sm:w-28"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-full rounded-lg bg-card text-sm sm:w-28"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="student">Student</SelectItem>
                 <SelectItem value="teacher">Teacher</SelectItem>
@@ -367,17 +367,17 @@ function AttendancePanel({ members, weekLabel }) {
             </Select>
             {newKind === "other" && (
               <Input placeholder="Type (e.g. Parent)..." value={newOtherType} onChange={(e) => setNewOtherType(e.target.value)}
-                className="rounded-lg border-gray-200 bg-white h-9 w-full text-sm sm:w-32" />
+                className="rounded-lg border-border bg-card h-9 w-full text-sm sm:w-32" />
             )}
             <Button onClick={handleAddPerson} disabled={!newName.trim()}
-              className="bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg h-9 text-sm">Add</Button>
+              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-9 text-sm">Add</Button>
           </div>
         )}
         {/* Role badges at top */}
         <div className="flex flex-wrap gap-2 mb-4">
           {chair && (
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer select-none
-              ${attendance[chair.id] === false ? "bg-red-50 border-red-200 text-red-600 line-through" : ""}`}
+              ${attendance[chair.id] === false ? "bg-destructive/10 border-destructive/30 text-destructive line-through" : ""}`}
               style={attendance[chair.id] === false ? {} : { backgroundColor: "hsl(var(--role-chair) / 0.15)", borderColor: "hsl(var(--role-chair) / 0.35)", color: "hsl(var(--role-chair))" }}
               onClick={() => setAttendance(a => { const newAtt = { ...a, [chair.id]: a[chair.id] === false ? true : false }; upsertAttendance(newAtt); return newAtt; })}>
               Chair: {chair.name}
@@ -386,7 +386,7 @@ function AttendancePanel({ members, weekLabel }) {
           )}
           {minutes && (
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer select-none
-              ${attendance[minutes.id] === false ? "bg-red-50 border-red-200 text-red-600 line-through" : ""}`}
+              ${attendance[minutes.id] === false ? "bg-destructive/10 border-destructive/30 text-destructive line-through" : ""}`}
               style={attendance[minutes.id] === false ? {} : { backgroundColor: "hsl(var(--role-minutes) / 0.15)", borderColor: "hsl(var(--role-minutes) / 0.35)", color: "hsl(var(--role-minutes))" }}
               onClick={() => setAttendance(a => { const newAtt = { ...a, [minutes.id]: a[minutes.id] === false ? true : false }; upsertAttendance(newAtt); return newAtt; })}>
               Minutes: {minutes.name}
@@ -406,7 +406,7 @@ function AttendancePanel({ members, weekLabel }) {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <span className="text-xs text-orange-700 font-medium sm:w-28 sm:shrink-0">Replacement Chair:</span>
                 <Select value={replacementChair} onValueChange={setReplacementChair}>
-                  <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-white border-orange-200">
+                  <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-card border-orange-200">
                     <SelectValue placeholder="Pick someone..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -415,14 +415,14 @@ function AttendancePanel({ members, weekLabel }) {
                     ))}
                   </SelectContent>
                 </Select>
-                {replacementChair && <span className="text-xs font-semibold text-green-700">{replacementChair}</span>}
+                {replacementChair && <span className="text-xs font-semibold text-primary">{replacementChair}</span>}
               </div>
             )}
             {minutesAbsent && (
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <span className="text-xs text-orange-700 font-medium sm:w-28 sm:shrink-0">Replacement Minutes:</span>
                 <Select value={replacementMinutes} onValueChange={setReplacementMinutes}>
-                  <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-white border-orange-200">
+                  <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-card border-orange-200">
                     <SelectValue placeholder="Pick someone..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -431,7 +431,7 @@ function AttendancePanel({ members, weekLabel }) {
                     ))}
                   </SelectContent>
                 </Select>
-                {replacementMinutes && <span className="text-xs font-semibold text-green-700">{replacementMinutes}</span>}
+                {replacementMinutes && <span className="text-xs font-semibold text-primary">{replacementMinutes}</span>}
               </div>
             )}
           </div>
@@ -440,16 +440,16 @@ function AttendancePanel({ members, weekLabel }) {
         {/* Teachers */}
         {allPeople.filter(m => m.role === "teacher").length > 0 && (
           <div className="mb-4">
-            <p className="text-[10px] font-bold text-[#1e3a8a] uppercase tracking-wide mb-1.5">Teachers</p>
+            <p className="text-[10px] font-bold text-role-teacher uppercase tracking-wide mb-1.5">Teachers</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {[...allPeople.filter(m => m.role === "teacher")].sort((a, b) => { const aC = /claudia/i.test(a.name) ? 0 : 1; const bC = /claudia/i.test(b.name) ? 0 : 1; if (aC !== bC) return aC - bC; return displayName(a).localeCompare(displayName(b)); }).map(m => {
                 const present_ = isPresent(m);
                 return (
                   <label key={m.id} className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border cursor-pointer transition-all select-none
-                    ${present_ ? "bg-blue-50 border-blue-200" : "bg-red-50 border-red-200 opacity-60"}`}>
+                    ${present_ ? "bg-role-teacher/10 border-role-teacher/30" : "bg-destructive/10 border-destructive/30 opacity-60"}`}>
                     <input type="checkbox" checked={present_} onChange={() => toggle(m)}
-                      className="w-3.5 h-3.5 rounded accent-[#1e3a8a] shrink-0" />
-                    <span className={`text-xs font-medium truncate ${present_ ? "text-gray-800" : "text-gray-400 line-through"}`}>
+                      className="w-3.5 h-3.5 rounded accent-role-teacher shrink-0" />
+                    <span className={`text-xs font-medium truncate ${present_ ? "text-foreground" : "text-muted-foreground line-through"}`}>
                       {displayName(m)}
                     </span>
                   </label>
@@ -462,16 +462,16 @@ function AttendancePanel({ members, weekLabel }) {
         {/* Students / Members */}
         {allPeople.filter(m => m.role !== "chair" && m.role !== "minutes" && m.role !== "teacher").length > 0 && (
           <div>
-            <p className="text-[10px] font-bold text-[#951E3A] uppercase tracking-wide mb-1.5">Students</p>
+            <p className="text-[10px] font-bold text-primary uppercase tracking-wide mb-1.5">Students</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {allPeople.filter(m => m.role !== "chair" && m.role !== "minutes" && m.role !== "teacher").sort((a, b) => displayName(a).localeCompare(displayName(b))).map(m => {
                 const present_ = isPresent(m);
                 return (
                   <label key={m.id} className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border cursor-pointer transition-all select-none
-                    ${present_ ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200 opacity-60"}`}>
+                    ${present_ ? "bg-role-student/10 border-role-student/30" : "bg-destructive/10 border-destructive/30 opacity-60"}`}>
                     <input type="checkbox" checked={present_} onChange={() => toggle(m)}
-                      className="w-3.5 h-3.5 rounded accent-[#951E3A] shrink-0" />
-                    <span className={`text-xs font-medium truncate ${present_ ? "text-gray-800" : "text-gray-400 line-through"}`}>
+                      className="w-3.5 h-3.5 rounded accent-primary shrink-0" />
+                    <span className={`text-xs font-medium truncate ${present_ ? "text-foreground" : "text-muted-foreground line-through"}`}>
                       {m.role === "guest" ? `${m.name} (${m.custom_type || "Guest"})` : displayName(m)}
                     </span>
                   </label>
@@ -704,10 +704,10 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   if (meetingMode) {
     return createPortal(
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="fixed inset-0 bg-background text-foreground z-[80] flex flex-col overflow-x-hidden">
-        <div className="bg-[#951E3A] px-4 sm:px-6 py-4 flex flex-col items-start gap-3 shrink-0 sm:flex-row sm:items-center sm:justify-between">
+        <div className="bg-primary px-4 sm:px-6 py-4 flex flex-col items-start gap-3 shrink-0 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-white/60 text-xs uppercase tracking-widest mb-0.5">Meeting Mode</p>
-            <h2 className="font-display font-bold text-white text-lg sm:text-2xl">{
+            <p className="text-primary-foreground/60 text-xs uppercase tracking-widest mb-0.5">Meeting Mode</p>
+            <h2 className="font-display font-bold text-primary-foreground text-lg sm:text-2xl">{
               (() => {
                 const md = localStorage.getItem("mabis_meeting_date");
                 return md ? format(new Date(md), "EEEE, d MMMM yyyy") : formatWeekFull(viewedWeek);
@@ -716,11 +716,11 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           </div>
           <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
             <button onClick={() => { actionRef.current = "pause"; setMeetingPaused(true); setMeetingMode(false); }}
-              className="flex min-h-11 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/30 transition-colors">
+              className="flex min-h-11 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border border-primary-foreground/30 transition-colors">
               <Pause className="w-3.5 h-3.5" /> Pause
             </button>
             <button onClick={() => { actionRef.current = "end"; setMeetingMode(false); setMeetingPaused(false); }}
-              className="flex min-h-11 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/30 transition-colors">
+              className="flex min-h-11 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border border-primary-foreground/30 transition-colors">
               <Square className="w-3.5 h-3.5" /> End
             </button>
           </div>
@@ -741,21 +741,21 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               <AttendancePanel members={members} weekLabel={viewedWeek} />
 
               {/* Change Chair / Minutes */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="bg-card rounded-2xl border border-border overflow-hidden">
                 <button
                   onClick={() => setShowRoleChange(r => !r)}
-                  className="w-full flex items-center justify-between px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                  className="w-full flex items-center justify-between px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
                   <span className="flex items-center gap-2">
-                    <RefreshCw className="w-4 h-4 text-[#951E3A]" />
+                    <RefreshCw className="w-4 h-4 text-primary" />
                     Change Chair / Minutes for this meeting
                   </span>
-                  <span className="text-gray-400 text-xs">{showRoleChange ? "▲ Hide" : "▼ Show"}</span>
+                  <span className="text-muted-foreground text-xs">{showRoleChange ? "▲ Hide" : "▼ Show"}</span>
                 </button>
                 {showRoleChange && (
-                  <div className="px-5 pb-4 space-y-3 border-t border-gray-100">
+                  <div className="px-5 pb-4 space-y-3 border-t border-border">
                     <div className="grid sm:grid-cols-2 gap-3 pt-3">
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 mb-1.5">Chair</p>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1.5">Chair</p>
                         <Select
                           value={currentChair?.id || ""}
                           onValueChange={(id) => {
@@ -767,7 +767,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                             });
                             updateMemberRoleMutation.mutate({ id, role: "chair" });
                           }}>
-                          <SelectTrigger className="rounded-lg text-sm bg-amber-50 border-amber-200">
+                          <SelectTrigger className="rounded-lg text-sm bg-role-chair/10 border-role-chair/30">
                             <SelectValue placeholder="Pick chair..." />
                           </SelectTrigger>
                           <SelectContent>
@@ -778,7 +778,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                         </Select>
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 mb-1.5">Minutes</p>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1.5">Minutes</p>
                         <Select
                           value={currentMinutes?.id || ""}
                           onValueChange={(id) => {
@@ -787,7 +787,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                             });
                             updateMemberRoleMutation.mutate({ id, role: "minutes" });
                           }}>
-                          <SelectTrigger className="rounded-lg text-sm bg-blue-50 border-blue-200">
+                          <SelectTrigger className="rounded-lg text-sm bg-role-minutes/10 border-role-minutes/30">
                             <SelectValue placeholder="Pick minutes..." />
                           </SelectTrigger>
                           <SelectContent>
@@ -806,8 +806,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             {/* Announcements */}
             <section>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
-                <h3 className="font-display font-bold text-gray-800 text-xl">Announcements</h3>
+                <div className="w-1 h-6 bg-primary rounded-full" />
+                <h3 className="font-display font-bold text-foreground text-xl">Announcements</h3>
               </div>
               <Suspense fallback={<ChunkFallback height={260} />}>
                 <AnnouncementsWidget members={members} isAdmin={isAdmin} />
@@ -817,11 +817,11 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             {/* Topics */}
             <section>
               <div className="flex flex-wrap items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
-                <h3 className="font-display font-bold text-gray-800 text-xl">Discussion Topics</h3>
-                <span className="text-sm text-gray-400">{viewedTopics.filter(t => t.completed).length}/{viewedTopics.length} done</span>
+                <div className="w-1 h-6 bg-primary rounded-full" />
+                <h3 className="font-display font-bold text-foreground text-xl">Discussion Topics</h3>
+                <span className="text-sm text-muted-foreground">{viewedTopics.filter(t => t.completed).length}/{viewedTopics.length} done</span>
                 <Button size="sm" variant="outline"
-                  className="ml-auto border-[#951E3A]/40 text-[#951E3A] hover:bg-[#951E3A]/5 text-xs gap-1"
+                  className="ml-auto border-primary/40 text-primary hover:bg-primary/5 text-xs gap-1"
                   onClick={toggleAddTopicForm}>
                   <Plus className="w-3.5 h-3.5" /> Add Topic
                 </Button>
@@ -829,10 +829,10 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
 
               {/* Inline add form in meeting mode */}
               {showForm && !editingTopicId && (
-                <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50 space-y-4 mb-4">
+                <div className="border border-border rounded-2xl p-5 bg-muted space-y-4 mb-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Select value={submittedBy} onValueChange={setSubmittedBy}>
-                      <SelectTrigger className="rounded-lg border-gray-300 bg-white">
+                      <SelectTrigger className="rounded-lg border-border bg-card">
                         <SelectValue placeholder="Name..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -843,24 +843,24 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                       </SelectContent>
                     </Select>
                     <Input placeholder="Topic title..." value={title} onChange={(e) => setTitle(e.target.value)}
-                      className="rounded-lg border-gray-300 bg-white" />
+                      className="rounded-lg border-border bg-card" />
                   </div>
                   <Suspense fallback={<ChunkFallback height={140} />}>
                     <DocsEditor key={editingTopicId || "new-mm"} title={title || "Untitled topic"} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="140px" initialHtml={description} />
                   </Suspense>
                   <div className="flex items-center gap-2 flex-wrap pt-1">
-                    <span className="text-xs text-gray-500 font-medium">Priority:</span>
+                    <span className="text-xs text-muted-foreground font-medium">Priority:</span>
                     {[1,2,3,4,5].map(p => (
                       <button key={p} onClick={() => setPriority(String(p))}
                         className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all border-2 ${priority === String(p)
                           ? PRIORITY_COLORS[p] + " border-transparent scale-105 shadow"
-                          : "bg-white text-gray-400 border-gray-200 hover:border-gray-300"}`}>
+                          : "bg-card text-muted-foreground border-border hover:border-border"}`}>
                         {PRIORITY_LABELS[p]}
                       </button>
                     ))}
                     <Button onClick={handleAdd}
                       disabled={!title.trim() || !submittedBy.trim() || addMutation.isPending || updateTopicMutation.isPending}
-                      className="ml-auto bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg text-sm">
+                      className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-sm">
                       {addMutation.isPending ? "Adding..." : "Add"}
                     </Button>
                   </div>
@@ -868,7 +868,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               )}
 
               {viewedTopics.length === 0 ? (
-                <p className="text-center text-gray-400 text-sm py-8 bg-white rounded-xl border border-gray-200">No topics this week</p>
+                <p className="text-center text-muted-foreground text-sm py-8 bg-card rounded-xl border border-border">No topics this week</p>
               ) : (
                 <div className="space-y-2">
                   {viewedTopics.map(topic => (
@@ -884,9 +884,9 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             {/* Meeting Notes */}
             <section>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
-                <h3 className="font-display font-bold text-gray-800 text-xl">Meeting Notes</h3>
-                <span className="text-xs text-gray-400">{formatWeekLabel(viewedWeek)}</span>
+                <div className="w-1 h-6 bg-primary rounded-full" />
+                <h3 className="font-display font-bold text-foreground text-xl">Meeting Notes</h3>
+                <span className="text-xs text-muted-foreground">{formatWeekLabel(viewedWeek)}</span>
               </div>
               <Suspense fallback={<ChunkFallback height={260} />}>
                 <MeetingNotesEditor weekLabel={viewedWeek} />
@@ -896,8 +896,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             {/* Jobs */}
             <section>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
-                <h3 className="font-display font-bold text-gray-800 text-xl">Jobs Assignment</h3>
+                <div className="w-1 h-6 bg-primary rounded-full" />
+                <h3 className="font-display font-bold text-foreground text-xl">Jobs Assignment</h3>
               </div>
               <Suspense fallback={<ChunkFallback height={420} />}>
                 <JobsWidget members={members} isAdmin={isAdmin} />
@@ -907,8 +907,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             {/* Calendar */}
             <section>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-[#951E3A] rounded-full" />
-                <h3 className="font-display font-bold text-gray-800 text-xl">Calendar</h3>
+                <div className="w-1 h-6 bg-primary rounded-full" />
+                <h3 className="font-display font-bold text-foreground text-xl">Calendar</h3>
               </div>
               <Suspense fallback={<ChunkFallback height={420} />}>
                 <CalendarWidget />
@@ -919,7 +919,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
             <div className="flex justify-center pt-4 pb-8">
               <button
                 onClick={() => { actionRef.current = "end"; setMeetingMode(false); setMeetingPaused(false); }}
-                className="flex items-center justify-center gap-3 bg-[#951E3A] hover:bg-[#7a1830] text-white font-bold text-xl sm:text-2xl px-6 py-5 sm:py-6 rounded-2xl shadow-lg transition-all hover:scale-105 w-full max-w-md">
+                className="flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xl sm:text-2xl px-6 py-5 sm:py-6 rounded-2xl shadow-lg transition-all hover:scale-105 w-full max-w-md">
                 <Square className="w-7 h-7" /> End Meeting
               </button>
             </div>
@@ -934,31 +934,31 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
 
   // ── NORMAL MODE ────────────────────────────────────────────────────────────
   return (
-    <div className={fullscreen ? "fixed inset-0 z-50 bg-white overflow-y-auto" : "mabis-widget bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden"}>
-      <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex flex-col items-stretch gap-3 sticky top-0 z-10 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
+    <div className={fullscreen ? "fixed inset-0 z-50 bg-card overflow-y-auto" : "mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden"}>
+      <div className="mabis-widget-header bg-primary px-4 py-4 flex flex-col items-stretch gap-3 sticky top-0 z-10 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <MessagesSquare className="w-5 h-5 text-white" />
+          <MessagesSquare className="w-5 h-5 text-primary-foreground" />
           <div>
-            <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Discussions</h2>
-            <p className="text-white/60 text-xs mt-0.5">{formatWeekLabel(viewedWeek)}</p>
+            <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Discussions</h2>
+            <p className="text-primary-foreground/60 text-xs mt-0.5">{formatWeekLabel(viewedWeek)}</p>
           </div>
         </div>
         <div className="mabis-widget-actions grid grid-cols-2 gap-2 sm:flex sm:items-center">
           <Link to="/history" className="min-w-0">
             <Button size="sm" variant="outline"
-              className="w-full border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1 px-2 sm:w-auto sm:px-3">
+              className="w-full border-primary-foreground/40 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 text-xs gap-1 px-2 sm:w-auto sm:px-3">
               <History className="w-3.5 h-3.5" /> History
             </Button>
           </Link>
           {isCurrentWeek && (
             <Button size="sm" variant="outline"
-              className="w-full border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
+              className="w-full border-primary-foreground/40 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
               onClick={toggleAddTopicForm}>
               <Plus className="w-3.5 h-3.5" /> Add Topic
             </Button>
           )}
           <Button size="sm" variant="outline"
-            className="w-full border-white/40 text-white bg-white/10 hover:bg-white/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
+            className="w-full border-primary-foreground/40 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
             onClick={() => setFullscreen(f => !f)}>
             {fullscreen ? <X className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             {fullscreen ? "Close" : "Fullscreen"}
@@ -969,10 +969,10 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
       <div className="mabis-widget-body p-4 space-y-4 sm:p-5">
         {/* Add Topic Form */}
         {showForm && !editingTopicId && isCurrentWeek && (
-          <div className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-4 sm:rounded-2xl sm:p-5">
+          <div className="border border-border rounded-xl p-4 bg-muted space-y-4 sm:rounded-2xl sm:p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Select value={submittedBy} onValueChange={setSubmittedBy}>
-                <SelectTrigger className="rounded-lg border-gray-300 bg-white">
+                <SelectTrigger className="rounded-lg border-border bg-card">
                   <SelectValue placeholder="Name..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -984,26 +984,26 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               </Select>
               <Input placeholder="Topic title..." value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="rounded-lg border-gray-300 bg-white" />
+                className="rounded-lg border-border bg-card" />
             </div>
             <Suspense fallback={<ChunkFallback height={180} />}>
               <DocsEditor key={editingTopicId || "new"} title={title || "Untitled topic"} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="180px" initialHtml={description} />
             </Suspense>
             <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-xs text-gray-500 font-medium">Priority:</span>
+                <span className="text-xs text-muted-foreground font-medium">Priority:</span>
                 {[1,2,3,4,5].map(p => (
                   <button key={p} onClick={() => setPriority(String(p))}
                     className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all border-2 ${priority === String(p)
                       ? PRIORITY_COLORS[p] + " border-transparent scale-105 shadow"
-                      : "bg-white text-gray-400 border-gray-200 hover:border-gray-300"}`}>
+                      : "bg-card text-muted-foreground border-border hover:border-border"}`}>
                     {PRIORITY_LABELS[p]}
                   </button>
                 ))}
               </div>
               <Button onClick={handleAdd}
                 disabled={!title.trim() || !submittedBy.trim() || addMutation.isPending || updateTopicMutation.isPending}
-                className="w-full bg-[#951E3A] hover:bg-[#7a1830] text-white rounded-lg sm:ml-auto sm:w-auto">
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg sm:ml-auto sm:w-auto">
                 {addMutation.isPending ? "Adding..." : "Add Topic"}
               </Button>
             </div>
@@ -1013,26 +1013,26 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
         {/* Week navigation */}
         <div className="flex items-center gap-1">
           <button onClick={() => setWeekOffset(w => w - 1)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400">
+            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-xs text-gray-500 font-medium flex-1 text-center">
+          <span className="text-xs text-muted-foreground font-medium flex-1 text-center">
             {isCurrentWeek ? "This Week" : formatWeekLabel(viewedWeek)}
           </span>
 
           <button onClick={() => setWeekOffset(w => w + 1)} disabled={isCurrentWeek}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 disabled:opacity-30">
+            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
             <ChevronRight className="w-4 h-4" />
           </button>
           {!isCurrentWeek && (
             <button onClick={() => setWeekOffset(0)}
-              className="text-xs text-[#951E3A] hover:underline px-2">Now</button>
+              className="text-xs text-primary hover:underline px-2">Now</button>
           )}
         </div>
 
         <div className="space-y-2">
           {viewedTopics.length === 0 && (
-            <p className="text-center text-gray-400 text-sm py-8">No topics yet for this week</p>
+            <p className="text-center text-muted-foreground text-sm py-8">No topics yet for this week</p>
           )}
           {viewedTopics.map(topic => (
             <TopicItem key={topic.id} topic={topic} compact={false} isAdmin={topicAdmin}
@@ -1042,7 +1042,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           ))}
         </div>
 
-        <div className="border-t border-gray-100 pt-4">
+        <div className="border-t border-border pt-4">
           <Suspense fallback={<ChunkFallback height={240} />}>
             <JobsWidget members={members} isAdmin={isAdmin} compact={true} />
           </Suspense>
