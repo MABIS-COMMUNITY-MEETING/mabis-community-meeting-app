@@ -240,21 +240,11 @@
   outline-offset: 3px;
 }
 
-/* ── active-scroll fast path ──────────────────────────────────
-   Backdrop capture on a fixed header can make the compositor re-sample the
-   page every frame. During the short scroll burst, use the same semantic
-   surface as an opaque optical approximation; restore full glass at rest. */
-html.is-scrolling .lg-surface {
-  background: hsl(var(--background) / 0.96) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  transition: none !important;
-}
-html.is-scrolling .lg-surface::before,
-html.is-scrolling .lg-surface::after {
-  opacity: 0 !important;
-  transition: none !important;
-}
+/* ── active-scroll material invariance ───────────────────────
+   Native scrolling stays in charge and scroll-linked decoration still yields,
+   but the single backdrop capture stays active. Replacing it with an opaque
+   fill makes the glass disappear during wheel, touch and momentum scrolls.
+   Blur remains constant between frames, so there is no interpolation loop. */
 
 /* ── mobile: smaller radii, no lens pass ─────────────────────── */
 @media (max-width: 640px) {
