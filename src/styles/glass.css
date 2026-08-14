@@ -113,10 +113,10 @@
 
 /* A cached depth layer carries the adaptive shadow and ambient colour spill.
    Only opacity and transform move; the expensive backdrop sample is stable. */
-.lg-surface > .lg-depth {
+.lg-surface > .lg-content > .lg-depth {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   border-radius: inherit;
   background: radial-gradient(
@@ -228,7 +228,7 @@
   --glass_shadow: none;
   border: none;
 }
-.lg-overlay::before, .lg-overlay::after, .lg-overlay > .lg-depth { display: none; }
+.lg-overlay::before, .lg-overlay::after, .lg-overlay .lg-depth { display: none; }
 
 /* ── adaptive tint ───────────────────────────────────────────── */
 /* over dark sections the material is graphite with a luminous rim —
