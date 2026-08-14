@@ -10,6 +10,7 @@ import { getISOWeek, getYear, nextFriday, isFriday, subWeeks, addWeeks, format }
 import { Link, useLocation } from "react-router-dom";
 
 import { displayName } from "@/lib/names";
+import { dedupeByIdentity, membersWithRole } from "@/lib/memberIdentity";
 import { motion } from "framer-motion";
 
 const JobsWidget = lazy(() => import("@/components/JobsWidget"));
@@ -313,7 +314,10 @@ function AttendancePanel({ members, weekLabel }) {
   const [replacementChair, setReplacementChair]     = useState("");
   const [replacementMinutes, setReplacementMinutes] = useState("");
 
-  const allPeople = [...members.filter((m, i, arr) => arr.findIndex(x => x.name.toLowerCase() === m.name.toLowerCase()) === i), ...guests];
+  // Collapse duplicate rows for one person (email first, name only as a
+  // fallback) keeping their highest-ranked role, so a stray student row can
+  // never hide the real chair/minutes holder from the attendance list.
+  const allPeople = [...dedupeByIdentity(members), ...guests];
   const present = allPeople.filter(m => isPresent(m)).length;
 
   return (
@@ -477,6 +481,10 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   const [priority, setPriority] = useState("3");
   const [showForm, setShowForm] = useState(false);
   const [editingTopicId, setEditingTopicId] = useState(null);
+  // A save that fails must say so. Previously both the validation guard and a
+  // rejected request returned silently, so the form just sat there looking
+  // unsaved with no explanation.
+  const [saveError, setSaveError] = useState("");
   const [meetingMode, setMeetingMode] = useState(location.state?.startMeeting === true);
   const [meetingPaused, setMeetingPaused] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -564,6 +572,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   const resetTopicForm = () => {
     setTitle(""); setDescription(""); setPriority("3");
     setSubmittedBy(""); setEditingTopicId(null); setShowForm(false);
+    setSaveError("");
   };
   const toggleAddTopicForm = () => {
     if (showForm && !editingTopicId) {
@@ -577,13 +586,20 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
     setPriority("3");
     setShowForm(true);
   };
+  const saveFailed = (error) => setSaveError(
+    error?.message
+      ? `Could not save: ${error.message}`
+      : "Could not save. Check your connection and try again — your text is still here.",
+  );
   const addMutation = useMutation({
     mutationFn: (data) => base44.entities.DiscussionTopic.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["topics"] }); resetTopicForm(); },
+    onError: saveFailed,
   });
   const updateTopicMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.DiscussionTopic.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["topics"] }); resetTopicForm(); },
+    onError: saveFailed,
   });
   const handleEditTopic = (t) => {
     setShowForm(false);
@@ -628,7 +644,13 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   });
 
   const handleAdd = () => {
-    if (!title.trim() || !submittedBy.trim()) return;
+    if (!title.trim() || !submittedBy.trim()) {
+      setSaveError(!title.trim()
+        ? "Give the topic a title before saving."
+        : "Choose who submitted this topic before saving.");
+      return;
+    }
+    setSaveError("");
     if (editingTopicId) {
       updateTopicMutation.mutate({
         id: editingTopicId,
@@ -643,13 +665,18 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
     }
   };
 
+  // One entry per person: two rows sharing a name would otherwise render two
+  // <SelectItem> options with an identical value, which Radix cannot resolve.
+  const topicSubmitters = dedupeByIdentity(members);
+
   const inlineEditProps = (topic) => ({
     isEditing: editingTopicId === topic.id,
     editTitle: title,
     editDescription: description,
     editSubmittedBy: submittedBy,
     editPriority: priority,
-    members,
+    members: topicSubmitters,
+    error: saveError,
     onTitleChange: setTitle,
     onDescriptionChange: setDescription,
     onSubmittedByChange: setSubmittedBy,
@@ -658,6 +685,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
     onCancel: resetTopicForm,
     isSaving: updateTopicMutation.isPending,
   });
+
 
   // ── MEETING MODE ──────────────────────────────────────────────────────────
   if (meetingMode) {
@@ -718,7 +746,12 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                         <Select
                           value={currentChair?.id || ""}
                           onValueChange={(id) => {
-                            if (currentChair) updateMemberRoleMutation.mutate({ id: currentChair.id, role: "student" });
+                            // Demote every current holder, not just the first
+                            // match — duplicate rows used to survive here and
+                            // leave two people holding the same role.
+                            membersWithRole(members, "chair").forEach((holder) => {
+                              if (holder.id !== id) updateMemberRoleMutation.mutate({ id: holder.id, role: "student" });
+                            });
                             updateMemberRoleMutation.mutate({ id, role: "chair" });
                           }}>
                           <SelectTrigger className="rounded-lg text-sm bg-amber-50 border-amber-200">
@@ -736,7 +769,9 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                         <Select
                           value={currentMinutes?.id || ""}
                           onValueChange={(id) => {
-                            if (currentMinutes) updateMemberRoleMutation.mutate({ id: currentMinutes.id, role: "student" });
+                            membersWithRole(members, "minutes").forEach((holder) => {
+                              if (holder.id !== id) updateMemberRoleMutation.mutate({ id: holder.id, role: "student" });
+                            });
                             updateMemberRoleMutation.mutate({ id, role: "minutes" });
                           }}>
                           <SelectTrigger className="rounded-lg text-sm bg-blue-50 border-blue-200">
