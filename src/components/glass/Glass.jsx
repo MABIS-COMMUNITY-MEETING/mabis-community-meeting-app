@@ -42,6 +42,7 @@ export default function Glass({
 			className={`lg-surface ${VARIANTS[variant] || VARIANTS.regular} lg-on-${tone} ${className}`}
 			{...rest}
 		>
+			<span className="lg-depth" aria-hidden="true" />
 			<div className={`lg-content ${contentClassName}`}>{children}</div>
 		</Tag>
 	);
