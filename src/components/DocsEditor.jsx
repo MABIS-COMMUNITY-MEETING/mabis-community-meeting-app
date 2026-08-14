@@ -89,7 +89,6 @@ const ZOOM_LEVELS = [75, 90, 100, 110, 125, 150];
 // !important rule then repaints the user's colour back to the default ink.
 // A class cannot be normalised away, and it keeps the colour bound to the
 // theme token, so every one of the 133 themes stays contrast-correct.
-const Parchment = Quill.import("parchment");
 const ThemeInkClass = new Parchment.Attributor.Class("themeInk", "ql-ink", { scope: Parchment.Scope.INLINE });
 const ThemeHighlightClass = new Parchment.Attributor.Class("themeHighlight", "ql-hl", { scope: Parchment.Scope.INLINE });
 Quill.register(ThemeInkClass, true);
