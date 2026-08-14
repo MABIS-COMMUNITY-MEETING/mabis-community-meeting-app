@@ -106,8 +106,10 @@ function TopicItem({
 
   if (isEditing) {
     return (
-      <div className="flex items-start gap-2 rounded-xl border-2 border-primary/35 bg-primary/[0.025] p-3 shadow-sm sm:gap-3 sm:p-4">
-        <div className={`w-1 self-stretch rounded-full shrink-0 ${PRIORITY_DOT[parseInt(editPriority) || 3]}`} />
+      /* Editing lifts the entry off the agenda and onto a document page: a
+         plain paper surface with real elevation, no accent tint competing with
+         the toolbar, so the Docs-style editor inside is what reads. */
+      <div className="rounded-lg border border-border bg-background p-3.5 shadow-lg sm:p-5">
         <div className="min-w-0 flex-1 space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -204,13 +206,13 @@ function TopicItem({
     );
   }
 
-  // An agenda reads as a document, not a stack of cards: entries are separated
-  // by a hairline rule, numbered in the margin, and set in a continuous column.
-  // Priority is a marginal rule rather than a coloured pill.
+  // At rest each topic is an entry card: one card per real object, crisp edges
+  // and a small radius, with priority carried as a spine down the binding edge
+  // rather than a coloured pill.
   return (
-    <article className={`group relative flex items-start gap-3 border-b border-border py-3.5 pl-3 transition-colors sm:gap-4 sm:py-4
-      ${topic.completed ? "opacity-55" : "hover:bg-muted/40"}`}>
-      <span aria-hidden className={`absolute left-0 top-3.5 bottom-3.5 w-[2px] ${PRIORITY_DOT[priority]}`} />
+    <article className={`group relative flex items-start gap-3 overflow-hidden rounded-lg border bg-card p-3.5 pl-4 transition-colors sm:gap-4 sm:p-4 sm:pl-5
+      ${topic.completed ? "border-border opacity-55" : "border-border hover:border-primary/30"}`}>
+      <span aria-hidden className={`absolute inset-y-0 left-0 w-[3px] ${PRIORITY_DOT[priority]}`} />
       <input type="checkbox" checked={!!topic.completed} onChange={(e) => onToggle(topic.id, e.target.checked)}
         aria-label={topic.completed ? `Mark "${topic.title}" as not discussed` : `Mark "${topic.title}" as discussed`}
         className="mt-1.5 w-4 h-4 accent-primary cursor-pointer shrink-0" />
