@@ -110,7 +110,7 @@ export default function ThemeSwitcher() {
   const handleSelectTheme = useCallback((key) => {
     setCurrentTheme(key);
     setCustomActive(false);
-    clearCustomColors();
+    clearCustomColors({ notify: false });
     applyTheme(key);
     const theme = THEMES[key];
     setCustomPrimary(hslToHex(theme.vars["--primary"]));
