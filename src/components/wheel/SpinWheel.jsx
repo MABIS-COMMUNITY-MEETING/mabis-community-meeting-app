@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { playWheelTick, playWheelStart, playWheelWin } from "@/lib/wheel_sound";
+import OpenMoji from "@/components/OpenMoji";
 
 const WHEEL_COLORS = [
   "#8B5CF6", "#EC4899", "#3B82F6", "#10B981",
@@ -174,7 +175,17 @@ export default function SpinWheel({ members, onResult }) {
         whileTap={{ scale: 0.95 }}
         className="px-8 py-3 rounded-2xl font-display font-bold text-white bg-gradient-to-r from-primary to-accent shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed text-lg tracking-wide"
       >
-        {spinning ? "🎰 Spinning..." : "🎯 SPIN THE WHEEL"}
+        {spinning ? (
+          <span className="flex items-center gap-2">
+            <OpenMoji hexcode="1F3B0" className="h-5 w-5" />
+            Spinning...
+          </span>
+        ) : (
+          <span className="flex items-center gap-2">
+            <OpenMoji hexcode="1F3AF" className="h-5 w-5" />
+            SPIN THE WHEEL
+          </span>
+        )}
       </motion.button>
 
       {winner && (
@@ -183,7 +194,10 @@ export default function SpinWheel({ members, onResult }) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           className="text-center p-4 rounded-2xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20"
         >
-          <p className="text-sm text-muted-foreground font-medium">🎉 Selected</p>
+          <p className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground font-medium">
+            <OpenMoji hexcode="1F389" className="h-4 w-4" />
+            Selected
+          </p>
           <p className="text-2xl font-display font-bold text-foreground mt-1">{winner.name}</p>
         </motion.div>
       )}
