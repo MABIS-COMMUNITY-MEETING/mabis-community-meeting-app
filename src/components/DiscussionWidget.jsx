@@ -374,24 +374,42 @@ function AttendancePanel({ members, weekLabel }) {
           </div>
         )}
         {/* Role badges at top */}
+        {(chair || minutes) && (
+          <p className="mb-2 text-xs leading-[1.6] tracking-[0.02em] text-muted-foreground">
+            The Chair leads the meeting and Minutes writes down what everyone decides.
+            Tap a name if that person is away today.
+          </p>
+        )}
         <div className="flex flex-wrap gap-2 mb-4">
           {chair && (
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer select-none
+            <button
+              type="button"
+              aria-pressed={attendance[chair.id] === false}
+              title={attendance[chair.id] === false
+                ? `Mark ${chair.name} as here again`
+                : `Mark ${chair.name} as away today`}
+              className={`flex min-h-11 items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors select-none
               ${attendance[chair.id] === false ? "bg-destructive/10 border-destructive/30 text-destructive line-through" : ""}`}
               style={attendance[chair.id] === false ? {} : { backgroundColor: "hsl(var(--role-chair) / 0.15)", borderColor: "hsl(var(--role-chair) / 0.35)", color: "hsl(var(--role-chair))" }}
               onClick={() => setAttendance(a => { const newAtt = { ...a, [chair.id]: a[chair.id] === false ? true : false }; upsertAttendance(newAtt); return newAtt; })}>
               Chair: {chair.name}
-              {attendance[chair.id] === false && <span className="ml-1 text-[10px]">ABSENT</span>}
-            </div>
+              {attendance[chair.id] === false && <span className="ml-1 text-[10px]">AWAY</span>}
+            </button>
           )}
           {minutes && (
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer select-none
+            <button
+              type="button"
+              aria-pressed={attendance[minutes.id] === false}
+              title={attendance[minutes.id] === false
+                ? `Mark ${minutes.name} as here again`
+                : `Mark ${minutes.name} as away today`}
+              className={`flex min-h-11 items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors select-none
               ${attendance[minutes.id] === false ? "bg-destructive/10 border-destructive/30 text-destructive line-through" : ""}`}
               style={attendance[minutes.id] === false ? {} : { backgroundColor: "hsl(var(--role-minutes) / 0.15)", borderColor: "hsl(var(--role-minutes) / 0.35)", color: "hsl(var(--role-minutes))" }}
               onClick={() => setAttendance(a => { const newAtt = { ...a, [minutes.id]: a[minutes.id] === false ? true : false }; upsertAttendance(newAtt); return newAtt; })}>
               Minutes: {minutes.name}
-              {attendance[minutes.id] === false && <span className="ml-1 text-[10px]">ABSENT</span>}
-            </div>
+              {attendance[minutes.id] === false && <span className="ml-1 text-[10px]">AWAY</span>}
+            </button>
           )}
         </div>
 
@@ -399,7 +417,7 @@ function AttendancePanel({ members, weekLabel }) {
         {(chairAbsent || minutesAbsent) && (
           <div className="mb-4 space-y-2 p-3 bg-orange-50 border border-orange-200 rounded-xl">
             <p className="text-xs font-semibold text-orange-700 flex items-center gap-1.5">
-              <RefreshCw className="w-3.5 h-3.5" /> Replacements needed
+              <RefreshCw className="w-3.5 h-3.5" /> Someone needs to stand in
             </p>
 
             {chairAbsent && (
