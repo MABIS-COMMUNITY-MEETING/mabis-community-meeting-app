@@ -434,21 +434,49 @@ function applyCharacterTokens(character) {
   }
 }
 
-let themeShiftTimer = 0;
+let themeCommitFrame = 0;
+let themeCommitReleaseFrame = 0;
+
+function beginThemeCommit() {
+  const root = document.documentElement;
+  root.classList.add("theme-committing");
+
+  cancelAnimationFrame(themeCommitFrame);
+  cancelAnimationFrame(themeCommitReleaseFrame);
+  themeCommitFrame = requestAnimationFrame(() => {
+    themeCommitFrame = 0;
+    themeCommitReleaseFrame = requestAnimationFrame(() => {
+      root.classList.remove("theme-committing");
+      themeCommitReleaseFrame = 0;
+    });
+  });
+}
+
+function applyThemeBodyClass(bodyClass) {
+  const body = document.body;
+  const previousBodyClass = body.dataset.mabisThemeClass;
+
+  if (previousBodyClass && previousBodyClass !== bodyClass) {
+    body.classList.remove(previousBodyClass);
+  }
+  if (bodyClass && previousBodyClass !== bodyClass) {
+    body.classList.add(bodyClass);
+    body.dataset.mabisThemeClass = bodyClass;
+  }
+}
 
 export function applyTheme(themeKey) {
-  const theme = THEMES[themeKey] || THEMES.default;
+  const resolvedThemeKey = THEMES[themeKey] ? themeKey : "default";
+  const theme = THEMES[resolvedThemeKey];
   const root = document.documentElement;
 
   const vars = theme.vars;
   const isDark = !!theme.dark;
 
-  // Colours travel rather than snap: for the length of the change every surface,
-  // border and accent interpolates, so switching palettes reads as one continuous
-  // shift instead of a hard repaint.
-  document.body.classList.add("theme-shifting");
-  clearTimeout(themeShiftTimer);
-  themeShiftTimer = setTimeout(() => document.body.classList.remove("theme-shifting"), 760);
+  // A theme is a discrete preference change. Hold ordinary CSS transitions for
+  // one painted frame so hundreds of surfaces do not animate paint-heavy colour,
+  // shadow and blur changes independently.
+  beginThemeCommit();
 
   Object.entries(vars).forEach(([key, value]) => {
     root.style.setProperty(key, value);
@@ -471,9 +499,8 @@ export function applyTheme(themeKey) {
   document.body.classList.toggle("theme-is-dark", isDark);
   applyPalette(theme.swatches, !!theme.pride || !!theme.exact);
   applyCharacterTokens(theme.character);
-  Object.values(THEMES).forEach(t => document.body.classList.remove(t.bodyClass));
-  document.body.classList.add(theme.bodyClass);
-  localStorage.setItem("mabis-theme", themeKey);
+  applyThemeBodyClass(theme.bodyClass);
+  localStorage.setItem("mabis-theme", resolvedThemeKey);
   window.dispatchEvent(new Event("themeChanged"));
 }
 
@@ -529,6 +556,7 @@ export function hslToHex(hslStr) {
 
 export function applyCustomColors(primaryHex, secondaryHex) {
   const root = document.documentElement;
+  beginThemeCommit();
   root.style.setProperty("--primary", hexToHsl(primaryHex));
   root.style.setProperty("--secondary", hexToHsl(secondaryHex));
   root.style.setProperty("--accent", hexToHsl(secondaryHex));
@@ -539,9 +567,9 @@ export function applyCustomColors(primaryHex, secondaryHex) {
   window.dispatchEvent(new Event("themeChanged"));
 }
 
-export function clearCustomColors() {
+export function clearCustomColors({ notify = true } = {}) {
   localStorage.removeItem("mabis-custom-colors");
-  window.dispatchEvent(new Event("themeChanged"));
+  if (notify) window.dispatchEvent(new Event("themeChanged"));
 }
 
 export function getStoredTheme() {
