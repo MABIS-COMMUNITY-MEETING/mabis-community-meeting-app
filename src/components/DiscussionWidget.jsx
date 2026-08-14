@@ -79,18 +79,6 @@ const PRIORITY_DOT = {
   5: "bg-primary/20",
 };
 
-/**
- * Focus an element.
- *
- * Kept as a single helper because the title fields were, for a long time,
- * impossible to type into: Quill reclaimed the caret through our own
- * selection-change handler. That cause is fixed in DocsEditor (getFormat no
- * longer focuses), so this is now an ordinary focus call.
- */
-function holdFocus(element) {
-  if (element) element.focus();
-}
-
 function TopicItem({
   topic,
   index,
@@ -164,11 +152,6 @@ function TopicItem({
               placeholder="Topic title..."
               value={editTitle}
               onChange={(event) => onTitleChange(event.target.value)}
-              onMouseDown={(event) => {
-                event.stopPropagation();
-                holdFocus(event.currentTarget);
-              }}
-              onClick={(event) => holdFocus(event.currentTarget)}
               className="rounded-lg border-border bg-card"
             />
           </div>
@@ -787,28 +770,6 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
     isSaving: updateTopicMutation.isPending,
   });
 
-  const titleRef = useRef(null);
-  const titleGuard = useRef(false);
-
-  useEffect(() => {
-    const restore = () => {
-      if (!titleGuard.current) return;
-      const field = titleRef.current;
-      const active = document.activeElement;
-      if (!field || !active || active === field) return;
-      if (active.closest && active.closest(".ql-editor")) field.focus();
-    };
-    const release = (event) => {
-      const field = titleRef.current;
-      if (!field || !field.contains(event.target)) titleGuard.current = false;
-    };
-    const id = setInterval(restore, 120);
-    document.addEventListener("mousedown", release, true);
-    return () => {
-      clearInterval(id);
-      document.removeEventListener("mousedown", release, true);
-    };
-  }, []);
 
 
 
@@ -1118,11 +1079,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 </SelectContent>
               </Select>
               <Input placeholder="Topic title..." value={title}
-                ref={titleRef}
                 onChange={(e) => setTitle(e.target.value)}
-                onFocus={() => { titleGuard.current = true; }}
-                onMouseDown={(event) => { event.stopPropagation(); titleGuard.current = true; holdFocus(event.currentTarget); }}
-                onClick={(event) => holdFocus(event.currentTarget)}
                 className="rounded-lg border-border bg-card" />
             </div>
             <Suspense fallback={<ChunkFallback height={180} />}>
