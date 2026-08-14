@@ -897,7 +897,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
         <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex flex-col items-start gap-3 shrink-0 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="mabis-widget-title font-display font-bold text-white text-2xl">Jobs Assignment</h2>
-            <p className="text-white/60 text-sm">{formatWeekLabel(currentWeek)}</p>
+            <p className="text-white/60 text-sm">Weekly jobs: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)}</p>
           </div>
           <div className="mabis-widget-actions flex items-center gap-3">
             {isAdmin && currentAssignments.length > 0 && (
@@ -921,7 +921,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
     return (
       <div>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Jobs this week — {currentAssignments.length}/{JOBS.length}</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Current jobs — {currentAssignments.length}/{allJobs.length}</p>
           <button onClick={() => setFullscreen(true)} className="flex items-center gap-1 text-xs text-[#951E3A] hover:underline">
             <Maximize2 className="w-3 h-3" /> Full Screen
           </button>
@@ -943,7 +943,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
       <div className="mabis-widget-header bg-[#951E3A] px-4 py-4 flex flex-col items-start gap-3 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Jobs</h2>
-          <p className="text-white/60 text-xs mt-0.5">{formatWeekLabel(currentWeek)} — {currentAssignments.length}/{JOBS.length} assigned</p>
+          <p className="text-white/60 text-xs mt-0.5">Weekly: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments.length}/{allJobs.length} assigned</p>
         </div>
         <div className="mabis-widget-actions flex items-center gap-2">
           {isAdmin && currentAssignments.length > 0 && (
