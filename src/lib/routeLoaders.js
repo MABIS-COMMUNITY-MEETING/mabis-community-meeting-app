@@ -23,7 +23,7 @@ function loadHomeRoute() {
     reportedProgress = Math.max(reportedProgress, progress);
     setLoadingState({
       progress: reportedProgress,
-      label: "LOADING SHADERS",
+      label: "CACHING STUFF",
       detail,
     });
   };
@@ -47,7 +47,7 @@ function loadHomeRoute() {
     acceptingProgress = false;
     setLoadingState({
       progress: 100,
-      label: "LOADING SHADERS",
+      label: "CACHING STUFF",
       detail: "SECTIONS READY",
     });
     return homeModule;
