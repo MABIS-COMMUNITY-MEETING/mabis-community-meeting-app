@@ -14,7 +14,34 @@
     },
     "week_label": {
       "type": "string",
-      "description": "e.g. 2026-W24"
+      "description": "Weekly assignment key, e.g. 2026-W24; retained for weekly jobs and legacy history"
+    },
+    "month_label": {
+      "type": "string",
+      "description": "Monthly assignment key, e.g. 2026-08"
+    },
+    "assignment_period": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "monthly"
+      ],
+      "default": "weekly",
+      "description": "How long the assignee keeps this job"
+    },
+    "schedule_days": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "description": "Weekdays when this assignment is performed"
     },
     "scheduled_day": {
       "type": "string",
@@ -33,7 +60,7 @@
         "type": "string"
       },
       "default": [],
-      "description": "Days the job was completed/ticked"
+      "description": "Weekday names for weekly jobs or ISO dates for monthly jobs that were completed"
     },
     "not_done_days": {
       "type": "array",
@@ -41,7 +68,7 @@
         "type": "string"
       },
       "default": [],
-      "description": "Days marked as not done"
+      "description": "Weekday names for weekly jobs or ISO dates for monthly jobs marked not done"
     },
     "completed": {
       "type": "boolean",
@@ -56,13 +83,12 @@
     "carried_over": {
       "type": "boolean",
       "default": false,
-      "description": "This assignment was carried over from a previous week"
+      "description": "This assignment was carried over from its previous weekly or monthly period"
     }
   },
   "required": [
     "job_title",
     "assigned_to_name",
-    "assigned_to_email",
-    "week_label"
+    "assigned_to_email"
   ]
 }
