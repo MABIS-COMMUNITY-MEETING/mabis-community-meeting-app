@@ -1382,6 +1382,81 @@ body.theme-frutigeraero canvas.rounded-full + .rounded-full {
   background: radial-gradient(circle, hsl(196 100% 62% / 0.35), transparent 70%);
 }
 
+/* ── Spin the wheel ──────────────────────────────────────────────
+   Painted with a Tailwind gradient (bg-gradient-to-r from-primary to-accent)
+   rather than bg-primary, so the primary-button rule never matched it and it
+   fell through to the pale variant. This is the hero control on the page, so
+   it gets the full build at a larger scale. Declared after the generic pill
+   rules so it wins on source order at equal specificity. */
+body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"] {
+  --hue: 235;
+  --sat: 0.2;
+  --glow-intensity: 0.8;
+  --bg: oklch(75% var(--sat) var(--hue) / 0.85);
+  --bg-dark: oklch(45% var(--sat) var(--hue) / 0.8);
+
+  position: relative;
+  border: 1px solid var(--bg);
+  border-radius: 9999px;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(farthest-corner at bottom center,
+      rgb(255 255 255 / var(--glow-intensity)), transparent),
+    linear-gradient(to bottom, var(--bg-dark), var(--bg));
+  color: oklch(18% calc(var(--sat) * 0.5) var(--hue));
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.45);
+  box-shadow:
+    0 2px 2px hsl(var(--hue) 55% 25% / 0.25),
+    0 6px 14px -4px hsl(var(--hue) 55% 25% / 0.35),
+    0 0 30px -4px hsl(196 100% 66% / 0.7);
+}
+
+body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.4) 45%,
+    rgb(255 255 255 / 0.06) 55%,
+    transparent 70%
+  );
+}
+
+body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]::after {
+  content: "";
+  position: absolute;
+  top: 6%;
+  left: 0.9em;
+  width: calc(100% - 1.8em);
+  height: 40%;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.12));
+}
+
+body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:hover {
+  box-shadow:
+    0 3px 3px hsl(var(--hue) 55% 25% / 0.28),
+    0 10px 20px -4px hsl(var(--hue) 55% 25% / 0.4),
+    0 0 40px -2px hsl(196 100% 70% / 0.85);
+}
+body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:active {
+  box-shadow: inset 0 3px 6px -1px hsl(var(--hue) 60% 20% / 0.45);
+}
+
+/* Disabled while spinning: flat, no glow, no glare. */
+body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:disabled {
+  box-shadow: none;
+}
+body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:disabled::before,
+body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:disabled::after {
+  opacity: 0.35;
+}
+
 /* Bloom: the era glowed. A soft light behind floating controls, cheap because
    it is a static shadow rather than a filter. */
 body.theme-frutigeraero .lg-navigation,
