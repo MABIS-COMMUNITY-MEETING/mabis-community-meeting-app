@@ -9,27 +9,32 @@ import {
 const INITIAL_THEME_LIMIT = 20;
 const THEME_BATCH_SIZE = 20;
 
-function paletteStripe(swatches = []) {
+const THEME_STRIPES = new WeakMap();
+
+function paletteStripe(theme) {
+  const cached = THEME_STRIPES.get(theme);
+  if (cached) return cached;
+
+  const swatches = theme.swatches || [];
   if (swatches.length === 0) return "transparent";
   const stops = swatches.flatMap((color, index) => {
     const start = (index / swatches.length) * 100;
     const end = ((index + 1) / swatches.length) * 100;
     return [`${color} ${start}%`, `${color} ${end}%`];
   });
-  return `linear-gradient(90deg, ${stops.join(", ")})`;
+  const stripe = `linear-gradient(90deg, ${stops.join(", ")})`;
+  THEME_STRIPES.set(theme, stripe);
+  return stripe;
 }
 
-const THEME_ENTRIES = Object.entries(THEMES).map(([key, theme]) => ({
-  key,
-  name: theme.name,
-  stripe: paletteStripe(theme.swatches),
-}));
+const THEME_ENTRIES = Object.entries(THEMES);
 
 const ThemeOption = memo(function ThemeOption({ entry, active, onSelect }) {
+  const [key, theme] = entry;
   return (
     <button
       type="button"
-      onClick={() => onSelect(entry.key)}
+      onClick={() => onSelect(key)}
       aria-pressed={active}
       className={`relative min-h-[58px] rounded-xl border-2 p-2.5 text-left transition-[border-color,box-shadow] duration-150 ${
         active
@@ -39,12 +44,12 @@ const ThemeOption = memo(function ThemeOption({ entry, active, onSelect }) {
       style={{ contain: "layout style" }}
     >
       <span className="mb-1.5 block truncate text-[11px] font-bold text-gray-700">
-        {entry.name}
+        {theme.name}
       </span>
       <span
         aria-hidden="true"
         className="block h-4 w-full rounded-full border border-gray-200"
-        style={{ background: entry.stripe }}
+        style={{ background: paletteStripe(theme) }}
       />
       {active && (
         <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#951E3A]">
@@ -77,7 +82,6 @@ export default function ThemeSwitcher() {
   useEffect(() => {
     const stored = getStoredTheme();
     setCurrentTheme(stored);
-    applyTheme(stored);
     const custom = getStoredCustomColors();
     if (custom) {
       setCustomActive(true);
@@ -174,9 +178,9 @@ export default function ThemeSwitcher() {
             <div className="grid grid-cols-2 gap-2 mb-4">
               {visibleThemes.map((entry) => (
                 <ThemeOption
-                  key={entry.key}
+                  key={entry[0]}
                   entry={entry}
-                  active={currentTheme === entry.key && !customActive}
+                  active={currentTheme === entry[0] && !customActive}
                   onSelect={handleSelectTheme}
                 />
               ))}
