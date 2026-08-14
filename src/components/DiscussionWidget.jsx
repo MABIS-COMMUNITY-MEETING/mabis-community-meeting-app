@@ -415,20 +415,20 @@ function AttendancePanel({ members, weekLabel }) {
 
         {/* Replacement dropdowns if absent */}
         {(chairAbsent || minutesAbsent) && (
-          <div className="mb-4 space-y-2 p-3 bg-orange-50 border border-orange-200 rounded-xl">
-            <p className="text-xs font-semibold text-orange-700 flex items-center gap-1.5">
+          <div className="mb-4 space-y-2 p-3 bg-secondary/10 border border-secondary/40 rounded-xl">
+            <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
               <RefreshCw className="w-3.5 h-3.5" /> Someone needs to stand in
             </p>
 
             {chairAbsent && (
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <span className="text-xs text-orange-700 font-medium sm:w-28 sm:shrink-0">Replacement Chair:</span>
+                <span className="text-xs text-foreground font-medium sm:w-28 sm:shrink-0">Replacement Chair:</span>
                 <Select value={replacementChair} onValueChange={setReplacementChair}>
-                  <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-card border-orange-200">
+                  <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-card border-secondary/40">
                     <SelectValue placeholder="Pick someone..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {members.filter(m => m.id !== chair?.id).map(m => (
+                    {dedupeByIdentity(members).filter(m => m.id !== chair?.id).map(m => (
                       <SelectItem key={m.id} value={m.name} className="text-xs">{m.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -438,13 +438,13 @@ function AttendancePanel({ members, weekLabel }) {
             )}
             {minutesAbsent && (
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <span className="text-xs text-orange-700 font-medium sm:w-28 sm:shrink-0">Replacement Minutes:</span>
+                <span className="text-xs text-foreground font-medium sm:w-28 sm:shrink-0">Replacement Minutes:</span>
                 <Select value={replacementMinutes} onValueChange={setReplacementMinutes}>
-                  <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-card border-orange-200">
+                  <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-card border-secondary/40">
                     <SelectValue placeholder="Pick someone..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {members.filter(m => m.id !== minutes?.id).map(m => (
+                    {dedupeByIdentity(members).filter(m => m.id !== minutes?.id).map(m => (
                       <SelectItem key={m.id} value={m.name} className="text-xs">{m.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -747,9 +747,9 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
         </div>
 
         {meetingPaused && (
-          <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-2 flex items-center gap-2 shrink-0">
-            <Pause className="w-4 h-4 text-yellow-600" />
-            <span className="text-sm text-yellow-700 font-medium">Meeting paused</span>
+          <div className="bg-secondary/10 border-b border-secondary/40 px-6 py-2 flex items-center gap-2 shrink-0">
+            <Pause className="w-4 h-4 text-secondary" />
+            <span className="text-sm text-foreground font-medium">Meeting paused</span>
           </div>
         )}
 
