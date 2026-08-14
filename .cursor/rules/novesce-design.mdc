@@ -23,6 +23,7 @@ Always preserve unless explicitly instructed otherwise:
 - GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.
 - GNU FreeSerif as the Thai-only fallback
 - Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.
+- All app-authored emoji must use pinned, production-ready OpenMoji color SVGs; do not rely on platform-native emoji glyphs.
 - The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.
 - semantic color and font variables
 - first-paint font loading without flashes
