@@ -52,6 +52,11 @@ const performanceContract = read("scripts/check-performance-contract.mjs");
 const bundleBudget = read("scripts/check-bundle-budget.mjs");
 const cjkFontLoader = read("src/components/CjkFontLoader.jsx");
 const login = read("src/pages/Login.jsx");
+const docsEditor = read("src/components/DocsEditor.jsx");
+const jobsWidget = read("src/components/JobsWidget.jsx");
+const jobsRotation = read("src/lib/jobsRotation.js");
+const homeSectionIndex = read("src/components/home/HomeSectionIndex.jsx");
+const quickStartGuide = read("src/components/QuickStartGuide.jsx");
 const app = read("src/App.jsx");
 const routeLoaders = read("src/lib/routeLoaders.js");
 const openMoji = read("src/components/OpenMoji.jsx");
@@ -101,6 +106,15 @@ const editorialContractFiles = [
 ];
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, editorialHomeRule);
+}
+
+const richTextThemeRule = "Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.";
+const easyLayoutRule = "Keep Home easy to navigate with its numbered editorial sections, plain-language page guide, and contextual instructions; usability aids must clarify the existing Japanese editorial hierarchy rather than replace it with a generic dashboard.";
+const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
+for (const [relativePath, content] of editorialContractFiles) {
+    requireText(relativePath, content, richTextThemeRule);
+    requireText(relativePath, content, easyLayoutRule);
+    requireText(relativePath, content, jobsPeriodRule);
 }
 
 const cursorTrackingRule = "The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement.";
@@ -191,9 +205,23 @@ requireText("src/main.jsx", main, "import '@/styles/editorial-home.css'");
 requireText("src/pages/Home.jsx", home, 'className="editorial-home min-h-screen');
 requireText("src/lib/cursor-preference.js", cursorPreference, "mabis_custom_cursor_enabled");
 requireText("src/lib/color/themeBalance.js", themeBalance, "contrastSafePair");
+requireText("src/lib/color/themeBalance.js", themeBalance, "contrastSafeInk");
 requireText("src/lib/color/themeBalance.js", themeBalance, "spreadBalancedPalette");
+requireText("src/lib/themes.js", themes, "--editor-ink-primary");
+requireText("src/index.css", css, ".theme-rich-text");
+requireText("src/components/DocsEditor.jsx", docsEditor, "THEME_TEXT_COLORS");
+requireText("src/components/DocsEditor.jsx", docsEditor, "THEME_HIGHLIGHTS");
+forbidText("src/components/DocsEditor.jsx", docsEditor, 'type="color"');
+requireText("src/components/JobsWidget.jsx", jobsWidget, 'label: "Time Keeper (1)", period: "monthly"');
+requireText("src/components/JobsWidget.jsx", jobsWidget, "JobDefinition.create");
+requireText("src/lib/jobsRotation.js", jobsRotation, "timeKeeperKeysForYear");
+requireText("src/components/home/HomeSectionIndex.jsx", homeSectionIndex, "Choose where to go");
+requireText("src/components/QuickStartGuide.jsx", quickStartGuide, "How to use this site");
+requireText("src/pages/Home.jsx", home, "<HomeSectionIndex />");
+requireText("src/pages/Home.jsx", home, "<QuickStartGuide open");
 requireText("scripts/check-theme-balance.mjs", themeBalanceCheck, "Theme balance:");
 requireText("package.json", packageJson, "npm run check:design && npm run check:themes && npm run check:performance");
+requireText("package.json", packageJson, '"check:jobs": "node scripts/check-jobs-contract.mjs"');
 requireText("package.json", packageJson, "node scripts/check-bundle-budget.mjs");
 requireText("scripts/check-performance-contract.mjs", performanceContract, "React performance contract:");
 requireText("scripts/check-bundle-budget.mjs", bundleBudget, "Bundle budgets passed:");
