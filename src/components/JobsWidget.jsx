@@ -484,14 +484,20 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
   const servedTimeKeeperKeys = timeKeeperKeysForYear(assignments, currentYear);
   const selectingTimeKeeper = isTimeKeeperJob(selectedJob?.label);
 
-  const eligibleStudents = studentMembers.filter((member) => (
+  const assignmentEligibleStudents = studentMembers.filter((member) => (
     !assignedMemberKeys.has(memberRotationKey(member))
     && (!selectingTimeKeeper || !servedTimeKeeperKeys.has(memberRotationKey(member)))
   ));
-  const wheelMembers = eligibleStudents
+  const repeatSpinMode = !selectingTimeKeeper && assignmentEligibleStudents.length === 0 && studentMembers.length > 0;
+  const spinCandidates = repeatSpinMode ? studentMembers : assignmentEligibleStudents;
+  const wheelMembers = spinCandidates
     .filter((member) => !removedIds.includes(member.id))
     .sort((a, b) => displayName(a).localeCompare(displayName(b)));
-  const unassignedStudents = eligibleStudents;
+  const unassignedStudents = spinCandidates;
+  const winnerCanBeAssigned = !!winner
+    && !assignedMemberKeys.has(memberRotationKey(winner.member))
+    && !assignedJobLabels.includes(normalizeJobTitle(winner.jobLabel))
+    && (!isTimeKeeperJob(winner.jobLabel) || !servedTimeKeeperKeys.has(memberRotationKey(winner.member)));
 
   useEffect(() => {
     if (wheelMembers.length === 0 && unassignedStudents.length > 0 && removedIds.length > 0) {
@@ -662,7 +668,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
   };
 
   const handleConfirmAssign = () => {
-    if (!winner) return;
+    if (!winner || !winnerCanBeAssigned) return;
     const job = winner.job || selectedJob;
     const period = job.period || "weekly";
     assignMutation.mutate({
