@@ -716,12 +716,14 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           </div>
           <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
             <button onClick={() => { actionRef.current = "pause"; setMeetingPaused(true); setMeetingMode(false); }}
+              title="Stop for now and come back to it later. Nothing is moved to History."
               className="flex min-h-11 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border border-primary-foreground/30 transition-colors">
               <Pause className="w-3.5 h-3.5" /> Pause
             </button>
             <button onClick={() => { actionRef.current = "end"; setMeetingMode(false); setMeetingPaused(false); }}
+              title="Finish the meeting for everyone. Topics that are ticked off move into History."
               className="flex min-h-11 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border border-primary-foreground/30 transition-colors">
-              <Square className="w-3.5 h-3.5" /> End
+              <Square className="w-3.5 h-3.5" /> End meeting
             </button>
           </div>
         </div>
@@ -1013,6 +1015,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
         {/* Week navigation */}
         <div className="flex items-center gap-1">
           <button onClick={() => setWeekOffset(w => w - 1)}
+            title="Show the week before this one" aria-label="Show the week before this one"
             className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground">
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -1021,14 +1024,23 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           </span>
 
           <button onClick={() => setWeekOffset(w => w + 1)} disabled={isCurrentWeek}
+            title="Show the week after this one" aria-label="Show the week after this one"
             className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
             <ChevronRight className="w-4 h-4" />
           </button>
           {!isCurrentWeek && (
             <button onClick={() => setWeekOffset(0)}
-              className="text-xs text-primary hover:underline px-2">Now</button>
+              className="text-xs text-primary hover:underline px-2">Back to this week</button>
           )}
         </div>
+
+        {/* Looking at an older week is read only. Say so, rather than letting
+            the Add Topic button quietly disappear with no explanation. */}
+        {!isCurrentWeek && (
+          <p className="text-xs leading-[1.6] tracking-[0.02em] text-muted-foreground">
+            You are looking at an earlier week, so it cannot be changed. Go back to this week to add a topic.
+          </p>
+        )}
 
         <div className="space-y-2">
           {viewedTopics.length === 0 && (
