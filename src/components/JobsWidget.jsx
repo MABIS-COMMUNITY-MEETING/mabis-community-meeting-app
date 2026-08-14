@@ -779,6 +779,38 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
                 {repeatSpinMode ? " · extra spins are unlimited" : ""}
               </p>
             )}
+
+            {/* Pick someone directly instead of spinning.
+
+                This deliberately routes through handleSpinComplete rather than
+                writing its own assignment: the confirm step, the eligibility
+                rules (already assigned, job taken, Time Keeper served this year)
+                and the double-write guards then all apply unchanged. Choosing
+                by hand and spinning end up in exactly the same place. */}
+            {wheelMembers.length > 0 && (
+              <div className="flex w-full max-w-[420px] flex-col gap-1">
+                <label htmlFor="manual-pick" className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  Or choose someone yourself
+                </label>
+                <p className="text-[11px] leading-[1.5] tracking-[0.02em] text-muted-foreground">
+                  Picks that person instead of spinning. You still confirm before anything is saved.
+                </p>
+                <select
+                  id="manual-pick"
+                  value=""
+                  onChange={(event) => {
+                    const picked = wheelMembers.find((member) => member.id === event.target.value);
+                    if (picked) handleSpinComplete(picked);
+                  }}
+                  className="mt-0.5 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+                >
+                  <option value="">Pick a person…</option>
+                  {wheelMembers.map((member) => (
+                    <option key={member.id} value={member.id}>{displayName(member)}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             {wheelMembers.length > 0 ? (
               <div className="relative w-full flex flex-col items-center gap-4">
                 {showStudentMgr && (
