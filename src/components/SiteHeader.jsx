@@ -6,15 +6,16 @@ import SoundToggle from "@/components/SoundToggle";
 import Glass from "@/components/glass/Glass";
 import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
 import { preloadRoute } from "@/lib/routeLoaders";
+import JapaneseText from "@/components/JapaneseText";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
 const NAV = [
-  { label: "Home", to: "/home", n: "01" },
-  { label: "Meeting History", to: "/history", n: "02" },
-  { label: "Announcements", to: "/history/announcements", n: "03" },
-  { label: "News", to: "/history/news", n: "04" },
-  { label: "Feedback Inbox", to: "/feedback", n: "05" },
+  { label: "Home", ja: "ホーム", to: "/home", n: "01" },
+  { label: "Meeting History", ja: "ミーティング履歴", to: "/history", n: "02" },
+  { label: "Announcements", ja: "お知らせ", to: "/history/announcements", n: "03" },
+  { label: "News", ja: "ニュース", to: "/history/news", n: "04" },
+  { label: "Feedback Inbox", ja: "フィードバック受信箱", to: "/feedback", n: "05" },
 ];
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -66,7 +67,7 @@ export default function SiteHeader({ rightSlot }) {
             </span>
             <span className="hidden sm:flex flex-col leading-none">
               <span className="tech-label text-foreground">MABIS</span>
-              <span className="tech-label text-muted-foreground">COMMUNITY MEETING</span>
+              <JapaneseText ja="コミュニティ・ミーティング" className="tech-label text-muted-foreground" japaneseClassName="text-[0.78em]">COMMUNITY MEETING</JapaneseText>
             </span>
           </Link>
 
@@ -152,10 +153,10 @@ export default function SiteHeader({ rightSlot }) {
                         )}
                         <span className="relative block overflow-hidden pb-[0.32em] -mb-[0.32em]">
                           <span className={`block whitespace-nowrap ${size} sm:text-5xl md:text-6xl font-display font-light tracking-[-0.055em] leading-[1.45] transition-transform duration-500 [transition-timing-function:cubic-bezier(.16,1,.3,1)] group-hover:-translate-y-[125%]`}>
-                            {item.label}
+                            <JapaneseText ja={item.ja} japaneseClassName="text-[0.28em] font-normal tracking-normal">{item.label}</JapaneseText>
                           </span>
                           <span className={`absolute inset-0 block whitespace-nowrap ${size} sm:text-5xl md:text-6xl font-display font-light tracking-[-0.055em] leading-[1.45] text-secondary translate-y-[125%] transition-transform duration-500 [transition-timing-function:cubic-bezier(.16,1,.3,1)] group-hover:translate-y-0`}>
-                            {item.label}
+                            <JapaneseText ja={item.ja} japaneseClassName="text-[0.28em] font-normal tracking-normal">{item.label}</JapaneseText>
                           </span>
                         </span>
                         <ArrowUpRight className="ml-auto h-5 w-5 sm:h-7 sm:w-7 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" />
