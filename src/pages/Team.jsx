@@ -8,16 +8,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Progress } from "@/components/ui/progress";
 import MemberAvatar from "@/components/shared/MemberAvatar";
 import XpBadge from "@/components/shared/XpBadge";
+import OpenMoji from "@/components/OpenMoji";
 import { motion } from "framer-motion";
 
 function getLevelInfo(xp) {
   const levels = [
-    { name: "Rookie", min: 0, max: 50, emoji: "🌱" },
-    { name: "Apprentice", min: 50, max: 150, emoji: "⚔️" },
-    { name: "Warrior", min: 150, max: 300, emoji: "🛡️" },
-    { name: "Champion", min: 300, max: 500, emoji: "🏅" },
-    { name: "Legend", min: 500, max: 1000, emoji: "👑" },
-    { name: "Mythic", min: 1000, max: Infinity, emoji: "🔥" },
+    { name: "Rookie", min: 0, max: 50, openMoji: "1F331" },
+    { name: "Apprentice", min: 50, max: 150, openMoji: "2694" },
+    { name: "Warrior", min: 150, max: 300, openMoji: "1F6E1" },
+    { name: "Champion", min: 300, max: 500, openMoji: "1F3C5" },
+    { name: "Legend", min: 500, max: 1000, openMoji: "1F451" },
+    { name: "Mythic", min: 1000, max: Infinity, openMoji: "1F525" },
   ];
   const level = levels.find((l) => xp >= l.min && xp < l.max) || levels[0];
   const progress = ((xp - level.min) / (level.max - level.min)) * 100;
@@ -132,7 +133,7 @@ export default function Team() {
                   <p className="text-xs text-muted-foreground">{member.email}</p>
 
                   <div className="flex items-center gap-2 mt-3">
-                    <span className="text-lg">{level.emoji}</span>
+                    <OpenMoji hexcode={level.openMoji} className="h-5 w-5" />
                     <span className="text-sm font-display font-semibold text-foreground">{level.name}</span>
                   </div>
 
