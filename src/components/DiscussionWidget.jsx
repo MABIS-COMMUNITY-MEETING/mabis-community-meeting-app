@@ -101,6 +101,45 @@ function holdFocus(element) {
   setTimeout(() => element.focus(), 150);
 }
 
+// TEMPORARY FORENSICS - remove once the focus thief is identified.
+// Patches focus() to capture a stack trace whenever the Quill editor takes the
+// caret, and records every focusin. The preview runs the Vite dev server, so
+// these stacks carry real file names and line numbers.
+function FocusForensics() {
+  const [lines, setLines] = useState([]);
+  useEffect(() => {
+    const push = (text) => setLines((prev) => (prev.length >= 6 ? prev : [...prev, text]));
+    const original = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function patched(...args) {
+      try {
+        const cls = this.className;
+        if (typeof cls === "string" && cls.indexOf("ql-editor") !== -1) {
+          const stack = (new Error().stack || "").split("\n").slice(1, 5)
+            .map((s) => s.trim().replace(/^at\s+/, "").replace(/https?:\/\/[^/]+/, ""))
+            .join(" <- ");
+          push(`FOCUS() ${new Date().toISOString().slice(14, 23)} ${stack}`);
+        }
+      } catch (err) { /* diagnostic only */ }
+      return original.apply(this, args);
+    };
+    const onFocusIn = (event) => {
+      const el = event.target;
+      const cls = typeof el.className === "string" ? el.className.slice(0, 24) : "";
+      push(`IN ${new Date().toISOString().slice(14, 23)} ${el.tagName} ${cls}`);
+    };
+    document.addEventListener("focusin", onFocusIn, true);
+    return () => {
+      HTMLElement.prototype.focus = original;
+      document.removeEventListener("focusin", onFocusIn, true);
+    };
+  }, []);
+  return (
+    <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all bg-background p-2 font-mono text-[9px] leading-tight text-primary">
+      {lines.join("\n") || "waiting..."}
+    </pre>
+  );
+}
+
 function TopicItem({
   topic,
   index,
@@ -1077,6 +1116,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                   {editingTopicId ? "Editing topic" : "New topic"}
                 </p>
+                <FocusForensics />
                 <p className="mt-0.5 text-xs leading-[1.6] tracking-[0.02em] text-muted-foreground">
                   {editingTopicId
                     ? "Change the title, who raised it, or the details, then press Update topic."
