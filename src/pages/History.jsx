@@ -122,7 +122,7 @@ export default function History() {
         </div>
         {pastWeeks.length === 0 && (
           <div className="border border-gray-200 bg-white p-8 text-center sm:rounded-2xl sm:p-16">
-            <p className="text-gray-400 text-lg">No past meetings yet. They appear here once a meeting ends./p>
+            <p className="text-gray-400 text-lg">No past meetings yet. They appear here once a meeting ends.</p>
             <p className="text-gray-300 text-sm mt-1">Past weeks will appear here as full meeting snapshots</p>
           </div>
         )}

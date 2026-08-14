@@ -149,7 +149,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
         {isLoading ? (
           <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#951E3A]" /></div>
         ) : news.length === 0 ? (
-          <p className="text-center text-gray-400 py-8">No news posted yet./p>
+          <p className="text-center text-gray-400 py-8">No news posted yet.</p>
         ) : (
           <>
           <div className="space-y-3">
