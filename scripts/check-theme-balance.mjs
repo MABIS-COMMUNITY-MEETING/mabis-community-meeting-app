@@ -16,6 +16,15 @@ const ROLE_TOKENS = [
     "--role-editor",
 ];
 
+const EDITOR_INK_TOKENS = [
+    "--editor-ink-default",
+    "--editor-ink-primary",
+    "--editor-ink-secondary",
+    "--editor-ink-accent",
+];
+
+const EDITOR_HIGHLIGHT_ROLES = ["primary", "secondary", "accent"];
+
 function distinctTokenHues(values) {
     return distinctChromaticCount(values, { neutralSaturation: 15 });
 }
@@ -106,6 +115,23 @@ try {
             }
         }
 
+        const editorSurface = theme.vars["--card"];
+        for (const token of EDITOR_INK_TOKENS) {
+            const ratio = contrastRatio(theme.vars[token], editorSurface);
+            if (ratio < 4.5) {
+                failures.push(`${key}: ${token} on card contrast is ${ratio.toFixed(2)}:1`);
+            }
+        }
+
+        for (const role of EDITOR_HIGHLIGHT_ROLES) {
+            const fill = theme.vars[`--editor-highlight-${role}`];
+            const foreground = theme.vars[`--editor-highlight-${role}-foreground`];
+            const ratio = contrastRatio(fill, foreground);
+            if (ratio < 4.5) {
+                failures.push(`${key}: editor ${role} highlight contrast is ${ratio.toFixed(2)}:1`);
+            }
+        }
+
         const balanced = balancedPalette(swatches);
         const slots = spreadBalancedPalette(swatches, 8);
         if (balanced.length > 0) {
@@ -126,4 +152,4 @@ if (failures.length > 0) {
     process.exit(1);
 }
 
-console.log(`Theme balance: ${themesChecked} themes passed semantic hue, role, slot and contrast checks.`);
+console.log(`Theme balance: ${themesChecked} themes passed semantic hue, role, editor palette, slot and contrast checks.`);
