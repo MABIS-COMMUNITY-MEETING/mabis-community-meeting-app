@@ -830,6 +830,57 @@ body .text-accent { color: hsl(var(--editor-ink-accent)) !important; }
   color: hsl(var(--editor-highlight-accent-foreground));
 }
 
+/* ── FRUTIGER AERO ────────────────────────────────────────────────────
+   The 2004-2013 "Web 2.0 Gloss" era: clear sky above, bright grass below,
+   and a wet sheen on anything that floats. Skeuomorphic by nature, which is
+   the opposite of this app's editorial direction — so it ships as an opt-in
+   theme only, and the gloss is expressed entirely through the existing
+   liquid-glass variables. That keeps it on the floating control plane and off
+   the content plane, and adds no new backdrop-filter layer. */
+body.theme-frutigeraero {
+  background-image: linear-gradient(
+    180deg,
+    hsl(198 96% 90%) 0%,
+    hsl(var(--background)) 40%,
+    hsl(var(--background)) 68%,
+    hsl(96 58% 88%) 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 100vh;
+}
+
+/* Wetter, brighter and more saturated than the default material. */
+body.theme-frutigeraero .lg-surface {
+  --glass_saturation: 200%;
+  --glass_brightness: 1.09;
+  --glass_tint: 0.17;
+  --glass_spec: 0.46;
+}
+
+/* The era's buttons carried a hard highlight across their top half, cut off
+   sharply at the midline. Painted on the existing specular layer rather than a
+   new element, so the surface still has exactly one backdrop capture. */
+body.theme-frutigeraero .lg-surface::before {
+  background:
+    radial-gradient(
+      120px 90px at var(--glass_pointer_x) var(--glass_pointer_y),
+      hsl(var(--bone) / var(--glass_spec)),
+      hsl(var(--bone) / calc(var(--glass_spec) * 0.3)) 24%,
+      transparent 55%
+    ),
+    linear-gradient(
+      to bottom,
+      hsl(var(--bone) / 0.36) 0%,
+      hsl(var(--bone) / 0.12) 46%,
+      transparent 50%
+    );
+}
+
+/* Weak devices keep the palette but lose the painted sky. */
+html.performance-lite body.theme-frutigeraero {
+  background-image: none;
+}
+
 /* ── THE PRIDE COLLECTION ─────────────────────────────────────────────
    Flagship palettes. Their advantage is art direction, not saturation: the
    colour arrives as edge light, hairlines and tiny details on interactive
