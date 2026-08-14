@@ -37,6 +37,7 @@ Unless Novesce explicitly requests a change:
 - GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.
 - Keep GNU FreeSerif isolated as the Thai fallback.
 - Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.
+- All app-authored emoji must use pinned, production-ready OpenMoji color SVGs; do not rely on platform-native emoji glyphs.
 - The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.
 - Use shared font variables and semantic color tokens. Never hard-code a normal component to a specific UI font.
 - Preserve first-paint font loading and prevent loading-screen font flashes.
