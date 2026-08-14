@@ -1340,6 +1340,48 @@ body.theme-frutigeraero .editorial-home .font-display {
     0 0 10px rgb(255 255 255 / 0.7);
 }
 
+/* ── Round things ──────────────────────────────────────────────────
+   Profile avatars, member initials, status dots and any other circle get the
+   same treatment as everything else: a lit top edge, a shaded lower curve and
+   an aqua bloom. Done with shadows alone rather than an overlay, because these
+   are arbitrary elements and a pseudo-element would need position and z-index
+   on each one — which could move things. Buttons are excluded; they already
+   have their own build. */
+body.theme-frutigeraero .rounded-full:not(button):not([role="combobox"]) {
+  box-shadow:
+    inset 0 2px 3px -1px rgb(255 255 255 / 0.85),
+    inset 0 -3px 6px -2px hsl(205 60% 20% / 0.35),
+    0 2px 6px -2px hsl(205 55% 30% / 0.35),
+    0 0 12px -4px hsl(196 100% 70% / 0.5);
+}
+
+/* Profile pictures: the same, plus a white rim so the photo reads as a bead. */
+body.theme-frutigeraero img.rounded-full,
+body.theme-frutigeraero .rounded-full > img {
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.9),
+    inset 0 3px 5px -2px rgb(255 255 255 / 0.7),
+    inset 0 -4px 7px -3px hsl(205 60% 20% / 0.4);
+}
+
+/* ── The job wheel ────────────────────────────────────────────────
+   The face is drawn to a canvas in JS, so CSS cannot reach the segments. What
+   it can do is turn the disc into a glass dome: a bright rim, an inset curve
+   that shades the lower edge, and an aqua bloom around it. */
+body.theme-frutigeraero canvas.rounded-full {
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / 0.85),
+    inset 0 8px 16px -8px rgb(255 255 255 / 0.9),
+    inset 0 -14px 26px -12px hsl(205 70% 18% / 0.55),
+    0 10px 24px -10px hsl(205 60% 28% / 0.45),
+    0 0 36px -6px hsl(196 100% 66% / 0.6);
+}
+
+/* The existing glow behind the wheel goes aqua instead of theme primary. */
+body.theme-frutigeraero canvas.rounded-full + .rounded-full {
+  background: radial-gradient(circle, hsl(196 100% 62% / 0.35), transparent 70%);
+}
+
 /* Bloom: the era glowed. A soft light behind floating controls, cheap because
    it is a static shadow rather than a filter. */
 body.theme-frutigeraero .lg-navigation,
