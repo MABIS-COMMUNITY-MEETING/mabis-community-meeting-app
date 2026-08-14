@@ -785,10 +785,16 @@ body .text-accent { color: hsl(var(--editor-ink-accent)) !important; }
   --tw-prose-pre-code: hsl(var(--card-foreground));
   --tw-prose-pre-bg: hsl(var(--muted));
 }
-.theme-rich-text [style*="color"]:not([style*="--editor-ink"]):not([style*="--editor-highlight"]) {
+/* Sanitise colour pasted in from Word, Docs or a web page so it cannot fight
+   the theme. Deliberate choices from the editor's own palette are exempt, and
+   the exemption keys off the CLASS rather than a substring of the serialised
+   style attribute. The old style-substring guard was the bug: browsers
+   normalise inline style text, so the :not() would miss and this !important
+   rule would repaint the user's chosen colour back to the default ink. */
+.theme-rich-text [style*="color"]:not([class*="ql-ink"]):not([class*="ql-hl"]) {
   color: hsl(var(--card-foreground)) !important;
 }
-.theme-rich-text [style*="background-color"]:not([style*="--editor-highlight"]) {
+.theme-rich-text [style*="background-color"]:not([class*="ql-hl"]) {
   color: hsl(var(--editor-highlight-secondary-foreground)) !important;
   background-color: hsl(var(--editor-highlight-secondary)) !important;
 }
