@@ -390,11 +390,20 @@ export const THEMES = {
    materials (see lib/pride.js), and replace the earlier three-variable versions. */
 Object.assign(THEMES, PRIDE_THEMES);
 
+function readableSurfaceTokens(vars) {
+  return {
+    "--foreground": contrastSafeInk(vars["--foreground"], vars["--background"], { fallback: vars["--foreground"] }),
+    "--card-foreground": contrastSafeInk(vars["--card-foreground"], vars["--card"], { fallback: vars["--foreground"] }),
+    "--popover-foreground": contrastSafeInk(vars["--popover-foreground"], vars["--popover"], { fallback: vars["--foreground"] }),
+    "--muted-foreground": contrastSafeInk(vars["--muted-foreground"], vars["--muted"], { fallback: vars["--foreground"] }),
+  };
+}
+
 function editorThemeTokens(vars) {
   const surface = vars["--card"];
   const fallback = vars["--card-foreground"];
   return {
-    "--editor-ink-default": fallback,
+    "--editor-ink-default": contrastSafeInk(fallback, surface, { fallback }),
     "--editor-ink-primary": contrastSafeInk(vars["--primary"], surface, { fallback }),
     "--editor-ink-secondary": contrastSafeInk(vars["--secondary"], surface, { fallback }),
     "--editor-ink-accent": contrastSafeInk(vars["--accent"], surface, { fallback }),
@@ -408,6 +417,7 @@ function editorThemeTokens(vars) {
 }
 
 Object.values(THEMES).forEach((theme) => {
+  Object.assign(theme.vars, readableSurfaceTokens(theme.vars));
   Object.assign(theme.vars, editorThemeTokens(theme.vars));
 });
 
@@ -587,9 +597,16 @@ export function applyCustomColors(primaryHex, secondaryHex) {
     "--secondary-foreground": secondaryPair.foreground,
     "--accent": secondaryPair.fill,
     "--accent-foreground": secondaryPair.foreground,
+    "--background": current.getPropertyValue("--background").trim(),
+    "--foreground": current.getPropertyValue("--foreground").trim(),
     "--card": current.getPropertyValue("--card").trim(),
     "--card-foreground": current.getPropertyValue("--card-foreground").trim(),
+    "--popover": current.getPropertyValue("--popover").trim(),
+    "--popover-foreground": current.getPropertyValue("--popover-foreground").trim(),
+    "--muted": current.getPropertyValue("--muted").trim(),
+    "--muted-foreground": current.getPropertyValue("--muted-foreground").trim(),
   };
+  Object.assign(customVars, readableSurfaceTokens(customVars));
   Object.assign(customVars, editorThemeTokens(customVars));
 
   beginThemeCommit();
