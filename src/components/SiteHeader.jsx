@@ -92,6 +92,7 @@ export default function SiteHeader({ rightSlot }) {
             </button>
           </div>
         </Glass>
+        <span className="lg-scroll-edge" aria-hidden="true" />
       </header>
 
       <AnimatePresence>
