@@ -694,7 +694,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
   const wheelAndTable = (isFS) => (
     <div className="space-y-6">
       {jobActionMessage && (
-        <div className="rounded-xl p-4 text-center text-white font-semibold text-sm" style={{ background: jobActionMessage.includes("not done") ? "#ef4444" : "#22c55e" }}>
+        <div className={`rounded-xl p-4 text-center font-semibold text-sm ${jobActionMessage.includes("not done") || jobActionMessage.includes("Could not") ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
           {jobActionMessage}
         </div>
       )}
@@ -707,7 +707,16 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
           onRemoveAndNext={isAdmin ? handleRemoveAndNext : undefined}
           onReject={isAdmin ? handleReject : undefined}
           isAdmin={isAdmin}
+          canAssign={winnerCanBeAssigned}
         />
+      )}
+
+      {isAdmin && (
+        <div className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3" aria-label="How to assign a job">
+          {["1. Choose a job", "2. Spin the wheel", "3. Confirm or re-spin"].map((step) => (
+            <div key={step} className="bg-card px-3 py-2.5 text-center text-xs font-semibold text-card-foreground">{step}</div>
+          ))}
+        </div>
       )}
 
       {/* Top row: Wheel (left, centred) + Spinning For (right) — admin only */}
@@ -726,6 +735,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
             {wheelMembers.length > 0 && (
               <p className="text-xs text-gray-400 font-medium text-center">
                 {wheelMembers.length} student{wheelMembers.length !== 1 ? "s" : ""} on the wheel
+                {repeatSpinMode ? " · extra spins are unlimited" : ""}
               </p>
             )}
             {wheelMembers.length > 0 ? (
@@ -744,13 +754,21 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
                       <button onClick={() => setRemovedIds(studentMembers.map(m => m.id))} className="flex-1 text-[9px] font-bold text-[#951E3A] bg-[#951E3A]/10 rounded py-1 hover:bg-[#951E3A]/20 transition-colors">Clear all</button>
                     </div>
                     <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
-                      {[...studentMembers].sort((a, b) => displayName(a).localeCompare(displayName(b))).map(m => {
-                        const onWheel = !removedIds.includes(m.id);
+                      {[...studentMembers].sort((a, b) => displayName(a).localeCompare(displayName(b))).map((member) => {
+                        const hardEligible = spinCandidates.some((candidate) => candidate.id === member.id);
+                        const onWheel = hardEligible && !removedIds.includes(member.id);
                         return (
-                          <label key={m.id} className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border cursor-pointer transition-all select-none ${onWheel ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200 opacity-60"}`}>
-                            <input type="checkbox" checked={onWheel} onChange={() => setRemovedIds(ids => ids.includes(m.id) ? ids.filter(i => i !== m.id) : [...ids, m.id])} className="w-3 h-3 rounded accent-[#951E3A] shrink-0" />
-                            <span className={`text-[11px] font-medium ${onWheel ? "text-gray-800" : "text-gray-400 line-through"}`}>
-                              {displayName(m)}
+                          <label key={member.id} className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border transition-all select-none ${onWheel ? "bg-green-50 border-green-200 cursor-pointer" : "bg-red-50 border-red-200 opacity-60"}`}>
+                            <input
+                              type="checkbox"
+                              checked={onWheel}
+                              disabled={!hardEligible}
+                              onChange={() => setRemovedIds((ids) => ids.includes(member.id) ? ids.filter((id) => id !== member.id) : [...ids, member.id])}
+                              className="w-3 h-3 rounded accent-[#951E3A] shrink-0"
+                            />
+                            <span className={`text-[11px] font-medium ${onWheel ? "text-gray-800" : "text-gray-400"}`}>
+                              {displayName(member)}
+                              {!hardEligible && selectingTimeKeeper ? " · already served" : ""}
                             </span>
                           </label>
                         );
@@ -761,7 +779,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
                 <SpinWheel
                   members={wheelMembers}
                   onSpinComplete={handleSpinComplete}
-                  disabled={!isAdmin || !!winner || assignedJobLabels.includes(selectedJob?.label)}
+                  disabled={!isAdmin || !!winner}
                   size={isFS ? 440 : 360}
                 />
               </div>
@@ -770,16 +788,83 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
             ) : (
               <div className="h-40 flex flex-col items-center justify-center text-center gap-2">
                 <CheckCircle2 className="w-10 h-10 text-green-400" />
-                <p className="text-green-700 font-semibold text-sm">All students assigned!</p>
+                <p className="text-green-700 font-semibold text-sm">
+                  {selectingTimeKeeper ? "Everyone eligible has already served as Time Keeper this year." : "No students are available for this spin."}
+                </p>
               </div>
             )}
           </div>
 
           {/* Spinning For — right side, admin only */}
           <div className="xl:w-72 shrink-0 w-full">
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Spinning for:</p>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Spinning for:</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddJob((open) => !open);
+                  setAddJobError("");
+                }}
+                className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-primary/30 px-2.5 text-xs font-semibold text-primary hover:bg-primary/10"
+              >
+                <Plus className="h-3.5 w-3.5" /> Add Job
+              </button>
+            </div>
+            {showAddJob && (
+              <div className="mb-3 space-y-2 rounded-xl border border-border bg-card p-3">
+                <label className="block text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  Job name
+                  <input
+                    autoFocus
+                    value={newJob.title}
+                    onChange={(event) => {
+                      setNewJob((job) => ({ ...job, title: event.target.value }));
+                      setAddJobError("");
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") handleAddJob();
+                    }}
+                    placeholder="e.g. Organize bookshelf"
+                    className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal normal-case tracking-normal text-foreground outline-none focus:border-primary"
+                  />
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Period
+                    <select
+                      value={newJob.period}
+                      onChange={(event) => setNewJob((job) => ({ ...job, period: event.target.value }))}
+                      className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-2 text-xs font-normal normal-case text-foreground"
+                    >
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </label>
+                  <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                    Days
+                    <select
+                      value={newJob.schedule}
+                      onChange={(event) => setNewJob((job) => ({ ...job, schedule: event.target.value }))}
+                      className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-2 text-xs font-normal normal-case text-foreground"
+                    >
+                      <option value="every_weekday">Mon–Fri</option>
+                      <option value="mon_wed_fri">Mon/Wed/Fri</option>
+                      <option value="tue_thu">Tue/Thu</option>
+                    </select>
+                  </label>
+                </div>
+                {addJobError && <p className="text-xs text-primary" role="alert">{addJobError}</p>}
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1" onClick={handleAddJob} disabled={addJobMutation.isPending}>
+                    {addJobMutation.isPending ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <Plus className="mr-1 h-3.5 w-3.5" />}
+                    Add Job
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setShowAddJob(false)}>Cancel</Button>
+                </div>
+              </div>
+            )}
             <SpinningForTable
-              jobs={JOBS}
+              jobs={allJobs}
               assignedJobLabels={assignedJobLabels}
               selectedJobId={selectedJobId}
               onSelect={setSelectedJobId}
@@ -792,7 +877,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
       {/* Bottom: Jobs table — shown for everyone, larger for non-admins */}
       <div>
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Week of {formatWeekLabel(currentWeek)} — {currentAssignments.length}/{JOBS.length} assigned
+          Week of {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments.length}/{allJobs.length} assigned
         </p>
         <JobScheduleTable
           assignments={currentAssignments}
@@ -800,6 +885,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
           currentUser={user}
           onDayStatus={handleDayStatus}
           onDelete={(id) => deleteMutation.mutate(id)}
+          currentMonth={currentMonth}
         />
       </div>
     </div>
@@ -846,6 +932,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
           currentUser={user}
           onDayStatus={handleDayStatus}
           onDelete={(id) => deleteMutation.mutate(id)}
+          currentMonth={currentMonth}
         />
       </div>
     );
