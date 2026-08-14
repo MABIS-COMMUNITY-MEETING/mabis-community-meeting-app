@@ -1181,6 +1181,7 @@ body.theme-frutigeraero .rounded-lg {
    variant: glass body, diagonal glare streak, inset top highlight. Only the
    colour differs, so the whole control set reads as one family. */
 body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]),
+body.theme-frutigeraero [role="button"]:not([class*="lg-"]),
 body.theme-frutigeraero [role="combobox"] {
   --hue: 202;
   position: relative;
@@ -1199,6 +1200,7 @@ body.theme-frutigeraero [role="combobox"] {
 }
 
 body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"])::before,
+body.theme-frutigeraero [role="button"]:not([class*="lg-"])::before,
 body.theme-frutigeraero [role="combobox"]::before {
   content: "";
   position: absolute;
@@ -1215,6 +1217,7 @@ body.theme-frutigeraero [role="combobox"]::before {
 }
 
 body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"])::after,
+body.theme-frutigeraero [role="button"]:not([class*="lg-"])::after,
 body.theme-frutigeraero [role="combobox"]::after {
   content: "";
   position: absolute;
@@ -1243,6 +1246,21 @@ body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]):ac
   body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]) { transition: none; }
   body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]):hover,
   body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]):active { transform: none; }
+}
+
+/* Coloured variants keep their meaning: same glass build, different hue.
+   The base rule drives its gradient from --hue, so re-pointing that single
+   value is enough — no need to restate the construction. */
+body.theme-frutigeraero button[class*="bg-destructive"],
+body.theme-frutigeraero button[class*="text-destructive"] { --hue: 22; }
+body.theme-frutigeraero button[class*="bg-secondary"] { --hue: 88; }
+body.theme-frutigeraero button[class*="bg-accent"] { --hue: 168; }
+
+/* Icon-only squares stay square-ish rather than becoming lozenges, so dense
+   toolbars keep their shape. Everything else about them is unchanged. */
+body.theme-frutigeraero .docs-tool-btn,
+body.theme-frutigeraero .docs-dropdown-trigger {
+  border-radius: 8px;
 }
 
 /* Fields are sunken rather than raised — the inverse bevel. */
