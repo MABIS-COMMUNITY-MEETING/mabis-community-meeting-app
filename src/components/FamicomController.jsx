@@ -44,11 +44,15 @@ export default function FamicomController({ onUnlock }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const arm = (dir, glyph, style) => (
+  const arm = (dir, rotation, style) => (
     <button type="button" aria-label={dir} onClick={() => push(dir)}
       className="absolute flex items-center justify-center transition-colors"
-      style={{ background: flash === dir ? RED : "transparent", color: "#9a9a9a", fontSize: 12, lineHeight: 1, ...style }}>
-      {glyph}
+      style={{ background: flash === dir ? RED : "transparent", color: "#9a9a9a", ...style }}>
+      <span
+        aria-hidden="true"
+        className="block h-0 w-0 border-y-[4px] border-y-transparent border-l-[7px] border-l-current"
+        style={{ transform: `rotate(${rotation}deg)` }}
+      />
     </button>
   );
 
@@ -107,10 +111,10 @@ export default function FamicomController({ onUnlock }) {
               left: 0, top: 0, width: 84, height: 84, background: "#1b1b1b",
               clipPath: "polygon(30px 0, 54px 0, 54px 30px, 84px 30px, 84px 54px, 54px 54px, 54px 84px, 30px 84px, 30px 54px, 0 54px, 0 30px, 30px 30px)"
             }} />
-            {arm("up", "▲", { left: 30, top: 4, width: 24, height: 22 })}
-            {arm("left", "◀", { left: 4, top: 30, width: 22, height: 24 })}
-            {arm("right", "▶", { left: 58, top: 30, width: 22, height: 24 })}
-            {arm("down", "▼", { left: 30, top: 58, width: 24, height: 22 })}
+            {arm("up", -90, { left: 30, top: 4, width: 24, height: 22 })}
+            {arm("left", 180, { left: 4, top: 30, width: 22, height: 24 })}
+            {arm("right", 0, { left: 58, top: 30, width: 22, height: 24 })}
+            {arm("down", 90, { left: 30, top: 58, width: 24, height: 22 })}
             <div className="absolute rounded-full" style={{ left: 30, top: 30, width: 24, height: 24, background: "linear-gradient(145deg,#5c5c5c,#2c2c2c)" }} />
           </div>
 
