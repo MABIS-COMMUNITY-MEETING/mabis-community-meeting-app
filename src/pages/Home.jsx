@@ -21,6 +21,7 @@ import RoleSwitcher from "@/components/RoleSwitcher";
 import RolePreviewToggle from "@/components/RolePreviewToggle";
 import BirthdayBanner from "@/components/BirthdayBanner";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
+import { matchingMembers, primaryMember } from "@/lib/memberIdentity";
 
 const AnnouncementsWidget = lazy(() => import("@/components/AnnouncementsWidget"));
 // Discussion is visible early and user-critical. Start its split chunk as soon
@@ -67,16 +68,14 @@ export default function Home() {
     queryFn: () => base44.entities.Member.list("name", 200)
   });
 
+  // A person may hold several Member rows. Resolve them all, then let the
+  // highest-ranked one speak for them, so a duplicate student row can never
+  // mask a minutes-taker row. See @/lib/memberIdentity.
   const { userMatches, userMember, isMinutesTaker } = useMemo(() => {
-    const matches = members.filter((member) =>
-      (member.email && user?.email && member.email.toLowerCase() === user.email.toLowerCase()) ||
-      (member.name && user?.full_name && member.name.toLowerCase() === user.full_name.toLowerCase())
-    );
-    const roleRank = { admin: 5, editor: 4, chair: 3, minutes: 3, teacher: 2, student: 1 };
-    const member = [...matches].sort((a, b) => (roleRank[b.role] || 0) - (roleRank[a.role] || 0))[0];
+    const matches = matchingMembers(members, user);
     return {
       userMatches: matches,
-      userMember: member,
+      userMember: primaryMember(matches),
       isMinutesTaker: matches.some((candidate) => candidate.role === "minutes"),
     };
   }, [members, user?.email, user?.full_name]);
