@@ -1099,6 +1099,7 @@ body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"])::befor
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
+  z-index: -1;
   background: linear-gradient(
     120deg,
     transparent 30%,
@@ -1118,6 +1119,7 @@ body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"])::after
   height: 40%;
   border-radius: inherit;
   pointer-events: none;
+  z-index: -1;
   background: linear-gradient(to bottom, rgb(255 255 255 / 0.8), rgb(255 255 255 / 0.1));
   transition: background 400ms ease;
 }
@@ -1207,6 +1209,7 @@ body.theme-frutigeraero [role="combobox"]::before {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
+  z-index: -1;
   background: linear-gradient(
     120deg,
     transparent 30%,
@@ -1227,6 +1230,7 @@ body.theme-frutigeraero [role="combobox"]::after {
   height: 42%;
   border-radius: inherit;
   pointer-events: none;
+  z-index: -1;
   background: linear-gradient(to bottom, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.12));
 }
 
@@ -1435,6 +1439,7 @@ body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]::bef
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
+  z-index: -1;
   background: linear-gradient(
     120deg,
     transparent 30%,
@@ -1453,6 +1458,7 @@ body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]::aft
   height: 40%;
   border-radius: inherit;
   pointer-events: none;
+  z-index: -1;
   background: linear-gradient(to bottom, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.12));
 }
 
