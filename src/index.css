@@ -1076,6 +1076,10 @@ body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]) {
   --bg-dark: oklch(45% var(--sat) var(--hue) / 0.75);
 
   position: relative;
+  /* Creates a stacking context so the z-index:-1 gloss layers sit above the
+     button's own background but BELOW the label. Without this they paint over
+     the text and hide it. */
+  isolation: isolate;
   border: 1px solid var(--bg);
   border-radius: 9999px;
   background-color: var(--bg);
@@ -1187,6 +1191,7 @@ body.theme-frutigeraero [role="button"]:not([class*="lg-"]),
 body.theme-frutigeraero [role="combobox"] {
   --hue: 202;
   position: relative;
+  isolation: isolate;
   border-radius: 9999px;
   border: 1px solid hsl(var(--hue) 50% 72% / 0.9);
   background:
@@ -1418,6 +1423,7 @@ body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"] {
   --bg-dark: oklch(45% var(--sat) var(--hue) / 0.8);
 
   position: relative;
+  isolation: isolate;
   border: 1px solid var(--bg);
   border-radius: 9999px;
   background-color: var(--bg);
