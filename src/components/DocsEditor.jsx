@@ -690,13 +690,17 @@ export default function DocsEditor({
                 document title bar is expected to behave. Without a handler it
                 stays a plain label rather than pretending to be editable. */}
             {onTitleChange ? (
+              /* The value is passed straight through. An earlier version
+                 substituted a fallback string here, so the field arrived
+                 pre-filled with placeholder text that had to be deleted before
+                 a real title could be typed. */
               <input
                 type="text"
-                value={title === "Untitled document" ? "" : title}
+                value={title || ""}
                 onChange={(event) => onTitleChange(event.target.value)}
                 placeholder="Untitled document"
                 aria-label="Document title"
-                className="w-full truncate rounded border border-transparent bg-transparent px-1 py-0.5 text-[13px] font-medium text-foreground outline-none hover:border-border focus:border-primary focus:bg-background"
+                className="w-full truncate rounded border border-border/60 bg-background px-2 py-1 text-[13px] font-medium text-foreground outline-none placeholder:text-muted-foreground/70 hover:border-border focus:border-primary"
               />
             ) : (
               <div className="truncate text-[13px] font-medium text-foreground">{title || "Untitled document"}</div>
@@ -1163,19 +1167,23 @@ export default function DocsEditor({
         }
         .docs-find-action { padding: 0 10px; color: hsl(var(--foreground)); background: hsl(var(--card)); border: 1px solid hsl(var(--border)); }
         .docs-find-icon { width: 32px; color: hsl(var(--muted-foreground)); }
+        /* The toolbar wraps onto as many rows as it needs. It used to be one
+           long row with `min-width: max-content`, `overflow-x: auto` and BOTH
+           scrollbar-hiding rules — so inside a narrow topic card everything past
+           the visible width (colour, highlight, alignment, lists…) was scrolled
+           off screen with no scrollbar to reveal it. Controls that exist but
+           cannot be seen are the same as controls that do not exist. */
         .docs-toolbar-wrap {
-          overflow-x: auto;
           border-bottom: 1px solid hsl(var(--border) / .72);
           background: hsl(var(--card));
-          scrollbar-width: none;
         }
-        .docs-toolbar-wrap::-webkit-scrollbar { display: none; }
         .docs-toolbar {
-          min-width: max-content;
           min-height: 44px;
           display: flex;
+          flex-wrap: wrap;
           align-items: center;
           gap: 1px;
+          row-gap: 2px;
           padding: 5px 8px;
         }
         .docs-tool-btn,
