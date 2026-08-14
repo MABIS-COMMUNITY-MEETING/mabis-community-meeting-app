@@ -261,6 +261,13 @@ export const THEMES = {
   clay:       pastelTheme("clay",       "Clay",       "15 35% 45%",  "175 25% 60%"),
 
   // ── New themes ──
+  // Frutiger Aero (c. 2004-2013, "Web 2.0 Gloss"): clear sky blue against
+  // bright grass green over white. Hues taken from the canonical palettes -
+  // aqua #0687db and grass #71ab23. The aesthetic's gloss lives in the theme's
+  // CSS block rather than here, and is scoped to floating control planes so it
+  // cannot spread across the editorial content plane.
+  frutigeraero: pastelTheme("frutigeraero", "Frutiger Aero", "204 92% 40%", "86 62% 34%"),
+
   aurora:    pastelTheme("aurora",    "Aurora",    "280 40% 48%", "180 45% 60%"),
   glacier:   pastelTheme("glacier",   "Glacier",   "190 45% 45%", "210 35% 70%"),
   sunset:    pastelTheme("sunset",    "Sunset",    "15 65% 50%",  "280 40% 65%"),
