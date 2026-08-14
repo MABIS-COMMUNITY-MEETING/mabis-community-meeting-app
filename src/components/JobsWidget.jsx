@@ -2,11 +2,28 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Trash2, Maximize2, X, CheckCircle2, UserPlus, AlertCircle } from "lucide-react";
+import { Loader2, Trash2, Maximize2, X, CheckCircle2, UserPlus, AlertCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
-import { getISOWeek, getYear, nextFriday, isFriday, format, addWeeks } from "date-fns";
 import { displayName } from "@/lib/names";
+import {
+  WEEKDAYS,
+  assignmentIsCurrent,
+  formatMonthLabel,
+  formatWeekLabel,
+  getCurrentWeekLabel,
+  getMonthLabel,
+  getNextMonthLabel,
+  getNextWeekLabel,
+  getScheduledDatesForMonth,
+  getVisibleWeekDates,
+  isTimeKeeperJob,
+  jobPeriod,
+  memberRotationKey,
+  normalizeJobTitle,
+  scheduledDaysFor,
+  timeKeeperKeysForYear,
+} from "@/lib/jobsRotation";
 import { playWheelTick, playWheelStart, playWheelWin } from "@/lib/wheel_sound";
 
 const JOBS = [
@@ -20,54 +37,17 @@ const JOBS = [
   { id: "everywhere2", label: "Clean Everywhere (2)" },
   { id: "ac1", label: "Check AC Temp (1)" },
   { id: "ac2", label: "Check AC Temp (2)" },
-  { id: "time1", label: "Time Taker (1)" },
-  { id: "time2", label: "Time Taker (2)" },
-];
+  { id: "time1", label: "Time Keeper (1)", period: "monthly" },
+  { id: "time2", label: "Time Keeper (2)", period: "monthly" },
+].map((job) => ({ ...job, period: job.period || "weekly" }));
 
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const ADMIN_EMAIL = "summer@montessoribkk.com";
 
-// Person 1 jobs "(1)" → Mon/Wed/Fri, Person 2 jobs "(2)" → Tue/Thu
-function scheduledDaysFor(jobTitle) {
-  if (jobTitle.includes("(1)")) return ["Monday", "Wednesday", "Friday"];
-  if (jobTitle.includes("(2)")) return ["Tuesday", "Thursday"];
-  return [];
-}
-
-const RESET_EPOCH_WEEK = 2026 * 100 + 1;
-const RESET_CYCLE = 3;
-
-function getWeekNumber(label) {
-  const [year, week] = label.split("-W");
-  return parseInt(year) * 100 + parseInt(week);
-}
-
-function weekLabelToDate(label) {
-  const [year, weekPart] = label.split("-W");
-  const week = parseInt(weekPart);
-  const jan4 = new Date(parseInt(year), 0, 4);
-  const startOfWeek1 = new Date(jan4);
-  startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
-  const result = new Date(startOfWeek1);
-  result.setDate(startOfWeek1.getDate() + (week - 1) * 7 + 4);
-  return result;
-}
-
-function formatWeekLabel(label) {
-  try { return format(weekLabelToDate(label), "d MMMM yyyy"); }
-  catch { const [year, week] = label.split("-W"); return `Week ${week}, ${year}`; }
-}
-
-function getCurrentWeekLabel() {
-  const today = new Date();
-  const friday = isFriday(today) ? today : nextFriday(today);
-  return `${getYear(friday)}-W${String(getISOWeek(friday)).padStart(2, "0")}`;
-}
-
-function getNextWeekLabel(label) {
-  const next = addWeeks(weekLabelToDate(label), 1);
-  return `${getYear(next)}-W${String(getISOWeek(next)).padStart(2, "0")}`;
-}
+const SCHEDULE_PRESETS = {
+  every_weekday: [...WEEKDAYS],
+  mon_wed_fri: ["Monday", "Wednesday", "Friday"],
+  tue_thu: ["Tuesday", "Thursday"],
+};
 
 // ─── Spin Wheel ────────────────────────────────────────────────────────────────
 function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
