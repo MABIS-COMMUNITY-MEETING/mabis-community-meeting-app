@@ -304,6 +304,7 @@ function safeFilename(value) {
 
 export default function DocsEditor({
   title = "Untitled document",
+  onTitleChange,
   onChange,
   initialHtml = "",
   minHeight = "180px",
@@ -439,13 +440,27 @@ export default function DocsEditor({
     syncFormats();
   };
 
-  // The highlight class carries its own readable foreground in CSS, so there is
-  // no second colour format to keep in sync.
+  // Belt and braces, deliberately. The class is what the stylesheet targets and
+  // what exempts the span from the paste-sanitising guards in index.css; the
+  // inline colour is Quill's own core format, which is guaranteed to be
+  // registered. Either mechanism alone is enough to colour the text, so a
+  // failure in one cannot leave the user with a control that does nothing.
+  const applyThemeInk = (color) => {
+    const quill = getQuill();
+    if (!quill) return;
+    quill.focus();
+    quill.format("themeInk", color.value || false, "user");
+    quill.format("color", themeColor(color.token), "user");
+    syncFormats();
+  };
+
   const applyThemeHighlight = (highlight) => {
     const quill = getQuill();
     if (!quill) return;
     quill.focus();
     quill.format("themeHighlight", highlight.value || false, "user");
+    quill.format("background", themeColor(highlight.token), "user");
+    quill.format("color", highlight.token ? `hsl(var(${highlight.token}-foreground))` : false, "user");
     syncFormats();
   };
 
@@ -671,7 +686,21 @@ export default function DocsEditor({
             <FileText className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <div className="truncate text-[13px] font-medium text-foreground">{title || "Untitled document"}</div>
+            {/* When the parent owns a title it can be typed here, the way a
+                document title bar is expected to behave. Without a handler it
+                stays a plain label rather than pretending to be editable. */}
+            {onTitleChange ? (
+              <input
+                type="text"
+                value={title === "Untitled document" ? "" : title}
+                onChange={(event) => onTitleChange(event.target.value)}
+                placeholder="Untitled document"
+                aria-label="Document title"
+                className="w-full truncate rounded border border-transparent bg-transparent px-1 py-0.5 text-[13px] font-medium text-foreground outline-none hover:border-border focus:border-primary focus:bg-background"
+              />
+            ) : (
+              <div className="truncate text-[13px] font-medium text-foreground">{title || "Untitled document"}</div>
+            )}
             <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground" aria-live="polite">
               {statusIcon}
               <span>{documentStatus}</span>
@@ -916,7 +945,7 @@ export default function DocsEditor({
                 active={color.value ? formats.color === color.value : !formats.color}
                 icon={<span className="docs-palette-swatch" style={{ background: color.token ? themeColor(color.token) : "hsl(var(--card-foreground))" }} />}
                 onClick={() => {
-                  focusAndFormat("themeInk", color.value || false);
+                  applyThemeInk(color);
                   close();
                 }}
               />
