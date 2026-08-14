@@ -640,8 +640,8 @@ export default function DocsEditor({
   const statusIcon = saving ? <Loader2 className="h-3 w-3 animate-spin" /> : saved ? <Check className="h-3 w-3" /> : null;
 
   const editorShellClass = fullscreen
-    ? "fixed inset-0 z-[10020] flex min-h-0 flex-col bg-background docs-quill docs-editor-shell"
-    : "docs-quill docs-editor-shell overflow-hidden rounded-xl border border-border bg-card shadow-sm";
+    ? "theme-rich-text fixed inset-0 z-[10020] flex min-h-0 flex-col bg-background docs-quill docs-editor-shell"
+    : "theme-rich-text docs-quill docs-editor-shell overflow-hidden rounded-xl border border-border bg-card shadow-sm";
 
   return (
     <div className={editorShellClass} onKeyDown={handleKeyDown}>
