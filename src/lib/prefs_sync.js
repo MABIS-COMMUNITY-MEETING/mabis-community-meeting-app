@@ -1,6 +1,13 @@
 import { base44 } from "@/api/base44Client";
 import { applyTheme, applyCustomColors, applyFont, getStoredTheme, getStoredFont, getStoredCustomColors } from "@/lib/themes";
-import { applyAnimationPreference, MOTION_EVENT } from "@/lib/motion-preference";
+import {
+  applyAnimationPreference,
+  LEGACY_MOTION_STORAGE_KEY,
+  MOTION_EVENT,
+  MOTION_STORAGE_KEY,
+  MOTION_UPDATED_AT_KEY,
+  normalizeAnimationPreference,
+} from "@/lib/motion-preference";
 import { applyCursorPreference, CURSOR_EVENT } from "@/lib/cursor-preference";
 
 /* Every UI preference the app stores locally lives under a "mabis" key.
@@ -12,7 +19,7 @@ export function collectPrefs() {
   const out = {};
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (isPrefKey(k)) out[k] = localStorage.getItem(k);
+    if (isPrefKey(k) && k !== LEGACY_MOTION_STORAGE_KEY) out[k] = localStorage.getItem(k);
   }
   return out;
 }
@@ -22,8 +29,10 @@ export function applyStoredPrefs() {
   const custom = getStoredCustomColors();
   if (custom) applyCustomColors(custom.primary, custom.secondary);
   applyFont(getStoredFont());
+  const animationPreferenceChanged = normalizeAnimationPreference();
   applyAnimationPreference();
   applyCursorPreference();
+  return animationPreferenceChanged;
 }
 
 /** Pull the user's saved preferences down and apply them. */
@@ -31,6 +40,7 @@ export async function pullPrefs() {
   const user = await base44.auth.me();
   const remote = user?.ui_prefs;
   let keepLocalFont = false;
+  let keepLocalMotion = false;
 
   if (remote && typeof remote === "object") {
     const localFont = localStorage.getItem("mabis-font");
@@ -41,17 +51,22 @@ export async function pullPrefs() {
     keepLocalFont = Boolean(localFont && localPickerVersion)
       && (localFontUpdatedAt >= remoteFontUpdatedAt || remoteFontUpdatedAt === 0);
 
+    const localMotionUpdatedAt = Number(localStorage.getItem(MOTION_UPDATED_AT_KEY) || 0);
+    const remoteMotionUpdatedAt = Number(remote[MOTION_UPDATED_AT_KEY] || 0);
+    keepLocalMotion = localMotionUpdatedAt > 0 && localMotionUpdatedAt >= remoteMotionUpdatedAt;
+
     Object.entries(remote).forEach(([k, v]) => {
       if (!isPrefKey(k) || typeof v !== "string") return;
       if (keepLocalFont && ["mabis-font", "mabis-font-picker-version", "mabis-font-updated-at"].includes(k)) return;
+      if (keepLocalMotion && [MOTION_STORAGE_KEY, MOTION_UPDATED_AT_KEY].includes(k)) return;
       localStorage.setItem(k, v);
     });
   }
 
-  applyStoredPrefs();
+  const animationPreferenceChanged = applyStoredPrefs();
 
-  // Repair an older account-side font preference with the newer device choice.
-  if (keepLocalFont) {
+  // Repair older account-side preferences with the current device choice.
+  if (keepLocalFont || keepLocalMotion || animationPreferenceChanged) {
     await base44.auth.updateMe({ ui_prefs: collectPrefs() });
   }
 }
