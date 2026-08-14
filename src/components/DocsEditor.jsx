@@ -79,6 +79,22 @@ const SIZE_PRESETS = [8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96];
 const LINE_HEIGHTS = ["1", "1.15", "1.5", "2"];
 const ZOOM_LEVELS = [75, 90, 100, 110, 125, 150];
 
+const THEME_TEXT_COLORS = [
+  { label: "Default text", token: null },
+  { label: "Primary theme ink", token: "--editor-ink-primary" },
+  { label: "Secondary theme ink", token: "--editor-ink-secondary" },
+  { label: "Accent theme ink", token: "--editor-ink-accent" },
+];
+
+const THEME_HIGHLIGHTS = [
+  { label: "No highlight", fill: null, foreground: null },
+  { label: "Primary theme highlight", fill: "--editor-highlight-primary", foreground: "--editor-highlight-primary-foreground" },
+  { label: "Secondary theme highlight", fill: "--editor-highlight-secondary", foreground: "--editor-highlight-secondary-foreground" },
+  { label: "Accent theme highlight", fill: "--editor-highlight-accent", foreground: "--editor-highlight-accent-foreground" },
+];
+
+const themeColor = (token) => token ? `hsl(var(${token}))` : false;
+
 const emptyFormats = {
   bold: false,
   italic: false,
@@ -90,6 +106,8 @@ const emptyFormats = {
   header: false,
   align: false,
   list: false,
+  color: false,
+  background: false,
 };
 
 function ToolButton({ title, onClick, active = false, disabled = false, children, className = "" }) {
@@ -331,6 +349,8 @@ export default function DocsEditor({
         header: format.header || false,
         align: format.align || false,
         list: format.list || false,
+        color: format.color || false,
+        background: format.background || false,
       });
       if (format.size) {
         const parsed = Number.parseInt(format.size, 10);
@@ -397,6 +417,15 @@ export default function DocsEditor({
     if (!quill) return;
     quill.focus();
     quill.format(name, value, "user");
+    syncFormats();
+  };
+
+  const applyThemeHighlight = (highlight) => {
+    const quill = getQuill();
+    if (!quill) return;
+    quill.focus();
+    quill.format("background", themeColor(highlight.fill), "user");
+    quill.format("color", themeColor(highlight.foreground), "user");
     syncFormats();
   };
 
@@ -848,16 +877,56 @@ export default function DocsEditor({
           <ToolButton title="Strikethrough" active={formats.strike} onClick={() => toggleFormat("strike")}><Strikethrough className="h-4 w-4" /></ToolButton>
 
           <ToolbarDivider />
-          <label className="docs-color-tool" title="Text color">
-            <span className="text-sm font-semibold">A</span>
-            <span className="docs-color-line docs-rainbow" />
-            <input type="color" onChange={(event) => focusAndFormat("color", event.target.value)} />
-          </label>
-          <label className="docs-color-tool" title="Highlight color">
-            <Highlighter className="h-4 w-4" />
-            <span className="docs-color-line docs-rainbow" />
-            <input type="color" onChange={(event) => focusAndFormat("background", event.target.value)} />
-          </label>
+          <Dropdown
+            trigger={(
+              <>
+                <span className="docs-palette-trigger" title="Theme text color">
+                  <span className="text-sm font-semibold">A</span>
+                  <span className="docs-color-line bg-[hsl(var(--editor-ink-primary))]" />
+                </span>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </>
+            )}
+            width="w-52"
+          >
+            {(close) => THEME_TEXT_COLORS.map((color) => (
+              <MenuItem
+                key={color.label}
+                label={color.label}
+                active={color.token ? formats.color === themeColor(color.token) : !formats.color}
+                icon={<span className="docs-palette-swatch" style={{ background: color.token ? themeColor(color.token) : "hsl(var(--card-foreground))" }} />}
+                onClick={() => {
+                  focusAndFormat("color", themeColor(color.token));
+                  close();
+                }}
+              />
+            ))}
+          </Dropdown>
+          <Dropdown
+            trigger={(
+              <>
+                <span className="docs-palette-trigger" title="Theme highlight color">
+                  <Highlighter className="h-4 w-4" />
+                  <span className="docs-color-line bg-[hsl(var(--editor-highlight-secondary))]" />
+                </span>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </>
+            )}
+            width="w-56"
+          >
+            {(close) => THEME_HIGHLIGHTS.map((highlight) => (
+              <MenuItem
+                key={highlight.label}
+                label={highlight.label}
+                active={highlight.fill ? formats.background === themeColor(highlight.fill) : !formats.background}
+                icon={<span className="docs-palette-swatch" style={{ background: highlight.fill ? themeColor(highlight.fill) : "transparent" }} />}
+                onClick={() => {
+                  applyThemeHighlight(highlight);
+                  close();
+                }}
+              />
+            ))}
+          </Dropdown>
 
           <ToolbarDivider />
           <Dropdown
@@ -968,9 +1037,9 @@ export default function DocsEditor({
 
       <style>{`
         .docs-editor-shell {
-          --docs-blue: #0b57d0;
+          --docs-blue: hsl(var(--editor-ink-primary));
           --docs-blue-soft: color-mix(in srgb, var(--docs-blue) 12%, transparent);
-          color: hsl(var(--foreground));
+          color: hsl(var(--card-foreground));
           font-family: var(--font-body);
         }
         .docs-docbar {
@@ -1113,10 +1182,9 @@ export default function DocsEditor({
         }
         .docs-menu-item.is-danger { color: hsl(var(--destructive)); }
         .docs-menu-item:disabled { opacity: .45; }
-        .docs-color-tool { position: relative; padding: 0 8px; cursor: pointer; }
-        .docs-color-tool input { position: absolute; inset: 0; cursor: pointer; opacity: 0; }
-        .docs-color-line { position: absolute; left: 7px; right: 7px; bottom: 4px; height: 2px; border-radius: 999px; }
-        .docs-rainbow { background: linear-gradient(90deg,#ef4444,#f59e0b,#eab308,#22c55e,#3b82f6,#8b5cf6,#ec4899); }
+        .docs-palette-trigger { position: relative; display: inline-flex; height: 24px; width: 22px; align-items: center; justify-content: center; }
+        .docs-color-line { position: absolute; left: 2px; right: 2px; bottom: 1px; height: 3px; border-radius: 999px; }
+        .docs-palette-swatch { width: 15px; height: 15px; flex: none; border-radius: 3px; border: 1px solid hsl(var(--border)); }
         .docs-workspace {
           position: relative;
           overflow-x: auto;
@@ -1142,7 +1210,7 @@ export default function DocsEditor({
         .docs-quill .ql-editor {
           min-height: ${minHeight};
           padding: clamp(22px, 5vw, 48px) clamp(22px, 7vw, 64px);
-          color: hsl(var(--foreground));
+          color: hsl(var(--card-foreground));
           font-family: var(--font-body);
           font-size: 14px;
           line-height: 1.65;
@@ -1223,7 +1291,6 @@ export default function DocsEditor({
           .docs-quill .ql-editor { padding: 20px 18px; }
           .docs-quill .ql-editor.ql-blank::before { left: 18px; right: 18px; }
         }
-        body.theme-is-dark .docs-editor-shell { --docs-blue: #8ab4f8; }
       `}</style>
     </div>
   );
