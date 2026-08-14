@@ -204,7 +204,7 @@ function TopicItem({
         </p>
         {/* Description — clickable to edit */}
         {topic.description && (
-          <div className={`mt-2 pt-2 border-t border-gray-100 text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none
+          <div className={`theme-rich-text mt-2 pt-2 border-t border-gray-100 text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none
             [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2
             [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1
             [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1
