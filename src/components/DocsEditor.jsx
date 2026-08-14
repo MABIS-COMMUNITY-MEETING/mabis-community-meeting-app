@@ -1168,11 +1168,11 @@ export default function DocsEditor({
         .docs-find-action { padding: 0 10px; color: hsl(var(--foreground)); background: hsl(var(--card)); border: 1px solid hsl(var(--border)); }
         .docs-find-icon { width: 32px; color: hsl(var(--muted-foreground)); }
         /* The toolbar wraps onto as many rows as it needs. It used to be one
-           long row with `min-width: max-content`, `overflow-x: auto` and BOTH
-           scrollbar-hiding rules — so inside a narrow topic card everything past
-           the visible width (colour, highlight, alignment, lists…) was scrolled
-           off screen with no scrollbar to reveal it. Controls that exist but
-           cannot be seen are the same as controls that do not exist. */
+           long row sized to max-content with overflow-x auto and both
+           scrollbar-hiding rules, so inside a narrow topic card everything past
+           the visible width (colour, highlight, alignment, lists) scrolled off
+           screen with no scrollbar to reveal it. Controls that exist but cannot
+           be seen are the same as controls that do not exist. */
         .docs-toolbar-wrap {
           border-bottom: 1px solid hsl(var(--border) / .72);
           background: hsl(var(--card));
