@@ -671,8 +671,12 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["topics"] }); resetTopicForm(); },
     onError: saveFailed,
   });
+  // Editing uses the same single form as creating — Summer's model. One form
+  // means one title field and one editor instance, so there is no second Quill
+  // mounting late and stealing the caret.
   const handleEditTopic = (t) => {
-    setShowForm(false);
+    setShowForm(true);
+    setSaveError("");
     setEditingTopicId(t.id);
     setTitle(t.title);
     setDescription(t.description || "");
@@ -1027,8 +1031,29 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
 
       <div className="mabis-widget-body p-4 space-y-4 sm:p-5">
         {/* Add Topic Form */}
-        {showForm && !editingTopicId && isCurrentWeek && (
-          <div className="border border-border rounded-xl p-4 bg-muted space-y-4 sm:rounded-2xl sm:p-5">
+        {(showForm || editingTopicId) && (isCurrentWeek || editingTopicId) && (
+          <div className="border border-border rounded-xl p-4 bg-card space-y-4 shadow-lg sm:rounded-2xl sm:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                  {editingTopicId ? "Editing topic" : "New topic"}
+                </p>
+                <p className="mt-0.5 text-xs leading-[1.6] tracking-[0.02em] text-muted-foreground">
+                  {editingTopicId
+                    ? "Change the title, who raised it, or the details, then press Update topic."
+                    : "Give it a title, pick your name, then press Add topic."}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={resetTopicForm}
+                title="Close without saving"
+                aria-label="Close without saving"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border text-muted-foreground hover:border-primary hover:text-primary"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Select value={submittedBy} onValueChange={setSubmittedBy}>
                 <SelectTrigger className="rounded-lg border-border bg-card">
@@ -1036,13 +1061,14 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="All">All</SelectItem>
-                  {members.map((m) => (
+                  {topicSubmitters.map((m) => (
                     <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <Input placeholder="Topic title..." value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                onMouseDown={(event) => { event.stopPropagation(); event.currentTarget.focus(); }}
                 className="rounded-lg border-border bg-card" />
             </div>
             <Suspense fallback={<ChunkFallback height={180} />}>
@@ -1060,12 +1086,27 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                   </button>
                 ))}
               </div>
-              <Button onClick={handleAdd}
-                disabled={!title.trim() || !submittedBy.trim() || addMutation.isPending || updateTopicMutation.isPending}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg sm:ml-auto sm:w-auto">
-                {addMutation.isPending ? "Adding..." : "Add Topic"}
-              </Button>
+              <div className="flex gap-2 sm:ml-auto">
+                <Button variant="outline" onClick={resetTopicForm}
+                  className="flex-1 rounded-lg sm:flex-none">
+                  Cancel
+                </Button>
+                <Button onClick={handleAdd}
+                  /* Only blocked while saving. An empty field explains itself
+                     on click rather than leaving a dead button. */
+                  disabled={addMutation.isPending || updateTopicMutation.isPending}
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg sm:flex-none">
+                  {addMutation.isPending || updateTopicMutation.isPending
+                    ? "Saving..."
+                    : editingTopicId ? "Update topic" : "Add topic"}
+                </Button>
+              </div>
             </div>
+            {saveError && (
+              <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs font-semibold text-destructive">
+                {saveError}
+              </p>
+            )}
           </div>
         )}
 
