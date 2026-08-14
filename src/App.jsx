@@ -22,9 +22,6 @@ import { routeModules } from '@/lib/routeLoaders';
 // Route loaders are shared with intent prefetching in SiteHeader. Hovering or
 // focusing a destination warms the same module promise React.lazy will consume.
 const Login = lazy(routeModules['/login']);
-const Register = lazy(routeModules['/register']);
-const ForgotPassword = lazy(routeModules['/forgot-password']);
-const ResetPassword = lazy(routeModules['/reset-password']);
 const Home = lazy(routeModules['/home']);
 const History = lazy(routeModules['/history']);
 const AnnouncementsHistory = lazy(routeModules['/history/announcements']);
@@ -33,6 +30,7 @@ const Feedback = lazy(routeModules['/feedback']);
 import LoadingScreen from '@/components/LoadingScreen';
 import MotionPreference from '@/components/MotionPreference';
 import PrefsSync from '@/components/PrefsSync';
+import CjkFontLoader from '@/components/CjkFontLoader';
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -42,9 +40,9 @@ const AnimatedRoutes = () => {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Splash />} />
           <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-          <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
-          <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
-          <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+          <Route path="/register" element={<Navigate to="/login" replace />} />
+          <Route path="/forgot-password" element={<Navigate to="/login" replace />} />
+          <Route path="/reset-password" element={<Navigate to="/login" replace />} />
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
             <Route path="/home" element={<PageTransition><Home /></PageTransition>} />
             <Route path="/history" element={<PageTransition><History /></PageTransition>} />
@@ -82,6 +80,7 @@ function App() {
           <Router>
             <ScrollToTop />
             <PrefsSync />
+            <CjkFontLoader />
             <SoundEffects />
             <GrainOverlay />
             <PrideAmbience />
