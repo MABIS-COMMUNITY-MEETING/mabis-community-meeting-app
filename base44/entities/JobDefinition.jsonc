@@ -1,0 +1,39 @@
+{
+  "name": "JobDefinition",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Custom job title shown in the monthly assignment wheel"
+    },
+    "schedule_days": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "default": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ],
+      "description": "Weekdays when the job is performed during its assigned month"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the custom job is available for assignment"
+    }
+  },
+  "required": [
+    "title"
+  ]
+}
