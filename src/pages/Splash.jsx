@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/AuthContext";
 import MagneticButton from "@/components/MagneticButton";
 import Marquee from "@/components/Marquee";
 import KineticBackground from "@/components/KineticBackground";
+import JapaneseText from "@/components/JapaneseText";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
@@ -134,8 +135,12 @@ export default function Splash() {
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.7, duration: 0.7 }}
           className="max-w-md text-left sm:text-center text-sm sm:text-base text-bone/65 leading-relaxed"
         >
-          A weekly ritual of voice, presence, and shared decision —
-          recorded, remembered, and refined by the secondary community.
+          <JapaneseText
+            ja="自分の言葉を届け、互いに耳を傾け、みんなで決める。中等部のコミュニティが記録し、振り返り、育てていきます。"
+            japaneseClassName="mt-2 block text-[0.9em]"
+          >
+            Voice your words with presence and shared decision — recorded, remembered, and refined by the secondary community.
+          </JapaneseText>
         </motion.p>
 
         <div className="mt-7 w-full sm:mt-12 sm:w-auto">
