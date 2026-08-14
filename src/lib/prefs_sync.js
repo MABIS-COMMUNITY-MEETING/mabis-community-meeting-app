@@ -9,6 +9,12 @@ import {
   normalizeAnimationPreference,
 } from "@/lib/motion-preference";
 import { applyCursorPreference, CURSOR_EVENT } from "@/lib/cursor-preference";
+import {
+  applyJapaneseTextPreference,
+  JAPANESE_TEXT_EVENT,
+  JAPANESE_TEXT_STORAGE_KEY,
+  JAPANESE_TEXT_UPDATED_AT_KEY,
+} from "@/lib/japanese-text-preference";
 
 /* Every UI preference the app stores locally lives under a "mabis" key.
    We mirror that whole bag onto the signed-in user so settings follow them
@@ -32,6 +38,7 @@ export function applyStoredPrefs() {
   const animationPreferenceChanged = normalizeAnimationPreference();
   applyAnimationPreference();
   applyCursorPreference();
+  applyJapaneseTextPreference();
   return animationPreferenceChanged;
 }
 
@@ -41,6 +48,7 @@ export async function pullPrefs() {
   const remote = user?.ui_prefs;
   let keepLocalFont = false;
   let keepLocalMotion = false;
+  let keepLocalJapaneseText = false;
 
   if (remote && typeof remote === "object") {
     const localFont = localStorage.getItem("mabis-font");
@@ -55,10 +63,17 @@ export async function pullPrefs() {
     const remoteMotionUpdatedAt = Number(remote[MOTION_UPDATED_AT_KEY] || 0);
     keepLocalMotion = localMotionUpdatedAt > 0 && localMotionUpdatedAt >= remoteMotionUpdatedAt;
 
+    const localJapaneseUpdatedAt = Number(localStorage.getItem(JAPANESE_TEXT_UPDATED_AT_KEY) || 0);
+    const remoteJapaneseUpdatedAt = Number(remote[JAPANESE_TEXT_UPDATED_AT_KEY] || 0);
+    keepLocalJapaneseText = localStorage.getItem(JAPANESE_TEXT_STORAGE_KEY) !== null
+      && localJapaneseUpdatedAt > 0
+      && localJapaneseUpdatedAt >= remoteJapaneseUpdatedAt;
+
     Object.entries(remote).forEach(([k, v]) => {
       if (!isPrefKey(k) || typeof v !== "string") return;
       if (keepLocalFont && ["mabis-font", "mabis-font-picker-version", "mabis-font-updated-at"].includes(k)) return;
       if (keepLocalMotion && [MOTION_STORAGE_KEY, MOTION_UPDATED_AT_KEY].includes(k)) return;
+      if (keepLocalJapaneseText && [JAPANESE_TEXT_STORAGE_KEY, JAPANESE_TEXT_UPDATED_AT_KEY].includes(k)) return;
       localStorage.setItem(k, v);
     });
   }
@@ -66,7 +81,7 @@ export async function pullPrefs() {
   const animationPreferenceChanged = applyStoredPrefs();
 
   // Repair older account-side preferences with the current device choice.
-  if (keepLocalFont || keepLocalMotion || animationPreferenceChanged) {
+  if (keepLocalFont || keepLocalMotion || keepLocalJapaneseText || animationPreferenceChanged) {
     await base44.auth.updateMe({ ui_prefs: collectPrefs() });
   }
 }
@@ -76,4 +91,4 @@ export async function pushPrefs() {
   await base44.auth.updateMe({ ui_prefs: collectPrefs() });
 }
 
-export const PREF_EVENTS = ["themeChanged", "fontChanged", MOTION_EVENT, CURSOR_EVENT, "storage"];
+export const PREF_EVENTS = ["themeChanged", "fontChanged", MOTION_EVENT, CURSOR_EVENT, JAPANESE_TEXT_EVENT, "storage"];
