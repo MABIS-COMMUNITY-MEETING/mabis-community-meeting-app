@@ -235,7 +235,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
                       </span>
                     </div>
                     <p className="font-semibold text-gray-800 text-sm">{ann.title}</p>
-                    {ann.body && <div className="text-sm text-gray-600 mt-1 leading-relaxed prose prose-sm max-w-none
+                    {ann.body && <div className="theme-rich-text text-sm text-gray-600 mt-1 leading-relaxed prose prose-sm max-w-none
                       [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2
                       [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1
                       [&_li]:my-0.5 [&_h1]:text-base [&_h1]:font-bold [&_h2]:text-sm [&_h2]:font-semibold [&_p]:my-1
