@@ -238,7 +238,7 @@ function LinkPopover({ getQuill, onClose }) {
   useEffect(() => {
     const quill = getQuill();
     if (quill) {
-      const format = quill.getFormat();
+      const format = quill.getFormat(quill.getSelection() || { index: 0, length: 0 });
       if (typeof format.link === "string") setUrl(format.link);
     }
     inputRef.current?.focus();
@@ -374,7 +374,7 @@ export default function DocsEditor({
     const quill = getQuill();
     if (!quill) return;
     try {
-      const format = quill.getFormat();
+      const format = quill.getFormat(quill.getSelection() || { index: 0, length: 0 });
       setFormats({
         bold: !!format.bold,
         italic: !!format.italic,
@@ -509,7 +509,7 @@ export default function DocsEditor({
   const toggleFormat = (name) => {
     const quill = getQuill();
     if (!quill) return;
-    const current = quill.getFormat();
+    const current = quill.getFormat(quill.getSelection() || { index: 0, length: 0 });
     quill.focus();
     quill.format(name, !current[name], "user");
     syncFormats();
@@ -526,7 +526,7 @@ export default function DocsEditor({
   const toggleList = (type) => {
     const quill = getQuill();
     if (!quill) return;
-    const current = quill.getFormat();
+    const current = quill.getFormat(quill.getSelection() || { index: 0, length: 0 });
     quill.focus();
     quill.format("list", current.list === type ? false : type, "user");
     syncFormats();
@@ -535,7 +535,7 @@ export default function DocsEditor({
   const changeIndent = (delta) => {
     const quill = getQuill();
     if (!quill) return;
-    const current = quill.getFormat();
+    const current = quill.getFormat(quill.getSelection() || { index: 0, length: 0 });
     const indent = Number(current.indent || 0);
     quill.focus();
     quill.format("indent", Math.max(0, indent + delta), "user");
