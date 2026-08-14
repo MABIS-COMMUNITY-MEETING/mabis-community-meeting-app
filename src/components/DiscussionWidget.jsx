@@ -101,45 +101,6 @@ function holdFocus(element) {
   setTimeout(() => element.focus(), 150);
 }
 
-// TEMPORARY FORENSICS - remove once the focus thief is identified.
-// Patches focus() to capture a stack trace whenever the Quill editor takes the
-// caret, and records every focusin. The preview runs the Vite dev server, so
-// these stacks carry real file names and line numbers.
-function FocusForensics() {
-  const [lines, setLines] = useState([]);
-  useEffect(() => {
-    const push = (text) => setLines((prev) => (prev.length >= 6 ? prev : [...prev, text]));
-    const original = HTMLElement.prototype.focus;
-    HTMLElement.prototype.focus = function patched(...args) {
-      try {
-        const cls = this.className;
-        if (typeof cls === "string" && cls.indexOf("ql-editor") !== -1) {
-          const stack = (new Error().stack || "").split("\n").slice(1, 5)
-            .map((s) => s.trim().replace(/^at\s+/, "").replace(/https?:\/\/[^/]+/, ""))
-            .join(" <- ");
-          push(`FOCUS() ${new Date().toISOString().slice(14, 23)} ${stack}`);
-        }
-      } catch (err) { /* diagnostic only */ }
-      return original.apply(this, args);
-    };
-    const onFocusIn = (event) => {
-      const el = event.target;
-      const cls = typeof el.className === "string" ? el.className.slice(0, 24) : "";
-      push(`IN ${new Date().toISOString().slice(14, 23)} ${el.tagName} ${cls}`);
-    };
-    document.addEventListener("focusin", onFocusIn, true);
-    return () => {
-      HTMLElement.prototype.focus = original;
-      document.removeEventListener("focusin", onFocusIn, true);
-    };
-  }, []);
-  return (
-    <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all bg-background p-2 font-mono text-[9px] leading-tight text-primary">
-      {lines.join("\n") || "waiting..."}
-    </pre>
-  );
-}
-
 function TopicItem({
   topic,
   index,
@@ -737,7 +698,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   // means one title field and one editor instance, so there is no second Quill
   // mounting late and stealing the caret.
   const handleEditTopic = (t) => {
-    setShowForm(true);
+    setShowForm(false);
     setSaveError("");
     setEditingTopicId(t.id);
     setTitle(t.title);
@@ -815,6 +776,27 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   // you having clicked anything, take it back. Any real mousedown outside the
   // field releases the guard, so clicking into the editor, a button or another
   // input behaves normally. This only fights the silent theft.
+  // Editing happens inside the topic card. The caret used to be pulled out of
+  // the title on every keystroke because ReactQuill restores its saved
+  // selection on re-render; the editor is memoised in DocsEditor now, so this
+  // stays a plain inline form.
+  const inlineEditProps = (topic) => ({
+    isEditing: editingTopicId === topic.id,
+    editTitle: title,
+    editDescription: description,
+    editSubmittedBy: submittedBy,
+    editPriority: priority,
+    members: topicSubmitters,
+    error: saveError,
+    onTitleChange: setTitle,
+    onDescriptionChange: setDescription,
+    onSubmittedByChange: setSubmittedBy,
+    onPriorityChange: setPriority,
+    onSave: handleAdd,
+    onCancel: resetTopicForm,
+    isSaving: updateTopicMutation.isPending,
+  });
+
   const titleRef = useRef(null);
   const titleGuard = useRef(false);
 
@@ -970,7 +952,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               </div>
 
               {/* Inline add form in meeting mode */}
-              {(showForm || editingTopicId) && (
+              {showForm && !editingTopicId && (
                 <div className="border border-border rounded-2xl p-5 bg-muted space-y-4 mb-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Select value={submittedBy} onValueChange={setSubmittedBy}>
@@ -1016,7 +998,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                   {viewedTopics.map((topic, topicIndex) => (
                     <TopicItem key={topic.id} topic={topic} index={topicIndex} compact isAdmin={topicAdmin}
                       onToggle={(id, completed) => toggleMutation.mutate({ id, completed })}
-                      onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic} />
+                      onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic}
+                      {...inlineEditProps(topic)} />
                   ))}
                 </div>
               )}
@@ -1109,14 +1092,13 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
 
       <div className="mabis-widget-body p-4 space-y-4 sm:p-5">
         {/* Add Topic Form */}
-        {(showForm || editingTopicId) && (isCurrentWeek || editingTopicId) && (
+        {showForm && !editingTopicId && isCurrentWeek && (
           <div className="border border-border rounded-xl p-4 bg-card space-y-4 shadow-lg sm:rounded-2xl sm:p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                   {editingTopicId ? "Editing topic" : "New topic"}
                 </p>
-                <FocusForensics />
                 <p className="mt-0.5 text-xs leading-[1.6] tracking-[0.02em] text-muted-foreground">
                   {editingTopicId
                     ? "Change the title, who raised it, or the details, then press Update topic."
@@ -1229,7 +1211,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           {viewedTopics.map((topic, topicIndex) => (
             <TopicItem key={topic.id} topic={topic} index={topicIndex} compact={false} isAdmin={topicAdmin}
               onToggle={(id, completed) => toggleMutation.mutate({ id, completed })}
-              onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic} />
+              onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic}
+              {...inlineEditProps(topic)} />
           ))}
         </div>
 
