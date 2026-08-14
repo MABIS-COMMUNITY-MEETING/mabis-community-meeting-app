@@ -403,7 +403,11 @@ export default function DocsEditor({
   const handleChange = (content, delta, source, editor) => {
     const rawText = editor?.getText() || "";
     const trimmed = rawText.replace(/\n$/, "").trim();
-    const emitted = trimmed ? content : "";
+    // Quill reports no text for embeds, so a body consisting only of a pasted
+    // image used to be treated as empty and emitted as "" — silently discarding
+    // the content on save. Anything embedded counts as real content too.
+    const hasEmbed = /<(?:img|iframe|video|audio|hr|table)\b/i.test(content || "");
+    const emitted = (trimmed || hasEmbed) ? content : "";
     const cleanText = rawText.replace(/\n$/, "").trim();
     setStats({
       words: cleanText ? cleanText.split(/\s+/).length : 0,
