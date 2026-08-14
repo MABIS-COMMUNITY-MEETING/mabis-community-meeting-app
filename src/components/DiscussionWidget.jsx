@@ -79,6 +79,27 @@ const PRIORITY_DOT = {
   5: "bg-primary/20",
 };
 
+// TEMPORARY DIAGNOSTIC — remove once the title-focus bug is resolved.
+// Shows which element actually holds focus, so we can see whether a click on
+// the title ever reaches it, and whether something takes focus back afterwards.
+function FocusProbe() {
+  const [info, setInfo] = useState("");
+  useEffect(() => {
+    const read = () => {
+      const el = document.activeElement;
+      if (!el) return setInfo("none");
+      const cls = typeof el.className === "string" ? el.className.slice(0, 32) : "";
+      return setInfo(`${el.tagName}${el.type ? `[${el.type}]` : ""} ${cls}`);
+    };
+    read();
+    const id = setInterval(read, 250);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <p className="font-mono text-[10px] text-primary">FOCUS: {info}</p>
+  );
+}
+
 function TopicItem({
   topic,
   index,
@@ -1021,6 +1042,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                   {editingTopicId ? "Editing topic" : "New topic"}
                 </p>
+                <FocusProbe />
                 <p className="mt-0.5 text-xs leading-[1.6] tracking-[0.02em] text-muted-foreground">
                   {editingTopicId
                     ? "Change the title, who raised it, or the details, then press Update topic."
