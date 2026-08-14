@@ -13,6 +13,15 @@
    are the same material at different depths, not the same class.
    ────────────────────────────────────────────────────────────── */
 
+:root {
+  --glass-scroll-shift: 0px;
+  --glass-scroll-shadow-opacity: 0.12;
+  --glass-scroll-spec-opacity: 0.82;
+  --glass-scroll-rim-opacity: 0.70;
+  --glass-scroll-edge-opacity: 0.52;
+  --glass-scroll-tint-alpha: 0.10;
+}
+
 .lg-surface {
   --glass_blur: 20px;
   --glass_saturation: 160%;
@@ -31,7 +40,9 @@
      root, which would blank out the edge-lens pass below */
   /* Blur is intentionally constant between frames; interpolating a backdrop
      filter forces repeated rasterization of the whole glass surface. */
-  transition: box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 
   /* the fill is a directional wedge, not a flat white wash — the
      surface is brighter where the light enters it */
@@ -63,6 +74,9 @@
   z-index: 0;
   pointer-events: none;
   border-radius: inherit;
+  opacity: var(--glass-scroll-spec-opacity, 0.82);
+  transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
+  will-change: transform, opacity;
   background:
     radial-gradient(
       120px 90px at var(--glass_pointer_x) var(--glass_pointer_y),
@@ -71,7 +85,9 @@
       transparent 55%
     ),
     linear-gradient(to bottom, hsl(var(--bone) / 0.12), transparent 42%);
-  transition: opacity 0.3s ease;
+  transition:
+    opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* edge lens — a second, tiny blur pass masked to the rim with a smooth
@@ -91,7 +107,27 @@
   mask-image: radial-gradient(120% 160% at 50% 50%, transparent 34%, rgba(0,0,0,0.35) 62%, #000 100%);
   /* restrained material noise kills gradient banding without graining the UI */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.5'/%3E%3C/svg%3E");
-  opacity: 0.9;
+  opacity: var(--glass-scroll-rim-opacity, 0.70);
+  transition: opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* A cached depth layer carries the adaptive shadow and ambient colour spill.
+   Only opacity and transform move; the expensive backdrop sample is stable. */
+.lg-surface > .lg-depth {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(
+    130% 90% at 82% -18%,
+    hsl(var(--primary) / var(--glass-scroll-tint-alpha, 0.10)),
+    transparent 58%
+  );
+  box-shadow: 0 18px 34px -20px hsl(var(--ink) / 0.38);
+  opacity: var(--glass-scroll-shadow-opacity, 0.12);
+  transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
+  will-change: transform, opacity;
 }
 
 .lg-surface > .lg-content { position: relative; z-index: 1; }
@@ -192,7 +228,7 @@
   --glass_shadow: none;
   border: none;
 }
-.lg-overlay::before, .lg-overlay::after { display: none; }
+.lg-overlay::before, .lg-overlay::after, .lg-overlay > .lg-depth { display: none; }
 
 /* ── adaptive tint ───────────────────────────────────────────── */
 /* over dark sections the material is graphite with a luminous rim —
@@ -228,16 +264,52 @@
   transition: transform 0.09s ease-out;
 }
 
-/* fast pointer travel: cheaper optics while moving, full quality at rest */
-.lg-surface[data-glass-fast="1"] {
-  --glass_blur: 12px;
-  --glass_lens: 0.5px;
-}
+/* Fast pointer travel attenuates cached decoration only. Blur never changes,
+   so rapid pointer motion cannot invalidate the backdrop sampling pass. */
+.lg-surface[data-glass-fast="1"]::before { opacity: 0.68; }
+.lg-surface[data-glass-fast="1"]::after { opacity: 0.58; }
 
 /* focus inside glass — brackets, never translucency alone */
 .lg-surface :focus-visible {
   outline: 1px solid hsl(var(--primary));
   outline-offset: 3px;
+}
+
+/* ── scroll edge: a separate, narrow boundary beneath navigation ── */
+.site-header-shell { isolation: isolate; }
+.site-header-shell > .lg-surface { z-index: 1; }
+.lg-scroll-edge {
+  position: absolute;
+  top: calc(100% - 1px);
+  right: 0;
+  left: 0;
+  z-index: 0;
+  height: 22px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, hsl(var(--background) / 0.20), transparent 92%);
+  -webkit-backdrop-filter: blur(8px) saturate(112%);
+  backdrop-filter: blur(8px) saturate(112%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.72) 38%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.72) 38%, transparent 100%);
+  opacity: var(--glass-scroll-edge-opacity, 0.52);
+  transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
+  will-change: transform, opacity;
+}
+
+html.performance-lite .lg-depth { display: none; }
+html.performance-lite .lg-scroll-edge {
+  background: linear-gradient(to bottom, hsl(var(--background) / 0.72), transparent);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  opacity: 0.65;
+  transform: none;
+}
+
+html.animations-disabled .lg-surface::before,
+html.animations-disabled .lg-depth,
+html.animations-disabled .lg-scroll-edge {
+  transform: none !important;
+  transition: none !important;
 }
 
 /* ── active-scroll material invariance ───────────────────────
@@ -255,6 +327,11 @@
   }
   .lg-thick { --glass_blur: 22px; }
   .lg-surface::after { display: none; }
+  .lg-scroll-edge {
+    height: 14px;
+    -webkit-backdrop-filter: blur(5px) saturate(108%);
+    backdrop-filter: blur(5px) saturate(108%);
+  }
 }
 
 /* ── reduced motion: material keeps its optics, stops behaving ── */
@@ -263,6 +340,58 @@
   .lg-surface::before {
     background: linear-gradient(to bottom, hsl(var(--bone) / 0.14), transparent 45%);
   }
+  .lg-surface::before,
+  .lg-depth,
+  .lg-scroll-edge {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Reduced transparency makes the material frostier and more opaque while
+   preserving its role, matching the platform-level accessibility intent. */
+@media (prefers-reduced-transparency: reduce) {
+  .lg-surface {
+    background: hsl(var(--background) / 0.97) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    border-color: hsl(var(--foreground) / 0.36);
+  }
+  .lg-surface::after,
+  .lg-depth { display: none; }
+  .lg-scroll-edge {
+    background: linear-gradient(to bottom, hsl(var(--background) / 0.94), transparent);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    opacity: 1;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .lg-surface {
+    border-color: hsl(var(--foreground) / 0.62);
+    box-shadow:
+      inset 0 1px 0 hsl(var(--bone) / 0.58),
+      inset 0 -1px 0 hsl(var(--ink) / 0.42),
+      0 0 0 1px hsl(var(--background) / 0.72),
+      var(--glass_shadow);
+  }
+  .lg-depth { display: none; }
+}
+
+@media (forced-colors: active) {
+  .lg-surface {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border: 1px solid CanvasText;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none;
+  }
+  .lg-surface::before,
+  .lg-surface::after,
+  .lg-depth,
+  .lg-scroll-edge { display: none; }
 }
 
 /* ── final fallback: no backdrop-filter → translucent solid ──── */
