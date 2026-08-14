@@ -19,6 +19,12 @@ function requireText(relativePath, content, requiredText) {
     }
 }
 
+function forbidText(relativePath, content, forbiddenText) {
+    if (content.includes(forbiddenText)) {
+        failures.push(`${relativePath} must not contain: ${forbiddenText}`);
+    }
+}
+
 const readme = read("README.md");
 const agents = read("AGENTS.md");
 const claude = read("CLAUDE.md");
@@ -36,6 +42,10 @@ const themeBalanceCheck = read("scripts/check-theme-balance.mjs");
 const packageJson = read("package.json");
 const performanceContract = read("scripts/check-performance-contract.mjs");
 const bundleBudget = read("scripts/check-bundle-budget.mjs");
+const cjkFontLoader = read("src/components/CjkFontLoader.jsx");
+const login = read("src/pages/Login.jsx");
+const app = read("src/App.jsx");
+const routeLoaders = read("src/lib/routeLoaders.js");
 
 const readmeRules = [
     "## Mandatory rule for AI contributors",
@@ -43,7 +53,8 @@ const readmeRules = [
     "research Japanese web design in depth before writing or editing any project code",
     "GNU FreeMono is the default UI font",
     "Thai falls back to the Thai-only **GNU FreeSerif** face",
-    "Japanese and Chinese use **UnifontEX**",
+    "Explicitly marked Chinese, Japanese, and Korean text uses **Maple Mono** first",
+    "The public authentication surface is Google-only",
     "Apple-style optical liquid glass",
     "No romaji decoration",
     "Preserve outlines and borders",
@@ -102,6 +113,15 @@ for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, scrollGlassRule);
 }
 
+const fontStackRule = "GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.";
+const mapleCjkRule = "Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.";
+const googleAuthRule = "The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.";
+for (const [relativePath, content] of editorialContractFiles) {
+    requireText(relativePath, content, fontStackRule);
+    requireText(relativePath, content, mapleCjkRule);
+    requireText(relativePath, content, googleAuthRule);
+}
+
 requireText("CLAUDE.md", claude, "@README.md");
 requireText("CLAUDE.md", claude, "@AGENTS.md");
 requireText("GEMINI.md", gemini, "The Novesce UI mandate is an always-on project requirement");
@@ -111,11 +131,26 @@ requireText(".github/copilot-instructions.md", copilot, "Repository-wide mandato
 requireText(".github/copilot-instructions.md", copilot, "The Novesce UI mandate applies to every task");
 
 requireText("src/lib/themes.js", themes, "key: \"gnu-free-mono\"");
-requireText("src/lib/themes.js", themes, "gnu-free-mono-v1");
-requireText("src/lib/themes.js", themes, "const thaiFallback = \"'GNUFreeSerifThai'\"");
-requireText("src/lib/themes.js", themes, "root.style.setProperty(\"--font-multilingual\", \"'UnifontEX'\")");
-requireText("src/index.css", css, "--font-body: 'GNUFreeMonoUI', 'GNUFreeSerifThai'");
+requireText("src/lib/themes.js", themes, "gnu-free-mono-v2");
+requireText("src/lib/themes.js", themes, "function withGnuFallbacks");
+requireText("src/lib/themes.js", themes, "const cjkFallback = \"'Maple Mono NF CN'");
+requireText("src/lib/themes.js", themes, "root.style.setProperty(\"--font-cjk\", cjkFallback)");
+requireText("src/index.css", css, "--font-body: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI'");
+requireText("src/index.css", css, "--font-cjk: 'Maple Mono NF CN'");
+requireText("src/index.css", css, ":lang(ko)");
 requireText("src/index.css", css, "unicode-range: U+0E00-0E7F");
+requireText("src/components/CjkFontLoader.jsx", cjkFontLoader, "https://fontsapi.zeoseven.com/442/main/result.css");
+requireText("src/components/CjkFontLoader.jsx", cjkFontLoader, "MutationObserver");
+requireText("src/pages/Login.jsx", login, 'base44.auth.loginWithProvider("google", "/home")');
+requireText("src/pages/Login.jsx", login, "CONTINUE WITH GOOGLE");
+forbidText("src/pages/Login.jsx", login, "loginViaEmailPassword");
+forbidText("src/pages/Login.jsx", login, "<form");
+requireText("src/App.jsx", app, '<Route path="/register" element={<Navigate to="/login" replace />} />');
+requireText("src/App.jsx", app, '<Route path="/forgot-password" element={<Navigate to="/login" replace />} />');
+requireText("src/App.jsx", app, '<Route path="/reset-password" element={<Navigate to="/login" replace />} />');
+forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/Register")');
+forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/ForgotPassword")');
+forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/ResetPassword")');
 requireText("src/styles/editorial-home.css", editorialHomeCss, ".editorial-home .mabis-widget-header");
 requireText("src/main.jsx", main, "import '@/styles/editorial-home.css'");
 requireText("src/pages/Home.jsx", home, 'className="editorial-home min-h-screen');
