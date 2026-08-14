@@ -1,3 +1,10 @@
+import {
+  endGlassScrollMotion,
+  sampleGlassScrollMotion,
+  startGlassScrollMotion,
+  stopGlassScrollMotion,
+} from "@/lib/glass_scroll";
+
 let progress = 0;
 let maxScroll = 1;
 let rafId = 0;
@@ -29,6 +36,7 @@ function endScrolling() {
   if (scrollEndTimer) window.clearTimeout(scrollEndTimer);
   scrollEndTimer = 0;
   setScrolling(false);
+  endGlassScrollMotion();
 }
 
 function markScrolling() {
@@ -37,8 +45,9 @@ function markScrolling() {
   scrollEndTimer = window.setTimeout(endScrolling, 120);
 }
 
-function publish() {
+function publish(now) {
   rafId = 0;
+  sampleGlassScrollMotion(window.scrollY, now);
   const next = readProgress();
   if (Math.abs(next - progress) < 0.0001) return;
   progress = next;
@@ -68,6 +77,7 @@ function onVisibilityChange() {
 function start() {
   if (listening || typeof window === "undefined") return;
   listening = true;
+  startGlassScrollMotion();
   updateMetrics();
   progress = readProgress();
 
@@ -93,6 +103,7 @@ function stop() {
   resizeObserver?.disconnect();
   resizeObserver = null;
   endScrolling();
+  stopGlassScrollMotion();
   if (rafId) window.cancelAnimationFrame(rafId);
   rafId = 0;
 }
