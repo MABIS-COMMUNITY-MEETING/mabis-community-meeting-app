@@ -81,6 +81,7 @@ const PRIORITY_DOT = {
 
 function TopicItem({
   topic,
+  index,
   compact,
   isAdmin,
   onToggle,
@@ -203,23 +204,41 @@ function TopicItem({
     );
   }
 
+  // An agenda reads as a document, not a stack of cards: entries are separated
+  // by a hairline rule, numbered in the margin, and set in a continuous column.
+  // Priority is a marginal rule rather than a coloured pill.
   return (
-    <div className={`group flex items-start gap-2 rounded-xl border p-3 transition-all sm:gap-3 sm:p-4
-      ${topic.completed ? "bg-muted border-border opacity-60" : "bg-card border-border hover:border-primary/20"}`}>
-      {/* Priority color bar */}
-      <div className={`w-1 self-stretch rounded-full shrink-0 ${PRIORITY_DOT[priority]}`} />
+    <article className={`group relative flex items-start gap-3 border-b border-border py-3.5 pl-3 transition-colors sm:gap-4 sm:py-4
+      ${topic.completed ? "opacity-55" : "hover:bg-muted/40"}`}>
+      <span aria-hidden className={`absolute left-0 top-3.5 bottom-3.5 w-[2px] ${PRIORITY_DOT[priority]}`} />
       <input type="checkbox" checked={!!topic.completed} onChange={(e) => onToggle(topic.id, e.target.checked)}
-        className="mt-1 w-4 h-4 rounded accent-primary cursor-pointer shrink-0" />
-      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => isAdmin && onEdit(topic)}>
-        {/* Submitted by at top — bold and larger */}
-        <p className="text-sm font-bold text-primary mb-0.5">{topic.submitted_by}</p>
-        {/* Title — clickable to edit */}
-        <p className={`font-bold ${compact ? "text-xl" : "text-lg"} leading-snug ${topic.completed ? "line-through text-muted-foreground" : "text-foreground"} ${isAdmin ? "hover:text-primary cursor-pointer" : ""}`}>
+        aria-label={topic.completed ? `Mark "${topic.title}" as not discussed` : `Mark "${topic.title}" as discussed`}
+        className="mt-1.5 w-4 h-4 accent-primary cursor-pointer shrink-0" />
+      <div className="flex-1 min-w-0">
+        {/* Masthead line: index, who raised it, and how urgent — compact,
+            widely tracked technical labels rather than coloured chips. */}
+        <div className="mb-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+          {typeof index === "number" && (
+            <span className="shrink-0 text-[10px] font-bold tabular-nums tracking-[0.18em] text-muted-foreground">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+          )}
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">{topic.submitted_by}</span>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{PRIORITY_LABELS[priority]}</span>
+          {topic.completed && (
+            <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Discussed</span>
+          )}
+        </div>
+        <p
+          onClick={() => isAdmin && onEdit(topic)}
+          className={`font-display ${compact ? "text-lg" : "text-xl"} font-medium leading-[1.25] tracking-[-0.02em] ${topic.completed ? "line-through text-muted-foreground" : "text-foreground"} ${isAdmin ? "cursor-pointer hover:text-primary" : ""}`}
+        >
           {topic.title}
         </p>
-        {/* Description — clickable to edit */}
         {topic.description && (
-          <div className={`theme-rich-text mt-2 pt-2 border-t border-border text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none
+          <div
+            onClick={() => isAdmin && onEdit(topic)}
+            className={`theme-rich-text mt-1.5 text-sm leading-[1.6] tracking-[0.02em] text-muted-foreground prose prose-sm max-w-[68ch]
             [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2
             [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1
             [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1
@@ -228,23 +247,27 @@ function TopicItem({
             [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mt-1.5 [&_h2]:mb-1
             [&_p]:my-0.5
             [&_strong]:font-semibold [&_strong]:text-foreground
-            [&_em]:italic ${isAdmin ? "hover:bg-primary/5 rounded-lg -mx-1 px-1 cursor-pointer" : ""}`}
+            [&_em]:italic ${isAdmin ? "cursor-pointer" : ""}`}
             dangerouslySetInnerHTML={{ __html: topic.description }} />
         )}
       </div>
       {isAdmin && (
-        <div className="flex flex-col gap-1.5 shrink-0 mt-0.5">
+        <div className="flex shrink-0 items-center gap-1">
           <button onClick={(event) => { event.stopPropagation(); onEdit(topic); }} title="Edit topic"
-            className="w-7 h-7 flex items-center justify-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+            aria-label={`Edit "${topic.title}"`}
+            className="flex h-9 w-9 items-center justify-center rounded border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary">
             <Pencil className="w-3.5 h-3.5" />
           </button>
+          {/* Deleting is not the same weight of action as editing, so it does
+              not get the same button. */}
           <button onClick={(event) => { event.stopPropagation(); onDelete(topic.id); }} title="Delete topic"
-            className="w-7 h-7 flex items-center justify-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+            aria-label={`Delete "${topic.title}"`}
+            className="flex h-9 w-9 items-center justify-center rounded border border-transparent text-muted-foreground transition-colors hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
-    </div>
+    </article>
   );
 }
 
