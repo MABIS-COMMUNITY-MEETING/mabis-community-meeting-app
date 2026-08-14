@@ -4,7 +4,7 @@ import JapaneseText from "@/components/JapaneseText";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-export default function EditorialSection({ index = "00", label = "", jaLabel = "", children }) {
+export default function EditorialSection({ index = "00", label = "", jaLabel = "", description = "", children }) {
   const flag = `var(--flag-${((parseInt(index, 10) || 1) % 8) + 1}, hsl(var(--primary)))`;
 
   return (
@@ -43,6 +43,15 @@ export default function EditorialSection({ index = "00", label = "", jaLabel = "
             <h2 className="break-words font-display text-[clamp(1.45rem,7vw,2rem)] font-medium leading-[1.02] tracking-[-0.045em] sm:text-[2.15rem]">
               <JapaneseText ja={jaLabel}>{label}</JapaneseText>
             </h2>
+            {/* Plain-language orientation line. The heading names the section;
+                this says what it is for and what you can do with it, for readers
+                who do not already know the product. Metrics follow the Japanese
+                body-text baseline: 160% leading, 2% tracking at small sizes. */}
+            {description && (
+              <p className="mt-2 max-w-[54ch] text-[0.8125rem] leading-[1.6] tracking-[0.02em] text-muted-foreground sm:text-sm">
+                {description}
+              </p>
+            )}
           </div>
           <JapaneseText ja="MABIS セクション" className="hidden sm:block jp-kicker text-right" japaneseClassName="text-[0.82em]">MABIS SECTION</JapaneseText>
         </motion.header>
