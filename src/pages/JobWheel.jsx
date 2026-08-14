@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import SpinWheel from "@/components/wheel/SpinWheel";
 import JobCard from "@/components/jobs/JobCard";
+import OpenMoji from "@/components/OpenMoji";
 import { AnimatePresence } from "framer-motion";
 
 export default function JobWheel() {
@@ -36,22 +37,22 @@ export default function JobWheel() {
       setSendingEmail(true);
       await base44.integrations.Core.SendEmail({
         to: data.assigned_to_email,
-        subject: `🎯 New Job Assigned: ${data.title}`,
+        subject: `New Job Assigned: ${data.title}`,
         body: `
           <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #8B5CF6, #EC4899); padding: 30px; border-radius: 16px; text-align: center; color: white;">
-              <h1 style="margin: 0; font-size: 24px;">🎰 The Wheel Has Spoken!</h1>
+              <h1 style="margin: 0; font-size: 24px;">The Wheel Has Spoken!</h1>
               <p style="margin-top: 8px; opacity: 0.9;">You've been chosen for a new job</p>
             </div>
             <div style="background: #f8f7ff; padding: 24px; border-radius: 16px; margin-top: 16px;">
               <h2 style="color: #1e1b4b; margin: 0;">${data.title}</h2>
               ${data.description ? `<p style="color: #6b7280; margin-top: 8px;">${data.description}</p>` : ""}
               <div style="background: linear-gradient(135deg, #f59e0b, #f97316); color: white; display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: bold; margin-top: 16px;">
-                ⚡ ${data.xp_reward || 10} XP Reward
+                ${data.xp_reward || 10} XP Reward
               </div>
-              ${data.due_date ? `<p style="color: #6b7280; margin-top: 12px; font-size: 14px;">📅 Due: ${data.due_date}</p>` : ""}
+              ${data.due_date ? `<p style="color: #6b7280; margin-top: 12px; font-size: 14px;">Due: ${data.due_date}</p>` : ""}
             </div>
-            <p style="text-align: center; color: #9ca3af; margin-top: 16px; font-size: 14px;">Good luck! 🍀</p>
+            <p style="text-align: center; color: #9ca3af; margin-top: 16px; font-size: 14px;">Good luck!</p>
           </div>
         `,
       });
@@ -62,7 +63,7 @@ export default function JobWheel() {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       setAssignDialogOpen(false);
       setNewJob({ title: "", description: "", xp_reward: 10, due_date: "" });
-      toast({ title: "🎉 Job assigned!", description: "Email notification sent successfully." });
+      toast({ title: "Job assigned!", description: "Email notification sent successfully." });
     },
   });
 
@@ -83,7 +84,7 @@ export default function JobWheel() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      toast({ title: "✅ Job updated!" });
+      toast({ title: "Job updated!" });
     },
   });
 
@@ -98,8 +99,9 @@ export default function JobWheel() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight">
-          🎰 Job Wheel
+        <h1 className="flex items-center gap-3 text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight">
+          <OpenMoji hexcode="1F3B0" className="h-8 w-8 md:h-9 md:w-9" />
+          Job Wheel
         </h1>
         <p className="text-muted-foreground mt-1">Spin the wheel to assign jobs — may luck be on your side!</p>
       </div>
@@ -153,8 +155,9 @@ export default function JobWheel() {
       <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
         <DialogContent className="rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="font-display">
-              🎯 Assign Job to {selectedMember?.name}
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <OpenMoji hexcode="1F3AF" className="h-5 w-5" />
+              Assign Job to {selectedMember?.name}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
@@ -181,10 +184,30 @@ export default function JobWheel() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="5">⚡ 5 XP - Easy</SelectItem>
-                    <SelectItem value="10">⚡ 10 XP - Medium</SelectItem>
-                    <SelectItem value="25">⚡ 25 XP - Hard</SelectItem>
-                    <SelectItem value="50">⚡ 50 XP - Epic!</SelectItem>
+                    <SelectItem value="5">
+                      <span className="flex items-center gap-2">
+                        <OpenMoji hexcode="26A1" className="h-4 w-4" />
+                        5 XP - Easy
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="10">
+                      <span className="flex items-center gap-2">
+                        <OpenMoji hexcode="26A1" className="h-4 w-4" />
+                        10 XP - Medium
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="25">
+                      <span className="flex items-center gap-2">
+                        <OpenMoji hexcode="26A1" className="h-4 w-4" />
+                        25 XP - Hard
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="50">
+                      <span className="flex items-center gap-2">
+                        <OpenMoji hexcode="26A1" className="h-4 w-4" />
+                        50 XP - Epic!
+                      </span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
