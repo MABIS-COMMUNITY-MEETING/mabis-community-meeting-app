@@ -1,11 +1,12 @@
 import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search, MousePointer2 } from "lucide-react";
+import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search, MousePointer2, Languages } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
 import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
+import { japaneseTextEnabled, setJapaneseTextEnabled } from "@/lib/japanese-text-preference";
 import { CORE_FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
 import { FONT_CATALOG, ensureFontCatalogStyles } from "@/lib/font-catalog";
 
@@ -56,6 +57,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [animationsOn, setAnimationsOn] = useState(() => !animationsDisabled());
   const [customCursorOn, setCustomCursorOn] = useState(customCursorEnabled());
+  const [japaneseTextOn, setJapaneseTextOn] = useState(japaneseTextEnabled());
   const [currentFont, setCurrentFont] = useState(getStoredFont());
   const [fontAvailability, setFontAvailability] = useState({});
   const [fontSearch, setFontSearch] = useState("");
@@ -68,6 +70,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
     setCurrentFont(getStoredFont());
     setAnimationsOn(!animationsDisabled());
     setCustomCursorOn(customCursorEnabled());
+    setJapaneseTextOn(japaneseTextEnabled());
     if (!document.fonts) return;
     let cancelled = false;
     const aliases = {
@@ -357,6 +360,36 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   <span className="text-sm font-semibold text-gray-700">{customCursorOn ? "Enabled" : "Disabled"}</span>
                   <span className={`relative w-10 h-6 rounded-full transition-colors ${customCursorOn ? "bg-[#951E3A]" : "bg-gray-300"}`}>
                     <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${customCursorOn ? "left-[18px]" : "left-0.5"}`} />
+                  </span>
+                </button>
+              </div>
+
+              {/* Japanese companion text */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Languages className={`w-4 h-4 ${japaneseTextOn ? "text-[#951E3A]" : "text-gray-400"}`} />
+                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Japanese Text <span lang="ja" className="normal-case tracking-normal text-gray-500">／日本語表示</span></h3>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">
+                  Show short Japanese translations alongside the English navigation and guidance. English stays visible, and this choice follows your account.
+                </p>
+                <button
+                  onClick={() => {
+                    const value = !japaneseTextOn;
+                    setJapaneseTextOn(value);
+                    setJapaneseTextEnabled(value);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${japaneseTextOn ? "border-[#951E3A]/40 bg-[#951E3A]/5" : "border-gray-200"}`}
+                  aria-pressed={japaneseTextOn}
+                >
+                  <span className="text-left text-sm font-semibold text-gray-700">
+                    {japaneseTextOn ? "On · Japanese appears with English" : "Off · English only"}
+                    <span lang="ja" className="mt-0.5 block text-xs font-normal text-gray-500">
+                      {japaneseTextOn ? "オン・英語と日本語を表示" : "オフ・英語のみ"}
+                    </span>
+                  </span>
+                  <span className={`relative w-10 h-6 shrink-0 rounded-full transition-colors ${japaneseTextOn ? "bg-[#951E3A]" : "bg-gray-300"}`}>
+                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${japaneseTextOn ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                 </button>
               </div>
