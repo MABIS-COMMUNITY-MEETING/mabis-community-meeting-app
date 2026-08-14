@@ -97,7 +97,7 @@ export default function ThemeSwitcher() {
       ([entry]) => {
         if (entry?.isIntersecting) loadNextThemeBatch();
       },
-      { root, rootMargin: "180px 0px" },
+      { root, rootMargin: "80px 0px" },
     );
     observer.observe(target);
     return () => observer.disconnect();
