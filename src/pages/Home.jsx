@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Palette, Inbox, Settings } from "lucide-react";
+import { CircleHelp, Palette, Inbox, Settings } from "lucide-react";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import PageFooter from "@/components/PageFooter";
 import { Link } from "react-router-dom";
@@ -38,6 +38,7 @@ const FeedbackWidget = lazy(() => import("@/components/FeedbackWidget"));
 const ProfileEditor = lazy(() => import("@/components/ProfileEditor"));
 const JobReminder = lazy(() => import("@/components/JobReminder"));
 const SettingsModal = lazy(() => import("@/components/SettingsModal"));
+const QuickStartGuide = lazy(() => import("@/components/QuickStartGuide"));
 
 function WidgetFallback({ minHeight = 320 }) {
   return <div className="widget-loading-shell" style={{ "--widget-fallback-height": `${minHeight}px` }} aria-hidden />;
@@ -98,6 +99,7 @@ export default function Home() {
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const effectiveAdmin = isAdmin;
   const isFullAdmin = effectiveRole === "admin" || effectiveRole === "editor" || effectiveRole === "minutes" || isMinutesTaker;
   const canSeeInbox = (effectiveRole === "admin" || effectiveRole === "editor") && !isMinutesTaker;
@@ -136,6 +138,15 @@ export default function Home() {
       )}
       {canPreview && <RolePreviewToggle value={previewRole} onChange={setPreviewRole} realRole={userRole} />}
       <ThemeSwitcher />
+      <button
+        onClick={() => setShowHelp(true)}
+        data-cursor="HELP"
+        title="How to use this site"
+        className="flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"
+      >
+        <CircleHelp className="w-4 h-4" />
+        <span className="hidden text-[10px] font-bold uppercase tracking-wide sm:inline">Help</span>
+      </button>
       <button onClick={() => setShowSettings(true)} data-cursor="SET" title="Settings" className="h-9 w-9 flex items-center justify-center border border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors">
         <Settings className="w-4 h-4" />
       </button>
@@ -177,6 +188,11 @@ export default function Home() {
       {showSettings && (
         <Suspense fallback={null}>
           <SettingsModal open onClose={() => setShowSettings(false)} isAdmin={effectiveAdmin} />
+        </Suspense>
+      )}
+      {showHelp && (
+        <Suspense fallback={null}>
+          <QuickStartGuide open onClose={() => setShowHelp(false)} />
         </Suspense>
       )}
 
