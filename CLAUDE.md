@@ -15,6 +15,12 @@ The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixe
 
 Preserve the Home editorial normalization in `src/styles/editorial-home.css`: neutral ruled content planes, restrained radii, no widget elevation, and edge-to-edge mobile modules.
 
+Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.
+
+Keep Home easy to navigate with its numbered editorial sections, plain-language page guide, and contextual instructions; usability aids must clarify the existing Japanese editorial hierarchy rather than replace it with a generic dashboard.
+
+Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.
+
 For visual work, complete and record current research on real Japanese web design before implementation. If research access is unavailable, stop and ask rather than inventing an aesthetic.
 
 Before finishing, run `npm run check:design`, `npm run build`, and relevant lint checks. A technically valid change that violates Novesce's design philosophy is not complete.
