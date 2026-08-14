@@ -606,7 +606,7 @@
 
 /* override legacy maroon/gold hardcoded to tokens so existing widgets reskin */
 body .bg-\[\#951E3A\] { background-color: hsl(var(--primary)) !important; }
-body .text-\[\#951E3A\] { color: hsl(var(--primary)) !important; }
+body .text-\[\#951E3A\] { color: hsl(var(--editor-ink-primary)) !important; }
 body .border-\[\#951E3A\] { border-color: hsl(var(--primary)) !important; }
 body .bg-\[\#951E3A\]\/5 { background-color: hsl(var(--primary) / 0.05) !important; }
 body .bg-\[\#951E3A\]\/10 { background-color: hsl(var(--primary) / 0.1) !important; }
@@ -615,13 +615,13 @@ body .bg-\[\#951E3A\]\/30 { background-color: hsl(var(--primary) / 0.3) !importa
 body .hover\:bg-\[\#7a1830\]:hover { background-color: hsl(var(--primary) / 0.88) !important; }
 body .hover\:bg-\[\#951E3A\]\/5:hover { background-color: hsl(var(--primary) / 0.05) !important; }
 body .hover\:bg-\[\#951E3A\]\/10:hover { background-color: hsl(var(--primary) / 0.1) !important; }
-body .hover\:text-\[\#951E3A\]:hover { color: hsl(var(--primary)) !important; }
+body .hover\:text-\[\#951E3A\]:hover { color: hsl(var(--editor-ink-primary)) !important; }
 body .from-\[\#951E3A\] { --tw-gradient-from: hsl(var(--primary)) !important; }
 body .to-\[\#b02348\] { --tw-gradient-to: hsl(var(--primary) / 0.82) !important; }
 body .from-\[\#7a1830\] { --tw-gradient-from: hsl(var(--primary) / 0.82) !important; }
 body .to-\[\#7a1830\] { --tw-gradient-to: hsl(var(--primary) / 0.82) !important; }
 body .bg-\[\#EACE54\] { background-color: hsl(var(--secondary)) !important; }
-body .text-\[\#EACE54\] { color: hsl(var(--secondary)) !important; }
+body .text-\[\#EACE54\] { color: hsl(var(--editor-ink-secondary)) !important; }
 body .border-\[\#EACE54\] { border-color: hsl(var(--secondary)) !important; }
 body .bg-\[\#EACE54\]\/8 { background-color: hsl(var(--secondary) / 0.08) !important; }
 body .bg-\[\#EACE54\]\/10 { background-color: hsl(var(--secondary) / 0.1) !important; }
@@ -669,44 +669,45 @@ body .bg-red-100   { background-color: hsl(var(--primary) / 0.14) !important; }
 body .bg-red-200   { background-color: hsl(var(--primary) / 0.22) !important; }
 body .bg-red-300   { background-color: hsl(var(--primary) / 0.35) !important; }
 body .bg-red-400,
-body .bg-red-500   { background-color: hsl(var(--primary) / 0.6) !important; }
+body .bg-red-500   { background-color: hsl(var(--primary)) !important; }
 body .bg-red-600,
 body .bg-red-700,
 body .bg-red-800   { background-color: hsl(var(--primary)) !important; }
 body .border-red-100, body .border-red-200, body .border-red-300 { border-color: hsl(var(--primary) / 0.3) !important; }
 body .text-red-500, body .text-red-600, body .text-red-700,
-body .text-red-800, body .text-red-900 { color: hsl(var(--primary)) !important; }
-body .hover\:text-red-500:hover, body .hover\:text-red-600:hover { color: hsl(var(--primary)) !important; }
+body .text-red-800, body .text-red-900 { color: hsl(var(--editor-ink-primary)) !important; }
+body .hover\:text-red-500:hover, body .hover\:text-red-600:hover { color: hsl(var(--editor-ink-primary)) !important; }
 body .hover\:bg-red-50:hover { background-color: hsl(var(--primary) / 0.08) !important; }
 
 /* --flag-* are raw hex swatches from the palette, so they mix rather than hsl() */
 body .bg-green-50,  body .bg-emerald-50  { background-color: color-mix(in srgb, var(--flag-2) 10%, transparent) !important; }
 body .bg-green-100, body .bg-emerald-100 { background-color: color-mix(in srgb, var(--flag-2) 18%, transparent) !important; }
-body .bg-green-500, body .bg-green-600   { background-color: var(--flag-2) !important; }
+body .bg-green-500, body .bg-green-600   { background-color: hsl(var(--secondary)) !important; }
 body .border-green-200, body .border-emerald-200 { border-color: color-mix(in srgb, var(--flag-2) 35%, transparent) !important; }
 body .text-green-600, body .text-green-700, body .text-green-800,
-body .text-emerald-600, body .text-emerald-700 { color: var(--flag-2) !important; }
+body .text-emerald-600, body .text-emerald-700 { color: hsl(var(--editor-ink-secondary)) !important; }
 
 body .bg-blue-50   { background-color: color-mix(in srgb, var(--flag-3) 10%, transparent) !important; }
 body .bg-blue-100  { background-color: color-mix(in srgb, var(--flag-3) 18%, transparent) !important; }
-body .bg-blue-500, body .bg-blue-600 { background-color: var(--flag-3) !important; }
+body .bg-blue-500, body .bg-blue-600 { background-color: hsl(var(--accent)) !important; }
 body .border-blue-200 { border-color: color-mix(in srgb, var(--flag-3) 35%, transparent) !important; }
-body .text-blue-600, body .text-blue-700, body .text-blue-800 { color: var(--flag-3) !important; }
-body .text-\[\#1e3a8a\] { color: var(--flag-3) !important; }
+body .text-blue-600, body .text-blue-700, body .text-blue-800 { color: hsl(var(--editor-ink-accent)) !important; }
+body .text-\[\#1e3a8a\] { color: hsl(var(--editor-ink-accent)) !important; }
 body .accent-\[\#1e3a8a\] { accent-color: var(--flag-3) !important; }
 body .accent-\[\#951E3A\] { accent-color: hsl(var(--primary)) !important; }
 
 body .bg-purple-50  { background-color: color-mix(in srgb, var(--flag-4) 10%, transparent) !important; }
 body .bg-purple-100 { background-color: color-mix(in srgb, var(--flag-4) 18%, transparent) !important; }
+body .bg-purple-500, body .bg-purple-600 { background-color: hsl(var(--primary)) !important; }
 body .border-purple-200 { border-color: color-mix(in srgb, var(--flag-4) 35%, transparent) !important; }
-body .text-purple-600, body .text-purple-700 { color: var(--flag-4) !important; }
+body .text-purple-600, body .text-purple-700 { color: hsl(var(--editor-ink-primary)) !important; }
 
 body .bg-amber-50, body .bg-yellow-50, body .bg-orange-50 { background-color: hsl(var(--secondary) / 0.14) !important; }
 body .bg-amber-100, body .bg-yellow-100, body .bg-orange-100 { background-color: hsl(var(--secondary) / 0.24) !important; }
 body .border-amber-200, body .border-yellow-200, body .border-orange-200 { border-color: hsl(var(--secondary) / 0.45) !important; }
 body .text-amber-600, body .text-amber-700,
 body .text-yellow-600, body .text-yellow-700,
-body .text-orange-600, body .text-orange-700 { color: hsl(var(--secondary-foreground)) !important; }
+body .text-orange-600, body .text-orange-700 { color: hsl(var(--editor-ink-secondary)) !important; }
 
 /* ── readability guard ───────────────────────────────────────────────
    Widgets hardcode white text on what used to be a dark maroon fill. Those
@@ -717,8 +718,19 @@ body .bg-red-400.text-white, body .bg-red-500.text-white,
 body .bg-red-600.text-white, body .bg-red-700.text-white, body .bg-red-800.text-white,
 body .bg-red-400 .text-white, body .bg-red-500 .text-white,
 body .bg-red-600 .text-white, body .bg-red-700 .text-white, body .bg-red-800 .text-white,
-body .bg-primary .text-white, body .bg-primary.text-white {
+body .bg-primary .text-white, body .bg-primary.text-white,
+body .bg-\[\#951E3A\] .text-white, body .bg-\[\#951E3A\].text-white,
+body .bg-purple-500 .text-white, body .bg-purple-500.text-white,
+body .bg-purple-600 .text-white, body .bg-purple-600.text-white {
   color: hsl(var(--primary-foreground)) !important;
+}
+body .bg-green-500 .text-white, body .bg-green-500.text-white,
+body .bg-green-600 .text-white, body .bg-green-600.text-white {
+  color: hsl(var(--secondary-foreground)) !important;
+}
+body .bg-blue-500 .text-white, body .bg-blue-500.text-white,
+body .bg-blue-600 .text-white, body .bg-blue-600.text-white {
+  color: hsl(var(--accent-foreground)) !important;
 }
 body .bg-red-600 .text-white\/60, body .bg-red-700 .text-white\/60,
 body .bg-primary .text-white\/60 { color: hsl(var(--primary-foreground) / 0.6) !important; }
@@ -751,6 +763,35 @@ body .hover\:bg-gray-50:hover, body .hover\:bg-gray-100:hover { background-color
 body .border-gray-100, body .border-gray-200, body .border-gray-300 { border-color: hsl(var(--border)) !important; }
 body .text-gray-600, body .text-gray-700, body .text-gray-800, body .text-gray-900 { color: hsl(var(--foreground)) !important; }
 body .text-gray-300, body .text-gray-400, body .text-gray-500 { color: hsl(var(--muted-foreground)) !important; }
+body .text-primary { color: hsl(var(--editor-ink-primary)) !important; }
+body .text-secondary { color: hsl(var(--editor-ink-secondary)) !important; }
+body .text-accent { color: hsl(var(--editor-ink-accent)) !important; }
+
+/* Rich text owns a paired semantic paper/ink surface. Tailwind Typography and
+   old Quill inline black/white styles must never escape the active theme. */
+.theme-rich-text {
+  color: hsl(var(--card-foreground));
+  --tw-prose-body: hsl(var(--card-foreground));
+  --tw-prose-headings: hsl(var(--card-foreground));
+  --tw-prose-lead: hsl(var(--muted-foreground));
+  --tw-prose-links: hsl(var(--editor-ink-primary));
+  --tw-prose-bold: hsl(var(--card-foreground));
+  --tw-prose-counters: hsl(var(--muted-foreground));
+  --tw-prose-bullets: hsl(var(--editor-ink-secondary));
+  --tw-prose-hr: hsl(var(--border));
+  --tw-prose-quotes: hsl(var(--card-foreground));
+  --tw-prose-quote-borders: hsl(var(--primary));
+  --tw-prose-code: hsl(var(--card-foreground));
+  --tw-prose-pre-code: hsl(var(--card-foreground));
+  --tw-prose-pre-bg: hsl(var(--muted));
+}
+.theme-rich-text [style*="color"]:not([style*="--editor-ink"]):not([style*="--editor-highlight"]) {
+  color: hsl(var(--card-foreground)) !important;
+}
+.theme-rich-text [style*="background-color"]:not([style*="--editor-highlight"]) {
+  color: hsl(var(--editor-highlight-secondary-foreground)) !important;
+  background-color: hsl(var(--editor-highlight-secondary)) !important;
+}
 
 /* ── THE PRIDE COLLECTION ─────────────────────────────────────────────
    Flagship palettes. Their advantage is art direction, not saturation: the
