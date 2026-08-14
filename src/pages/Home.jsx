@@ -10,6 +10,7 @@ import SiteHeader from "@/components/SiteHeader";
 import EditorialSection from "@/components/home/EditorialSection";
 import LazySection from "@/components/home/LazySection";
 import HomeMasthead from "@/components/home/HomeMasthead";
+import HomeSectionIndex from "@/components/home/HomeSectionIndex";
 import ScrollVelocity from "@/components/ScrollVelocity";
 import ScrollScaleRitual from "@/components/home/ScrollScaleRitual";
 import ScrollSectionIndicator from "@/components/ScrollSectionIndicator";
@@ -198,6 +199,10 @@ export default function Home() {
 
       <main className="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
         <HomeMasthead week_label={weekLabel} date_label={dateLabel} />
+
+        <div className="pb-6 pt-5 sm:pb-10 sm:pt-8">
+          <HomeSectionIndex />
+        </div>
 
         {/* restrained editorial interlude */}
         <div className="-mx-4 overflow-hidden border-b py-3 jp-rule sm:-mx-10 sm:py-5">
