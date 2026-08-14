@@ -416,10 +416,12 @@ function editorThemeTokens(vars) {
   };
 }
 
-Object.values(THEMES).forEach((theme) => {
-  Object.assign(theme.vars, readableSurfaceTokens(theme.vars));
-  Object.assign(theme.vars, editorThemeTokens(theme.vars));
-});
+export function resolveThemeVars(themeVars) {
+  const vars = { ...themeVars };
+  Object.assign(vars, readableSurfaceTokens(vars));
+  Object.assign(vars, editorThemeTokens(vars));
+  return vars;
+}
 
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
 // UI tokens can hold. Expose the whole set so accents can use the full palette.
@@ -501,7 +503,7 @@ export function applyTheme(themeKey) {
   const theme = THEMES[resolvedThemeKey];
   const root = document.documentElement;
 
-  const vars = theme.vars;
+  const vars = resolveThemeVars(theme.vars);
   const isDark = !!theme.dark;
 
   // A theme is a discrete preference change. Hold ordinary CSS transitions for
