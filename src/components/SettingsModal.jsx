@@ -195,7 +195,9 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
 
               {/* Security — admin/editor only */}
               {isAdmin && (
-                <div>
+                <details className="border border-gray-200 p-3">
+                  <summary className="cursor-pointer text-sm font-bold text-gray-700">Admin options · Advanced</summary>
+                  <div className="mt-4">
                   <div className="flex items-center gap-2 mb-3">
                     <Lock className="w-4 h-4 text-[#951E3A]" />
                     <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Unlock Code</h3>
@@ -211,7 +213,8 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                     {codeSaved ? <Check className="w-4 h-4" /> : "Save"}
                   </button>
                   {codeSaved && <p className="text-xs text-green-600 font-semibold mt-2">Code updated!</p>}
-                </div>
+                  </div>
+                </details>
               )}
 
               {/* Typography */}
