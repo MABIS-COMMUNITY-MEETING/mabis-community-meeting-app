@@ -143,6 +143,13 @@ function TopicItem({
               placeholder="Topic title..."
               value={editTitle}
               onChange={(event) => onTitleChange(event.target.value)}
+              /* Same defensive focus as the document title field: the browser's
+                 default focus-on-mousedown is being swallowed somewhere above
+                 this form, so a single click left the caret in the editor. */
+              onMouseDown={(event) => {
+                event.stopPropagation();
+                event.currentTarget.focus();
+              }}
               className="rounded-lg border-border bg-card"
             />
           </div>
