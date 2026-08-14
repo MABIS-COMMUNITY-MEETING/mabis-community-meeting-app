@@ -80,61 +80,15 @@ const PRIORITY_DOT = {
 };
 
 /**
- * Take focus and keep it.
+ * Focus an element.
  *
- * Something in this page hands focus back to the rich-text editor immediately
- * after a click on a plain input, which left the title fields impossible to
- * type into — keystrokes fell through to the document body. The cause is not
- * visible in the source: there is no focus manager, no overlay that accepts
- * pointer events, and every pointer listener is passive.
- *
- * So this re-asserts focus across the next few ticks instead of once: now, on
- * the next frame, and again shortly after. Whatever grabs it back loses the
- * last word. It is a workaround rather than a cure, and it should be removed
- * once the underlying cause is found.
+ * Kept as a single helper because the title fields were, for a long time,
+ * impossible to type into: Quill reclaimed the caret through our own
+ * selection-change handler. That cause is fixed in DocsEditor (getFormat no
+ * longer focuses), so this is now an ordinary focus call.
  */
 function holdFocus(element) {
-  if (!element) return;
-  element.focus();
-  requestAnimationFrame(() => element.focus());
-  setTimeout(() => element.focus(), 50);
-  setTimeout(() => element.focus(), 150);
-}
-
-// TEMPORARY FORENSICS - remove once resolved.
-function FocusForensics() {
-  const [lines, setLines] = useState([]);
-  useEffect(() => {
-    const push = (t) => setLines((prev) => (prev.length >= 7 ? prev : [...prev, t]));
-    const stamp = () => new Date().toISOString().slice(17, 23);
-    const original = HTMLElement.prototype.focus;
-    HTMLElement.prototype.focus = function patched(...args) {
-      try {
-        const cls = this.className;
-        if (typeof cls === "string" && cls.indexOf("ql-editor") !== -1) {
-          const stack = (new Error().stack || "").split("\n").slice(1, 6)
-            .map((s) => s.trim().replace(/^at\s+/, "").replace(/https?:\/\/[^/]+/, ""))
-            .join(" <- ");
-          push(`FOCUS ${stamp()} ${stack}`);
-        }
-      } catch (err) { /* diagnostic */ }
-      return original.apply(this, args);
-    };
-    const onIn = (e) => {
-      const cls = typeof e.target.className === "string" ? e.target.className.slice(0, 20) : "";
-      push(`IN ${stamp()} ${e.target.tagName} ${cls}`);
-    };
-    document.addEventListener("focusin", onIn, true);
-    return () => {
-      HTMLElement.prototype.focus = original;
-      document.removeEventListener("focusin", onIn, true);
-    };
-  }, []);
-  return (
-    <pre className="max-h-44 overflow-auto whitespace-pre-wrap break-all bg-background p-2 font-mono text-[9px] leading-tight text-primary">
-      {lines.join("\n") || "waiting..."}
-    </pre>
-  );
+  if (element) element.focus();
 }
 
 function TopicItem({
@@ -172,7 +126,6 @@ function TopicItem({
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Editing topic</p>
-              <FocusForensics />
               <p className="mt-0.5 text-xs text-muted-foreground">Changes stay attached to this discussion card.</p>
             </div>
             <button
