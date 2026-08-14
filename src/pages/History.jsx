@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Trash2, Users } from "lucide-react";
 import PageNav from "@/components/PageNav";
 import { getISOWeek, getYear, nextFriday, isFriday, format } from "date-fns";
 import PageFooter from "@/components/PageFooter";
+import OpenMoji from "@/components/OpenMoji";
 
 function getCurrentWeekLabel() {
   const today = new Date();
@@ -183,7 +184,10 @@ export default function History() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-xs text-green-600 font-medium">Everyone present 🎉</p>
+                          <p className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
+                            Everyone present
+                            <OpenMoji hexcode="1F389" className="h-4 w-4" />
+                          </p>
                         )}
                       </div>
                     )}
