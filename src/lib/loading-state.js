@@ -1,6 +1,6 @@
 const INITIAL_LOADING_STATE = Object.freeze({
   progress: 6,
-  label: "LOADING SHADERS",
+  label: "CACHING STUFF",
   detail: "INITIALISING SESSION",
 });
 
