@@ -9,6 +9,7 @@ import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-prefer
 import { japaneseTextEnabled, setJapaneseTextEnabled } from "@/lib/japanese-text-preference";
 import { CORE_FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
 import { FONT_CATALOG, ensureFontCatalogStyles } from "@/lib/font-catalog";
+import JapaneseText from "@/components/JapaneseText";
 
 const FONTS = [...CORE_FONTS, ...FONT_CATALOG];
 
@@ -159,7 +160,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
             <div className="mobile-sheet-header bg-primary px-6 py-4 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center gap-2.5">
                 <Settings className="w-5 h-5 text-primary-foreground" />
-                <h2 className="font-display font-bold text-primary-foreground text-xl">Settings</h2>
+                <JapaneseText ja="設定" as="h2" className="font-display font-bold text-primary-foreground text-xl" japaneseClassName="text-[0.62em] opacity-80">Settings</JapaneseText>
               </div>
               <button onClick={onClose} className="text-primary-foreground/70 hover:text-primary-foreground p-1 rounded-lg hover:bg-primary-foreground/10">
                 <X className="w-5 h-5" />
@@ -169,7 +170,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
             <div className="mobile-sheet-body p-6 space-y-6">
               <section className="border-y border-border py-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Simple customization</p>
-                <h3 className="mt-1 font-display text-xl font-bold text-foreground">Make the site comfortable for you</h3>
+                <JapaneseText ja="使いやすいサイトにする" as="h3" className="mt-1 font-display text-xl font-bold text-foreground">Make the site comfortable for you</JapaneseText>
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">Start with colors, choose an easy-to-read font, then adjust comfort options. Every choice can be changed again.</p>
                 <div className="mt-4 grid gap-px bg-border sm:grid-cols-3">
                   <button type="button" onClick={() => {
@@ -177,17 +178,17 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                     window.setTimeout(() => window.dispatchEvent(new CustomEvent("openThemeSwitcher")), 0);
                   }} className="min-h-20 bg-background p-3 text-left hover:bg-muted">
                     <span className="text-[10px] font-bold text-muted-foreground">01</span>
-                    <span className="mt-1 block text-sm font-bold text-foreground">Choose colors</span>
+                    <JapaneseText ja="色を選ぶ" className="mt-1 block text-sm font-bold text-foreground">Choose colors</JapaneseText>
                     <span className="mt-0.5 block text-xs text-muted-foreground">Open themes</span>
                   </button>
                   <a href="#setting-font" className="min-h-20 bg-background p-3 text-left hover:bg-muted">
                     <span className="text-[10px] font-bold text-muted-foreground">02</span>
-                    <span className="mt-1 block text-sm font-bold text-foreground">Choose text</span>
+                    <JapaneseText ja="文字を選ぶ" className="mt-1 block text-sm font-bold text-foreground">Choose text</JapaneseText>
                     <span className="mt-0.5 block text-xs text-muted-foreground">Four simple fonts</span>
                   </a>
                   <a href="#setting-comfort" className="min-h-20 bg-background p-3 text-left hover:bg-muted">
                     <span className="text-[10px] font-bold text-muted-foreground">03</span>
-                    <span className="mt-1 block text-sm font-bold text-foreground">Comfort</span>
+                    <JapaneseText ja="快適さ" className="mt-1 block text-sm font-bold text-foreground">Comfort</JapaneseText>
                     <span className="mt-0.5 block text-xs text-muted-foreground">Sound, motion, language</span>
                   </a>
                 </div>
@@ -222,7 +223,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <div className="flex items-center gap-2">
                     <Type className="w-4 h-4 text-primary" />
-                    <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">UI Font</h3>
+                    <JapaneseText ja="表示フォント" as="h3" className="font-display font-bold text-foreground text-sm uppercase tracking-wide" japaneseClassName="text-[0.78em] normal-case tracking-normal">UI Font</JapaneseText>
                   </div>
                   <span className="text-[10px] text-muted-foreground tabular-nums">{showAdvancedFonts ? `${FONTS.length} choices` : "4 easy choices"}</span>
                 </div>
@@ -354,7 +355,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               </div>
 
               <div id="setting-comfort" className="scroll-mt-20 border-t border-border pt-5">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Comfort options</p>
+                <JapaneseText ja="快適さの設定" as="p" className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground" japaneseClassName="text-[10px] normal-case tracking-normal">Comfort options</JapaneseText>
                 <p className="mt-1 text-sm text-muted-foreground">Turn each option on or off. Changes happen immediately and are remembered.</p>
               </div>
 
@@ -362,7 +363,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   {soundOn ? <Volume2 className="w-4 h-4 text-primary" /> : <VolumeX className="w-4 h-4 text-muted-foreground" />}
-                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Sound Effects</h3>
+                  <JapaneseText ja="効果音" as="h3" className="font-display font-bold text-foreground text-sm uppercase tracking-wide" japaneseClassName="text-[0.78em] normal-case tracking-normal">Sound Effects</JapaneseText>
                 </div>
                 <button onClick={() => { const v = !soundOn; setSoundOn(v); setSoundEnabled(v); }}
                   className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${soundOn ? "border-primary/40 bg-primary/5" : "border-border"}`}>
@@ -377,7 +378,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Accessibility className="w-4 h-4 text-primary" />
-                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Animations</h3>
+                  <JapaneseText ja="アニメーション" as="h3" className="font-display font-bold text-foreground text-sm uppercase tracking-wide" japaneseClassName="text-[0.78em] normal-case tracking-normal">Animations</JapaneseText>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">Keep interface transitions and glass motion active. Your device's reduced-motion setting is always respected.</p>
                 <button
@@ -400,7 +401,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <MousePointer2 className={`w-4 h-4 ${customCursorOn ? "text-primary" : "text-muted-foreground"}`} />
-                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Custom Cursor</h3>
+                  <JapaneseText ja="カスタムカーソル" as="h3" className="font-display font-bold text-foreground text-sm uppercase tracking-wide" japaneseClassName="text-[0.78em] normal-case tracking-normal">Custom Cursor</JapaneseText>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">Use the animated liquid cursor on mouse and trackpad devices. Turning it off restores the normal system cursor.</p>
                 <button
@@ -453,7 +454,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <User className="w-4 h-4 text-primary" />
-                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Account</h3>
+                  <JapaneseText ja="アカウント" as="h3" className="font-display font-bold text-foreground text-sm uppercase tracking-wide" japaneseClassName="text-[0.78em] normal-case tracking-normal">Account</JapaneseText>
                 </div>
                 <div className="space-y-2">
                   <button onClick={() => base44.auth.logout()}
@@ -463,7 +464,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                 </div>
               </div>
 
-              <p className="text-center text-xs text-muted-foreground pt-2">Settings are stored on this device.</p>
+              <p className="text-center text-xs text-muted-foreground pt-2">Settings are remembered and follow your account.</p>
             </div>
           </motion.div>
         </motion.div>
