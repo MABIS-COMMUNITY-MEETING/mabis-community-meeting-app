@@ -25,6 +25,13 @@ const EDITOR_INK_TOKENS = [
 
 const EDITOR_HIGHLIGHT_ROLES = ["primary", "secondary", "accent"];
 
+const SURFACE_TEXT_PAIRS = [
+    ["--background", "--foreground"],
+    ["--card", "--card-foreground"],
+    ["--popover", "--popover-foreground"],
+    ["--muted", "--muted-foreground"],
+];
+
 function distinctTokenHues(values) {
     return distinctChromaticCount(values, { neutralSaturation: 15 });
 }
@@ -112,6 +119,13 @@ try {
             const ratio = contrastRatio(fill, foreground);
             if (ratio < 4.5) {
                 failures.push(`${key}: ${token} contrast is ${ratio.toFixed(2)}:1`);
+            }
+        }
+
+        for (const [surfaceToken, textToken] of SURFACE_TEXT_PAIRS) {
+            const ratio = contrastRatio(theme.vars[surfaceToken], theme.vars[textToken]);
+            if (ratio < 4.5) {
+                failures.push(`${key}: ${textToken} on ${surfaceToken} contrast is ${ratio.toFixed(2)}:1`);
             }
         }
 
