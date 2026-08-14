@@ -110,6 +110,27 @@ const THEME_HIGHLIGHTS = [
 
 const themeColor = (token) => token ? `hsl(var(${token}))` : false;
 
+/**
+ * Resolve a theme token to a concrete colour at the moment it is applied.
+ *
+ * Writing `hsl(var(--editor-ink-primary))` into Quill produced a span whose
+ * colour never painted: the declaration is only valid if the custom property
+ * resolves in that context, and it was not. Summer's editor never hit this
+ * because a native colour input hands Quill a literal hex, which cannot fail.
+ *
+ * Reading the computed value gives us the same guarantee while keeping the
+ * palette on contrast-checked theme roles rather than raw swatches. The class
+ * is still applied alongside, so the colour continues to follow theme changes;
+ * this is the belt, the class is the braces.
+ */
+function resolveThemeColor(token) {
+  if (!token || typeof window === "undefined") return false;
+  const root = document.documentElement;
+  const read = (name) => getComputedStyle(root).getPropertyValue(name).trim();
+  const raw = read(token) || read("--primary");
+  return raw ? `hsl(${raw})` : false;
+}
+
 const emptyFormats = {
   bold: false,
   italic: false,
@@ -450,7 +471,7 @@ export default function DocsEditor({
     if (!quill) return;
     quill.focus();
     quill.format("themeInk", color.value || false, "user");
-    quill.format("color", themeColor(color.token), "user");
+    quill.format("color", resolveThemeColor(color.token), "user");
     syncFormats();
   };
 
@@ -459,8 +480,8 @@ export default function DocsEditor({
     if (!quill) return;
     quill.focus();
     quill.format("themeHighlight", highlight.value || false, "user");
-    quill.format("background", themeColor(highlight.token), "user");
-    quill.format("color", highlight.token ? `hsl(var(${highlight.token}-foreground))` : false, "user");
+    quill.format("background", resolveThemeColor(highlight.token), "user");
+    quill.format("color", resolveThemeColor(highlight.token ? `${highlight.token}-foreground` : null), "user");
     syncFormats();
   };
 
