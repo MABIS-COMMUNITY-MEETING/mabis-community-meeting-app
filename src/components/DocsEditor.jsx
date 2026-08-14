@@ -437,6 +437,25 @@ export default function DocsEditor({
     }
   }, [findOpen]);
 
+  // ReactQuill restores its saved selection whenever it re-renders, which
+  // focuses the editor. Because the docbar title lives in this component, every
+  // keystroke in the title changed a prop, re-rendered the editor and pulled the
+  // caret straight back out of the field — the title was effectively untypeable.
+  //
+  // Holding the editor element in a memo keeps it out of unrelated re-renders.
+  // onChange is read through a ref so the memo never goes stale.
+  const changeRef = useRef(null);
+  const editorElement = useMemo(() => (
+    <ReactQuill
+      ref={quillRef}
+      theme="snow"
+      defaultValue={initialHtml}
+      onChange={(...args) => changeRef.current?.(...args)}
+      modules={modules}
+      placeholder={placeholder}
+    />
+  ), [initialHtml, modules, placeholder]);
+
   const handleChange = (content, delta, source, editor) => {
     const rawText = editor?.getText() || "";
     const trimmed = rawText.replace(/\n$/, "").trim();
@@ -452,6 +471,8 @@ export default function DocsEditor({
     });
     onChange?.(emitted);
   };
+
+  changeRef.current = handleChange;
 
   const focusAndFormat = (name, value) => {
     const quill = getQuill();
@@ -1083,14 +1104,7 @@ export default function DocsEditor({
       <div className={`docs-workspace ${fullscreen ? "min-h-0 flex-1 overflow-auto" : ""}`}>
         <div className="docs-page-rail">
           <div className="docs-page" style={{ zoom: `${zoom}%` }}>
-            <ReactQuill
-              ref={quillRef}
-              theme="snow"
-              defaultValue={initialHtml}
-              onChange={handleChange}
-              modules={modules}
-              placeholder={placeholder}
-            />
+            {editorElement}
           </div>
         </div>
       </div>
