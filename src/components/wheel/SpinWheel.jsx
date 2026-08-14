@@ -173,7 +173,7 @@ export default function SpinWheel({ members, onResult }) {
         disabled={spinning || members.length === 0}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="px-8 py-3 rounded-2xl font-display font-bold text-white bg-gradient-to-r from-primary to-accent shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed text-lg tracking-wide"
+        className="px-8 py-3 rounded-2xl font-display font-bold text-primary-foreground bg-gradient-to-r from-primary to-accent shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed text-lg tracking-wide"
       >
         {spinning ? (
           <span className="flex items-center gap-2">

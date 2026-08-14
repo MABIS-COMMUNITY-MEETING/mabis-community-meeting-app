@@ -92,7 +92,7 @@ export default function JobReminder() {
             })}
           </div>
           <button onClick={handleDismiss}
-            className="w-full mt-4 h-10 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
+            className="w-full mt-4 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors">
             Got it!
           </button>
         </motion.div>

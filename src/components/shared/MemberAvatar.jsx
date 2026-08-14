@@ -17,7 +17,7 @@ export default function MemberAvatar({ name, color, size = "md" }) {
   };
 
   return (
-    <div className={`${sizeClasses[size]} ${bgColor} rounded-full flex items-center justify-center font-display font-bold text-white shadow-md`}>
+    <div className={`${sizeClasses[size]} ${bgColor} rounded-full flex items-center justify-center font-display font-bold text-primary-foreground shadow-md`}>
       {initials}
     </div>
   );

@@ -60,7 +60,7 @@ export default function Team() {
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="rounded-xl bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25">
+            <Button className="rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25">
               <Plus className="w-4 h-4 mr-2" /> Add Member
             </Button>
           </DialogTrigger>
@@ -114,7 +114,7 @@ export default function Team() {
               >
                 {i === 0 && sorted.length > 1 && (
                   <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center shadow-lg">
-                    <Crown className="w-4 h-4 text-white" />
+                    <Crown className="w-4 h-4 text-primary-foreground" />
                   </div>
                 )}
 

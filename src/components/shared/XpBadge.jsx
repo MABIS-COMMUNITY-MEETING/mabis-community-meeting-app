@@ -9,7 +9,7 @@ export default function XpBadge({ xp, size = "sm" }) {
   };
 
   return (
-    <span className={`inline-flex items-center font-display font-bold rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white ${sizeClasses[size]}`}>
+    <span className={`inline-flex items-center font-display font-bold rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-primary-foreground ${sizeClasses[size]}`}>
       <Zap className={size === "sm" ? "w-3 h-3" : size === "md" ? "w-4 h-4" : "w-5 h-5"} />
       {xp} XP
     </span>

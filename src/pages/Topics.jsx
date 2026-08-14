@@ -58,7 +58,7 @@ export default function Topics() {
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="rounded-xl bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25">
+            <Button className="rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25">
               <Plus className="w-4 h-4 mr-2" /> Add Topic
             </Button>
           </DialogTrigger>

@@ -14,7 +14,7 @@ function StatCard({ icon: Icon, label, value, gradient, link }) {
     <Link to={link}>
       <motion.div
         whileHover={{ y: -2 }}
-        className={`relative overflow-hidden rounded-2xl p-5 text-white ${gradient} shadow-lg cursor-pointer group`}
+        className={`relative overflow-hidden rounded-2xl p-5 text-primary-foreground ${gradient} shadow-lg cursor-pointer group`}
       >
         <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-card/10 -translate-y-6 translate-x-6" />
         <Icon className="w-6 h-6 mb-3 opacity-90" />

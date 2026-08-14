@@ -205,7 +205,7 @@ ${recentHistory || "(just started)"}`;
         onClick={() => setOpen(!open)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        className={`mobile-fab mobile-fab-right fixed bottom-6 right-6 z-[60] w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-white border-2 border-white ${open ? "mobile-fab-open" : ""}`}
+        className={`mobile-fab mobile-fab-right fixed bottom-6 right-6 z-[60] w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-primary-foreground border-2 border-primary-foreground ${open ? "mobile-fab-open" : ""}`}
         style={{ background: "hsl(var(--primary))" }}
         title="MABIS Omni AI Assistant"
       >
@@ -265,7 +265,7 @@ ${recentHistory || "(just started)"}`;
                     ) : (
                       <div key={i} className="flex gap-3">
                         <div className="w-6 h-6 shrink-0 rounded-full flex items-center justify-center mt-0.5" style={{ background: "hsl(var(--primary))" }}>
-                          <Sparkles className="w-3 h-3 text-white" />
+                          <Sparkles className="w-3 h-3 text-primary-foreground" />
                         </div>
                         <div className="flex-1 text-[14.5px] leading-[1.7] text-[#3D3929] whitespace-pre-wrap">
                           {msg.content}
@@ -276,7 +276,7 @@ ${recentHistory || "(just started)"}`;
                   {loading && (
                     <div className="flex gap-3">
                       <div className="w-6 h-6 shrink-0 rounded-full flex items-center justify-center mt-0.5" style={{ background: "hsl(var(--primary))" }}>
-                        <Sparkles className="w-3 h-3 text-white" />
+                        <Sparkles className="w-3 h-3 text-primary-foreground" />
                       </div>
                       <div className="flex items-center gap-1 h-6">
                         <span className="w-1.5 h-1.5 bg-[#3D3929]/35 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -308,7 +308,7 @@ ${recentHistory || "(just started)"}`;
                   <button
                     onClick={() => handleSend(input)}
                     disabled={loading || !input.trim()}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 disabled:opacity-30 transition-opacity"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-primary-foreground shrink-0 disabled:opacity-30 transition-opacity"
                     style={{ background: "hsl(var(--primary))" }}
                   >
                     <Send className="w-3.5 h-3.5" />

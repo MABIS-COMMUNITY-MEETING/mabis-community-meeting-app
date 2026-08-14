@@ -144,7 +144,7 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
       </Select>
       <Button onClick={() => addMutation.mutate({ name: name.trim(), email: email.trim(), role: newRole })}
         disabled={!name.trim() || addMutation.isPending}
-        className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl shrink-0 sm:w-auto">
+        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shrink-0 sm:w-auto">
         <Plus className="w-4 h-4" />
       </Button>
     </div>
@@ -154,21 +154,21 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
     <div className={`mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
       <div className="mabis-widget-header bg-primary px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <div className="min-w-0">
-          <h2 className="mabis-widget-title font-display font-bold text-white text-xl flex items-center gap-2">
+          <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl flex items-center gap-2">
             <Users className="w-5 h-5" /> Community Members
           </h2>
-          <p className="text-white/60 text-xs mt-0.5">{members.length} members</p>
+          <p className="text-primary-foreground/60 text-xs mt-0.5">{members.length} members</p>
         </div>
         <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
           {fullscreen ? (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
+              className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={() => setFullscreen(false)}>
               <X className="w-3.5 h-3.5" /> Close
             </Button>
           ) : (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
+              className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={() => setFullscreen(true)}>
               <Maximize2 className="w-3.5 h-3.5" />
             </Button>

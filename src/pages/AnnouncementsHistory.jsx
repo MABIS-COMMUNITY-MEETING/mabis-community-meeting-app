@@ -60,7 +60,7 @@ export default function AnnouncementsHistory() {
                       <div key={a.id} className="rounded-xl border border-border p-3 bg-card">
                         <div className="mb-0.5 flex flex-wrap items-center gap-2">
                           <span className="font-semibold text-sm text-foreground">{a.title}</span>
-                          {a.pinned && <span className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-full uppercase">Pinned</span>}
+                          {a.pinned && <span className="text-[10px] font-bold bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full uppercase">Pinned</span>}
                           <span className="text-xs text-muted-foreground ml-auto">{a.published_date || a.created_date ? format(new Date(a.published_date || a.created_date), "d MMM yyyy") : ""}</span>
                         </div>
                         {a.body && <p className="text-sm text-muted-foreground">{a.body}</p>}

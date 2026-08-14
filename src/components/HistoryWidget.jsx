@@ -98,7 +98,7 @@ export default function HistoryWidget({ isAdmin }) {
                   <div className="border-t border-border divide-y divide-gray-50">
                     {weekTopics.map((t) => (
                       <div key={t.id} className="flex items-center gap-3 px-4 py-2.5">
-                        <span className={`w-2 h-2 rounded-full shrink-0 ${t.completed ? "bg-green-400" : "bg-gray-300"}`} />
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${t.completed ? "bg-green-400" : "bg-muted"}`} />
                         <span className={`text-sm flex-1 ${t.completed ? "line-through text-muted-foreground" : "text-muted-foreground"}`}>{t.title}</span>
                         <span className="text-xs text-muted-foreground">{t.submitted_by}</span>
                       </div>

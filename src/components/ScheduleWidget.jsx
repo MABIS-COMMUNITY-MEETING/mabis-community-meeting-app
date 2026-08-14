@@ -53,14 +53,14 @@ export default function ScheduleWidget({ isAdmin }) {
   return (
     <div className="mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
       <div className="mabis-widget-header bg-primary px-4 py-4 flex flex-col items-start gap-3 sm:px-6 sm:flex-row sm:items-center">
-        <CalendarClock className="w-5 h-5 text-white" />
+        <CalendarClock className="w-5 h-5 text-primary-foreground" />
         <div className="flex-1">
-          <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Schedule</h2>
-          <p className="text-white/60 text-xs mt-0.5">Weekly class timetable</p>
+          <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Schedule</h2>
+          <p className="text-primary-foreground/60 text-xs mt-0.5">Weekly class timetable</p>
         </div>
         {isAdmin && savedUrl && !editing && (
           <Button size="sm" variant="outline"
-            className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1"
+            className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1"
             onClick={() => setEditing(true)}>
             <Pencil className="w-3.5 h-3.5" /> Change Link
           </Button>
@@ -79,7 +79,7 @@ export default function ScheduleWidget({ isAdmin }) {
             <div className="grid grid-cols-2 gap-2 sm:flex">
               <Button onClick={() => saveMutation.mutate(link.trim())}
                 disabled={!link.trim() || saveMutation.isPending}
-                className="bg-primary hover:bg-primary/90 text-white rounded-lg gap-1.5">
+                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg gap-1.5">
                 <Save className="w-4 h-4" /> {saveMutation.isPending ? "Saving..." : "Save"}
               </Button>
               <Button variant="outline" onClick={() => setEditing(false)} className="rounded-lg">Cancel</Button>
@@ -105,7 +105,7 @@ export default function ScheduleWidget({ isAdmin }) {
               <>
                 <p className="text-sm font-semibold text-foreground">No schedule linked yet</p>
                 <Button onClick={() => setEditing(true)}
-                  className="bg-primary hover:bg-primary/90 text-white rounded-lg gap-1.5">
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg gap-1.5">
                   <Link2 className="w-4 h-4" /> Add Spreadsheet Link
                 </Button>
               </>

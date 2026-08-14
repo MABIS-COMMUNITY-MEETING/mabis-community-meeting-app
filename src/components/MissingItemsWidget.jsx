@@ -108,13 +108,13 @@ export default function MissingItemsWidget({ members }) {
       {imageUrl && (
         <div className="relative">
           <img src={imageUrl} alt="preview" className="rounded-lg max-h-40 object-cover w-full" />
-          <button onClick={() => setImageUrl("")} className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1">
+          <button onClick={() => setImageUrl("")} className="absolute top-2 right-2 bg-black/50 text-primary-foreground rounded-full p-1">
             <X className="w-3 h-3" />
           </button>
         </div>
       )}
       <Button onClick={handleSubmit} disabled={!itemName.trim() || createMutation.isPending}
-        className="bg-primary hover:bg-primary/90 text-white rounded-lg w-full">
+        className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg w-full">
         {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
         Add to Missing Items
       </Button>
@@ -164,31 +164,31 @@ export default function MissingItemsWidget({ members }) {
     <div className={`mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
       <div className="mabis-widget-header bg-primary px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between sticky top-0 z-10">
         <div className="min-w-0">
-          <h2 className="mabis-widget-title font-display font-bold text-white text-xl flex items-center gap-2">
+          <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl flex items-center gap-2">
             <Search className="w-5 h-5" /> Missing Items
           </h2>
-          <p className="text-white/60 text-xs mt-0.5">{activeItems.length} active · {foundItems.length} found</p>
+          <p className="text-primary-foreground/60 text-xs mt-0.5">{activeItems.length} active · {foundItems.length} found</p>
         </div>
         <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
           <Button size="sm" variant="outline"
-            className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
+            className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1.5"
             onClick={() => setShowForm(s => !s)}>
             <Plus className="w-3.5 h-3.5" /> {showForm ? "Cancel" : "Report"}
           </Button>
           <Button size="sm" variant="outline"
-            className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
+            className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1.5"
             onClick={() => setShowFound(s => !s)}>
             <History className="w-3.5 h-3.5" /> {showFound ? "Hide" : "Found"}
           </Button>
           {fullscreen ? (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
+              className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={() => setFullscreen(false)}>
               <X className="w-3.5 h-3.5" /> Close
             </Button>
           ) : (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
+              className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={() => setFullscreen(true)}>
               <Maximize2 className="w-3.5 h-3.5" />
             </Button>

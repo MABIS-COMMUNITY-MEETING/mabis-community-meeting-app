@@ -231,7 +231,7 @@ export default function CalendarWidget() {
                 className={`min-h-[80px] border-b border-r border-border p-1.5 cursor-pointer transition-colors
                   ${isSelected ? "bg-blue-50" : isFri ? "bg-primary/3 hover:bg-primary/6" : "hover:bg-muted"}`}>
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold mb-1 transition-colors
-                  ${today ? "bg-primary text-white" : isFri ? "text-primary font-bold" : "text-muted-foreground"}`}>
+                  ${today ? "bg-primary text-primary-foreground" : isFri ? "text-primary font-bold" : "text-muted-foreground"}`}>
                   {format(day, "d")}
                 </div>
                 {dayEvents.slice(0, 2).map(ev => (
@@ -268,7 +268,7 @@ export default function CalendarWidget() {
             <div key={i} className={`text-center py-3 ${isFriday(day) ? "bg-primary/5" : ""}`}>
               <p className={`text-xs font-semibold ${isFriday(day) ? "text-primary" : "text-muted-foreground"}`}>{DAY_NAMES[i]}</p>
               <div className={`mx-auto mt-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
-                ${isToday(day) ? "bg-primary text-white" : isFriday(day) ? "text-primary" : "text-foreground"}`}>
+                ${isToday(day) ? "bg-primary text-primary-foreground" : isFriday(day) ? "text-primary" : "text-foreground"}`}>
                 {format(day, "d")}
               </div>
             </div>
@@ -346,7 +346,7 @@ export default function CalendarWidget() {
                 {mDays.map(day => (
                   <div key={format(day, "d")}
                     className={`text-center text-[8px] rounded-sm py-0.5 font-medium
-                      ${isToday(day) ? "bg-primary text-white" : isFriday(day) ? "text-primary" : "text-muted-foreground"}`}>
+                      ${isToday(day) ? "bg-primary text-primary-foreground" : isFriday(day) ? "text-primary" : "text-muted-foreground"}`}>
                     {format(day, "d")}
                   </div>
                 ))}
@@ -371,18 +371,18 @@ export default function CalendarWidget() {
       {/* Header — Google Calendar style */}
       <div className="mabis-widget-header bg-primary px-4 py-3 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:flex-wrap">
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-white" />
-          <h2 className="mabis-widget-title min-w-0 break-words font-display font-bold text-white text-lg">{headerTitle()}</h2>
+          <Calendar className="w-5 h-5 text-primary-foreground" />
+          <h2 className="mabis-widget-title min-w-0 break-words font-display font-bold text-primary-foreground text-lg">{headerTitle()}</h2>
         </div>
         <div className="flex items-center gap-1 sm:ml-2">
-          <button onClick={goBack} className="p-1.5 rounded-lg hover:bg-card/20 text-white transition-colors">
+          <button onClick={goBack} className="p-1.5 rounded-lg hover:bg-card/20 text-primary-foreground transition-colors">
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button onClick={goToday}
-            className="px-3 py-1 text-xs font-semibold rounded-lg border border-white/40 text-white bg-card/10 hover:bg-card/20 transition-colors">
+            className="px-3 py-1 text-xs font-semibold rounded-lg border border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 transition-colors">
             Today
           </button>
-          <button onClick={goForward} className="p-1.5 rounded-lg hover:bg-card/20 text-white transition-colors">
+          <button onClick={goForward} className="p-1.5 rounded-lg hover:bg-card/20 text-primary-foreground transition-colors">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -392,7 +392,7 @@ export default function CalendarWidget() {
           {VIEWS.map(v => (
             <button key={v} onClick={() => setView(v)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                view === v ? "bg-card text-primary shadow-sm" : "text-white/80 hover:text-white"}`}>
+                view === v ? "bg-card text-primary shadow-sm" : "text-primary-foreground/80 hover:text-primary-foreground"}`}>
               {v}
             </button>
           ))}
@@ -400,23 +400,23 @@ export default function CalendarWidget() {
 
         <div className="mabis-widget-actions flex items-center gap-2 sm:contents">
         <button onClick={() => { if (showForm) { resetForm(); } else { setEditingId(null); setShowForm(true); } }}
-          className="flex items-center justify-center gap-1 text-xs text-white bg-card/10 hover:bg-card/20 px-2.5 py-1.5 rounded-lg border border-white/40 font-semibold transition-colors">
+          className="flex items-center justify-center gap-1 text-xs text-primary-foreground bg-card/10 hover:bg-card/20 px-2.5 py-1.5 rounded-lg border border-primary-foreground/40 font-semibold transition-colors">
           <Plus className="w-3.5 h-3.5" /> Add Event
         </button>
         <button onClick={() => screenshotInputRef.current?.click()} disabled={importing}
-          className="flex items-center gap-1 text-xs text-white bg-card/10 hover:bg-card/20 px-2.5 py-1.5 rounded-lg border border-white/40 font-semibold transition-colors disabled:opacity-50">
+          className="flex items-center gap-1 text-xs text-primary-foreground bg-card/10 hover:bg-card/20 px-2.5 py-1.5 rounded-lg border border-primary-foreground/40 font-semibold transition-colors disabled:opacity-50">
           {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ScanText className="w-3.5 h-3.5" />}
           {importing ? "Reading..." : "Import"}
         </button>
         <input ref={screenshotInputRef} type="file" accept="image/*" className="hidden" onChange={handleImportScreenshot} />
         {fullscreen ? (
           <button onClick={() => setFullscreen(false)}
-            className="flex items-center gap-1 text-xs text-white bg-card/10 hover:bg-card/20 px-2.5 py-1.5 rounded-lg border border-white/40 font-semibold transition-colors">
+            className="flex items-center gap-1 text-xs text-primary-foreground bg-card/10 hover:bg-card/20 px-2.5 py-1.5 rounded-lg border border-primary-foreground/40 font-semibold transition-colors">
             <X className="w-3.5 h-3.5" /> Close
           </button>
         ) : (
           <button onClick={() => setFullscreen(true)}
-            className="flex items-center gap-1 text-xs text-white bg-card/10 hover:bg-card/20 px-2.5 py-1.5 rounded-lg border border-white/40 font-semibold transition-colors">
+            className="flex items-center gap-1 text-xs text-primary-foreground bg-card/10 hover:bg-card/20 px-2.5 py-1.5 rounded-lg border border-primary-foreground/40 font-semibold transition-colors">
             <Maximize2 className="w-3.5 h-3.5" />
           </button>
         )}
@@ -457,7 +457,7 @@ export default function CalendarWidget() {
                   </button>
                 ))}
                 <Button onClick={saveEvent} disabled={!newTitle.trim() || !newDate}
-                  size="sm" className="ml-auto bg-primary hover:bg-primary/90 text-white h-7 text-xs rounded-lg">
+                  size="sm" className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground h-7 text-xs rounded-lg">
                   {editingId ? "Update" : "Save"}
                 </Button>
               </div>
@@ -502,7 +502,7 @@ export default function CalendarWidget() {
                 : <p className="text-sm text-muted-foreground italic">No description</p>}
               <div className="flex gap-2 mt-6">
                 <Button onClick={() => editEvent(selectedEvent)}
-                  className="flex-1 bg-primary hover:bg-primary/90 text-white rounded-xl gap-1.5 text-sm">
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl gap-1.5 text-sm">
                   <Pencil className="w-3.5 h-3.5" /> Edit
                 </Button>
                 <Button variant="outline" onClick={() => { removeEvent(selectedEvent.id); setSelectedEvent(null); }}

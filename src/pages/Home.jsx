@@ -132,7 +132,7 @@ export default function Home() {
             <span className="hidden md:inline tech-label px-2.5 py-1 bg-primary text-primary-foreground">ADMIN</span>
           )}
           {effectiveRole === "editor" && (
-            <span className="hidden md:inline tech-label px-2.5 py-1 text-white" style={{ backgroundColor: "hsl(var(--role-editor))" }}>EDITOR</span>
+            <span className="hidden md:inline tech-label px-2.5 py-1 text-primary-foreground" style={{ backgroundColor: "hsl(var(--role-editor))" }}>EDITOR</span>
           )}
         </>
       )}

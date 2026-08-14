@@ -52,7 +52,7 @@ export default function FeedbackWidget() {
         onClick={() => setOpen(!open)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        className={`mobile-fab mobile-fab-left fixed bottom-5 left-5 z-[60] w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-white border-2 border-white ${open ? "mobile-fab-open" : ""}`}
+        className={`mobile-fab mobile-fab-left fixed bottom-5 left-5 z-[60] w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-primary-foreground border-2 border-primary-foreground ${open ? "mobile-fab-open" : ""}`}
         style={{ background: "hsl(var(--primary))" }}
         title="Feedback & Bug Reports"
       >
@@ -79,9 +79,9 @@ export default function FeedbackWidget() {
             className="mobile-feedback-panel fixed bottom-24 left-5 z-[60] w-80 bg-card rounded-2xl shadow-2xl border border-border overflow-hidden"
           >
             <div className="px-4 py-3 flex items-center gap-2" style={{ background: "hsl(var(--primary))" }}>
-              <Heart className="w-4 h-4 text-white" />
-              <span className="flex-1 text-white font-bold text-sm">Feedback & Bug Reports</span>
-              <button type="button" onClick={() => setOpen(false)} className="flex h-9 w-9 items-center justify-center text-white/75 hover:text-white" aria-label="Close feedback panel">
+              <Heart className="w-4 h-4 text-primary-foreground" />
+              <span className="flex-1 text-primary-foreground font-bold text-sm">Feedback & Bug Reports</span>
+              <button type="button" onClick={() => setOpen(false)} className="flex h-9 w-9 items-center justify-center text-primary-foreground/75 hover:text-primary-foreground" aria-label="Close feedback panel">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -123,7 +123,7 @@ export default function FeedbackWidget() {
                         {[1,2,3,4,5,6,7,8,9,10].map(r => (
                           <motion.button key={r} type="button" whileTap={{ scale: 0.85 }} onClick={() => setRating(r)}
                             className={`w-6 h-6 rounded text-[10px] font-bold border-2 transition-all
-                              ${rating === r ? "bg-primary text-white border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"}`}>
+                              ${rating === r ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"}`}>
                             {r}
                           </motion.button>
                         ))}
@@ -142,7 +142,7 @@ export default function FeedbackWidget() {
                       <div className="relative mt-2 rounded-lg overflow-hidden border border-border">
                         <img src={imageUrl} alt="Attachment" className="w-full max-h-40 object-cover" />
                         <button onClick={() => setImageUrl("")}
-                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center">
+                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 text-primary-foreground flex items-center justify-center">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -157,7 +157,7 @@ export default function FeedbackWidget() {
                   </div>
 
                   <motion.button whileTap={{ scale: 0.97 }} onClick={handleSubmit} disabled={!message.trim() || submitting}
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold text-sm py-2.5 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm py-2.5 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                     {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : <><Send className="w-3.5 h-3.5" /> Submit</>}
                   </motion.button>
                 </motion.div>

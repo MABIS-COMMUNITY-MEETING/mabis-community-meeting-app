@@ -30,7 +30,7 @@ export default function RemoveMemberPanel({ members, onDelete }) {
         </SelectContent>
       </Select>
       <Button onClick={handleRemove} disabled={!selected}
-        className="w-full shrink-0 gap-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 sm:w-auto">
+        className="w-full shrink-0 gap-1.5 rounded-xl bg-red-600 text-primary-foreground hover:bg-red-700 sm:w-auto">
         <UserMinus className="w-4 h-4" /> Remove
       </Button>
     </div>

@@ -56,10 +56,10 @@ export default function LunchMenuWidget({ isAdmin }) {
   return (
     <div className="mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
       <div className="mabis-widget-header bg-primary px-4 py-4 flex items-center gap-3 sm:px-6">
-        <UtensilsCrossed className="w-5 h-5 text-white" />
+        <UtensilsCrossed className="w-5 h-5 text-primary-foreground" />
         <div>
-          <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Snacks &amp; Lunch</h2>
-          <p className="text-white/60 text-xs mt-0.5">Week of {format(fridayOfCurrentWeek(), "d MMMM yyyy")}</p>
+          <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Snacks &amp; Lunch</h2>
+          <p className="text-primary-foreground/60 text-xs mt-0.5">Week of {format(fridayOfCurrentWeek(), "d MMMM yyyy")}</p>
         </div>
       </div>
 
@@ -103,7 +103,7 @@ export default function LunchMenuWidget({ isAdmin }) {
             {isAdmin && (
               <div className="flex justify-stretch mt-4 sm:justify-end">
                 <button onClick={() => upsertMutation.mutate(draft)} disabled={upsertMutation.isPending}
-                  className="flex w-full items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors disabled:opacity-60 sm:w-auto">
+                  className="flex w-full items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold px-5 py-2 rounded-lg transition-colors disabled:opacity-60 sm:w-auto">
                   {upsertMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save Menu
                 </button>

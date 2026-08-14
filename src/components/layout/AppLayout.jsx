@@ -24,7 +24,7 @@ export default function AppLayout() {
         <div className="p-6">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+              <Zap className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
               <h1 className="font-display text-lg font-bold text-foreground tracking-tight">MeetUp</h1>
@@ -69,7 +69,7 @@ export default function AppLayout() {
         <div className="flex items-center justify-between px-4 h-14">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
+              <Zap className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="font-display font-bold text-foreground">MeetUp</span>
           </Link>

@@ -67,7 +67,7 @@ export default function PasswordModal({ open, onClose, onSuccess, title = "Enter
                   Cancel
                 </button>
                 <button onClick={handleSubmit}
-                  className="w-full h-10 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
+                  className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors">
                   Confirm
                 </button>
               </div>

@@ -98,33 +98,33 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
     <div className={`mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden ${fullscreen ? "fixed inset-0 z-50 rounded-none overflow-y-auto" : ""}`}>
       <div className="mabis-widget-header bg-primary px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <Megaphone className="w-5 h-5 text-white" />
+          <Megaphone className="w-5 h-5 text-primary-foreground" />
           <div>
-            <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Announcements</h2>
-            <p className="text-white/60 text-xs mt-0.5">{announcements.length} announcement{announcements.length !== 1 ? "s" : ""}</p>
+            <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Announcements</h2>
+            <p className="text-primary-foreground/60 text-xs mt-0.5">{announcements.length} announcement{announcements.length !== 1 ? "s" : ""}</p>
           </div>
         </div>
         <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
           <Link to="/history/announcements">
             <Button size="sm" variant="outline"
-            className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1">
+            className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1">
               <History className="w-3.5 h-3.5" /> History
             </Button>
           </Link>
           <Button size="sm" variant="outline"
-          className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1"
+          className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1"
           onClick={() => setShowForm((f) => !f)}>
             <Plus className="w-3.5 h-3.5" /> Post
           </Button>
           {fullscreen ?
           <Button size="sm" variant="outline"
-          className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1"
+          className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1"
           onClick={() => setFullscreen(false)}>
               <X className="w-3.5 h-3.5" /> Close
             </Button> :
 
           <Button size="sm" variant="outline"
-          className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1"
+          className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1"
           onClick={() => setFullscreen(true)}>
               <Maximize2 className="w-3.5 h-3.5" />
             </Button>
@@ -165,7 +165,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
             <div className="relative inline-block">
                   <img src={imagePreview} alt="preview" className="h-28 rounded-lg object-cover border border-border" />
                   <button onClick={() => {setImageFile(null);setImagePreview(null);}}
-              className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
+              className="absolute -top-1.5 -right-1.5 bg-red-500 text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center">
                     <X className="w-3 h-3" />
                   </button>
                 </div>
@@ -195,7 +195,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
                   <Button variant="outline" size="sm" onClick={resetForm} className="text-xs rounded-lg">Cancel</Button>
                   <Button size="sm" onClick={handleSubmit}
                 disabled={!title.trim() || !authorName.trim() || uploading || addMutation.isPending}
-                className="bg-primary hover:bg-primary/90 text-white rounded-lg text-xs">
+                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs">
                     {uploading || addMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Post"}
                   </Button>
                 </div>
@@ -228,7 +228,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
                       <span className="font-bold text-sm text-foreground">{ann.author_name}</span>
                       {ann.pinned &&
-                    <span className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-full uppercase tracking-wide">PINNED</span>
+                    <span className="text-[10px] font-bold bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full uppercase tracking-wide">PINNED</span>
                     }
                       <span className="text-xs text-muted-foreground ml-auto">
                         {ann.published_date || ann.created_date ? format(new Date(ann.published_date || ann.created_date), "d MMM yyyy") : ""}

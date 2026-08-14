@@ -149,7 +149,7 @@ export default function AnalyticsTab({ feedback, members = [] }) {
                     <td className="py-2 px-2">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
-                          <span className="text-white text-[9px] font-bold">{s.name[0]}</span>
+                          <span className="text-primary-foreground text-[9px] font-bold">{s.name[0]}</span>
                         </div>
                         <span className="font-medium text-foreground text-xs">{s.name}</span>
                       </div>

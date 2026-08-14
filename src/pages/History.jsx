@@ -157,7 +157,7 @@ export default function History() {
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${done === weekTopics.length ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>{done}/{weekTopics.length} done</span>
                     {att?.meeting_date && !isFriday(new Date(att.meeting_date)) && (
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-white">Date moved</span>
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-primary-foreground">Date moved</span>
                     )}
                     {att && missingMembers.length > 0 && (
                       <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700">{missingMembers.length} missing</span>
@@ -173,7 +173,7 @@ export default function History() {
                   <div className="border-t border-border">
                     {/* Attendance — who is missing */}
                     {att && (
-                      <div className="border-b border-gray-50 bg-red-50/40 px-4 py-4 sm:px-6">
+                      <div className="border-b border-border bg-red-50/40 px-4 py-4 sm:px-6">
                         <p className="text-xs font-bold text-red-700 uppercase mb-2 flex items-center gap-1.5">
                           <Users className="w-3.5 h-3.5" /> Missing ({missingMembers.length}) · {presentNames.length} present
                         </p>
@@ -193,13 +193,13 @@ export default function History() {
                     )}
 
                     {/* Discussion topics */}
-                    <div className="border-b border-gray-50 px-4 py-4 sm:px-6">
+                    <div className="border-b border-border px-4 py-4 sm:px-6">
                       <p className="text-xs font-bold text-primary uppercase mb-3">Discussion Topics</p>
                       <div className="space-y-2">
                         {weekTopics.map(t => (
                           <div key={t.id} className="flex items-start gap-3 p-3 rounded-xl border border-border bg-card">
                             <div className={`w-1 self-stretch rounded-full shrink-0 ${PRIORITY_DOT[t.priority || 3]}`} />
-                            <span className={`mt-1 w-4 h-4 rounded shrink-0 flex items-center justify-center text-[10px] ${t.completed ? "bg-green-400 text-white" : "border-2 border-border"}`}>
+                            <span className={`mt-1 w-4 h-4 rounded shrink-0 flex items-center justify-center text-[10px] ${t.completed ? "bg-green-400 text-primary-foreground" : "border-2 border-border"}`}>
                               {t.completed ? "✓" : ""}
                             </span>
                             <div className="flex-1 min-w-0">

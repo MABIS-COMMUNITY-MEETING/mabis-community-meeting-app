@@ -241,7 +241,7 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
       </div>
 
       <Button onClick={handleSpin} disabled={isSpinning || members.length === 0 || disabled}
-        className="bg-primary hover:bg-primary/90 text-white rounded-xl px-10 text-base font-bold w-full" size="lg">
+        className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-10 text-base font-bold w-full" size="lg">
         {isSpinning ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Spinning...</> : "Spin"}
       </Button>
     </div>
@@ -252,7 +252,7 @@ function SpinWheel({ members, onSpinComplete, disabled, size = 360 }) {
 function WinnerBanner({ winner, jobLabel, onConfirm, onRemoveAndNext, onReject, isAdmin, canAssign = true }) {
   return createPortal(
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className="rounded-2xl p-8 text-center text-white shadow-2xl w-full max-w-md" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--ring)))" }}>
+      <div className="rounded-2xl p-8 text-center text-primary-foreground shadow-2xl w-full max-w-md" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--ring)))" }}>
         <p className="text-sm font-semibold opacity-70 uppercase tracking-widest mb-1">Selected!</p>
         <p className="text-4xl font-display font-black mb-1">{displayName(winner)}</p>
         <p className="text-sm opacity-80 mb-5">→ <span className="font-semibold">{jobLabel}</span></p>
@@ -263,18 +263,18 @@ function WinnerBanner({ winner, jobLabel, onConfirm, onRemoveAndNext, onReject, 
               {canAssign ? "Assign this job" : "Extra spin only"}
             </button>
             <button onClick={onRemoveAndNext}
-              className="flex-1 bg-card/20 hover:bg-card/30 text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm border border-white/30">
+              className="flex-1 bg-card/20 hover:bg-card/30 text-primary-foreground font-bold py-2.5 px-5 rounded-xl transition-colors text-sm border border-primary-foreground/30">
               Remove from wheel
             </button>
             <button onClick={onReject}
-              className="flex-1 bg-card/10 hover:bg-card/20 text-white/80 font-bold py-2.5 px-5 rounded-xl transition-colors text-sm">
+              className="flex-1 bg-card/10 hover:bg-card/20 text-primary-foreground/80 font-bold py-2.5 px-5 rounded-xl transition-colors text-sm">
               Re-spin
             </button>
           </div>
         ) : (
-          <p className="text-white/60 text-xs">Waiting for admin to confirm...</p>
+          <p className="text-primary-foreground/60 text-xs">Waiting for admin to confirm...</p>
         )}
-        {isAdmin && !canAssign && <p className="mt-3 text-xs text-white/70">This person or job is already assigned. Re-spin as often as you like.</p>}
+        {isAdmin && !canAssign && <p className="mt-3 text-xs text-primary-foreground/70">This person or job is already assigned. Re-spin as often as you like.</p>}
       </div>
     </div>, document.body
   );
@@ -303,8 +303,8 @@ function DayStatus({ assignment, canEdit, onDayStatus, currentMonth }) {
             onClick={() => canEdit && onDayStatus(assignment, entry.key, state)}
             disabled={!canEdit}
             className={`min-w-9 h-9 px-1 rounded-lg text-[10px] font-bold flex items-center justify-center border-2 transition-all
-              ${state === "yes" ? "bg-green-500 border-green-500 text-white"
-                : state === "no" ? "bg-red-500 border-red-500 text-white"
+              ${state === "yes" ? "bg-green-500 border-green-500 text-primary-foreground"
+                : state === "no" ? "bg-red-500 border-red-500 text-primary-foreground"
                 : "border-border text-muted-foreground bg-card hover:border-primary/30"}
               ${canEdit ? "hover:scale-110 cursor-pointer" : "cursor-default opacity-60"}`}>
             {state === "yes" ? "✓" : state === "no" ? "✗" : compactLabel}
@@ -357,7 +357,7 @@ function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDe
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-1.5">
                     <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
-                      <span className="text-white text-[9px] font-bold">{(a.assigned_to_name || "?")[0]}</span>
+                      <span className="text-primary-foreground text-[9px] font-bold">{(a.assigned_to_name || "?")[0]}</span>
                     </div>
                     <span className="text-foreground text-xs">{a.assigned_to_name}</span>
                   </div>
@@ -379,7 +379,7 @@ function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDe
                 {isAdmin && (
                   <td className="px-2 py-3">
                     <button onClick={() => onDelete(a.id)}
-                      className="text-gray-200 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                      className="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </td>
@@ -420,7 +420,7 @@ function SpinningForTable({ jobs, assignedJobLabels, selectedJobId, onSelect, is
                     disabled={taken || !isAdmin}
                     className={`w-full text-xs font-bold py-1.5 rounded-lg border-2 transition-all
                       ${taken ? "bg-muted text-muted-foreground border-border"
-                        : selected ? "bg-primary text-white border-primary scale-105 shadow"
+                        : selected ? "bg-primary text-primary-foreground border-primary scale-105 shadow"
                         : "bg-card text-muted-foreground border-border hover:border-primary/40 cursor-pointer hover:scale-102"}`}>
                     {taken ? "Done" : selected ? "Active" : "Choose"}
                   </button>
@@ -771,7 +771,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
                     </div>
                     <p className="text-[9px] text-muted-foreground mb-1.5">✓ = on wheel</p>
                     <div className="flex gap-1 mb-1.5">
-                      <button onClick={() => setRemovedIds([])} className="flex-1 text-[9px] font-bold text-white bg-primary rounded py-1 hover:bg-primary/90 transition-colors">Add all</button>
+                      <button onClick={() => setRemovedIds([])} className="flex-1 text-[9px] font-bold text-primary-foreground bg-primary rounded py-1 hover:bg-primary/90 transition-colors">Add all</button>
                       <button onClick={() => setRemovedIds(studentMembers.map(m => m.id))} className="flex-1 text-[9px] font-bold text-primary bg-primary/10 rounded py-1 hover:bg-primary/20 transition-colors">Clear all</button>
                     </div>
                     <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
@@ -919,18 +919,18 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
       <div className="fixed inset-0 bg-card z-50 flex flex-col">
         <div className="mabis-widget-header bg-primary px-4 py-4 flex flex-col items-start gap-3 shrink-0 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="mabis-widget-title font-display font-bold text-white text-2xl">Jobs Assignment</h2>
-            <p className="text-white/60 text-sm">Weekly jobs: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)}</p>
+            <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-2xl">Jobs Assignment</h2>
+            <p className="text-primary-foreground/60 text-sm">Weekly jobs: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)}</p>
           </div>
           <div className="mabis-widget-actions flex items-center gap-3">
             {isAdmin && currentAssignments.length > 0 && (
               <Button size="sm" variant="outline"
-                className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
+                className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1.5"
                 onClick={handleClearAll}>
                 <Trash2 className="w-3.5 h-3.5" /> Clear All
               </Button>
             )}
-            <button onClick={() => setFullscreen(false)} className="text-white/70 hover:text-white p-2 rounded-lg hover:bg-card/10">
+            <button onClick={() => setFullscreen(false)} className="text-primary-foreground/70 hover:text-primary-foreground p-2 rounded-lg hover:bg-card/10">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -965,19 +965,19 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
     <div className="mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
       <div className="mabis-widget-header bg-primary px-4 py-4 flex flex-col items-start gap-3 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="mabis-widget-title font-display font-bold text-white text-xl">Jobs</h2>
-          <p className="text-white/60 text-xs mt-0.5">Weekly: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments.length}/{allJobs.length} assigned</p>
+          <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Jobs</h2>
+          <p className="text-primary-foreground/60 text-xs mt-0.5">Weekly: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments.length}/{allJobs.length} assigned</p>
         </div>
         <div className="mabis-widget-actions flex items-center gap-2">
           {isAdmin && currentAssignments.length > 0 && (
             <Button size="sm" variant="outline"
-              className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
+              className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1.5"
               onClick={handleClearAll}>
               <Trash2 className="w-3.5 h-3.5" /> Clear All
             </Button>
           )}
           <Button size="sm" variant="outline"
-            className="border-white/40 text-white bg-card/10 hover:bg-card/20 text-xs gap-1.5"
+            className="border-primary-foreground/40 text-primary-foreground bg-card/10 hover:bg-card/20 text-xs gap-1.5"
             onClick={() => setFullscreen(true)}>
             <Maximize2 className="w-3.5 h-3.5" /> Full Screen
           </Button>

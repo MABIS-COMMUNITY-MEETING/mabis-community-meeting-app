@@ -68,7 +68,7 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
   const isLocked = !meetingEnded && !isFridayToday;
 
   const statusConfig = {
-    active: { label: "Meeting Active", icon: Circle, bg: "bg-green-500", text: "text-white" },
+    active: { label: "Meeting Active", icon: Circle, bg: "bg-green-500", text: "text-primary-foreground" },
     paused: { label: "Meeting Paused", icon: Pause, style: { backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary))" } },
   };
   const status = meetingStatus && meetingStatus !== "ended" ? statusConfig[meetingStatus] : null;
@@ -202,7 +202,7 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
                 <button onClick={() => setShowDateConfirm(false)}
                   className="flex-1 py-2.5 rounded-xl border border-border text-muted-foreground font-semibold text-sm hover:bg-muted">Cancel</button>
                 <button onClick={handleStartFromPopup}
-                  className="flex-1 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm">Start Meeting</button>
+                  className="flex-1 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm">Start Meeting</button>
               </div>
             </motion.div>
           </motion.div>

@@ -62,7 +62,7 @@ export default function RoleSwitcher() {
                     key={r.key}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleSwitch(r.key)}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${isActive ? "text-white" : "text-muted-foreground hover:bg-muted"}`}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${isActive ? "text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
                     style={isActive ? { backgroundColor: color } : {}}
                   >
                     <Icon className="w-3.5 h-3.5" />
