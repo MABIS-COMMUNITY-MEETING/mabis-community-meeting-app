@@ -15,6 +15,8 @@ Preserve the Home editorial normalization in `src/styles/editorial-home.css`: ne
 Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.
 
 Keep Home easy to navigate with its numbered editorial sections, plain-language page guide, and contextual instructions; usability aids must clarify the existing Japanese editorial hierarchy rather than replace it with a generic dashboard.
+- Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang="ja"` so Maple Mono CJK fallback applies; the default remains off.
+- Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.
 
 Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.
 
