@@ -138,14 +138,20 @@ function TopicItem({
                 ))}
               </SelectContent>
             </Select>
+            {/* No autoFocus here, deliberately.
+
+                The rich-text editor below is lazy-loaded, so it mounts a beat
+                AFTER this input. autoFocus would put the caret here first, then
+                Quill would initialise and take it — which is why typing landed
+                in the document body instead of the title. Summer's version does
+                not hit this because it imports the editor statically, so there
+                is no late mount to lose the race to.
+
+                Focus is taken on click instead, which is deterministic. */}
             <Input
-              autoFocus
               placeholder="Topic title..."
               value={editTitle}
               onChange={(event) => onTitleChange(event.target.value)}
-              /* Same defensive focus as the document title field: the browser's
-                 default focus-on-mousedown is being swallowed somewhere above
-                 this form, so a single click left the caret in the editor. */
               onMouseDown={(event) => {
                 event.stopPropagation();
                 event.currentTarget.focus();
