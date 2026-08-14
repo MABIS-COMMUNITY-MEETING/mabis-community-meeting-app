@@ -73,20 +73,24 @@ export const AuthProvider = ({ children }) => {
         const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
         setAppPublicSettings(publicSettings);
         
+        // Google OAuth can restore a Base44 session through its secure
+        // same-origin cookie without adding an access_token to the return URL.
+        // Probe the session even when appParams.token is empty; otherwise the
+        // first successful Google return is mistaken for a signed-out visit and
+        // users have to start the provider flow a second time.
+        const hasBase44Session = await checkUserAuth({
+          silentUnauthenticated: !appParams.token,
+        });
+
         // A genuine Base44 session always wins over the optional local hacker
-        // easter egg. The old order let a stale localStorage flag impersonate
-        // the user even while their real MABIS account token was still valid.
-        if (appParams.token) {
-          await checkUserAuth();
-        } else if (isHackerMode()) {
+        // easter egg. Only fall back to hacker mode after the quiet cookie probe
+        // confirms that there is no real session.
+        if (!hasBase44Session && !appParams.token && isHackerMode()) {
           setUser(HACKER_USER);
           setIsAuthenticated(true);
           setIsLoadingAuth(false);
           setAuthChecked(true);
-        } else {
-          setIsLoadingAuth(false);
-          setIsAuthenticated(false);
-          setAuthChecked(true);
+          setAuthError(null);
         }
         setIsLoadingPublicSettings(false);
       } catch (appError) {
@@ -133,7 +137,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const checkUserAuth = async () => {
+  const checkUserAuth = async ({ silentUnauthenticated = false } = {}) => {
     try {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
@@ -150,20 +154,36 @@ export const AuthProvider = ({ children }) => {
         await restoreOfflineQueries(queryClientInstance, currentUser.id);
         saveOfflineUser(currentUser, appParams.token);
       });
+      return true;
     } catch (error) {
-      console.error('User auth check failed:', error);
-      if (await recoverOfflineState(error)) return;
+      const reason = error.data?.extra_data?.reason;
+      const expectedSignedOut = silentUnauthenticated
+        && (error.status === 401 || error.status === 403)
+        && reason !== 'user_not_registered';
+      if (!expectedSignedOut) console.error('User auth check failed:', error);
+      if (await recoverOfflineState(error)) return true;
+      setUser(null);
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       setAuthChecked(true);
-      
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
+
+      if (reason === 'user_not_registered') {
+        setAuthError({
+          type: 'user_not_registered',
+          message: 'User not registered for this app'
+        });
+      } else if (!silentUnauthenticated && (error.status === 401 || error.status === 403)) {
+        // Token-backed failures retain the existing expired-session recovery.
         setAuthError({
           type: 'auth_required',
           message: 'Authentication required'
         });
+      } else if (silentUnauthenticated) {
+        // A missing cookie on the initial session probe is an ordinary
+        // signed-out state, not an application error.
+        setAuthError(null);
       }
+      return false;
     }
   };
 
