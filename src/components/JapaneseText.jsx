@@ -8,6 +8,7 @@ export default function JapaneseText({
   className = "",
   japaneseClassName = "",
   layout = "stacked",
+  ...props
 }) {
   const enabled = useJapaneseText();
   const japaneseLayout = layout === "inline"
@@ -15,7 +16,7 @@ export default function JapaneseText({
     : "mt-0.5 block";
 
   return (
-    <Tag className={className}>
+    <Tag className={className} {...props}>
       <span>{children}</span>
       {enabled && ja && (
         <span
