@@ -97,6 +97,11 @@ for (const [relativePath, content] of cursorContractFiles) {
     requireText(relativePath, content, cursorDeformationRule);
 }
 
+const scrollGlassRule = "Preserve live single-pass glass backdrop blur during wheel, touch, rapid, and momentum scrolling; active-scroll optimizations may pause decoration but must not replace glass with an opaque fallback.";
+for (const [relativePath, content] of editorialContractFiles) {
+    requireText(relativePath, content, scrollGlassRule);
+}
+
 requireText("CLAUDE.md", claude, "@README.md");
 requireText("CLAUDE.md", claude, "@AGENTS.md");
 requireText("GEMINI.md", gemini, "The Novesce UI mandate is an always-on project requirement");
