@@ -5,6 +5,7 @@ import '@/index.css'
 import '@/styles/editorial-home.css'
 import { applyTheme, getStoredTheme, getStoredCustomColors, applyCustomColors, applyFont, getStoredFont } from '@/lib/themes';
 import { applyAnimationPreference } from '@/lib/motion-preference';
+import { applyJapaneseTextPreference } from '@/lib/japanese-text-preference';
 
 async function bootstrap() {
   // Every visual preference is resolved before React paints the loading screen.
@@ -12,6 +13,7 @@ async function bootstrap() {
   // replaced it with the saved font after authentication, causing a visible
   // typeface flash.
   applyAnimationPreference();
+  applyJapaneseTextPreference();
 
   const storedTheme = getStoredTheme();
   applyTheme(storedTheme);
