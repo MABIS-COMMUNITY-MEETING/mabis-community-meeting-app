@@ -172,7 +172,7 @@ requireText("src/pages/Team.jsx", team, 'import OpenMoji from "@/components/Open
 requireText("src/pages/Team.jsx", team, '<OpenMoji hexcode={level.openMoji}');
 requireText("public/openmoji/LICENSE.txt", openMojiLicense, "Attribution-ShareAlike 4.0 International");
 
-const openMojiAssets = ["1F331", "2694", "1F6E1", "1F3C5", "1F451", "1F525"];
+const openMojiAssets = ["1F331", "2694", "1F6E1", "1F3C5", "1F451", "1F525", "1F3B0", "1F3AF", "1F389", "1F3C6", "1F947", "1F948", "1F949", "26A1", "2705", "23F3"];
 for (const hexcode of openMojiAssets) {
     const assetPath = `public/openmoji/17.0.0/${hexcode}.svg`;
     if (!fs.existsSync(path.join(root, assetPath))) failures.push(`Missing pinned OpenMoji asset: ${assetPath}`);
