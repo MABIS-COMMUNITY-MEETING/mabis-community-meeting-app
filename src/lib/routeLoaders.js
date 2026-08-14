@@ -58,9 +58,6 @@ function loadHomeRoute() {
 
 const routeLoaders = {
   "/login": () => import("@/pages/Login"),
-  "/register": () => import("@/pages/Register"),
-  "/forgot-password": () => import("@/pages/ForgotPassword"),
-  "/reset-password": () => import("@/pages/ResetPassword"),
   "/home": loadHomeRoute,
   "/history": () => import("@/pages/History"),
   "/history/announcements": () => import("@/pages/AnnouncementsHistory"),
