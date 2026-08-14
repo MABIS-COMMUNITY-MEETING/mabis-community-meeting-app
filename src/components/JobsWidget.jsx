@@ -282,27 +282,33 @@ function WinnerBanner({ winner, jobLabel, onConfirm, onRemoveAndNext, onReject, 
 }
 
 // ─── Per-Day cycle button: click → Yes → No → Cancel ─────────────────────────
-function DayStatus({ assignment, canEdit, onDayStatus }) {
-  const scheduled = scheduledDaysFor(assignment.job_title);
+function DayStatus({ assignment, canEdit, onDayStatus, currentMonth }) {
+  const scheduled = scheduledDaysFor(assignment);
+  const monthly = jobPeriod(assignment) === "monthly";
+  const entries = monthly
+    ? getVisibleWeekDates(currentMonth).filter((entry) => scheduled.includes(entry.day))
+    : WEEKDAYS.filter((day) => scheduled.includes(day)).map((day) => ({ day, key: day, shortLabel: day }));
   const done = assignment.days_completed || [];
   const notDoneDays = assignment.not_done_days || [];
+
   return (
     <div className="flex gap-1.5 flex-wrap justify-center">
-      {DAYS.filter(d => scheduled.includes(d)).map((day) => {
-        const isYes = done.includes(day);
-        const isNo = notDoneDays.includes(day);
+      {entries.map((entry) => {
+        const isYes = done.includes(entry.key);
+        const isNo = notDoneDays.includes(entry.key);
         const state = isYes ? "yes" : isNo ? "no" : "neutral";
+        const compactLabel = monthly ? `${entry.day[0]}${entry.key.slice(-2)}` : entry.day[0];
         return (
-          <button key={day} type="button"
-            title={`${day} — ${state === "yes" ? "Done" : state === "no" ? "Not done" : "Not marked"} (click to cycle)`}
-            onClick={() => canEdit && onDayStatus(assignment, day, state)}
+          <button key={entry.key} type="button"
+            title={`${entry.shortLabel} — ${state === "yes" ? "Done" : state === "no" ? "Not done" : "Not marked"} (click to cycle)`}
+            onClick={() => canEdit && onDayStatus(assignment, entry.key, state)}
             disabled={!canEdit}
-            className={`w-9 h-9 rounded-lg text-[11px] font-bold flex items-center justify-center border-2 transition-all
+            className={`min-w-9 h-9 px-1 rounded-lg text-[10px] font-bold flex items-center justify-center border-2 transition-all
               ${state === "yes" ? "bg-green-500 border-green-500 text-white"
                 : state === "no" ? "bg-red-500 border-red-500 text-white"
                 : "border-gray-200 text-gray-400 bg-white hover:border-[#951E3A]/30"}
               ${canEdit ? "hover:scale-110 cursor-pointer" : "cursor-default opacity-60"}`}>
-            {state === "yes" ? "✓" : state === "no" ? "✗" : day[0]}
+            {state === "yes" ? "✓" : state === "no" ? "✗" : compactLabel}
           </button>
         );
       })}
@@ -311,7 +317,7 @@ function DayStatus({ assignment, canEdit, onDayStatus }) {
 }
 
 // ─── Job Schedule Table ─────────────────────────────────────────────────────
-function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDelete }) {
+function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDelete, currentMonth }) {
   if (assignments.length === 0) return (
     <p className="text-gray-400 text-sm text-center py-10">
       {isAdmin ? "No jobs assigned yet — spin the wheel!" : "No jobs assigned yet."}
@@ -327,22 +333,26 @@ function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDe
           <tr className="bg-gray-50 border-b border-gray-200">
             <th className="text-left px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase">Job</th>
             <th className="text-left px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase">Person</th>
-            <th className="text-center px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase">Completed</th>
-            <th className="text-center px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase">Next Week</th>
+            <th className="text-center px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase">This Week</th>
+            <th className="text-center px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase">Carry</th>
             {isAdmin && <th className="w-8" />}
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {assignments.map((a) => {
-            const scheduled = scheduledDaysFor(a.job_title);
+            const monthly = jobPeriod(a) === "monthly";
+            const scheduled = monthly
+              ? getScheduledDatesForMonth(a, a.month_label || currentMonth)
+              : scheduledDaysFor(a);
             const done = a.days_completed || [];
             const notDoneDays = a.not_done_days || [];
-            const allDone = scheduled.length > 0 && scheduled.every(d => done.includes(d));
+            const allDone = scheduled.length > 0 && scheduled.every((day) => done.includes(day));
             const hasNotDone = notDoneDays.length > 0;
             return (
               <tr key={a.id} className={`hover:bg-gray-50 group transition-colors ${allDone ? "bg-green-50/50" : ""} ${hasNotDone ? "bg-red-50/30" : ""}`}>
                 <td className={`px-3 py-3 font-medium text-xs ${allDone ? "text-green-600" : "text-gray-700"}`}>
-                  {a.job_title}
+                  {normalizeJobTitle(a.job_title)}
+                  <p className="text-[9px] text-muted-foreground mt-0.5">{monthly ? `Monthly · ${formatMonthLabel(a.month_label || currentMonth)}` : "Weekly"}</p>
                   {a.carried_over && !hasNotDone && <p className="text-[9px] text-amber-600 mt-0.5">carried over</p>}
                 </td>
                 <td className="px-3 py-3">
@@ -354,14 +364,14 @@ function JobScheduleTable({ assignments, isAdmin, currentUser, onDayStatus, onDe
                   </div>
                 </td>
                 <td className="px-3 py-3 text-center">
-                  <DayStatus assignment={a} canEdit={canEdit(a)} onDayStatus={onDayStatus} />
+                  <DayStatus assignment={a} canEdit={canEdit(a)} onDayStatus={onDayStatus} currentMonth={currentMonth} />
                   {allDone && <p className="text-[9px] text-green-600 font-bold mt-1">All done!</p>}
                 </td>
                 <td className="px-2 py-3 text-center">
                   {hasNotDone ? (
                     <span className="inline-flex items-center gap-1 bg-red-100 border border-red-300 rounded-md px-2 py-1 text-[9px] font-bold text-red-600">
                       <AlertCircle className="w-2.5 h-2.5 shrink-0" />
-                      Next Week
+                      {monthly ? "Next Month" : "Next Week"}
                     </span>
                   ) : (
                     <span className="text-gray-300 text-xs">—</span>
@@ -403,6 +413,7 @@ function SpinningForTable({ jobs, assignedJobLabels, selectedJobId, onSelect, is
               <tr key={job.id} className={taken ? "bg-gray-50" : ""}>
                 <td className={`px-3 py-2.5 ${taken ? "text-gray-300 line-through" : "text-gray-700"}`}>
                   {job.label}
+                  <span className="ml-2 text-[9px] uppercase tracking-wide text-muted-foreground">{job.period || "weekly"}</span>
                 </td>
                 <td className="px-2 py-2 text-center">
                   <button type="button"
