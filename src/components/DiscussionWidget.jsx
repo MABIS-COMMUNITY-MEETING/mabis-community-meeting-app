@@ -875,7 +875,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               </div>
 
               {/* Inline add form in meeting mode */}
-              {showForm && !editingTopicId && (
+              {(showForm || editingTopicId) && (
                 <div className="border border-border rounded-2xl p-5 bg-muted space-y-4 mb-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Select value={submittedBy} onValueChange={setSubmittedBy}>
