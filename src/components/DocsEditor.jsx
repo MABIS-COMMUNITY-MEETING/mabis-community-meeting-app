@@ -698,6 +698,15 @@ export default function DocsEditor({
                 type="text"
                 value={title || ""}
                 onChange={(event) => onTitleChange(event.target.value)}
+                /* Focus is taken explicitly rather than left to the browser's
+                   default mousedown behaviour. Something in the surrounding
+                   page swallows that default, so a plain click never moved the
+                   caret here and typing fell through to the editor body — which
+                   is why the field could only be entered by click-dragging. */
+                onMouseDown={(event) => {
+                  event.stopPropagation();
+                  event.currentTarget.focus();
+                }}
                 placeholder="Untitled document"
                 aria-label="Document title"
                 className="w-full truncate rounded border border-border/60 bg-background px-2 py-1 text-[13px] font-medium text-foreground outline-none placeholder:text-muted-foreground/70 hover:border-border focus:border-primary"
