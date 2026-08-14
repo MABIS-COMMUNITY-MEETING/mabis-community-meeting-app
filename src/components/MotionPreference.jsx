@@ -13,7 +13,10 @@ if (typeof window !== "undefined") {
 export default function MotionPreference({ children }) {
   const [disabled, setDisabled] = useState(animationsDisabled);
   const [lowPower, setLowPower] = useState(detectLowPowerDevice);
-  const effectiveDisabled = disabled || lowPower;
+  // A performance tier may simplify expensive glass/cursor work, but it must
+  // never override the user's animation setting. MotionConfig still honors
+  // the operating system's reduced-motion accessibility preference.
+  const effectiveDisabled = disabled;
 
   useEffect(() => {
     applyLowPowerMode(lowPower);
