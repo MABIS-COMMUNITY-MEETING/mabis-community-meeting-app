@@ -12,6 +12,14 @@ import { FONT_CATALOG, ensureFontCatalogStyles } from "@/lib/font-catalog";
 
 const FONTS = [...CORE_FONTS, ...FONT_CATALOG];
 
+const SIMPLE_FONT_KEYS = ["gnu-free-mono", "gnu-free-sans", "go", "gnu-free-serif"];
+const SIMPLE_FONT_LABELS = {
+  "gnu-free-mono": "Recommended · familiar MABIS look",
+  "gnu-free-sans": "Easy reading · clean letters",
+  "go": "Friendly · open and simple",
+  "gnu-free-serif": "Book-like · traditional reading",
+};
+
 function FontPreview({ font, eager = false }) {
   const ref = useRef(null);
   const [active, setActive] = useState(eager);
@@ -63,6 +71,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const [fontSearch, setFontSearch] = useState("");
   const [fontSource, setFontSource] = useState("featured");
   const [fontLimit, setFontLimit] = useState(18);
+  const [showAdvancedFonts, setShowAdvancedFonts] = useState(false);
   const deferredFontSearch = useDeferredValue(fontSearch);
 
   useEffect(() => {
@@ -97,11 +106,14 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   }, [fontSearch, fontSource]);
 
   useEffect(() => {
-    if (!open || (fontSource !== "by-womxn" && fontSource !== "all")) return;
+    if (!open || !showAdvancedFonts || (fontSource !== "by-womxn" && fontSource !== "all")) return;
     void ensureFontCatalogStyles();
-  }, [open, fontSource]);
+  }, [open, fontSource, showAdvancedFonts]);
 
   const filteredFonts = useMemo(() => {
+    if (!showAdvancedFonts) {
+      return SIMPLE_FONT_KEYS.map((key) => FONTS.find((font) => font.key === key)).filter(Boolean);
+    }
     const query = deferredFontSearch.trim().toLowerCase();
     return FONTS.filter((font) => {
       const matchesSource = fontSource === "all"
@@ -110,9 +122,9 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
       const matchesSearch = !query || `${font.name} ${font.detail} ${font.source}`.toLowerCase().includes(query);
       return matchesSource && matchesSearch;
     });
-  }, [deferredFontSearch, fontSource]);
+  }, [deferredFontSearch, fontSource, showAdvancedFonts]);
 
-  const visibleFonts = filteredFonts.slice(0, fontLimit);
+  const visibleFonts = showAdvancedFonts ? filteredFonts.slice(0, fontLimit) : filteredFonts;
 
   const handleFontSelect = (key) => {
     localStorage.setItem("mabis-font-picker-version", "8");
@@ -155,6 +167,32 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
             </div>
 
             <div className="mobile-sheet-body p-6 space-y-6">
+              <section className="border-y border-gray-200 py-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">Simple customization</p>
+                <h3 className="mt-1 font-display text-xl font-bold text-gray-800">Make the site comfortable for you</h3>
+                <p className="mt-1 text-sm leading-relaxed text-gray-500">Start with colors, choose an easy-to-read font, then adjust comfort options. Every choice can be changed again.</p>
+                <div className="mt-4 grid gap-px bg-gray-200 sm:grid-cols-3">
+                  <button type="button" onClick={() => {
+                    onClose();
+                    window.setTimeout(() => window.dispatchEvent(new CustomEvent("openThemeSwitcher")), 0);
+                  }} className="min-h-20 bg-white p-3 text-left hover:bg-gray-50">
+                    <span className="text-[10px] font-bold text-gray-400">01</span>
+                    <span className="mt-1 block text-sm font-bold text-gray-800">Choose colors</span>
+                    <span className="mt-0.5 block text-xs text-gray-500">Open themes</span>
+                  </button>
+                  <a href="#setting-font" className="min-h-20 bg-white p-3 text-left hover:bg-gray-50">
+                    <span className="text-[10px] font-bold text-gray-400">02</span>
+                    <span className="mt-1 block text-sm font-bold text-gray-800">Choose text</span>
+                    <span className="mt-0.5 block text-xs text-gray-500">Four simple fonts</span>
+                  </a>
+                  <a href="#setting-comfort" className="min-h-20 bg-white p-3 text-left hover:bg-gray-50">
+                    <span className="text-[10px] font-bold text-gray-400">03</span>
+                    <span className="mt-1 block text-sm font-bold text-gray-800">Comfort</span>
+                    <span className="mt-0.5 block text-xs text-gray-500">Sound, motion, language</span>
+                  </a>
+                </div>
+              </section>
+
               {/* Security — admin/editor only */}
               {isAdmin && (
                 <div>
@@ -177,16 +215,16 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               )}
 
               {/* Typography */}
-              <div>
+              <div id="setting-font" className="scroll-mt-20">
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <div className="flex items-center gap-2">
                     <Type className="w-4 h-4 text-[#951E3A]" />
                     <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">UI Font</h3>
                   </div>
-                  <span className="text-[10px] text-gray-400 tabular-nums">{FONTS.length} choices</span>
+                  <span className="text-[10px] text-gray-400 tabular-nums">{showAdvancedFonts ? `${FONTS.length} choices` : "4 easy choices"}</span>
                 </div>
                 <p className="text-xs text-gray-400 mb-3">
-                  GNU FreeMono is the default, and every selectable typeface falls back through GNU FreeFont. Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first; Thai uses GNU FreeSerif.
+                  Pick the sample that feels easiest to read. GNU FreeMono is the recommended default. Japanese text always uses the Maple Mono fallback.
                 </p>
 
                 <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-3 mb-3">
@@ -196,6 +234,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   </p>
                 </div>
 
+                {showAdvancedFonts && <>
                 <div className="relative mb-2.5">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                   <input
@@ -230,6 +269,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                     All
                   </button>
                 </div>
+                </>}
 
                 <div className="grid gap-2.5">
                   {visibleFonts.map((font) => {
@@ -252,17 +292,17 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                               )}
                               {selected && <Check className="h-3.5 w-3.5 text-[#951E3A]" />}
                             </div>
-                            <p className="text-[10px] leading-4 text-gray-400 mt-0.5">{font.detail}</p>
+                            <p className="text-[10px] leading-4 text-gray-400 mt-0.5">{showAdvancedFonts ? font.detail : SIMPLE_FONT_LABELS[font.key]}</p>
                           </div>
-                          <div className="shrink-0 flex items-center gap-1.5">
+                          {showAdvancedFonts && <div className="shrink-0 flex items-center gap-1.5">
                             <span className={`h-1.5 w-1.5 rounded-full ${available ? "bg-green-500" : available === false ? "bg-amber-400" : "bg-gray-300"}`} />
                             <span className="text-[9px] uppercase tracking-wider text-gray-400">
                               {font.localOnly ? (available ? "Installed" : available === false ? "Fallback" : "Checking") : "Embedded"}
                             </span>
-                          </div>
+                          </div>}
                         </div>
                         <FontPreview font={font} eager={selected} />
-                        {font.localOnly && available === false && (
+                        {showAdvancedFonts && font.localOnly && available === false && (
                           <p className="mt-2 text-[10px] leading-4 text-amber-600">
                             This commercial face needs a licensed local/webfont copy. Go is active until that file is available.
                           </p>
@@ -277,7 +317,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                     No fonts match this search.
                   </div>
                 )}
-                {filteredFonts.length > visibleFonts.length && (
+                {showAdvancedFonts && filteredFonts.length > visibleFonts.length && (
                   <button
                     type="button"
                     onClick={() => setFontLimit((value) => value + 18)}
@@ -287,7 +327,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   </button>
                 )}
 
-                <div className="mt-3 grid gap-1.5">
+                {showAdvancedFonts && <div className="mt-3 grid gap-1.5">
                   {FONT_LIBRARIES.map((library) => (
                     <div key={library.key} className="flex flex-col gap-1 border-t border-gray-100 pt-2 text-[10px] sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                       {library.url ? (
@@ -300,7 +340,19 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                       <span className="leading-4 text-gray-400 sm:max-w-[70%] sm:text-right">{library.detail}</span>
                     </div>
                   ))}
-                </div>
+                </div>}
+                <button type="button" onClick={() => {
+                  setShowAdvancedFonts((value) => !value);
+                  setFontSearch("");
+                  setFontSource("featured");
+                }} className="mt-3 min-h-11 w-full border border-gray-200 px-3 text-sm font-bold text-gray-700 hover:border-[#951E3A]/40" aria-expanded={showAdvancedFonts}>
+                  {showAdvancedFonts ? "Show only easy choices" : `Advanced font choices · ${FONTS.length} total`}
+                </button>
+              </div>
+
+              <div id="setting-comfort" className="scroll-mt-20 border-t border-gray-200 pt-5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">Comfort options</p>
+                <p className="mt-1 text-sm text-gray-500">Turn each option on or off. Changes happen immediately and are remembered.</p>
               </div>
 
               {/* Sound */}
