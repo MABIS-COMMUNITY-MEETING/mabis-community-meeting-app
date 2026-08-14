@@ -41,8 +41,6 @@ const JOBS = [
   { id: "time2", label: "Time Keeper (2)", period: "monthly" },
 ].map((job) => ({ ...job, period: job.period || "weekly" }));
 
-const ADMIN_EMAIL = "summer@montessoribkk.com";
-
 const SCHEDULE_PRESETS = {
   every_weekday: [...WEEKDAYS],
   mon_wed_fri: ["Monday", "Wednesday", "Friday"],
