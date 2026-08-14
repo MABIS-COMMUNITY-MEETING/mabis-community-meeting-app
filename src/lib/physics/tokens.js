@@ -12,6 +12,8 @@
 export const MATERIAL = {
   /** cursor centre, tiny controls — immediate without snapping */
   precision: { omega: 32, zeta: 1.0 },
+  /** scroll-coupled glass optics — immediate, near-critical, no visible bounce */
+  optics: { omega: 18, zeta: 0.96 },
   /** outer cursor ring — close, fluid follow-through */
   glass: { omega: 23, zeta: 0.92 },
   /** ring centre — visible elastic follow with a quick, quiet recapture */
