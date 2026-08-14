@@ -122,6 +122,16 @@ Font implementation rules:
 - Keep user choices synced to the signed-in account.
 - Do not silently replace a missing commercial font with a visually identical-looking label. Clearly report that its fallback is active.
 
+### Emoji and iconography
+
+All app-authored emoji must use pinned, production-ready OpenMoji color SVGs; do not rely on platform-native emoji glyphs.
+
+- Render intentional interface emoji through `src/components/OpenMoji.jsx`.
+- Keep the production SVGs pinned and self-hosted under `public/openmoji/<version>/`; do not load the experimental OpenMoji font or an unversioned CDN.
+- Emoji that repeats an adjacent text label is decorative and uses empty alternative text. A meaningful standalone emoji needs a concise accessible label.
+- Lucide remains the interface icon library; OpenMoji is for emoji artwork, not a replacement for functional control icons.
+- All emojis are designed by [OpenMoji](https://openmoji.org/), the open-source emoji and icon project, and are used under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+
 ### Motion and cursor
 
 Motion should feel physical, restrained, and responsive. It may use springs, reveals, small transformations, and pointer-aware material behavior, but it must not become a carnival of perpetual animation.
