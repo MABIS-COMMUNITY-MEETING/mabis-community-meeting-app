@@ -461,6 +461,29 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
     queryFn: () => base44.entities.JobDefinition.list("title", 100),
   });
 
+  const migratedLegacyTimeKeepersRef = useRef(false);
+  useEffect(() => {
+    if (migratedLegacyTimeKeepersRef.current || assignments.length === 0) return;
+    const legacyCurrent = assignments.filter((assignment) => (
+      isTimeKeeperJob(assignment.job_title)
+      && !assignment.month_label
+      && assignment.week_label === currentWeek
+    ));
+    migratedLegacyTimeKeepersRef.current = true;
+    if (legacyCurrent.length === 0) return;
+
+    Promise.all(legacyCurrent.map((assignment) => base44.entities.JobAssignment.update(assignment.id, {
+      job_title: normalizeJobTitle(assignment.job_title),
+      assignment_period: "monthly",
+      month_label: currentMonth,
+      schedule_days: scheduledDaysFor(assignment),
+    }))).then(() => {
+      queryClient.invalidateQueries({ queryKey: ["assignments"] });
+    }).catch(() => {
+      migratedLegacyTimeKeepersRef.current = false;
+    });
+  }, [assignments, currentMonth, currentWeek, queryClient]);
+
   const customJobs = jobDefinitions
     .filter((job) => job.active !== false)
     .map((job) => ({
