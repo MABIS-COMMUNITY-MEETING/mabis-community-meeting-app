@@ -1,7 +1,7 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
-import { balancedPalette, contrastSafePair, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
+import { balancedPalette, contrastSafeInk, contrastSafePair, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
@@ -390,6 +390,27 @@ export const THEMES = {
    materials (see lib/pride.js), and replace the earlier three-variable versions. */
 Object.assign(THEMES, PRIDE_THEMES);
 
+function editorThemeTokens(vars) {
+  const surface = vars["--card"];
+  const fallback = vars["--card-foreground"];
+  return {
+    "--editor-ink-default": fallback,
+    "--editor-ink-primary": contrastSafeInk(vars["--primary"], surface, { fallback }),
+    "--editor-ink-secondary": contrastSafeInk(vars["--secondary"], surface, { fallback }),
+    "--editor-ink-accent": contrastSafeInk(vars["--accent"], surface, { fallback }),
+    "--editor-highlight-primary": vars["--primary"],
+    "--editor-highlight-primary-foreground": vars["--primary-foreground"],
+    "--editor-highlight-secondary": vars["--secondary"],
+    "--editor-highlight-secondary-foreground": vars["--secondary-foreground"],
+    "--editor-highlight-accent": vars["--accent"],
+    "--editor-highlight-accent-foreground": vars["--accent-foreground"],
+  };
+}
+
+Object.values(THEMES).forEach((theme) => {
+  Object.assign(theme.vars, editorThemeTokens(theme.vars));
+});
+
 // Multi-colour themes (pride flags, presets) carry more colours than the two the
 // UI tokens can hold. Expose the whole set so accents can use the full palette.
 function applyPalette(colors, exact = false) {
@@ -556,12 +577,26 @@ export function hslToHex(hslStr) {
 
 export function applyCustomColors(primaryHex, secondaryHex) {
   const root = document.documentElement;
+  const current = getComputedStyle(root);
+  const primaryPair = keyColorPair(hexToHsl(primaryHex));
+  const secondaryPair = keyColorPair(hexToHsl(secondaryHex));
+  const customVars = {
+    "--primary": primaryPair.fill,
+    "--primary-foreground": primaryPair.foreground,
+    "--secondary": secondaryPair.fill,
+    "--secondary-foreground": secondaryPair.foreground,
+    "--accent": secondaryPair.fill,
+    "--accent-foreground": secondaryPair.foreground,
+    "--card": current.getPropertyValue("--card").trim(),
+    "--card-foreground": current.getPropertyValue("--card-foreground").trim(),
+  };
+  Object.assign(customVars, editorThemeTokens(customVars));
+
   beginThemeCommit();
-  root.style.setProperty("--primary", hexToHsl(primaryHex));
-  root.style.setProperty("--secondary", hexToHsl(secondaryHex));
-  root.style.setProperty("--accent", hexToHsl(secondaryHex));
-  root.style.setProperty("--ring", hexToHsl(primaryHex));
-  root.style.setProperty("--destructive", hexToHsl(primaryHex));
+  Object.entries(customVars).forEach(([key, value]) => root.style.setProperty(key, value));
+  root.style.setProperty("--ring", primaryPair.fill);
+  root.style.setProperty("--destructive", primaryPair.fill);
+  root.style.setProperty("--destructive-foreground", primaryPair.foreground);
   applyPalette([primaryHex, secondaryHex]);
   localStorage.setItem("mabis-custom-colors", JSON.stringify({ primary: primaryHex, secondary: secondaryHex }));
   window.dispatchEvent(new Event("themeChanged"));
