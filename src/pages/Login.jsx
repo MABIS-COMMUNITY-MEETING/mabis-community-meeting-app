@@ -17,6 +17,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,8 +36,22 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
+    if (googleLoading) return;
+    setError("");
+    setGoogleLoading(true);
     disableHackerMode();
-    base44.auth.loginWithProvider("google", "/home");
+
+    try {
+      // This call must stay synchronous with the user's click so browsers allow
+      // Base44's OAuth popup when the app is running inside an editor iframe.
+      base44.auth.loginWithProvider("google", "/home");
+      // If a popup is blocked or closed, allow a deliberate retry without
+      // encouraging the rapid second click that used to create overlapping flows.
+      window.setTimeout(() => setGoogleLoading(false), 15000);
+    } catch (err) {
+      setGoogleLoading(false);
+      setError(err.message || "Google sign-in could not start. Please try again.");
+    }
   };
 
   return (
@@ -55,10 +70,12 @@ export default function Login() {
         type="button"
         onClick={handleGoogle}
         data-cursor="GOOGLE"
-        className="group w-full h-12 flex items-center justify-center gap-2 border border-foreground/20 bg-card text-xs tech-label text-foreground hover:bg-foreground hover:text-bone transition-colors mb-6"
+        disabled={googleLoading || loading}
+        aria-busy={googleLoading}
+        className="group w-full h-12 flex items-center justify-center gap-2 border border-foreground/20 bg-card text-xs tech-label text-foreground hover:bg-foreground hover:text-bone transition-colors mb-6 disabled:cursor-wait disabled:opacity-70"
       >
-        <GoogleIcon className="w-4 h-4" />
-        CONTINUE WITH GOOGLE
+        {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GoogleIcon className="w-4 h-4" />}
+        {googleLoading ? "CONNECTING TO GOOGLE…" : "CONTINUE WITH GOOGLE"}
       </button>
 
       <div className="relative mb-6 flex items-center">
