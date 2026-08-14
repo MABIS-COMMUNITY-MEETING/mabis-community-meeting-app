@@ -79,25 +79,26 @@ const PRIORITY_DOT = {
   5: "bg-primary/20",
 };
 
-// TEMPORARY DIAGNOSTIC — remove once the title-focus bug is resolved.
-// Shows which element actually holds focus, so we can see whether a click on
-// the title ever reaches it, and whether something takes focus back afterwards.
-function FocusProbe() {
-  const [info, setInfo] = useState("");
-  useEffect(() => {
-    const read = () => {
-      const el = document.activeElement;
-      if (!el) return setInfo("none");
-      const cls = typeof el.className === "string" ? el.className.slice(0, 32) : "";
-      return setInfo(`${el.tagName}${el.type ? `[${el.type}]` : ""} ${cls}`);
-    };
-    read();
-    const id = setInterval(read, 250);
-    return () => clearInterval(id);
-  }, []);
-  return (
-    <p className="font-mono text-[10px] text-primary">FOCUS: {info}</p>
-  );
+/**
+ * Take focus and keep it.
+ *
+ * Something in this page hands focus back to the rich-text editor immediately
+ * after a click on a plain input, which left the title fields impossible to
+ * type into — keystrokes fell through to the document body. The cause is not
+ * visible in the source: there is no focus manager, no overlay that accepts
+ * pointer events, and every pointer listener is passive.
+ *
+ * So this re-asserts focus across the next few ticks instead of once: now, on
+ * the next frame, and again shortly after. Whatever grabs it back loses the
+ * last word. It is a workaround rather than a cure, and it should be removed
+ * once the underlying cause is found.
+ */
+function holdFocus(element) {
+  if (!element) return;
+  element.focus();
+  requestAnimationFrame(() => element.focus());
+  setTimeout(() => element.focus(), 50);
+  setTimeout(() => element.focus(), 150);
 }
 
 function TopicItem({
@@ -175,8 +176,9 @@ function TopicItem({
               onChange={(event) => onTitleChange(event.target.value)}
               onMouseDown={(event) => {
                 event.stopPropagation();
-                event.currentTarget.focus();
+                holdFocus(event.currentTarget);
               }}
+              onClick={(event) => holdFocus(event.currentTarget)}
               className="rounded-lg border-border bg-card"
             />
           </div>
@@ -1042,7 +1044,6 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                   {editingTopicId ? "Editing topic" : "New topic"}
                 </p>
-                <FocusProbe />
                 <p className="mt-0.5 text-xs leading-[1.6] tracking-[0.02em] text-muted-foreground">
                   {editingTopicId
                     ? "Change the title, who raised it, or the details, then press Update topic."
@@ -1073,7 +1074,8 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               </Select>
               <Input placeholder="Topic title..." value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                onMouseDown={(event) => { event.stopPropagation(); event.currentTarget.focus(); }}
+                onMouseDown={(event) => { event.stopPropagation(); holdFocus(event.currentTarget); }}
+                onClick={(event) => holdFocus(event.currentTarget)}
                 className="rounded-lg border-border bg-card" />
             </div>
             <Suspense fallback={<ChunkFallback height={180} />}>
