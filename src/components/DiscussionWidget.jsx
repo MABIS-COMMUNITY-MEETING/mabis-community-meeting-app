@@ -743,22 +743,6 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   // <SelectItem> options with an identical value, which Radix cannot resolve.
   const topicSubmitters = dedupeByIdentity(members);
 
-  const inlineEditProps = (topic) => ({
-    isEditing: editingTopicId === topic.id,
-    editTitle: title,
-    editDescription: description,
-    editSubmittedBy: submittedBy,
-    editPriority: priority,
-    members: topicSubmitters,
-    error: saveError,
-    onTitleChange: setTitle,
-    onDescriptionChange: setDescription,
-    onSubmittedByChange: setSubmittedBy,
-    onPriorityChange: setPriority,
-    onSave: handleAdd,
-    onCancel: resetTopicForm,
-    isSaving: updateTopicMutation.isPending,
-  });
 
 
   // ── MEETING MODE ──────────────────────────────────────────────────────────
@@ -937,8 +921,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                   {viewedTopics.map((topic, topicIndex) => (
                     <TopicItem key={topic.id} topic={topic} index={topicIndex} compact isAdmin={topicAdmin}
                       onToggle={(id, completed) => toggleMutation.mutate({ id, completed })}
-                      onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic}
-                      {...inlineEditProps(topic)} />
+                      onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic} />
                   ))}
                 </div>
               )}
@@ -1147,8 +1130,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           {viewedTopics.map((topic, topicIndex) => (
             <TopicItem key={topic.id} topic={topic} index={topicIndex} compact={false} isAdmin={topicAdmin}
               onToggle={(id, completed) => toggleMutation.mutate({ id, completed })}
-              onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic}
-              {...inlineEditProps(topic)} />
+              onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic} />
           ))}
         </div>
 
