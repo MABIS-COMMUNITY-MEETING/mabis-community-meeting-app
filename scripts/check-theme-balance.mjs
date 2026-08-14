@@ -92,13 +92,14 @@ const failures = [];
 let themesChecked = 0;
 
 try {
-    const { THEMES } = await server.ssrLoadModule("/src/lib/themes.js");
+    const { THEMES, resolveThemeVars } = await server.ssrLoadModule("/src/lib/themes.js");
 
     for (const [key, theme] of Object.entries(THEMES)) {
         themesChecked += 1;
+        const vars = resolveThemeVars(theme["vars"]);
         const swatches = theme.swatches || [];
         const availableHues = distinctChromaticCount(swatches);
-        const semanticValues = [theme.vars["--primary"], theme.vars["--secondary"], theme.vars["--accent"]];
+        const semanticValues = [vars["--primary"], vars["--secondary"], vars["--accent"]];
         const semanticHues = distinctTokenHues(semanticValues);
         const expectedSemanticHues = Math.min(availableHues, 3);
 
@@ -106,7 +107,7 @@ try {
             failures.push(`${key}: semantic roles use ${semanticHues}/${expectedSemanticHues} available hues`);
         }
 
-        const roleValues = ROLE_TOKENS.map((token) => theme.vars[token]).filter(Boolean);
+        const roleValues = ROLE_TOKENS.map((token) => vars[token]).filter(Boolean);
         const roleHues = distinctTokenHues(roleValues);
         const expectedRoleHues = Math.min(availableHues, 4);
         if (roleHues < expectedRoleHues) {
@@ -114,8 +115,8 @@ try {
         }
 
         for (const token of ["primary", "secondary", "accent"]) {
-            const fill = theme.vars[`--${token}`];
-            const foreground = theme.vars[`--${token}-foreground`];
+            const fill = vars[`--${token}`];
+            const foreground = vars[`--${token}-foreground`];
             const ratio = contrastRatio(fill, foreground);
             if (ratio < 4.5) {
                 failures.push(`${key}: ${token} contrast is ${ratio.toFixed(2)}:1`);
@@ -123,23 +124,23 @@ try {
         }
 
         for (const [surfaceToken, textToken] of SURFACE_TEXT_PAIRS) {
-            const ratio = contrastRatio(theme.vars[surfaceToken], theme.vars[textToken]);
+            const ratio = contrastRatio(vars[surfaceToken], vars[textToken]);
             if (ratio < 4.5) {
                 failures.push(`${key}: ${textToken} on ${surfaceToken} contrast is ${ratio.toFixed(2)}:1`);
             }
         }
 
-        const editorSurface = theme.vars["--card"];
+        const editorSurface = vars["--card"];
         for (const token of EDITOR_INK_TOKENS) {
-            const ratio = contrastRatio(theme.vars[token], editorSurface);
+            const ratio = contrastRatio(vars[token], editorSurface);
             if (ratio < 4.5) {
                 failures.push(`${key}: ${token} on card contrast is ${ratio.toFixed(2)}:1`);
             }
         }
 
         for (const role of EDITOR_HIGHLIGHT_ROLES) {
-            const fill = theme.vars[`--editor-highlight-${role}`];
-            const foreground = theme.vars[`--editor-highlight-${role}-foreground`];
+            const fill = vars[`--editor-highlight-${role}`];
+            const foreground = vars[`--editor-highlight-${role}-foreground`];
             const ratio = contrastRatio(fill, foreground);
             if (ratio < 4.5) {
                 failures.push(`${key}: editor ${role} highlight contrast is ${ratio.toFixed(2)}:1`);
