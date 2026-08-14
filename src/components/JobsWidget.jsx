@@ -852,6 +852,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
                 <div className="grid grid-cols-2 gap-2">
                   <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                     Period
+                    <span className="mt-0.5 block text-[11px] font-normal normal-case leading-[1.5] tracking-normal text-muted-foreground">How long one person keeps this job</span>
                     <select
                       value={newJob.period}
                       onChange={(event) => setNewJob((job) => ({ ...job, period: event.target.value }))}
@@ -863,6 +864,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
                   </label>
                   <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                     Days
+                    <span className="mt-0.5 block text-[11px] font-normal normal-case leading-[1.5] tracking-normal text-muted-foreground">Which weekdays it gets done</span>
                     <select
                       value={newJob.schedule}
                       onChange={(event) => setNewJob((job) => ({ ...job, schedule: event.target.value }))}
