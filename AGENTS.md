@@ -33,6 +33,7 @@ Unless Novesce explicitly requests a change:
 - Preserve the Home editorial normalization in `src/styles/editorial-home.css`: neutral ruled content planes, restrained radii, no widget elevation, and edge-to-edge mobile modules.
 - Do not turn the app into a generic rounded-card SaaS dashboard.
 - Preserve Apple-style optical liquid glass only on floating control planes. Do not spread glass across content.
+- Preserve live single-pass glass backdrop blur during wheel, touch, rapid, and momentum scrolling; active-scroll optimizations may pause decoration but must not replace glass with an opaque fallback.
 - Keep GNU FreeMono as the default UI font.
 - Keep GNU FreeSerif isolated as the Thai fallback.
 - Keep UnifontEX isolated to explicitly marked Japanese and Chinese content.
