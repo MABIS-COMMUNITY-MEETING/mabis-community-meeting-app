@@ -57,6 +57,11 @@ const jobsWidget = read("src/components/JobsWidget.jsx");
 const jobsRotation = read("src/lib/jobsRotation.js");
 const homeSectionIndex = read("src/components/home/HomeSectionIndex.jsx");
 const quickStartGuide = read("src/components/QuickStartGuide.jsx");
+const japaneseText = read("src/components/JapaneseText.jsx");
+const japanesePreference = read("src/lib/japanese-text-preference.js");
+const settingsModal = read("src/components/SettingsModal.jsx");
+const themeSwitcher = read("src/components/ThemeSwitcher.jsx");
+const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const app = read("src/App.jsx");
 const routeLoaders = read("src/lib/routeLoaders.js");
 const openMoji = read("src/components/OpenMoji.jsx");
@@ -110,10 +115,14 @@ for (const [relativePath, content] of editorialContractFiles) {
 
 const richTextThemeRule = "Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.";
 const easyLayoutRule = "Keep Home easy to navigate with its numbered editorial sections, plain-language page guide, and contextual instructions; usability aids must clarify the existing Japanese editorial hierarchy rather than replace it with a generic dashboard.";
+const japaneseTextRule = "Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang=\"ja\"` so Maple Mono CJK fallback applies; the default remains off.";
+const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.";
 const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, richTextThemeRule);
     requireText(relativePath, content, easyLayoutRule);
+    requireText(relativePath, content, japaneseTextRule);
+    requireText(relativePath, content, simpleCustomizationRule);
     requireText(relativePath, content, jobsPeriodRule);
 }
 
@@ -217,6 +226,15 @@ requireText("src/components/JobsWidget.jsx", jobsWidget, "JobDefinition.create")
 requireText("src/lib/jobsRotation.js", jobsRotation, "timeKeeperKeysForYear");
 requireText("src/components/home/HomeSectionIndex.jsx", homeSectionIndex, "Choose where to go");
 requireText("src/components/QuickStartGuide.jsx", quickStartGuide, "How to use this site");
+requireText("src/components/JapaneseText.jsx", japaneseText, 'lang="ja"');
+requireText("src/lib/japanese-text-preference.js", japanesePreference, 'mabis-japanese-text-enabled');
+requireText("src/lib/japanese-text-preference.js", japanesePreference, '=== "true"');
+requireText("src/components/SettingsModal.jsx", settingsModal, "SIMPLE_FONT_KEYS");
+requireText("src/components/SettingsModal.jsx", settingsModal, "Advanced font choices");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "SIMPLE_THEME_KEYS");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "Browse all themes");
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "VOICE YOUR WORDS");
+forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "A WEEKLY RITUAL");
 requireText("src/pages/Home.jsx", home, "<HomeSectionIndex />");
 requireText("src/pages/Home.jsx", home, "<QuickStartGuide open");
 requireText("scripts/check-theme-balance.mjs", themeBalanceCheck, "Theme balance:");
