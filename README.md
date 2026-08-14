@@ -92,13 +92,13 @@ The base design uses ink, bone, MABIS maroon, and gold, while the theme system m
 
 Typography is part of the interface architecture, not a decorative afterthought.
 
-**GNU FreeMono is the default UI font.** It must remain the default until Novesce explicitly asks to change it.
+**GNU FreeMono is the default UI font.** It must remain the default until Novesce explicitly asks to change it. GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.
 
 The current script rules are mandatory:
 
 - English and ordinary Latin UI use the selected UI font.
 - Thai falls back to the Thai-only **GNU FreeSerif** face.
-- Japanese and Chinese use **UnifontEX** only when the content is explicitly marked for those scripts.
+- Explicitly marked Chinese, Japanese, and Korean text uses **Maple Mono** first, with the GNU FreeFont stack beneath it.
 - Multilingual fallbacks must never leak into ordinary English UI.
 
 Every component must use the shared font variables or matching Tailwind utilities. Do not hard-code a font family inside a page, modal, loading screen, canvas, export routine, or component.
@@ -401,9 +401,9 @@ Commercial fonts such as Transgender Grotesk and Atlas Mono must not be bundled 
 
 - English and ordinary interface text use the selected UI font.
 - Thai falls back to the Thai-only GNU FreeSerif face.
-- Japanese and Chinese use UnifontEX when explicitly marked.
+- Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.
 - Thai elements should use `lang="th"`, `data-script="th"`, or `.font-thai` where possible.
-- Japanese and Chinese elements should use the relevant `lang` or `data-script` value.
+- Chinese, Japanese, and Korean elements should use the relevant `lang`, `data-script`, `.font-cjk`, or `.font-multilingual` marker.
 - Do not let multilingual fallbacks replace ordinary English text.
 
 ## Hierarchy
@@ -646,7 +646,8 @@ When redesigning, do not break these product expectations:
 - meeting mode remains usable on mobile
 - font selection changes the entire interface
 - Thai uses GNU FreeSerif fallback
-- Japanese and Chinese use explicit multilingual handling
+- Chinese, Japanese, and Korean use explicit Maple Mono multilingual handling
+- the public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there
 - the custom cursor can be disabled
 - animation and sound can be disabled independently
 - canvas-rendered text follows the selected UI font
@@ -671,7 +672,7 @@ AI and human contributors must preserve these rules:
 - Data queries that serve hidden tabs or unauthorized controls remain disabled until those surfaces are reachable.
 - Use `useMemo`, `useDeferredValue`, transitions, and component memoization only where they remove measured work. Do not scatter them ceremonially.
 - Canonical visuals, accessibility, reduced-motion behavior, mobile behavior, and the optional custom cursor must survive every optimization.
-- The critical GNU FreeMono faces remain full-glyph WOFF2 files. Thai, Japanese/Chinese, and the optional Libre Fonts by Womxn catalogue load only when their actual text or settings surface requires them. Font readiness may delay React bootstrap for at most 800 ms.
+- The critical GNU FreeMono faces remain full-glyph WOFF2 files. Thai, CJK Maple Mono, and the optional Libre Fonts by Womxn catalogue load only when their actual text or settings surface requires them. Font readiness may delay React bootstrap for at most 800 ms.
 - Production builds generate a revisioned offline shell from Vite's manifest. Register it after the `load` event, keep runtime caches bounded, and never put Base44 API, function, authorization, or cross-origin responses in Cache Storage.
 - Offline data is a progressive enhancement: persist only the explicit read-only query allowlist, scope snapshots to the authenticated user, cap them at 2 MiB and seven days, and erase them on logout. Online authorization always wins and `401`/`403` responses must never fall back to an offline session.
 - Respect Save-Data and 2G signals: avoid speculative route downloads, preload the next visible section early enough to avoid blank shells, and postpone nonessential floating UI until interaction. Low-memory devices use a shorter inactive query lifetime.
@@ -748,10 +749,10 @@ Before merging a visual change, ask:
 - If the contributor is an AI, did it research real Japanese web design and record its sources and findings before implementation?
 - Would Novesce recognize this as the same product rather than a generic redesign?
 - Did GNU FreeMono remain the default unless Novesce explicitly requested otherwise?
-- Are GNU FreeSerif Thai fallback and UnifontEX Japanese/Chinese handling still isolated correctly?
+- Are the GNU FreeFont fallback chain, GNU FreeSerif Thai fallback, and Maple Mono CJK handling still isolated correctly?
 - Does it still look coherent in a different theme?
 - Does it respect the selected UI font?
-- Does it remain readable with Thai, Japanese, or Chinese text?
+- Does it remain readable with Thai, Chinese, Japanese, or Korean text?
 - Is the action located next to the content it changes?
 - Does it work with the custom cursor disabled?
 - Does it work with animations disabled?
