@@ -99,7 +99,7 @@ function stop() {
 
 /**
  * One passive scroll signal drives isolated progress transforms and the
- * short-lived active-scroll fast path. Document height is cached between
+ * short-lived active-scroll decoration fast path. Document height is cached between
  * ResizeObserver notifications, so scroll frames never force layout.
  */
 export function subscribeScrollProgress(subscriber) {
