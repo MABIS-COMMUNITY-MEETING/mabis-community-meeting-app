@@ -159,6 +159,43 @@ export function contrastSafePair(
     return candidates[0] || { fill: original, foreground: originalForeground };
 }
 
+/**
+ * Keep a theme hue readable when it is used as text on a fixed surface.
+ * Only derived editor ink moves; canonical swatches and semantic fills stay intact.
+ */
+export function contrastSafeInk(
+    ink,
+    surface,
+    { fallback = "0 0% 12%", minimum = 4.5 } = {},
+) {
+    const parts = colorParts(ink);
+    if (!parts) return contrastRatio(fallback, surface) >= minimum ? fallback : bestForeground(surface);
+
+    const original = hslString(parts);
+    if (contrastRatio(original, surface) >= minimum) return original;
+
+    const candidates = [0, 100].map((target) => {
+        const endpoint = hslString({ ...parts, l: target });
+        if (contrastRatio(endpoint, surface) < minimum) return null;
+
+        let safe = target;
+        let unsafe = parts.l;
+        for (let i = 0; i < 18; i += 1) {
+            const mid = (safe + unsafe) / 2;
+            const candidate = hslString({ ...parts, l: mid });
+            if (contrastRatio(candidate, surface) >= minimum) safe = mid;
+            else unsafe = mid;
+        }
+
+        const value = hslString({ ...parts, l: safe });
+        return { value, delta: Math.abs(safe - parts.l) };
+    }).filter(Boolean);
+
+    candidates.sort((a, b) => a.delta - b.delta);
+    if (candidates[0]) return candidates[0].value;
+    return contrastRatio(fallback, surface) >= minimum ? fallback : bestForeground(surface);
+}
+
 function neutralBand(lightness) {
     if (lightness < 35) return "dark";
     if (lightness > 72) return "light";
