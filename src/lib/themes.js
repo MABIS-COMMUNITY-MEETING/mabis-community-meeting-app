@@ -581,14 +581,16 @@ export function deleteSavedTheme(name) {
 // Commercial families are never redistributed: they resolve to a user's own
 // licensed local copy. GNU FreeMono is the embedded default; GNU FreeSerif,
 // Torrefarfan, Go, Iosevka, Lilex and the libre catalogue remain selectable.
-// UnifontEX handles marked Japanese and Chinese text; GNU FreeSerif handles Thai.
+// GNU FreeMono remains the default and every selectable face falls back through
+// the embedded GNU FreeFont families. Maple Mono handles explicitly marked
+// Chinese, Japanese, and Korean text; GNU FreeSerif remains isolated to Thai.
 export const FONT_PREVIEW_TEXT = "Montessori Acadamy Bangkok International School";
 
 const REQUESTED_FONTS = [
   {
     key: "gnu-free-mono",
     name: "GNU FreeMono",
-    detail: "Default · embedded GNU FreeFont monospaced family",
+    detail: "Default and universal fallback · embedded GNU FreeFont mono",
     source: "Featured",
     family: "GNUFreeMonoUI",
     heading: "'GNUFreeMonoUI'",
@@ -718,17 +720,31 @@ export const FONT_LIBRARIES = [
   { key: "flintype", name: "FLINT*ype", detail: "FLINTA* discovery archive. Its current site is moving, so indexed commercial fonts are not mirrored without their licences.", url: "https://flintype.com/" },
 ];
 
+function withGnuFallbacks(primary, generic = "monospace") {
+  const selectedFamilies = primary.split(",").map((family) => family.trim()).filter(Boolean);
+  const requiredFallbacks = [
+    "'GNUFreeMonoUI'",
+    "'GNUFreeSansUI'",
+    "'GNUFreeSerifUI'",
+    "'GNUFreeSerifThai'",
+    generic,
+  ];
+  return [...new Set([...selectedFamilies, ...requiredFallbacks])].join(", ");
+}
+
 function applyResolvedFont(font) {
   const root = document.documentElement;
-  const thaiFallback = "'GNUFreeSerifThai'";
-  const headingStack = `${font.heading}, ${thaiFallback}`;
-  const bodyStack = `${font.body}, ${thaiFallback}`;
-  const monoStack = `${font.mono}, ${thaiFallback}`;
+  const thaiFallback = "'GNUFreeSerifThai', 'GNUFreeSerifUI', serif";
+  const cjkFallback = "'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', monospace";
+  const headingStack = withGnuFallbacks(font.heading);
+  const bodyStack = withGnuFallbacks(font.body);
+  const monoStack = withGnuFallbacks(font.mono);
   root.style.setProperty("--font-heading", headingStack);
   root.style.setProperty("--font-body", bodyStack);
   root.style.setProperty("--font-display", headingStack);
   root.style.setProperty("--font-mono", monoStack);
-  root.style.setProperty("--font-multilingual", "'UnifontEX'");
+  root.style.setProperty("--font-cjk", cjkFallback);
+  root.style.setProperty("--font-multilingual", cjkFallback);
   root.style.setProperty("--font-thai", thaiFallback);
   root.dataset.uiFont = font.key;
   if (document.body) document.body.style.fontFamily = bodyStack;
@@ -773,10 +789,10 @@ export function applyFont(key) {
 
 export function getStoredFont() {
   const migration = localStorage.getItem("mabis-font-default-version");
-  if (migration !== "gnu-free-mono-v1") {
+  if (migration !== "gnu-free-mono-v2") {
     const now = String(Date.now());
-    localStorage.setItem("mabis-font-default-version", "gnu-free-mono-v1");
-    localStorage.setItem("mabis-font-picker-version", "7");
+    localStorage.setItem("mabis-font-default-version", "gnu-free-mono-v2");
+    localStorage.setItem("mabis-font-picker-version", "8");
     localStorage.setItem("mabis-font-updated-at", now);
     localStorage.setItem("mabis-font", "gnu-free-mono");
     return "gnu-free-mono";
