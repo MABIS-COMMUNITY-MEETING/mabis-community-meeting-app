@@ -706,7 +706,10 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
   };
 
   const handleConfirmAssign = () => {
-    if (!winner || !winnerCanBeAssigned) return;
+    // Clearing the winner below guards most double-clicks, but state updates are
+    // async: two clicks in the same tick both still see the old winner. The
+    // pending flag closes that gap.
+    if (!winner || !winnerCanBeAssigned || assignMutation.isPending) return;
     const job = winner.job || selectedJob;
     const period = job.period || "weekly";
     assignMutation.mutate({
