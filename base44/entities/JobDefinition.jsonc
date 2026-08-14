@@ -25,7 +25,7 @@
         "Thursday",
         "Friday"
       ],
-      "description": "Weekdays when the job is performed during its assigned month"
+      "description": "Weekdays when the job is performed during its weekly or monthly assignment period"
     },
     "period": {
       "type": "string",
