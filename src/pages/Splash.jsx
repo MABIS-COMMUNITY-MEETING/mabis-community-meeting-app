@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowUpRight, Plus, ArrowDown } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import MagneticButton from "@/components/MagneticButton";
@@ -37,7 +37,6 @@ function SplitChars({ text, stagger = 0.05, delay = 0, className = "" }) {
 export default function Splash() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const [ready, setReady] = useState(false);
 
   // pointer parallax for the hero typography
   const mx = useMotionValue(0);
@@ -48,11 +47,6 @@ export default function Splash() {
   const titleY = useTransform(sy, (v) => v * 14);
   const bgX = useTransform(sx, (v) => v * -28);
   const bgY = useTransform(sy, (v) => v * -18);
-
-  useEffect(() => {
-    const t = setTimeout(() => setReady(true), 1700);
-    return () => clearTimeout(t);
-  }, []);
 
   useEffect(() => {
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -144,38 +138,27 @@ export default function Splash() {
           recorded, remembered, and refined by the secondary community.
         </motion.p>
 
-        <AnimatePresence>
-          {ready && (
-            <motion.div
-              initial={{ opacity: 0, y: 18, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ type: "spring", stiffness: 180, damping: 18 }}
-              className="mt-7 w-full sm:mt-12 sm:w-auto"
+        <div className="mt-7 w-full sm:mt-12 sm:w-auto">
+          <MagneticButton strength={0.4}>
+            <button
+              onClick={enter}
+              data-cursor="ENTER"
+              className="liquid-btn liquid-ink group relative flex w-full items-center justify-between gap-3 border border-bone/40 bg-bone/5 px-5 py-4 text-bone backdrop-blur-sm sm:w-auto sm:justify-start sm:gap-4 sm:px-8"
             >
-              <MagneticButton strength={0.4}>
-                <button
-                  onClick={enter}
-                  data-cursor="ENTER"
-                  className="liquid-btn liquid-ink group relative flex w-full items-center justify-between gap-3 border border-bone/40 bg-bone/5 px-5 py-4 text-bone backdrop-blur-sm sm:w-auto sm:justify-start sm:gap-4 sm:px-8"
-                >
-                  <span className="tech-label">N° 02</span>
-                  <span className="text-lg sm:text-xl font-display font-normal tracking-tight">
-                    {isAuthenticated ? "ENTER START" : "ENTER LOG IN"}
-                  </span>
-                  <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden">
-                    <motion.span animate={{ y: ready ? 0 : -24 }} transition={{ duration: 0.5 }}>
-                      <ArrowUpRight className="h-6 w-6" />
-                    </motion.span>
-                  </span>
-                </button>
-              </MagneticButton>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <span className="tech-label">N° 02</span>
+              <span className="text-lg sm:text-xl font-display font-normal tracking-tight">
+                {isAuthenticated ? "ENTER START" : "ENTER LOG IN"}
+              </span>
+              <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden">
+                <ArrowUpRight className="h-6 w-6" />
+              </span>
+            </button>
+          </MagneticButton>
+        </div>
 
         {/* scroll cue */}
         <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: ready ? 1 : 0 }} transition={{ delay: 0.4, duration: 0.6 }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.6 }}
           className="absolute bottom-16 right-5 hidden flex-col items-center gap-2 sm:right-10 sm:flex"
         >
           <span className="tech-label vert-text text-bone/45">SCROLL</span>
