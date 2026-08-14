@@ -1,10 +1,59 @@
-import React, { useState, useEffect } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Palette, Check, RotateCcw, Save, Trash2, Star } from "lucide-react";
 import {
   THEMES, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
 } from "@/lib/themes";
+
+const INITIAL_THEME_LIMIT = 20;
+const THEME_BATCH_SIZE = 20;
+
+function paletteStripe(swatches = []) {
+  if (swatches.length === 0) return "transparent";
+  const stops = swatches.flatMap((color, index) => {
+    const start = (index / swatches.length) * 100;
+    const end = ((index + 1) / swatches.length) * 100;
+    return [`${color} ${start}%`, `${color} ${end}%`];
+  });
+  return `linear-gradient(90deg, ${stops.join(", ")})`;
+}
+
+const THEME_ENTRIES = Object.entries(THEMES).map(([key, theme]) => ({
+  key,
+  name: theme.name,
+  stripe: paletteStripe(theme.swatches),
+}));
+
+const ThemeOption = memo(function ThemeOption({ entry, active, onSelect }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(entry.key)}
+      aria-pressed={active}
+      className={`relative min-h-[58px] rounded-xl border-2 p-2.5 text-left transition-[border-color,box-shadow] duration-150 ${
+        active
+          ? "border-[#951E3A] ring-2 ring-[#951E3A]/20"
+          : "border-gray-200 hover:border-gray-300"
+      }`}
+      style={{ contain: "layout style" }}
+    >
+      <span className="mb-1.5 block truncate text-[11px] font-bold text-gray-700">
+        {entry.name}
+      </span>
+      <span
+        aria-hidden="true"
+        className="block h-4 w-full rounded-full border border-gray-200"
+        style={{ background: entry.stripe }}
+      />
+      {active && (
+        <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#951E3A]">
+          <Check className="h-2.5 w-2.5 text-white" />
+        </span>
+      )}
+    </button>
+  );
+});
 
 export default function ThemeSwitcher() {
   const [open, setOpen] = useState(false);
@@ -15,6 +64,15 @@ export default function ThemeSwitcher() {
   const [savedThemes, setSavedThemes] = useState([]);
   const [themeName, setThemeName] = useState("");
   const [showCustom, setShowCustom] = useState(false);
+  const [themeLimit, setThemeLimit] = useState(INITIAL_THEME_LIMIT);
+  const menuRef = useRef(null);
+  const loadMoreRef = useRef(null);
+  const visibleThemes = THEME_ENTRIES.slice(0, themeLimit);
+  const hasMoreThemes = themeLimit < THEME_ENTRIES.length;
+
+  const loadNextThemeBatch = useCallback(() => {
+    setThemeLimit((limit) => Math.min(limit + THEME_BATCH_SIZE, THEME_ENTRIES.length));
+  }, []);
 
   useEffect(() => {
     const stored = getStoredTheme();
@@ -29,7 +87,23 @@ export default function ThemeSwitcher() {
     setSavedThemes(getSavedThemes());
   }, []);
 
-  const handleSelectTheme = (key) => {
+  useEffect(() => {
+    if (!open || !hasMoreThemes) return undefined;
+    const root = menuRef.current;
+    const target = loadMoreRef.current;
+    if (!root || !target || typeof IntersectionObserver === "undefined") return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) loadNextThemeBatch();
+      },
+      { root, rootMargin: "180px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasMoreThemes, loadNextThemeBatch, open]);
+
+  const handleSelectTheme = useCallback((key) => {
     setCurrentTheme(key);
     setCustomActive(false);
     clearCustomColors();
@@ -37,7 +111,7 @@ export default function ThemeSwitcher() {
     const theme = THEMES[key];
     setCustomPrimary(hslToHex(theme.vars["--primary"]));
     setCustomSecondary(hslToHex(theme.vars["--secondary"]));
-  };
+  }, []);
 
   const handleCustomColor = (which, hex) => {
     if (which === "primary") setCustomPrimary(hex);
@@ -69,7 +143,14 @@ export default function ThemeSwitcher() {
 
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)}
+      <button
+        type="button"
+        onClick={() => {
+          if (!open) setThemeLimit(INITIAL_THEME_LIMIT);
+          setOpen((value) => !value);
+        }}
+        aria-expanded={open}
+        aria-haspopup="dialog"
         className="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
         title="Change theme">
         <Palette className="w-4 h-4 text-gray-600" />
@@ -77,7 +158,13 @@ export default function ThemeSwitcher() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="fixed left-1/2 -translate-x-1/2 top-16 w-[min(18rem,calc(100vw-1.5rem))] sm:absolute sm:left-auto sm:translate-x-0 sm:top-full sm:right-0 sm:mt-2 sm:w-72 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 z-50 max-h-[75vh] overflow-y-auto">
+          <div
+            ref={menuRef}
+            role="dialog"
+            aria-label="Choose a theme"
+            className="fixed left-1/2 -translate-x-1/2 top-16 w-[min(18rem,calc(100vw-1.5rem))] sm:absolute sm:left-auto sm:translate-x-0 sm:top-full sm:right-0 sm:mt-2 sm:w-72 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 z-50 max-h-[75vh] overflow-y-auto overscroll-contain"
+            style={{ contain: "layout style" }}
+          >
             <div className="flex items-center gap-2 mb-4">
               <Palette className="w-4 h-4 text-[#951E3A]" />
               <h3 className="text-sm font-bold text-gray-800">Themes</h3>
@@ -85,29 +172,26 @@ export default function ThemeSwitcher() {
 
             {/* Theme presets */}
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {Object.entries(THEMES).map(([key, theme]) => (
-                <button key={key} onClick={() => handleSelectTheme(key)}
-                  className={`relative p-2.5 rounded-xl border-2 transition-all text-left ${
-                    currentTheme === key && !customActive
-                      ? "border-[#951E3A] ring-2 ring-[#951E3A]/20"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}>
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <span className="text-[11px] font-bold text-gray-700 truncate">{theme.name}</span>
-                  </div>
-                  <div className="flex gap-1">
-                    {theme.swatches.map((c, i) => (
-                      <div key={i} className="w-4 h-4 rounded-full border border-gray-200" style={{ background: c }} />
-                    ))}
-                  </div>
-                  {currentTheme === key && !customActive && (
-                    <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#951E3A] flex items-center justify-center">
-                      <Check className="w-2.5 h-2.5 text-white" />
-                    </div>
-                  )}
-                </button>
+              {visibleThemes.map((entry) => (
+                <ThemeOption
+                  key={entry.key}
+                  entry={entry}
+                  active={currentTheme === entry.key && !customActive}
+                  onSelect={handleSelectTheme}
+                />
               ))}
             </div>
+            {hasMoreThemes && (
+              <div ref={loadMoreRef} className="mb-4">
+                <button
+                  type="button"
+                  onClick={loadNextThemeBatch}
+                  className="min-h-10 w-full border border-gray-200 px-3 text-xs font-bold text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-800"
+                >
+                  Show more themes ({visibleThemes.length}/{THEME_ENTRIES.length})
+                </button>
+              </div>
+            )}
 
             {/* Saved custom themes */}
             {savedThemes.length > 0 && (
