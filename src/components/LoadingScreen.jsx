@@ -133,7 +133,7 @@ export default function LoadingScreen() {
         >
           <span className="loading-spinner inline-block h-2.5 w-2.5 shrink-0 border border-bone/40 border-t-primary" aria-hidden />
           <span className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-            <span className="text-bone/70">LOADING SHADERS</span>
+            <span className="text-bone/70">CACHING STUFF</span>
             <span className="min-w-0 tabular-nums">{loading.detail}</span>
           </span>
         </div>
