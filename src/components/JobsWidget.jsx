@@ -586,6 +586,15 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
       : scheduledDaysFor(assignment)
   );
 
+  // Carry-overs already in flight, keyed by job + person + period.
+  //
+  // The `exists` check below reads the React Query cache, which only refreshes
+  // after the create round-trips and the query refetches. Clicking again inside
+  // that window sees stale data, finds nothing, and writes another row — which
+  // is how one job ended up with five identical assignments 3 seconds apart.
+  // This ref updates synchronously, so repeat clicks are rejected immediately.
+  const carryInFlight = useRef(new Set());
+
   const carryToNextPeriod = (assignment) => {
     const period = jobPeriod(assignment);
     const nextWeek = period === "weekly" ? getNextWeekLabel(assignment.week_label || currentWeek) : null;
@@ -595,7 +604,13 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
       && candidate.assigned_to_name === assignment.assigned_to_name
       && (period === "monthly" ? candidate.month_label === nextMonth : candidate.week_label === nextWeek)
     ));
-    if (exists) return;
+    const inFlightKey = [
+      normalizeJobTitle(assignment.job_title),
+      assignment.assigned_to_name,
+      period === "monthly" ? nextMonth : nextWeek,
+    ].join("|");
+    if (exists || carryInFlight.current.has(inFlightKey)) return;
+    carryInFlight.current.add(inFlightKey);
 
     carryMutation.mutate({
       job_title: normalizeJobTitle(assignment.job_title),
@@ -606,6 +621,8 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
       ...(period === "monthly" ? { month_label: nextMonth } : { week_label: nextWeek }),
       completed: false,
       carried_over: true,
+    }, {
+      onSettled: () => carryInFlight.current.delete(inFlightKey),
     });
   };
 
