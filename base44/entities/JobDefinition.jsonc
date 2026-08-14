@@ -27,6 +27,15 @@
       ],
       "description": "Weekdays when the job is performed during its assigned month"
     },
+    "period": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "monthly"
+      ],
+      "default": "weekly",
+      "description": "How long one person keeps this custom job"
+    },
     "active": {
       "type": "boolean",
       "default": true,
