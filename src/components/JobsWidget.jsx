@@ -440,43 +440,99 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
   const { user } = useAuth();
   const [selectedJobId, setSelectedJobId] = useState(JOBS[0].id);
   const [fullscreen, setFullscreen] = useState(false);
-  const [winner, setWinner] = useState(null); // { member, jobLabel }
-  const [removedIds, setRemovedIds] = useState([]); // excluded this session
+  const [winner, setWinner] = useState(null);
+  const [removedIds, setRemovedIds] = useState([]);
   const [showStudentMgr, setShowStudentMgr] = useState(false);
+  const [showAddJob, setShowAddJob] = useState(false);
+  const [newJob, setNewJob] = useState({ title: "", period: "weekly", schedule: "every_weekday" });
+  const [addJobError, setAddJobError] = useState("");
   const [jobActionMessage, setJobActionMessage] = useState("");
   const queryClient = useQueryClient();
   const currentWeek = getCurrentWeekLabel();
+  const currentMonth = getMonthLabel();
+  const currentYear = currentMonth.slice(0, 4);
 
   const { data: assignments = [] } = useQuery({
     queryKey: ["assignments"],
-    queryFn: () => base44.entities.JobAssignment.list("-created_date", 300),
+    queryFn: () => base44.entities.JobAssignment.list("-created_date", 500),
   });
 
-  const studentMembers = members.filter(m => !m.role || m.role === "student");
-  const currentAssignments = assignments.filter(a => a.week_label === currentWeek);
-  const assignedJobLabels = currentAssignments.map(a => a.job_title);
-  const assignedMemberNames = currentAssignments.map(a => a.assigned_to_name);
-  const selectedJob = JOBS.find(j => j.id === selectedJobId) || JOBS[0];
+  const { data: jobDefinitions = [] } = useQuery({
+    queryKey: ["job-definitions"],
+    queryFn: () => base44.entities.JobDefinition.list("title", 100),
+  });
 
-  // Members available on wheel: not yet assigned and not removed this session
-  const wheelMembers = studentMembers
-    .filter(m => !assignedMemberNames.includes(m.name) && !removedIds.includes(m.id))
+  const customJobs = jobDefinitions
+    .filter((job) => job.active !== false)
+    .map((job) => ({
+      id: `custom-${job.id}`,
+      definitionId: job.id,
+      label: normalizeJobTitle(job.title),
+      period: job.period || "weekly",
+      schedule_days: job.schedule_days,
+    }));
+  const allJobs = [...JOBS, ...customJobs];
+  const studentMembers = members.filter((member) => !member.role || member.role === "student");
+  const currentAssignments = assignments.filter((assignment) => assignmentIsCurrent(assignment, currentWeek, currentMonth));
+  const assignedJobLabels = currentAssignments.map((assignment) => normalizeJobTitle(assignment.job_title));
+  const assignedMemberKeys = new Set(currentAssignments.map((assignment) => memberRotationKey({
+    email: assignment.assigned_to_email,
+    name: assignment.assigned_to_name,
+  })));
+  const selectedJob = allJobs.find((job) => job.id === selectedJobId) || allJobs[0] || JOBS[0];
+  const servedTimeKeeperKeys = timeKeeperKeysForYear(assignments, currentYear);
+  const selectingTimeKeeper = isTimeKeeperJob(selectedJob?.label);
+
+  const eligibleStudents = studentMembers.filter((member) => (
+    !assignedMemberKeys.has(memberRotationKey(member))
+    && (!selectingTimeKeeper || !servedTimeKeeperKeys.has(memberRotationKey(member)))
+  ));
+  const wheelMembers = eligibleStudents
+    .filter((member) => !removedIds.includes(member.id))
     .sort((a, b) => displayName(a).localeCompare(displayName(b)));
-  const unassignedStudents = studentMembers.filter(m => !assignedMemberNames.includes(m.name));
+  const unassignedStudents = eligibleStudents;
 
-  // Auto-reset the wheel when no one is left on it (but unassigned students remain)
   useEffect(() => {
     if (wheelMembers.length === 0 && unassignedStudents.length > 0 && removedIds.length > 0) {
       setRemovedIds([]);
     }
   }, [wheelMembers.length, unassignedStudents.length, removedIds.length]);
 
+  const addJobMutation = useMutation({
+    mutationFn: (data) => base44.entities.JobDefinition.create(data),
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ["job-definitions"] });
+      if (created?.id) setSelectedJobId(`custom-${created.id}`);
+      setNewJob({ title: "", period: "weekly", schedule: "every_weekday" });
+      setAddJobError("");
+      setShowAddJob(false);
+    },
+  });
+
+  const handleAddJob = () => {
+    const title = normalizeJobTitle(newJob.title.trim());
+    if (!title) {
+      setAddJobError("Enter a job name.");
+      return;
+    }
+    if (allJobs.some((job) => job.label.toLocaleLowerCase() === title.toLocaleLowerCase())) {
+      setAddJobError("That job already exists.");
+      return;
+    }
+    addJobMutation.mutate({
+      title,
+      period: newJob.period,
+      schedule_days: SCHEDULE_PRESETS[newJob.schedule] || SCHEDULE_PRESETS.every_weekday,
+      active: true,
+    });
+  };
+
   const assignMutation = useMutation({
     mutationFn: (data) => base44.entities.JobAssignment.create(data),
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
-      const updatedAssigned = [...assignedJobLabels, vars.job_title];
-      const next = JOBS.find(j => !updatedAssigned.includes(j.label));
+      const updatedAssigned = [...assignedJobLabels, normalizeJobTitle(vars.job_title)];
+      const next = allJobs.find((job) => !updatedAssigned.includes(job.label));
       if (next) setSelectedJobId(next.id);
     },
   });
@@ -496,39 +552,56 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["assignments"] }),
   });
 
-  const carryToNextWeek = (a) => {
-    const nextWeek = getNextWeekLabel(currentWeek);
-    const exists = assignments.some(x => x.week_label === nextWeek && x.job_title === a.job_title && x.assigned_to_name === a.assigned_to_name);
+  const statusKeysFor = (assignment) => (
+    jobPeriod(assignment) === "monthly"
+      ? getScheduledDatesForMonth(assignment, assignment.month_label || currentMonth)
+      : scheduledDaysFor(assignment)
+  );
+
+  const carryToNextPeriod = (assignment) => {
+    const period = jobPeriod(assignment);
+    const nextWeek = period === "weekly" ? getNextWeekLabel(assignment.week_label || currentWeek) : null;
+    const nextMonth = period === "monthly" ? getNextMonthLabel(assignment.month_label || currentMonth) : null;
+    const exists = assignments.some((candidate) => (
+      normalizeJobTitle(candidate.job_title) === normalizeJobTitle(assignment.job_title)
+      && candidate.assigned_to_name === assignment.assigned_to_name
+      && (period === "monthly" ? candidate.month_label === nextMonth : candidate.week_label === nextWeek)
+    ));
     if (exists) return;
+
     carryMutation.mutate({
-      job_title: a.job_title, assigned_to_name: a.assigned_to_name,
-      assigned_to_email: a.assigned_to_email || "", week_label: nextWeek,
-      completed: false, carried_over: true,
+      job_title: normalizeJobTitle(assignment.job_title),
+      assigned_to_name: assignment.assigned_to_name,
+      assigned_to_email: assignment.assigned_to_email || "",
+      assignment_period: period,
+      schedule_days: scheduledDaysFor(assignment),
+      ...(period === "monthly" ? { month_label: nextMonth } : { week_label: nextWeek }),
+      completed: false,
+      carried_over: true,
     });
   };
 
-  const handleDayStatus = (a, day, currentState) => {
-    const done = a.days_completed || [];
-    const notDoneDays = a.not_done_days || [];
-    const scheduled = scheduledDaysFor(a.job_title);
-    // Cycle: neutral → yes → no → neutral
+  const handleDayStatus = (assignment, day, currentState) => {
+    const done = assignment.days_completed || [];
+    const notDoneDays = assignment.not_done_days || [];
+    const scheduled = statusKeysFor(assignment);
+
     if (currentState === "neutral") {
-      const newDone = [...done, day];
-      const newNotDone = notDoneDays.filter(d => d !== day);
-      const completed = scheduled.length > 0 && scheduled.every(d => newDone.includes(d));
-      updateMutation.mutate({ id: a.id, data: { days_completed: newDone, not_done_days: newNotDone, completed, not_done: newNotDone.length > 0 } });
+      const newDone = [...new Set([...done, day])];
+      const newNotDone = notDoneDays.filter((entry) => entry !== day);
+      const completed = scheduled.length > 0 && scheduled.every((entry) => newDone.includes(entry));
+      updateMutation.mutate({ id: assignment.id, data: { days_completed: newDone, not_done_days: newNotDone, completed, not_done: newNotDone.length > 0 } });
     } else if (currentState === "yes") {
-      const newDone = done.filter(d => d !== day);
-      const newNotDone = [...notDoneDays, day];
-      updateMutation.mutate({ id: a.id, data: { days_completed: newDone, not_done_days: newNotDone, completed: false, not_done: true } });
-      carryToNextWeek(a);
-    } else if (currentState === "no") {
-      const newNotDone = notDoneDays.filter(d => d !== day);
-      updateMutation.mutate({ id: a.id, data: { not_done_days: newNotDone, not_done: newNotDone.length > 0 } });
+      const newDone = done.filter((entry) => entry !== day);
+      const newNotDone = [...new Set([...notDoneDays, day])];
+      updateMutation.mutate({ id: assignment.id, data: { days_completed: newDone, not_done_days: newNotDone, completed: false, not_done: true } });
+      carryToNextPeriod(assignment);
+    } else {
+      const newNotDone = notDoneDays.filter((entry) => entry !== day);
+      updateMutation.mutate({ id: assignment.id, data: { not_done_days: newNotDone, not_done: newNotDone.length > 0 } });
     }
   };
 
-  // Handle email action links (?job_action=done&job_id=xxx)
   const handledJobAction = useRef(false);
   useEffect(() => {
     if (handledJobAction.current) return;
@@ -536,42 +609,68 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
     const action = params.get("job_action");
     const jobId = params.get("job_id");
     if (!action || !jobId) return;
-    const assignment = assignments.find(a => a.id === jobId);
+    const assignment = assignments.find((candidate) => candidate.id === jobId);
     if (!assignment) return;
+
     handledJobAction.current = true;
-    const scheduled = scheduledDaysFor(assignment.job_title);
+    const period = jobPeriod(assignment);
+    const allScheduled = statusKeysFor(assignment);
+    const actionKeys = period === "monthly"
+      ? getVisibleWeekDates(assignment.month_label || currentMonth)
+        .filter((entry) => scheduledDaysFor(assignment).includes(entry.day))
+        .map((entry) => entry.key)
+      : scheduledDaysFor(assignment);
+    const done = assignment.days_completed || [];
+    const notDone = assignment.not_done_days || [];
+
     if (action === "done") {
-      updateMutation.mutate({ id: jobId, data: { days_completed: scheduled, not_done_days: [], completed: true, not_done: false } });
-      setJobActionMessage(`Marked "${assignment.job_title}" as done!`);
+      const nextDone = [...new Set([...done, ...actionKeys])];
+      const nextNotDone = notDone.filter((entry) => !actionKeys.includes(entry));
+      updateMutation.mutate({ id: jobId, data: {
+        days_completed: nextDone,
+        not_done_days: nextNotDone,
+        completed: allScheduled.every((entry) => nextDone.includes(entry)),
+        not_done: nextNotDone.length > 0,
+      } });
+      setJobActionMessage(`Marked "${normalizeJobTitle(assignment.job_title)}" as done.`);
     } else if (action === "notdone") {
-      updateMutation.mutate({ id: jobId, data: { days_completed: [], not_done_days: scheduled, completed: false, not_done: true } });
-      carryToNextWeek(assignment);
-      setJobActionMessage(`Marked "${assignment.job_title}" as not done — carried to next week.`);
+      const nextDone = done.filter((entry) => !actionKeys.includes(entry));
+      const nextNotDone = [...new Set([...notDone, ...actionKeys])];
+      updateMutation.mutate({ id: jobId, data: { days_completed: nextDone, not_done_days: nextNotDone, completed: false, not_done: true } });
+      carryToNextPeriod(assignment);
+      setJobActionMessage(`Marked "${normalizeJobTitle(assignment.job_title)}" as not done — carried to the next ${period === "monthly" ? "month" : "week"}.`);
     }
+
     window.history.replaceState({}, "", window.location.pathname);
-    setTimeout(() => setJobActionMessage(""), 6000);
+    window.setTimeout(() => setJobActionMessage(""), 6000);
   }, [assignments]);
 
   const handleClearAll = async () => {
-    if (!window.confirm("Clear all job assignments for this week?")) return;
+    if (!window.confirm("Clear all current weekly and monthly job assignments?")) return;
     try {
-      await base44.entities.JobAssignment.deleteMany({ week_label: currentWeek });
+      await Promise.all(currentAssignments.map((assignment) => base44.entities.JobAssignment.delete(assignment.id)));
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
       setRemovedIds([]);
-    } catch (e) { /* ignore */ }
+    } catch {
+      setJobActionMessage("Could not clear the current assignments.");
+    }
   };
 
   const handleSpinComplete = (member) => {
-    setWinner({ member, jobLabel: selectedJob.label });
+    setWinner({ member, job: selectedJob, jobLabel: selectedJob.label });
   };
 
   const handleConfirmAssign = () => {
     if (!winner) return;
+    const job = winner.job || selectedJob;
+    const period = job.period || "weekly";
     assignMutation.mutate({
       job_title: winner.jobLabel,
       assigned_to_name: winner.member.name,
       assigned_to_email: winner.member.email || "",
-      week_label: currentWeek,
+      assignment_period: period,
+      schedule_days: scheduledDaysFor(job),
+      ...(period === "monthly" ? { month_label: currentMonth } : { week_label: currentWeek }),
       completed: false,
     });
     setWinner(null);
@@ -579,19 +678,11 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
 
   const handleRemoveAndNext = () => {
     if (!winner) return;
-    setRemovedIds(ids => [...ids, winner.member.id]);
+    setRemovedIds((ids) => [...ids, winner.member.id]);
     setWinner(null);
   };
 
   const handleReject = () => setWinner(null);
-
-  const handleToggleDay = (a, day) => {
-    const done = a.days_completed || [];
-    const newDays = done.includes(day) ? done.filter(d => d !== day) : [...done, day];
-    const scheduled = scheduledDaysFor(a.job_title);
-    const completed = scheduled.length > 0 && scheduled.every(d => newDays.includes(d));
-    updateMutation.mutate({ id: a.id, data: { days_completed: newDays, completed, not_done: false } });
-  };
 
   const wheelAndTable = (isFS) => (
     <div className="space-y-6">
