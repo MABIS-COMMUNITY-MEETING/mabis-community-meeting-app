@@ -148,6 +148,7 @@ function TopicItem({
             <DocsEditor
               key={`inline-edit-${topic.id}`}
               title={editTitle || "Untitled topic"}
+              onTitleChange={onTitleChange}
               placeholder="Write your topic description, paste screenshots, add context…"
               onChange={onDescriptionChange}
               minHeight={compact ? "140px" : "180px"}
@@ -866,7 +867,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                       className="rounded-lg border-border bg-card" />
                   </div>
                   <Suspense fallback={<ChunkFallback height={140} />}>
-                    <DocsEditor key={editingTopicId || "new-mm"} title={title || "Untitled topic"} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="140px" initialHtml={description} />
+                    <DocsEditor key={editingTopicId || "new-mm"} title={title || "Untitled topic"} onTitleChange={setTitle} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="140px" initialHtml={description} />
                   </Suspense>
                   <div className="flex items-center gap-2 flex-wrap pt-1">
                     <span className="text-xs text-muted-foreground font-medium">Priority:</span>
@@ -1007,7 +1008,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 className="rounded-lg border-border bg-card" />
             </div>
             <Suspense fallback={<ChunkFallback height={180} />}>
-              <DocsEditor key={editingTopicId || "new"} title={title || "Untitled topic"} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="180px" initialHtml={description} />
+              <DocsEditor key={editingTopicId || "new"} title={title || "Untitled topic"} onTitleChange={setTitle} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="180px" initialHtml={description} />
             </Suspense>
             <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
               <div className="flex items-center gap-1.5 flex-wrap">
