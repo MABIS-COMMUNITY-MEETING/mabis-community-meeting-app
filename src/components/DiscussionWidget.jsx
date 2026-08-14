@@ -101,6 +101,42 @@ function holdFocus(element) {
   setTimeout(() => element.focus(), 150);
 }
 
+// TEMPORARY FORENSICS - remove once resolved.
+function FocusForensics() {
+  const [lines, setLines] = useState([]);
+  useEffect(() => {
+    const push = (t) => setLines((prev) => (prev.length >= 7 ? prev : [...prev, t]));
+    const stamp = () => new Date().toISOString().slice(17, 23);
+    const original = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function patched(...args) {
+      try {
+        const cls = this.className;
+        if (typeof cls === "string" && cls.indexOf("ql-editor") !== -1) {
+          const stack = (new Error().stack || "").split("\n").slice(1, 6)
+            .map((s) => s.trim().replace(/^at\s+/, "").replace(/https?:\/\/[^/]+/, ""))
+            .join(" <- ");
+          push(`FOCUS ${stamp()} ${stack}`);
+        }
+      } catch (err) { /* diagnostic */ }
+      return original.apply(this, args);
+    };
+    const onIn = (e) => {
+      const cls = typeof e.target.className === "string" ? e.target.className.slice(0, 20) : "";
+      push(`IN ${stamp()} ${e.target.tagName} ${cls}`);
+    };
+    document.addEventListener("focusin", onIn, true);
+    return () => {
+      HTMLElement.prototype.focus = original;
+      document.removeEventListener("focusin", onIn, true);
+    };
+  }, []);
+  return (
+    <pre className="max-h-44 overflow-auto whitespace-pre-wrap break-all bg-background p-2 font-mono text-[9px] leading-tight text-primary">
+      {lines.join("\n") || "waiting..."}
+    </pre>
+  );
+}
+
 function TopicItem({
   topic,
   index,
@@ -136,6 +172,7 @@ function TopicItem({
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Editing topic</p>
+              <FocusForensics />
               <p className="mt-0.5 text-xs text-muted-foreground">Changes stay attached to this discussion card.</p>
             </div>
             <button
