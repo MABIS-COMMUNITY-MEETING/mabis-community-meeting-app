@@ -2,7 +2,8 @@
    UI TYPE SYSTEM
    GNU FreeMono is the embedded default. GNU FreeSerif, Torrefarfan, Go,
    Iosevka, Lilex and the libre catalogue are selectable; commercial faces resolve only to
-   licensed local copies. UnifontEX is reserved for marked multilingual text.
+   licensed local copies. Every UI stack falls through GNU FreeFont. Maple Mono is
+   loaded only for explicitly marked Chinese, Japanese, and Korean text.
    ────────────────────────────────────────────────────────────── */
 @font-face {
   font-family: 'torrefarfan';
@@ -262,12 +263,13 @@
     --ink: 222 22% 8%;
     --bone: 42 34% 96%;
 
-    --font-heading: 'GNUFreeMonoUI', 'GNUFreeSerifThai';
-    --font-body: 'GNUFreeMonoUI', 'GNUFreeSerifThai';
-    --font-display: 'GNUFreeMonoUI', 'GNUFreeSerifThai';
-    --font-mono: 'GNUFreeMonoUI', 'GNUFreeSerifThai';
-    --font-multilingual: 'UnifontEX';
-    --font-thai: 'GNUFreeSerifThai';
+    --font-heading: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-body: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-display: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-mono: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-cjk: 'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', monospace;
+    --font-multilingual: var(--font-cjk);
+    --font-thai: 'GNUFreeSerifThai', 'GNUFreeSerifUI', serif;
     --role-student: 348 74% 30%;
     --role-teacher: 165 55% 32%;
     --role-chair: 38 78% 48%;
@@ -550,10 +552,14 @@
 :lang(zh),
 :lang(zh-CN),
 :lang(zh-TW),
+:lang(ko),
 [data-script="ja"],
 [data-script="zh"],
-.font-multilingual {
-  font-family: var(--font-multilingual) !important;
+[data-script="ko"],
+.font-multilingual,
+.font-cjk {
+  font-family: var(--font-cjk) !important;
+  font-synthesis: weight;
 }
 
 :lang(th),
