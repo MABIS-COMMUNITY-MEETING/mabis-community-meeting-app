@@ -31,7 +31,7 @@ const DEFAULTS = {
   specular: "0.82",
   rim: "0.70",
   edge: "0.52",
-  tint: "0.018",
+  tint: "0.10",
 };
 
 function materialMotionDisabled() {
@@ -84,7 +84,7 @@ function render() {
   root.style.setProperty("--glass-scroll-spec-opacity", (0.82 + e * 0.18).toFixed(3));
   root.style.setProperty("--glass-scroll-rim-opacity", (0.70 + e * 0.22).toFixed(3));
   root.style.setProperty("--glass-scroll-edge-opacity", (0.52 + e * 0.38).toFixed(3));
-  root.style.setProperty("--glass-scroll-tint-alpha", (0.018 + e * 0.032).toFixed(3));
+  root.style.setProperty("--glass-scroll-tint-alpha", (0.10 + e * 0.08).toFixed(3));
 }
 
 function settled() {
