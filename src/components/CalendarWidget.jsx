@@ -306,7 +306,7 @@ export default function CalendarWidget() {
           {isFriday(viewDate) && <p className="text-xs font-semibold text-[#951E3A] mt-1">Community Meeting Day</p>}
         </div>
         {dayEvs.length === 0
-          ? <p className="text-sm text-gray-400 text-center py-6">No events this day</p>
+          ? <p className="text-sm text-gray-400 text-center py-6">Nothing planned for this day./p>
           : dayEvs.map(ev => (
             <div key={ev.id} className={`${EVENT_COLORS[ev.type].pill} rounded-xl px-4 py-3 mb-2 flex items-center justify-between`}>
               <div className="cursor-pointer" onClick={() => setSelectedEvent(ev)}>

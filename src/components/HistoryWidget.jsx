@@ -75,7 +75,7 @@ export default function HistoryWidget({ isAdmin }) {
 
       <div className="p-5">
         {archivedWeeks.length === 0 && (
-          <p className="text-center text-gray-400 text-sm py-6">No history yet</p>
+          <p className="text-center text-gray-400 text-sm py-6">No past meetings saved yet. They appear here once a meeting ends./p>
         )}
         <div className="space-y-2">
           {archivedWeeks.map((week) => {

@@ -805,7 +805,7 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
                 />
               </div>
             ) : studentMembers.length === 0 ? (
-              <div className="h-40 flex items-center justify-center text-gray-400 text-sm">No students yet</div>
+              <div className="h-40 flex items-center justify-center text-gray-400 text-sm">No students on the rotation yet. Add people in the Members section./div>
             ) : (
               <div className="h-40 flex flex-col items-center justify-center text-center gap-2">
                 <CheckCircle2 className="w-10 h-10 text-green-400" />

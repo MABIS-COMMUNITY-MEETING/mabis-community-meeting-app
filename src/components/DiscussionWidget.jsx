@@ -868,7 +868,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               )}
 
               {viewedTopics.length === 0 ? (
-                <p className="text-center text-muted-foreground text-sm py-8 bg-card rounded-xl border border-border">No topics this week</p>
+                <p className="text-center text-muted-foreground text-sm py-8 bg-card rounded-xl border border-border">Nothing to discuss yet. Use Add Topic above to put something on the list for Friday./p>
               ) : (
                 <div className="space-y-2">
                   {viewedTopics.map(topic => (
@@ -1032,7 +1032,7 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
 
         <div className="space-y-2">
           {viewedTopics.length === 0 && (
-            <p className="text-center text-muted-foreground text-sm py-8">No topics yet for this week</p>
+            <p className="text-center text-muted-foreground text-sm py-8">No topics yet. Add the first one with the Add Topic button./p>
           )}
           {viewedTopics.map(topic => (
             <TopicItem key={topic.id} topic={topic} compact={false} isAdmin={topicAdmin}

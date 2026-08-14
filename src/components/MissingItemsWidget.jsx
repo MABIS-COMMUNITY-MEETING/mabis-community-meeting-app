@@ -204,7 +204,7 @@ export default function MissingItemsWidget({ members }) {
         ) : activeItems.length === 0 && foundItems.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-8 text-gray-400">
             <PackageSearch className="w-10 h-10 opacity-40" />
-            <p className="text-sm">No missing items reported</p>
+            <p className="text-sm">Nothing reported lost yet. If you have lost something, add it above./p>
           </div>
         ) : (
           <>
@@ -226,7 +226,7 @@ export default function MissingItemsWidget({ members }) {
                       <History className="w-3.5 h-3.5" /> Found / Archived ({foundItems.length})
                     </p>
                     {foundItems.length === 0
-                      ? <p className="text-center text-gray-400 text-sm py-4">No items found yet</p>
+                      ? <p className="text-center text-gray-400 text-sm py-4">Nothing has been handed in yet./p>
                       : foundItems.map(item => renderItemCard(item, false))}
                   </motion.div>
                 )}
