@@ -17,6 +17,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
 
@@ -69,8 +70,18 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
+    if (googleLoading) return;
+    setError("");
+    setGoogleLoading(true);
     disableHackerMode();
-    base44.auth.loginWithProvider("google", "/home");
+
+    try {
+      base44.auth.loginWithProvider("google", "/home");
+      window.setTimeout(() => setGoogleLoading(false), 15000);
+    } catch (err) {
+      setGoogleLoading(false);
+      setError(err.message || "Google sign-in could not start. Please try again.");
+    }
   };
 
   if (showOtp) {
@@ -143,11 +154,13 @@ export default function Register() {
     >
       <Button
         variant="outline"
-        className="w-full h-12 text-sm font-medium mb-6"
+        className="w-full h-12 text-sm font-medium mb-6 disabled:cursor-wait disabled:opacity-70"
         onClick={handleGoogle}
+        disabled={googleLoading || loading}
+        aria-busy={googleLoading}
       >
-        <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
+        {googleLoading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <GoogleIcon className="w-5 h-5 mr-2" />}
+        {googleLoading ? "Connecting to Google…" : "Continue with Google"}
       </Button>
 
       <div className="relative mb-6">
