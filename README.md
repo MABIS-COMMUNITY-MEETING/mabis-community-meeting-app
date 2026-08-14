@@ -75,6 +75,7 @@ It should have restrained transparency, edge refraction, directional highlights,
 - Do not nest backdrop filters.
 - Do not apply glass to long text, discussion bodies, lists, or every card.
 - Preserve the existing glass architecture in `src/styles/glass.css` unless Novesce explicitly requests a redesign.
+- Preserve live single-pass glass backdrop blur during wheel, touch, rapid, and momentum scrolling; active-scroll optimizations may pause decoration but must not replace glass with an opaque fallback.
 
 ### Color
 
@@ -665,7 +666,7 @@ AI and human contributors must preserve these rules:
 - Noncritical reminders and floating tools mount during browser idle time rather than competing with the first useful paint.
 - Long editorial sections and list cards use `content-visibility` and intrinsic-size containment where supported.
 - Decorative scroll indicators share one passive, animation-frame-throttled scroll signal and write to isolated DOM nodes without causing React renders on every scroll frame.
-- Native browser scrolling is never intercepted. Scroll-linked decoration stays on transform and opacity; document height is cached between resize notifications; expensive glass capture, full-viewport grain, and ambient loops yield only during active scroll and restore at scrollend.
+- Native browser scrolling is never intercepted. Scroll-linked decoration stays on transform and opacity; document height is cached between resize notifications; full-viewport grain and ambient loops yield only during active scroll and restore at scrollend. The single-pass glass backdrop remains optically stable during wheel, touch, rapid, and momentum scrolling; only `performance-lite` and unsupported-browser fallbacks may replace it with a static translucent surface.
 - Canvas animations must cache computed styles, avoid reallocating backing buffers per frame, cap unreasonable pixel density, and cancel animation frames on unmount.
 - Data queries that serve hidden tabs or unauthorized controls remain disabled until those surfaces are reachable.
 - Use `useMemo`, `useDeferredValue`, transitions, and component memoization only where they remove measured work. Do not scatter them ceremonially.
