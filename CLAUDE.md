@@ -7,6 +7,8 @@ The imported Novesce design contract and AI instructions apply to every task in 
 
 Before editing any file, read the imported instructions and identify the relevant design constraints. Do not perform an unsolicited redesign, font change, fallback change, glass restyle, cursor change, theme rewrite, or interaction-model change.
 
+GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack. Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first. The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.
+
 Preserve live single-pass glass backdrop blur during wheel, touch, rapid, and momentum scrolling; active-scroll optimizations may pause decoration but must not replace glass with an opaque fallback.
 
 The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement. Custom-cursor deformation should use bounded underdamped springs, settle promptly, and never loop while idle.
