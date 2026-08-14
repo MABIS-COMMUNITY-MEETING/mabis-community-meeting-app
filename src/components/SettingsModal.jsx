@@ -49,7 +49,7 @@ function FontPreview({ font, eager = false }) {
   return (
     <div
       ref={ref}
-      className="rounded-lg border border-gray-200 bg-white px-3 py-3 text-[17px] leading-snug text-gray-900 break-words"
+      className="rounded-lg border border-border bg-background px-3 py-3 text-[17px] leading-snug text-foreground break-words"
       style={{ fontFamily: active ? font.body : "var(--font-body)" }}
     >
       {FONT_PREVIEW_TEXT}
@@ -155,61 +155,61 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="mobile-sheet-panel bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto">
-            <div className="mobile-sheet-header bg-[#951E3A] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+            className="mobile-sheet-panel bg-card text-card-foreground border border-border rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto">
+            <div className="mobile-sheet-header bg-primary px-6 py-4 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center gap-2.5">
-                <Settings className="w-5 h-5 text-white" />
-                <h2 className="font-display font-bold text-white text-xl">Settings</h2>
+                <Settings className="w-5 h-5 text-primary-foreground" />
+                <h2 className="font-display font-bold text-primary-foreground text-xl">Settings</h2>
               </div>
-              <button onClick={onClose} className="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10">
+              <button onClick={onClose} className="text-primary-foreground/70 hover:text-primary-foreground p-1 rounded-lg hover:bg-primary-foreground/10">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="mobile-sheet-body p-6 space-y-6">
-              <section className="border-y border-gray-200 py-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">Simple customization</p>
-                <h3 className="mt-1 font-display text-xl font-bold text-gray-800">Make the site comfortable for you</h3>
-                <p className="mt-1 text-sm leading-relaxed text-gray-500">Start with colors, choose an easy-to-read font, then adjust comfort options. Every choice can be changed again.</p>
-                <div className="mt-4 grid gap-px bg-gray-200 sm:grid-cols-3">
+              <section className="border-y border-border py-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Simple customization</p>
+                <h3 className="mt-1 font-display text-xl font-bold text-foreground">Make the site comfortable for you</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">Start with colors, choose an easy-to-read font, then adjust comfort options. Every choice can be changed again.</p>
+                <div className="mt-4 grid gap-px bg-border sm:grid-cols-3">
                   <button type="button" onClick={() => {
                     onClose();
                     window.setTimeout(() => window.dispatchEvent(new CustomEvent("openThemeSwitcher")), 0);
-                  }} className="min-h-20 bg-white p-3 text-left hover:bg-gray-50">
-                    <span className="text-[10px] font-bold text-gray-400">01</span>
-                    <span className="mt-1 block text-sm font-bold text-gray-800">Choose colors</span>
-                    <span className="mt-0.5 block text-xs text-gray-500">Open themes</span>
+                  }} className="min-h-20 bg-background p-3 text-left hover:bg-muted">
+                    <span className="text-[10px] font-bold text-muted-foreground">01</span>
+                    <span className="mt-1 block text-sm font-bold text-foreground">Choose colors</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">Open themes</span>
                   </button>
-                  <a href="#setting-font" className="min-h-20 bg-white p-3 text-left hover:bg-gray-50">
-                    <span className="text-[10px] font-bold text-gray-400">02</span>
-                    <span className="mt-1 block text-sm font-bold text-gray-800">Choose text</span>
-                    <span className="mt-0.5 block text-xs text-gray-500">Four simple fonts</span>
+                  <a href="#setting-font" className="min-h-20 bg-background p-3 text-left hover:bg-muted">
+                    <span className="text-[10px] font-bold text-muted-foreground">02</span>
+                    <span className="mt-1 block text-sm font-bold text-foreground">Choose text</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">Four simple fonts</span>
                   </a>
-                  <a href="#setting-comfort" className="min-h-20 bg-white p-3 text-left hover:bg-gray-50">
-                    <span className="text-[10px] font-bold text-gray-400">03</span>
-                    <span className="mt-1 block text-sm font-bold text-gray-800">Comfort</span>
-                    <span className="mt-0.5 block text-xs text-gray-500">Sound, motion, language</span>
+                  <a href="#setting-comfort" className="min-h-20 bg-background p-3 text-left hover:bg-muted">
+                    <span className="text-[10px] font-bold text-muted-foreground">03</span>
+                    <span className="mt-1 block text-sm font-bold text-foreground">Comfort</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">Sound, motion, language</span>
                   </a>
                 </div>
               </section>
 
               {/* Security — admin/editor only */}
               {isAdmin && (
-                <details className="border border-gray-200 p-3">
-                  <summary className="cursor-pointer text-sm font-bold text-gray-700">Admin options · Advanced</summary>
+                <details className="border border-border p-3">
+                  <summary className="cursor-pointer text-sm font-bold text-foreground">Admin options · Advanced</summary>
                   <div className="mt-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <Lock className="w-4 h-4 text-[#951E3A]" />
-                    <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Unlock Code</h3>
+                    <Lock className="w-4 h-4 text-primary" />
+                    <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Unlock Code</h3>
                   </div>
-                  <p className="text-xs text-gray-400 mb-3">Change the password used to unlock admin actions (meeting mode, etc.).</p>
+                  <p className="text-xs text-muted-foreground mb-3">Change the password used to unlock admin actions (meeting mode, etc.).</p>
                   <input type="password" value={currentCode} onChange={(e) => { setCurrentCode(e.target.value); setCodeError(false); }} placeholder="Current code..."
-                    className={`w-full h-9 rounded-lg border-2 px-3 text-sm font-semibold tracking-widest outline-none mb-2 ${codeError ? "border-red-400 bg-red-50" : "border-gray-200 focus:border-[#951E3A]/40"}`} />
+                    className={`w-full h-9 rounded-lg border-2 px-3 text-sm font-semibold tracking-widest outline-none mb-2 ${codeError ? "border-red-400 bg-red-50" : "border-border focus:border-primary/40"}`} />
                   {codeError && <p className="text-xs text-red-500 font-semibold mb-2">Current code is incorrect.</p>}
                   <input type="text" value={newCode} onChange={(e) => setNewCode(e.target.value)} placeholder="Enter new code..."
-                    className="w-full h-9 rounded-lg border border-gray-200 px-3 text-sm font-semibold tracking-widest outline-none focus:border-[#951E3A]/40 mb-2" />
+                    className="w-full h-9 rounded-lg border border-border px-3 text-sm font-semibold tracking-widest outline-none focus:border-primary/40 mb-2" />
                   <button onClick={handleSaveCode}
-                    className="w-full h-10 rounded-lg bg-[#951E3A] text-white text-sm font-bold hover:bg-[#7a1830] transition-colors flex items-center justify-center">
+                    className="w-full h-10 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-colors flex items-center justify-center">
                     {codeSaved ? <Check className="w-4 h-4" /> : "Save"}
                   </button>
                   {codeSaved && <p className="text-xs text-green-600 font-semibold mt-2">Code updated!</p>}
@@ -221,31 +221,31 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               <div id="setting-font" className="scroll-mt-20">
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <div className="flex items-center gap-2">
-                    <Type className="w-4 h-4 text-[#951E3A]" />
-                    <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">UI Font</h3>
+                    <Type className="w-4 h-4 text-primary" />
+                    <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">UI Font</h3>
                   </div>
-                  <span className="text-[10px] text-gray-400 tabular-nums">{showAdvancedFonts ? `${FONTS.length} choices` : "4 easy choices"}</span>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">{showAdvancedFonts ? `${FONTS.length} choices` : "4 easy choices"}</span>
                 </div>
-                <p className="text-xs text-gray-400 mb-3">
+                <p className="text-xs text-muted-foreground mb-3">
                   Pick the sample that feels easiest to read. GNU FreeMono is the recommended default. Japanese text always uses the Maple Mono fallback.
                 </p>
 
-                <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-3 mb-3">
-                  <p className="text-[9px] uppercase tracking-[0.2em] text-gray-400 mb-1.5">Current UI preview</p>
-                  <p className="text-[20px] leading-snug text-gray-900 break-words" style={{ fontFamily: "var(--font-body)" }}>
+                <div className="rounded-xl border border-border bg-muted/50 p-3 mb-3">
+                  <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1.5">Current UI preview</p>
+                  <p className="text-[20px] leading-snug text-foreground break-words" style={{ fontFamily: "var(--font-body)" }}>
                     {FONT_PREVIEW_TEXT}
                   </p>
                 </div>
 
                 {showAdvancedFonts && <>
                 <div className="relative mb-2.5">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                   <input
                     type="search"
                     value={fontSearch}
                     onChange={(event) => setFontSearch(event.target.value)}
                     placeholder="Search the font library..."
-                    className="w-full h-9 rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-xs outline-none focus:border-[#951E3A]/40"
+                    className="w-full h-9 rounded-lg border border-border bg-background pl-9 pr-3 text-xs outline-none focus:border-primary/40"
                   />
                 </div>
 
@@ -253,21 +253,21 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   <button
                     type="button"
                     onClick={() => setFontSource("featured")}
-                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-bold ${fontSource === "featured" ? "bg-[#951E3A] text-white border-[#951E3A]" : "border-gray-200 text-gray-500"}`}
+                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-bold ${fontSource === "featured" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}
                   >
                     Featured
                   </button>
                   <button
                     type="button"
                     onClick={() => setFontSource("by-womxn")}
-                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-bold ${fontSource === "by-womxn" ? "bg-[#951E3A] text-white border-[#951E3A]" : "border-gray-200 text-gray-500"}`}
+                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-bold ${fontSource === "by-womxn" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}
                   >
                     Libre Fonts by Womxn
                   </button>
                   <button
                     type="button"
                     onClick={() => setFontSource("all")}
-                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-bold ${fontSource === "all" ? "bg-[#951E3A] text-white border-[#951E3A]" : "border-gray-200 text-gray-500"}`}
+                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-bold ${fontSource === "all" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}
                   >
                     All
                   </button>
@@ -284,22 +284,22 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                         type="button"
                         onClick={() => handleFontSelect(font.key)}
                         aria-pressed={selected}
-                        className={`w-full text-left rounded-xl border-2 p-3.5 transition-colors ${selected ? "border-[#951E3A] bg-[#951E3A]/5" : "border-gray-200 hover:border-[#951E3A]/30"}`}
+                        className={`w-full text-left rounded-xl border-2 p-3.5 transition-colors ${selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}
                       >
                         <div className="flex items-start justify-between gap-3 mb-2.5">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="text-sm font-bold text-gray-800">{font.name}</span>
+                              <span className="text-sm font-bold text-foreground">{font.name}</span>
                               {font.key === "gnu-free-mono" && (
-                                <span className="rounded-full bg-[#951E3A] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">Default</span>
+                                <span className="rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-foreground">Default</span>
                               )}
-                              {selected && <Check className="h-3.5 w-3.5 text-[#951E3A]" />}
+                              {selected && <Check className="h-3.5 w-3.5 text-primary" />}
                             </div>
-                            <p className="text-[10px] leading-4 text-gray-400 mt-0.5">{showAdvancedFonts ? font.detail : SIMPLE_FONT_LABELS[font.key]}</p>
+                            <p className="text-[10px] leading-4 text-muted-foreground mt-0.5">{showAdvancedFonts ? font.detail : SIMPLE_FONT_LABELS[font.key]}</p>
                           </div>
                           {showAdvancedFonts && <div className="shrink-0 flex items-center gap-1.5">
-                            <span className={`h-1.5 w-1.5 rounded-full ${available ? "bg-green-500" : available === false ? "bg-amber-400" : "bg-gray-300"}`} />
-                            <span className="text-[9px] uppercase tracking-wider text-gray-400">
+                            <span className={`h-1.5 w-1.5 rounded-full ${available ? "bg-green-500" : available === false ? "bg-amber-400" : "bg-muted"}`} />
+                            <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
                               {font.localOnly ? (available ? "Installed" : available === false ? "Fallback" : "Checking") : "Embedded"}
                             </span>
                           </div>}
@@ -316,7 +316,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                 </div>
 
                 {visibleFonts.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-gray-200 px-3 py-5 text-center text-xs text-gray-400">
+                  <div className="rounded-lg border border-dashed border-border px-3 py-5 text-center text-xs text-muted-foreground">
                     No fonts match this search.
                   </div>
                 )}
@@ -324,7 +324,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   <button
                     type="button"
                     onClick={() => setFontLimit((value) => value + 18)}
-                    className="mt-2.5 w-full h-9 rounded-lg border border-gray-200 text-xs font-bold text-gray-600 hover:border-[#951E3A]/30"
+                    className="mt-2.5 w-full h-9 rounded-lg border border-border text-xs font-bold text-foreground hover:border-primary/30"
                   >
                     Show more · {filteredFonts.length - visibleFonts.length} remaining
                   </button>
@@ -332,15 +332,15 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
 
                 {showAdvancedFonts && <div className="mt-3 grid gap-1.5">
                   {FONT_LIBRARIES.map((library) => (
-                    <div key={library.key} className="flex flex-col gap-1 border-t border-gray-100 pt-2 text-[10px] sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                    <div key={library.key} className="flex flex-col gap-1 border-t border-border pt-2 text-[10px] sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                       {library.url ? (
-                        <a href={library.url} target="_blank" rel="noreferrer" className="font-bold text-gray-600 underline underline-offset-2">
+                        <a href={library.url} target="_blank" rel="noreferrer" className="font-bold text-foreground underline underline-offset-2">
                           {library.name}
                         </a>
                       ) : (
-                        <span className="font-bold text-gray-600">{library.name}</span>
+                        <span className="font-bold text-foreground">{library.name}</span>
                       )}
-                      <span className="leading-4 text-gray-400 sm:max-w-[70%] sm:text-right">{library.detail}</span>
+                      <span className="leading-4 text-muted-foreground sm:max-w-[70%] sm:text-right">{library.detail}</span>
                     </div>
                   ))}
                 </div>}
@@ -348,27 +348,27 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   setShowAdvancedFonts((value) => !value);
                   setFontSearch("");
                   setFontSource("featured");
-                }} className="mt-3 min-h-11 w-full border border-gray-200 px-3 text-sm font-bold text-gray-700 hover:border-[#951E3A]/40" aria-expanded={showAdvancedFonts}>
+                }} className="mt-3 min-h-11 w-full border border-border px-3 text-sm font-bold text-foreground hover:border-primary/40" aria-expanded={showAdvancedFonts}>
                   {showAdvancedFonts ? "Show only easy choices" : `Advanced font choices · ${FONTS.length} total`}
                 </button>
               </div>
 
-              <div id="setting-comfort" className="scroll-mt-20 border-t border-gray-200 pt-5">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">Comfort options</p>
-                <p className="mt-1 text-sm text-gray-500">Turn each option on or off. Changes happen immediately and are remembered.</p>
+              <div id="setting-comfort" className="scroll-mt-20 border-t border-border pt-5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Comfort options</p>
+                <p className="mt-1 text-sm text-muted-foreground">Turn each option on or off. Changes happen immediately and are remembered.</p>
               </div>
 
               {/* Sound */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  {soundOn ? <Volume2 className="w-4 h-4 text-[#951E3A]" /> : <VolumeX className="w-4 h-4 text-gray-400" />}
-                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Sound Effects</h3>
+                  {soundOn ? <Volume2 className="w-4 h-4 text-primary" /> : <VolumeX className="w-4 h-4 text-muted-foreground" />}
+                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Sound Effects</h3>
                 </div>
                 <button onClick={() => { const v = !soundOn; setSoundOn(v); setSoundEnabled(v); }}
-                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${soundOn ? "border-[#951E3A]/40 bg-[#951E3A]/5" : "border-gray-200"}`}>
-                  <span className="text-sm font-semibold text-gray-700">{soundOn ? "On" : "Off"}</span>
-                  <span className={`relative w-10 h-6 rounded-full transition-colors ${soundOn ? "bg-[#951E3A]" : "bg-gray-300"}`}>
-                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${soundOn ? "left-[18px]" : "left-0.5"}`} />
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${soundOn ? "border-primary/40 bg-primary/5" : "border-border"}`}>
+                  <span className="text-sm font-semibold text-foreground">{soundOn ? "On" : "Off"}</span>
+                  <span className={`relative w-10 h-6 rounded-full transition-colors ${soundOn ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-background shadow transition-all ${soundOn ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                 </button>
               </div>
@@ -376,22 +376,22 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               {/* Motion */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Accessibility className="w-4 h-4 text-[#951E3A]" />
-                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Animations</h3>
+                  <Accessibility className="w-4 h-4 text-primary" />
+                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Animations</h3>
                 </div>
-                <p className="text-xs text-gray-400 mb-3">Keep interface transitions and glass motion active. Your device's reduced-motion setting is always respected.</p>
+                <p className="text-xs text-muted-foreground mb-3">Keep interface transitions and glass motion active. Your device's reduced-motion setting is always respected.</p>
                 <button
                   onClick={() => {
                     const value = !animationsOn;
                     setAnimationsOn(value);
                     setAnimationsDisabled(!value);
                   }}
-                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${animationsOn ? "border-[#951E3A]/40 bg-[#951E3A]/5" : "border-gray-200"}`}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${animationsOn ? "border-primary/40 bg-primary/5" : "border-border"}`}
                   aria-pressed={animationsOn}
                 >
-                  <span className="text-sm font-semibold text-gray-700">{animationsOn ? "Enabled" : "Disabled"}</span>
-                  <span className={`relative w-10 h-6 rounded-full transition-colors ${animationsOn ? "bg-[#951E3A]" : "bg-gray-300"}`}>
-                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${animationsOn ? "left-[18px]" : "left-0.5"}`} />
+                  <span className="text-sm font-semibold text-foreground">{animationsOn ? "Enabled" : "Disabled"}</span>
+                  <span className={`relative w-10 h-6 rounded-full transition-colors ${animationsOn ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-background shadow transition-all ${animationsOn ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                 </button>
               </div>
@@ -399,22 +399,22 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               {/* Custom cursor */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <MousePointer2 className={`w-4 h-4 ${customCursorOn ? "text-[#951E3A]" : "text-gray-400"}`} />
-                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Custom Cursor</h3>
+                  <MousePointer2 className={`w-4 h-4 ${customCursorOn ? "text-primary" : "text-muted-foreground"}`} />
+                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Custom Cursor</h3>
                 </div>
-                <p className="text-xs text-gray-400 mb-3">Use the animated liquid cursor on mouse and trackpad devices. Turning it off restores the normal system cursor.</p>
+                <p className="text-xs text-muted-foreground mb-3">Use the animated liquid cursor on mouse and trackpad devices. Turning it off restores the normal system cursor.</p>
                 <button
                   onClick={() => {
                     const value = !customCursorOn;
                     setCustomCursorOn(value);
                     setCustomCursorEnabled(value);
                   }}
-                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${customCursorOn ? "border-[#951E3A]/40 bg-[#951E3A]/5" : "border-gray-200"}`}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${customCursorOn ? "border-primary/40 bg-primary/5" : "border-border"}`}
                   aria-pressed={customCursorOn}
                 >
-                  <span className="text-sm font-semibold text-gray-700">{customCursorOn ? "Enabled" : "Disabled"}</span>
-                  <span className={`relative w-10 h-6 rounded-full transition-colors ${customCursorOn ? "bg-[#951E3A]" : "bg-gray-300"}`}>
-                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${customCursorOn ? "left-[18px]" : "left-0.5"}`} />
+                  <span className="text-sm font-semibold text-foreground">{customCursorOn ? "Enabled" : "Disabled"}</span>
+                  <span className={`relative w-10 h-6 rounded-full transition-colors ${customCursorOn ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-background shadow transition-all ${customCursorOn ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                 </button>
               </div>
@@ -422,10 +422,10 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               {/* Japanese companion text */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Languages className={`w-4 h-4 ${japaneseTextOn ? "text-[#951E3A]" : "text-gray-400"}`} />
-                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Japanese Text <span lang="ja" className="normal-case tracking-normal text-gray-500">／日本語表示</span></h3>
+                  <Languages className={`w-4 h-4 ${japaneseTextOn ? "text-primary" : "text-muted-foreground"}`} />
+                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Japanese Text <span lang="ja" className="normal-case tracking-normal text-muted-foreground">／日本語表示</span></h3>
                 </div>
-                <p className="text-xs text-gray-400 mb-3">
+                <p className="text-xs text-muted-foreground mb-3">
                   Show short Japanese translations alongside the English navigation and guidance. English stays visible, and this choice follows your account.
                 </p>
                 <button
@@ -434,17 +434,17 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                     setJapaneseTextOn(value);
                     setJapaneseTextEnabled(value);
                   }}
-                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${japaneseTextOn ? "border-[#951E3A]/40 bg-[#951E3A]/5" : "border-gray-200"}`}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${japaneseTextOn ? "border-primary/40 bg-primary/5" : "border-border"}`}
                   aria-pressed={japaneseTextOn}
                 >
-                  <span className="text-left text-sm font-semibold text-gray-700">
+                  <span className="text-left text-sm font-semibold text-foreground">
                     {japaneseTextOn ? "On · Japanese appears with English" : "Off · English only"}
-                    <span lang="ja" className="mt-0.5 block text-xs font-normal text-gray-500">
+                    <span lang="ja" className="mt-0.5 block text-xs font-normal text-muted-foreground">
                       {japaneseTextOn ? "オン・英語と日本語を表示" : "オフ・英語のみ"}
                     </span>
                   </span>
-                  <span className={`relative w-10 h-6 shrink-0 rounded-full transition-colors ${japaneseTextOn ? "bg-[#951E3A]" : "bg-gray-300"}`}>
-                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${japaneseTextOn ? "left-[18px]" : "left-0.5"}`} />
+                  <span className={`relative w-10 h-6 shrink-0 rounded-full transition-colors ${japaneseTextOn ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-background shadow transition-all ${japaneseTextOn ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                 </button>
               </div>
@@ -452,18 +452,18 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               {/* Account */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <User className="w-4 h-4 text-[#951E3A]" />
-                  <h3 className="font-display font-bold text-gray-800 text-sm uppercase tracking-wide">Account</h3>
+                  <User className="w-4 h-4 text-primary" />
+                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Account</h3>
                 </div>
                 <div className="space-y-2">
                   <button onClick={() => base44.auth.logout()}
-                    className="w-full flex items-center gap-2 text-left text-sm font-bold text-white bg-[#951E3A] px-3 py-2.5 rounded-lg hover:bg-[#7a1830] transition-colors">
+                    className="w-full flex items-center gap-2 text-left text-sm font-bold text-primary-foreground bg-primary px-3 py-2.5 rounded-lg hover:opacity-90 transition-colors">
                     <LogOut className="w-4 h-4" /> Sign Out
                   </button>
                 </div>
               </div>
 
-              <p className="text-center text-xs text-gray-300 pt-2">Settings are stored on this device.</p>
+              <p className="text-center text-xs text-muted-foreground pt-2">Settings are stored on this device.</p>
             </div>
           </motion.div>
         </motion.div>
