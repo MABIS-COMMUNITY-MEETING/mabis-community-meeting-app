@@ -87,6 +87,7 @@ The base design uses ink, bone, MABIS maroon, and gold, while the theme system m
 - Preserve the recognizable source colors of themed palettes while maintaining contrast.
 - For feminine or transfeminine treatments, deliberate pink accents are preferred over generic pastel gradients.
 - Never hard-code a color when a semantic token already expresses its role.
+- Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.
 
 ### Font contract
 
@@ -155,6 +156,8 @@ Novesce prefers direct manipulation over page jumps and detached forms.
 - Keep controls compact, but preserve accessible touch targets.
 - Never hide an essential action behind hover alone.
 - Avoid destructive rewrites of working interaction code when a surgical fix is possible.
+- Keep Home easy to navigate with its numbered editorial sections, plain-language page guide, and contextual instructions; usability aids must clarify the existing Japanese editorial hierarchy rather than replace it with a generic dashboard.
+- Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.
 
 ### AI enforcement procedure
 
