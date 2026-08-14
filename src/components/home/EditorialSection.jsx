@@ -1,9 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
+import JapaneseText from "@/components/JapaneseText";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-export default function EditorialSection({ index = "00", label = "", children }) {
+export default function EditorialSection({ index = "00", label = "", jaLabel = "", children }) {
   const flag = `var(--flag-${((parseInt(index, 10) || 1) % 8) + 1}, hsl(var(--primary)))`;
 
   return (
@@ -40,10 +41,10 @@ export default function EditorialSection({ index = "00", label = "", children })
           <span className="tech-label tabular-nums" style={{ color: flag }}>{index}</span>
           <div className="min-w-0">
             <h2 className="break-words font-display text-[clamp(1.45rem,7vw,2rem)] font-medium leading-[1.02] tracking-[-0.045em] sm:text-[2.15rem]">
-              {label}
+              <JapaneseText ja={jaLabel}>{label}</JapaneseText>
             </h2>
           </div>
-          <span className="hidden sm:block jp-kicker text-right">MABIS SECTION</span>
+          <JapaneseText ja="MABIS セクション" className="hidden sm:block jp-kicker text-right" japaneseClassName="text-[0.82em]">MABIS SECTION</JapaneseText>
         </motion.header>
 
         <motion.div
