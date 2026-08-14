@@ -766,6 +766,39 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
   // <SelectItem> options with an identical value, which Radix cannot resolve.
   const topicSubmitters = dedupeByIdentity(members);
 
+  // Title focus guard.
+  //
+  // The title field takes focus fine, then loses it a few seconds later. This
+  // page re-renders on a 1s clock, a 20s presence heartbeat and a 15s presence
+  // refetch, and the rich-text editor ends up holding the caret afterwards.
+  //
+  // So while you are working in the title, if focus lands in the editor without
+  // you having clicked anything, take it back. Any real mousedown outside the
+  // field releases the guard, so clicking into the editor, a button or another
+  // input behaves normally. This only fights the silent theft.
+  const titleRef = useRef(null);
+  const titleGuard = useRef(false);
+
+  useEffect(() => {
+    const restore = () => {
+      if (!titleGuard.current) return;
+      const field = titleRef.current;
+      const active = document.activeElement;
+      if (!field || !active || active === field) return;
+      if (active.closest && active.closest(".ql-editor")) field.focus();
+    };
+    const release = (event) => {
+      const field = titleRef.current;
+      if (!field || !field.contains(event.target)) titleGuard.current = false;
+    };
+    const id = setInterval(restore, 120);
+    document.addEventListener("mousedown", release, true);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("mousedown", release, true);
+    };
+  }, []);
+
 
 
   // ── MEETING MODE ──────────────────────────────────────────────────────────
@@ -1073,8 +1106,10 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 </SelectContent>
               </Select>
               <Input placeholder="Topic title..." value={title}
+                ref={titleRef}
                 onChange={(e) => setTitle(e.target.value)}
-                onMouseDown={(event) => { event.stopPropagation(); holdFocus(event.currentTarget); }}
+                onFocus={() => { titleGuard.current = true; }}
+                onMouseDown={(event) => { event.stopPropagation(); titleGuard.current = true; holdFocus(event.currentTarget); }}
                 onClick={(event) => holdFocus(event.currentTarget)}
                 className="rounded-lg border-border bg-card" />
             </div>
