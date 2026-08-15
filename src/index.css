@@ -1934,6 +1934,15 @@ html.is-scrolling .widget-loading-shell {
   }
   .site-nav-panel {
     padding-top: calc(6rem + env(safe-area-inset-top)) !important;
+    /* The panel is the only scrollable region inside a `fixed inset-0`
+       overlay while body scroll is locked (see SiteHeader.jsx). On iOS
+       Safari that combination needs the scrolling element to explicitly
+       opt in to touch panning and momentum, and to contain overscroll so
+       a drag that reaches the top/bottom of the list doesn't chain to the
+       (locked) body and appear to do nothing instead of just stopping. */
+    touch-action: pan-y;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
