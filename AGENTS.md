@@ -16,11 +16,13 @@ An AI preference, generic best practice, library convention, or redesign instinc
 
 ## Required before any edit
 
-1. Read all of `README.md`, especially `Mandatory rule for AI contributors`, `Novesce UI mandate`, typography, liquid glass, interaction, accessibility, and the design review checklist.
+1. Read all of `README.md`, especially the mobile notice, `Mandatory rule for AI contributors`, `Mandatory code-style rule for AI contributors`, `Novesce UI mandate`, typography, liquid glass, interaction, accessibility, and the design review checklist.
 2. Inspect the existing implementation before proposing replacement code.
 3. For visual, layout, typography, motion, interaction, or responsive work, perform current research on real Japanese web design and record the sources and conclusions before implementation.
-4. Identify which Novesce design rules are relevant to the task.
-5. Prefer the smallest coherent change. Do not perform unsolicited redesigns or broad rewrites.
+4. For any HTML, CSS, or JSX authorship, research the Linux kernel's coding style (see `Mandatory code-style rule for AI contributors` in `README.md`) and apply its underlying discipline — not its C-specific formatting — before writing the change.
+5. Identify which Novesce design rules are relevant to the task.
+6. Verify the change at a phone-width viewport — mobile is a primary layout, not a shrink target; do not skip this for changes described as backend-only or non-visual.
+7. Prefer the smallest coherent change. Do not perform unsolicited redesigns or broad rewrites.
 
 If current research is required but unavailable, stop and ask for access or human direction. Do not improvise a stereotypical Japanese aesthetic.
 
