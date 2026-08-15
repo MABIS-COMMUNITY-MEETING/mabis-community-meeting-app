@@ -321,7 +321,27 @@ const EXACT_TRANSLATIONS = {
   "your meeting hub at a glance": "ミーティング情報をひと目で確認",
   "your name...": "あなたの名前...",
   "zoom in": "拡大",
-  "zoom out": "縮小"
+  "zoom out": "縮小",
+  "bangkok th": "バンコク・タイ",
+  "community dashboard": "コミュニティ・ダッシュボード",
+  "scroll to continue": "スクロールして続ける",
+  "cycle": "サイクル",
+  "index": "インデックス",
+  "week": "週",
+  "date": "日付",
+  "friday": "金曜日",
+  "today": "今日",
+  "day": "日",
+  "month": "月",
+  "year": "年",
+  "import": "インポート",
+  "reading...": "読み込み中...",
+  "event": "予定",
+  "holiday": "祝日",
+  "meeting": "ミーティング",
+  "birthday": "誕生日",
+  "friday meeting": "金曜ミーティング",
+  "nothing planned for this day...": "この日の予定はありません。"
 };
 
 const NOUNS = {
