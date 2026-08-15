@@ -779,11 +779,14 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="fixed inset-0 bg-background text-foreground z-[80] flex flex-col overflow-x-hidden">
         <div className="bg-primary px-4 sm:px-6 py-4 flex flex-col items-start gap-3 shrink-0 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-primary-foreground/60 text-xs uppercase tracking-widest mb-0.5">Meeting Mode</p>
+            <JapaneseText as="p" ja="ミーティング進行中" className="text-primary-foreground-muted text-xs uppercase tracking-widest mb-0.5" japaneseClassName="block normal-case tracking-normal text-[0.85em]">Meeting Mode</JapaneseText>
             <h2 className="font-display font-bold text-primary-foreground text-lg sm:text-2xl">{
               (() => {
                 const md = localStorage.getItem("mabis_meeting_date");
-                return md ? format(new Date(md), "EEEE, d MMMM yyyy") : formatWeekFull(viewedWeek);
+                const d = md ? new Date(md) : weekLabelToDate(viewedWeek);
+                const en = md ? format(d, "EEEE, d MMMM yyyy") : formatWeekFull(viewedWeek);
+                const ja = new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "long" }).format(d);
+                return <JapaneseText ja={ja} japaneseClassName="block mt-0.5 text-[0.55em] font-normal opacity-80">{en}</JapaneseText>;
               })()
             }</h2>
           </div>
@@ -1015,7 +1018,14 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
           <MessagesSquare className="w-5 h-5 text-primary-foreground" />
           <div>
             <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Discussions</h2>
-            <p className="text-primary-foreground/60 text-xs mt-0.5">{formatWeekLabel(viewedWeek)}</p>
+            <JapaneseText
+              as="p"
+              ja={new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric" }).format(weekLabelToDate(viewedWeek)) + "の週"}
+              className="text-primary-foreground-muted text-xs mt-0.5"
+              japaneseClassName="block mt-0.5 text-[0.9em]"
+            >
+              {formatWeekLabel(viewedWeek)}
+            </JapaneseText>
           </div>
         </div>
         <div className="mabis-widget-actions grid grid-cols-2 gap-2 sm:flex sm:items-center">
