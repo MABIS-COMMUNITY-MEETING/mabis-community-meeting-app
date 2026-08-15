@@ -51,8 +51,17 @@ globalThis.fetch = noopFetch;
 // NB: `performance` is deliberately excluded. jsdom's Performance delegates to
 // the global one, so assigning it back onto globalThis makes now() recurse
 // into itself and blow the stack. Node's native performance works fine here.
-for (const k of ["window", "document", "navigator", "localStorage", "sessionStorage", "requestAnimationFrame", "cancelAnimationFrame", "matchMedia", "getComputedStyle", "Node", "Element", "HTMLElement", "CustomEvent", "Event", "MutationObserver"]) {
-  globalThis[k] = window[k];
+for (const k of ["window", "document", "navigator", "localStorage", "sessionStorage", "requestAnimationFrame", "cancelAnimationFrame", "matchMedia", "getComputedStyle", "CustomEvent", "Event", "MutationObserver", "IntersectionObserver", "PerformanceObserver", "location", "history"]) {
+  if (window[k] !== undefined) globalThis[k] = window[k];
+}
+
+// Copy every DOM constructor (HTMLHeadElement, Node, Element, …) rather than
+// listing them: the router and query client reach for a long tail of these,
+// and enumerating by hand just turns into a game of whack-a-mole.
+for (const k of Object.getOwnPropertyNames(window)) {
+  if (/^[A-Z]/.test(k) && globalThis[k] === undefined) {
+    try { globalThis[k] = window[k]; } catch { /* getter-only */ }
+  }
 }
 Object.defineProperty(window, "performance", { value: globalThis.performance, configurable: true });
 globalThis.self = window;
