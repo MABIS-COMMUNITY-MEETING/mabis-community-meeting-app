@@ -220,14 +220,16 @@ export default function Home() {
         <div className="space-y-12 sm:space-y-24">
 
         <EditorialSection index="01" label="MEETING MODE" jaLabel="ミーティング開始"
-          description="Starts the Friday meeting for everyone at once. The chair or a teacher presses this — then the whole group follows the same screen.">
+          description="Starts the Friday meeting for everyone at once. The chair or a teacher presses this — then the whole group follows the same screen."
+          jaDescription="金曜日のミーティングを全員同時に始めます。司会か先生がボタンを押すと、みんなが同じ画面を見ながら進みます。">
           <MeetingModeWidget canStart={canStartMeeting} onStartMeeting={() => {
             window.dispatchEvent(new CustomEvent("startMeetingMode"));
           }} />
         </EditorialSection>
 
         <EditorialSection index="02" label="ANNOUNCEMENTS" jaLabel="お知らせ"
-          description="Short notices from teachers and staff. The newest one is always at the top.">
+          description="Short notices from teachers and staff. The newest one is always at the top."
+          jaDescription="先生やスタッフからの短いお知らせです。新しいものが常に一番上に表示されます。">
           <LazySection minHeight={360}>
             <Suspense fallback={<WidgetFallback minHeight={360} />}>
               <AnnouncementsWidget members={members} isAdmin={canManage} />
@@ -236,14 +238,16 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="03" label="DISCUSSION" jaLabel="話し合い"
-          description="Anything you want the group to talk about on Friday. Anyone can add one — write your topic and pick your name.">
+          description="Anything you want the group to talk about on Friday. Anyone can add one — write your topic and pick your name."
+          jaDescription="金曜日にみんなで話し合いたいことを書きます。誰でも追加できます。テーマを書いて名前を選んでください。">
           <Suspense fallback={<WidgetFallback minHeight={560} />}>
             <DiscussionWidget members={members} isAdmin={canManage} canEditTopics={discussionCanManage} />
           </Suspense>
         </EditorialSection>
 
         <EditorialSection index="04" label="JOBS AND ROTATION" jaLabel="係とローテーション"
-          description="Who is doing which job, and when your turn comes round. Tick your job off once you have done it.">
+          description="Who is doing which job, and when your turn comes round. Tick your job off once you have done it."
+          jaDescription="誰がどの係をしているか、自分の番がいつ来るかがわかります。終わったらチェックを入れてください。">
           <LazySection minHeight={560}>
             <Suspense fallback={<WidgetFallback minHeight={560} />}>
               <JobsWidget members={members} isAdmin={canManage} compact={false} />
@@ -252,7 +256,8 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="05" label="CALENDAR" jaLabel="カレンダー"
-          description="Events, holidays and birthdays coming up. Tap any day to see what is on.">
+          description="Events, holidays and birthdays coming up. Tap any day to see what is on."
+          jaDescription="これからの予定・祝日・誕生日がわかります。日付をタップすると詳しい内容が見られます。">
           <LazySection minHeight={620}>
             <Suspense fallback={<WidgetFallback minHeight={620} />}>
               <CalendarWidget />
@@ -261,7 +266,8 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="06" label="SCHEDULE" jaLabel="スケジュール"
-          description="The normal class timetable for the week.">
+          description="The normal class timetable for the week."
+          jaDescription="今週のふだんの時間割です。">
           <LazySection minHeight={420}>
             <Suspense fallback={<WidgetFallback minHeight={420} />}>
               <ScheduleWidget isAdmin={canManage} />
@@ -270,7 +276,8 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="07" label="LOST AND FOUND" jaLabel="落とし物"
-          description="Lost something? Add it here so people can look out for it. Found something? Check whether anyone is missing it.">
+          description="Lost something? Add it here so people can look out for it. Found something? Check whether anyone is missing it."
+          jaDescription="何かなくしましたか？ここに追加すると、みんなが気にかけてくれます。何かを見つけたら、探している人がいないか確認してください。">
           <LazySection minHeight={420}>
             <Suspense fallback={<WidgetFallback minHeight={420} />}>
               <MissingItemsWidget members={members} />
@@ -279,7 +286,8 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="08" label="LUNCH MENU" jaLabel="ランチメニュー"
-          description="What is for snack and lunch on each day this week.">
+          description="What is for snack and lunch on each day this week."
+          jaDescription="今週の各曜日のおやつとランチの内容です。">
           <LazySection minHeight={420}>
             <Suspense fallback={<WidgetFallback minHeight={420} />}>
               <LunchMenuWidget isAdmin={canManage} />
@@ -288,7 +296,8 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="09" label="NEWS" jaLabel="ニュース"
-          description="Longer stories and updates from around the school.">
+          description="Longer stories and updates from around the school."
+          jaDescription="学校のいろいろな出来事についての、少し長めの記事です。">
           <LazySection minHeight={480}>
             <Suspense fallback={<WidgetFallback minHeight={480} />}>
               <NewsWidget members={members} isAdmin={canManage} />
@@ -297,7 +306,8 @@ export default function Home() {
         </EditorialSection>
 
         <EditorialSection index="10" label="MEMBERS" jaLabel="メンバー"
-          description="Everyone in the community, and the job or role each person has right now.">
+          description="Everyone in the community, and the job or role each person has right now."
+          jaDescription="コミュニティの全員と、それぞれが今担当している係や役割がわかります。">
           <LazySection minHeight={560}>
             <Suspense fallback={<WidgetFallback minHeight={560} />}>
               <MembersWidget isAdmin={canManage} canChangeRoles={isSummerOrBenjamin || isMinutesTaker} />
