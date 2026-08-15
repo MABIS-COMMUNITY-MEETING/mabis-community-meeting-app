@@ -247,6 +247,7 @@
     --popover-foreground: 222 18% 11%;
     --primary: 348 74% 30%;
     --primary-foreground: 40 40% 97%;
+    --primary-foreground-muted: 40 30% 82%;
     --secondary: 38 78% 52%;
     --secondary-foreground: 222 18% 11%;
     --muted: 40 22% 90%;
@@ -286,6 +287,7 @@
     --popover-foreground: 42 30% 92%;
     --primary: 348 74% 48%;
     --primary-foreground: 222 22% 7%;
+    --primary-foreground-muted: 222 18% 22%;
     --secondary: 38 78% 58%;
     --secondary-foreground: 222 22% 7%;
     --muted: 222 16% 16%;
