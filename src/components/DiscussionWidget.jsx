@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Maximize2, X, ChevronLeft, ChevronRight, History, Pause, Square, Loader2, UserCheck, RefreshCw, Pencil, UserPlus, MessagesSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import JapaneseText from "@/components/JapaneseText";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getISOWeek, getYear, nextFriday, isFriday, subWeeks, addWeeks, format } from "date-fns";
