@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import JapaneseText from "@/components/JapaneseText";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UtensilsCrossed, Loader2, Save } from "lucide-react";
@@ -59,7 +60,14 @@ export default function LunchMenuWidget({ isAdmin }) {
         <UtensilsCrossed className="w-5 h-5 text-primary-foreground" />
         <div>
           <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Snacks &amp; Lunch</h2>
-          <p className="text-primary-foreground/60 text-xs mt-0.5">Week of {format(fridayOfCurrentWeek(), "d MMMM yyyy")}</p>
+          <JapaneseText
+            as="p"
+            ja={`${new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric" }).format(fridayOfCurrentWeek())}の週`}
+            className="text-primary-foreground-muted text-xs mt-0.5"
+            japaneseClassName="block mt-0.5 text-[0.9em]"
+          >
+            Week of {format(fridayOfCurrentWeek(), "d MMMM yyyy")}
+          </JapaneseText>
         </div>
       </div>
 
