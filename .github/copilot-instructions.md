@@ -26,4 +26,8 @@ Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be
 
 Visual work requires current research on real Japanese websites before implementation, with sources and conclusions recorded. If research access is unavailable, stop and ask instead of inventing a Japanese aesthetic.
 
+Do not forget about mobile: verify every change at a phone-width viewport, even backend-only or non-visual ones. Mobile is a primary layout, not a shrink target.
+
+For any HTML, CSS, or JSX authorship, research the Linux kernel's coding style (`Documentation/process/coding-style.rst`) and apply its underlying discipline — flat control flow, single-purpose functions and components, comments that explain why rather than what, no cleverness for its own sake — not its C-specific tab width or brace placement.
+
 Prefer surgical edits. Before completion, run `npm run check:design`, `npm run build`, and relevant lint checks. Reject technically valid changes that violate the design contract.
