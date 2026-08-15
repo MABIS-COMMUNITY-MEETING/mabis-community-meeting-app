@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/AuthContext";
 import TopicCard from "@/components/topics/TopicCard";
 import OpenMoji from "@/components/OpenMoji";
+import JapaneseText from "@/components/JapaneseText";
 
 export default function Topics() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -53,18 +54,18 @@ export default function Topics() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight">Discussion Board</h1>
-          <p className="text-muted-foreground mt-1">Submit and vote on topics for the next meeting</p>
+          <JapaneseText as="h1" ja="議題ボード" className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight" japaneseClassName="text-base">Discussion Board</JapaneseText>
+          <JapaneseText as="p" ja="次回のミーティングの議題を提出・投票" className="text-muted-foreground mt-1" japaneseClassName="text-[0.9em]">Submit and vote on topics for the next meeting</JapaneseText>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25">
-              <Plus className="w-4 h-4 mr-2" /> Add Topic
+              <Plus className="w-4 h-4 mr-2" /> <JapaneseText ja="議題を追加" layout="inline" japaneseClassName="text-[0.8em]">Add Topic</JapaneseText>
             </Button>
           </DialogTrigger>
           <DialogContent className="rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="font-display">New Discussion Topic</DialogTitle>
+              <DialogTitle className="font-display"><JapaneseText ja="新しい議題">New Discussion Topic</JapaneseText></DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <Input
@@ -92,7 +93,7 @@ export default function Topics() {
                   })
                 }
               >
-                Submit Topic
+                <JapaneseText ja="議題を送信" layout="inline" japaneseClassName="text-[0.8em]">Submit Topic</JapaneseText>
               </Button>
             </div>
           </DialogContent>
@@ -101,23 +102,23 @@ export default function Topics() {
 
       <Tabs value={filter} onValueChange={setFilter}>
         <TabsList className="bg-secondary rounded-xl">
-          <TabsTrigger value="all" className="rounded-lg">All</TabsTrigger>
+          <TabsTrigger value="all" className="rounded-lg"><JapaneseText ja="すべて" layout="inline" japaneseClassName="text-[0.8em]">All</JapaneseText></TabsTrigger>
           <TabsTrigger value="pending" className="rounded-lg">
             <span className="flex items-center gap-1.5">
               <OpenMoji hexcode="1F525" className="h-4 w-4" />
-              Pending
+              <JapaneseText ja="保留中" layout="inline" japaneseClassName="text-[0.8em]">Pending</JapaneseText>
             </span>
           </TabsTrigger>
           <TabsTrigger value="discussed" className="rounded-lg">
             <span className="flex items-center gap-1.5">
               <OpenMoji hexcode="2705" className="h-4 w-4" />
-              Discussed
+              <JapaneseText ja="議論済み" layout="inline" japaneseClassName="text-[0.8em]">Discussed</JapaneseText>
             </span>
           </TabsTrigger>
           <TabsTrigger value="deferred" className="rounded-lg">
             <span className="flex items-center gap-1.5">
               <OpenMoji hexcode="23F3" className="h-4 w-4" />
-              Deferred
+              <JapaneseText ja="先送り" layout="inline" japaneseClassName="text-[0.8em]">Deferred</JapaneseText>
             </span>
           </TabsTrigger>
         </TabsList>
@@ -126,8 +127,8 @@ export default function Topics() {
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-30" />
-          <p className="text-lg">No topics yet</p>
-          <p className="text-sm mt-1">Be the first to add something to discuss!</p>
+          <JapaneseText as="p" ja="まだ議題がありません" className="text-lg" japaneseClassName="text-[0.7em] block mt-1">No topics yet</JapaneseText>
+          <JapaneseText as="p" ja="最初の議題を追加してみましょう！" className="text-sm mt-1" japaneseClassName="text-[0.85em] block mt-1">Be the first to add something to discuss!</JapaneseText>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
