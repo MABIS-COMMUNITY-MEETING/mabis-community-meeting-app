@@ -978,7 +978,14 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
         <div className="mabis-widget-header bg-primary px-4 py-4 flex flex-col items-start gap-3 shrink-0 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-2xl">Jobs Assignment</h2>
-            <p className="text-primary-foreground/60 text-sm">Weekly jobs: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)}</p>
+            <JapaneseText
+              as="p"
+              ja={`今週の係：${formatWeekLabel(currentWeek)}・タイムキーパー：${formatMonthLabel(currentMonth)}`}
+              className="text-primary-foreground-muted text-sm"
+              japaneseClassName="block mt-0.5 text-[0.85em]"
+            >
+              Weekly jobs: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)}
+            </JapaneseText>
           </div>
           <div className="mabis-widget-actions flex items-center gap-3">
             {isAdmin && currentAssignments.length > 0 && (
@@ -1024,7 +1031,14 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
       <div className="mabis-widget-header bg-primary px-4 py-4 flex flex-col items-start gap-3 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Jobs</h2>
-          <p className="text-primary-foreground/60 text-xs mt-0.5">Weekly: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments.length}/{allJobs.length} assigned</p>
+          <JapaneseText
+            as="p"
+            ja={`今週：${formatWeekLabel(currentWeek)}・タイムキーパー：${formatMonthLabel(currentMonth)}—${currentAssignments.length}/${allJobs.length}件割り当て済み`}
+            className="text-primary-foreground-muted text-xs mt-0.5"
+            japaneseClassName="block mt-0.5 text-[0.9em]"
+          >
+            Weekly: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments.length}/{allJobs.length} assigned
+          </JapaneseText>
         </div>
         <div className="mabis-widget-actions flex items-center gap-2">
           {isAdmin && currentAssignments.length > 0 && (
