@@ -4,6 +4,8 @@ A shared workspace for Montessori Academy Bangkok International School community
 
 This README is also the project’s **design contract**. New pages and components should follow these rules so the app continues to feel like one coherent product rather than a pile of unrelated widgets.
 
+> **Notice — do not forget about mobile.** Every rule, section, and change in this document and this codebase must be verified on a phone-width viewport before it is considered done. Mobile is not an afterthought, a secondary breakpoint, or a shrink target for the desktop layout — it is a primary layout (see product principle 5 below). Recurring bugs in this project have come specifically from a change that worked on desktop while silently breaking or hiding functionality on mobile: a menu that couldn't scroll, role badges that never rendered below a breakpoint, blur values with no mobile ceiling. Check mobile explicitly, every time, including for changes described as backend-only, copy-only, or non-visual, because shared components can regress on mobile without any desktop-visible symptom.
+
 ## Mandatory rule for AI contributors
 
 An AI agent, coding assistant, or generative model must **research Japanese web design in depth before writing or editing any project code**. Do not begin implementation from memory, stereotypes, a generic “Japanese-inspired” prompt, or the visual habits of Western SaaS products.
