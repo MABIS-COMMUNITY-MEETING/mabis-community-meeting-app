@@ -41,6 +41,13 @@ window.matchMedia = (q) => ({
 });
 if (!window.requestIdleCallback) window.requestIdleCallback = (fn) => setTimeout(fn, 0);
 
+// Vite's modulepreload polyfill fetches each chunk to warm the cache. There is
+// no server here and it is only a prefetch, so make it a no-op rather than let
+// an unhandled rejection kill the run.
+const noopFetch = () => Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve(""), json: () => Promise.resolve({}) });
+window.fetch = noopFetch;
+globalThis.fetch = noopFetch;
+
 // NB: `performance` is deliberately excluded. jsdom's Performance delegates to
 // the global one, so assigning it back onto globalThis makes now() recurse
 // into itself and blow the stack. Node's native performance works fine here.
