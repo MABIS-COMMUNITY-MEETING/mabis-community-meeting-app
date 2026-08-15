@@ -997,8 +997,14 @@ html.performance-lite body.theme-frutigeraero .mabis-widget::after {
 
 /* ── Start meeting ────────────────────────────────────────────────
    The only card that does not use .mabis-widget — it paints itself with bg-ink
-   and light text. Same glass window, tinted dark so the type stays legible. */
-body.theme-frutigeraero .bg-ink {
+   and light text. Same glass window, tinted dark so the type stays legible.
+   Scoped to .ink-card (not bare .bg-ink) — several full-viewport overlays
+   (the mobile nav panel, page-transition wipe, loading screen, splash) also
+   carry .bg-ink for their solid fill, and this card treatment's `position:
+   relative`, border-radius and box-shadow broke every one of them: a rounded
+   rect on a `fixed inset-0` element leaves the four corners uncovered, and
+   `position: relative` fights the `fixed` utility on source order. */
+body.theme-frutigeraero .bg-ink.ink-card {
   --hue: 205;
   --aero-radius: 10px;
   position: relative;
@@ -1015,7 +1021,7 @@ body.theme-frutigeraero .bg-ink {
     0 0 32px -6px hsl(196 100% 60% / 0.45),
     inset 0 0 0 1px rgb(255 255 255 / 0.28);
 }
-body.theme-frutigeraero .bg-ink::before {
+body.theme-frutigeraero .bg-ink.ink-card::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1027,7 +1033,7 @@ body.theme-frutigeraero .bg-ink::before {
     linear-gradient(to bottom, rgb(255 255 255 / 0.28), rgb(255 255 255 / 0.06) 42%, rgb(255 255 255 / 0) 54%),
     linear-gradient(to bottom, hsl(200 80% 30% / 0.85), hsl(210 85% 16% / 0.92));
 }
-body.theme-frutigeraero .bg-ink::after {
+body.theme-frutigeraero .bg-ink.ink-card::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -1037,9 +1043,21 @@ body.theme-frutigeraero .bg-ink::after {
   -webkit-backdrop-filter: blur(18px) saturate(1.9);
   backdrop-filter: blur(18px) saturate(1.9);
 }
-html.performance-lite body.theme-frutigeraero .bg-ink::after {
+html.performance-lite body.theme-frutigeraero .bg-ink.ink-card::after {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+}
+
+/* Full-viewport ink surfaces (mobile nav overlay, page-transition wipe,
+   loading screen, splash): keep them a solid opaque panel rather than the
+   card glass above — a `fixed inset-0` pane has no edges for a rim or corner
+   radius to read against, so it stays a flat, glossy-dark aero fill instead.
+   No border-radius, no box-shadow, no position override — the plain `bg-ink`
+   fill just gets replaced with a deep aero-sky gradient so text stays legible
+   against the bright sky/grass background elsewhere in the theme. */
+body.theme-frutigeraero .bg-ink:not(.ink-card) {
+  background-color: transparent;
+  background-image: linear-gradient(180deg, hsl(205 78% 14%) 0%, hsl(205 70% 10%) 100%);
 }
 
 /* Smaller cards: the same look, painted rather than blurred.
