@@ -196,6 +196,28 @@ export function contrastSafeInk(
     return contrastRatio(fallback, surface) >= minimum ? fallback : bestForeground(surface);
 }
 
+/**
+ * A dimmer sibling of a foreground colour that stays legible on the same
+ * surface. Opacity modifiers (e.g. Tailwind's text-primary-foreground/60)
+ * fade a colour toward whatever sits behind it — when that surface IS the
+ * paired fill, contrast collapses in low-margin themes. This instead nudges
+ * lightness toward the surface for a muted look, then verifies/repairs
+ * contrast against that exact surface so it can never fade past readable.
+ */
+export function mutedForeground(
+    foreground,
+    surface,
+    { amount = 0.4, minimum = 3.4 } = {},
+) {
+    const fg = colorParts(foreground);
+    const bg = colorParts(surface);
+    if (!fg || !bg) return foreground;
+
+    const mixedL = fg.l + (bg.l - fg.l) * amount;
+    const candidate = hslString({ h: fg.h, s: fg.s, l: mixedL });
+    return contrastSafeInk(candidate, surface, { fallback: foreground, minimum });
+}
+
 function neutralBand(lightness) {
     if (lightness < 35) return "dark";
     if (lightness > 72) return "light";
