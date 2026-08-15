@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import MeetingCalendar from "@/components/meetings/MeetingCalendar";
+import JapaneseText from "@/components/JapaneseText";
 import { motion } from "framer-motion";
 
 export default function Meetings() {
@@ -51,18 +52,18 @@ export default function Meetings() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight">Meetings</h1>
-          <p className="text-muted-foreground mt-1">Schedule and manage your meetings</p>
+          <JapaneseText as="h1" ja="ミーティング" className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight" japaneseClassName="text-base">Meetings</JapaneseText>
+          <JapaneseText as="p" ja="ミーティングの予定と管理" className="text-muted-foreground mt-1" japaneseClassName="text-[0.9em]">Schedule and manage your meetings</JapaneseText>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25">
-              <Plus className="w-4 h-4 mr-2" /> New Meeting
+              <Plus className="w-4 h-4 mr-2" /> <JapaneseText ja="新規ミーティング" layout="inline" japaneseClassName="text-[0.8em]">New Meeting</JapaneseText>
             </Button>
           </DialogTrigger>
           <DialogContent className="rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="font-display">Create Meeting</DialogTitle>
+              <DialogTitle className="font-display"><JapaneseText ja="ミーティングを作成">Create Meeting</JapaneseText></DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <Input
@@ -82,7 +83,7 @@ export default function Meetings() {
                 disabled={!newMeeting.title || !newMeeting.date}
                 onClick={() => createMutation.mutate(newMeeting)}
               >
-                Create Meeting
+                <JapaneseText ja="ミーティングを作成" layout="inline" japaneseClassName="text-[0.8em]">Create Meeting</JapaneseText>
               </Button>
             </div>
           </DialogContent>
@@ -100,11 +101,11 @@ export default function Meetings() {
         </div>
 
         <div className="lg:col-span-2 space-y-3">
-          <h2 className="font-display font-bold text-lg text-foreground">All Meetings</h2>
+          <JapaneseText as="h2" ja="すべてのミーティング" className="font-display font-bold text-lg text-foreground" japaneseClassName="text-xs">All Meetings</JapaneseText>
           {meetings.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p>No meetings yet. Create one!</p>
+              <JapaneseText as="p" ja="まだミーティングがありません。作成してみましょう！" japaneseClassName="text-[0.85em] block mt-1">No meetings yet. Create one!</JapaneseText>
             </div>
           )}
           {meetings.map((m, i) => (
@@ -133,9 +134,9 @@ export default function Meetings() {
                       </Badge>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="upcoming">Upcoming</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="upcoming"><JapaneseText ja="予定" layout="inline" japaneseClassName="text-[0.8em]">Upcoming</JapaneseText></SelectItem>
+                      <SelectItem value="in_progress"><JapaneseText ja="進行中" layout="inline" japaneseClassName="text-[0.8em]">In Progress</JapaneseText></SelectItem>
+                      <SelectItem value="completed"><JapaneseText ja="完了" layout="inline" japaneseClassName="text-[0.8em]">Completed</JapaneseText></SelectItem>
                     </SelectContent>
                   </Select>
                   <Button
