@@ -39,8 +39,20 @@ const MabisAIAssistant = lazy(() => import("@/components/MabisAIAssistant"));
 const FeedbackWidget = lazy(() => import("@/components/FeedbackWidget"));
 const ProfileEditor = lazy(() => import("@/components/ProfileEditor"));
 const JobReminder = lazy(() => import("@/components/JobReminder"));
-const SettingsModal = lazy(() => import("@/components/SettingsModal"));
-const QuickStartGuide = lazy(() => import("@/components/QuickStartGuide"));
+
+// Settings and Help open with a fallback of `null` (see below), so the first
+// click used to sit invisible while the chunk downloaded — it looked like
+// nothing happened until a second click landed on an already-cached module.
+// Warming the same import promise on hover/focus (mouse) or pointerdown
+// (touch, which fires ahead of click) means the chunk is usually already
+// there by the time the click handler runs.
+let settingsModulePromise;
+const preloadSettingsModal = () => (settingsModulePromise ||= import("@/components/SettingsModal"));
+const SettingsModal = lazy(preloadSettingsModal);
+
+let quickStartModulePromise;
+const preloadQuickStartGuide = () => (quickStartModulePromise ||= import("@/components/QuickStartGuide"));
+const QuickStartGuide = lazy(preloadQuickStartGuide);
 
 function WidgetFallback({ minHeight = 320 }) {
   return <div className="widget-loading-shell" style={{ "--widget-fallback-height": `${minHeight}px` }} aria-hidden />;
