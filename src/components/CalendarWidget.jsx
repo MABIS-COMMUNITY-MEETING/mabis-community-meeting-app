@@ -2,7 +2,7 @@ import React, { useState, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Plus, X, Calendar, Loader2, ScanText, Maximize2 } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isFriday, getDay,
+import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isFriday, getDay,
   startOfWeek, endOfWeek } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -491,7 +491,7 @@ export default function CalendarWidget() {
                     {EVENT_COLORS[selectedEvent.type].label}
                   </span>
                   <h3 className="text-xl font-display font-bold text-foreground mt-2">{selectedEvent.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">{format(new Date(selectedEvent.date), "EEEE, d MMMM yyyy")}{selectedEvent.time ? ` · ${selectedEvent.time}` : ""}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{format(parseISO(selectedEvent.date), "EEEE, d MMMM yyyy")}{selectedEvent.time ? ` · ${selectedEvent.time}` : ""}</p>
                 </div>
                 <button onClick={() => setSelectedEvent(null)} className="p-1 rounded-lg hover:bg-muted text-muted-foreground">
                   <X className="w-5 h-5" />
