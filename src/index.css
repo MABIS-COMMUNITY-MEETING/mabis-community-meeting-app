@@ -1621,7 +1621,7 @@ html.performance-lite body.theme-frutigeraero {
 }
 
 /* ── Mobile: same 10px ceiling as the liquid-glass system ───────────
-   .mabis-widget::after and .bg-ink::after hard-code blur(18px) rather than
+   .mabis-widget::after and .bg-ink.ink-card::after hard-code blur(18px) rather than
    drawing it from --glass_blur, so neither one inherited the .lg-surface
    mobile media query in glass.css that caps blur at 10px below 640px.
    18px is well past the ~10px point mobile GPUs start dropping frames at,
