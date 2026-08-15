@@ -28,6 +28,6 @@ Visual work requires current research on real Japanese websites before implement
 
 Do not forget about mobile: verify every change at a phone-width viewport, even backend-only or non-visual ones. Mobile is a primary layout, not a shrink target.
 
-For any HTML, CSS, or JSX authorship, research the Linux kernel's coding style (`Documentation/process/coding-style.rst`) and apply its underlying discipline — flat control flow, single-purpose functions and components, comments that explain why rather than what, no cleverness for its own sake — not its C-specific tab width or brace placement.
+For any HTML, CSS, or JSX authorship, research the Linux kernel fully and read the entirety of its coding-style documentation — `Documentation/process/coding-style.rst` in full, plus the neighboring `Documentation/process/` files (`submitting-patches.rst`, `submit-checklist.rst`, `deprecated.rst`) and `scripts/checkpatch.pl` — not a secondhand summary or a single excerpt. Apply its underlying discipline — flat control flow, single-purpose functions and components, comments that explain why rather than what, no cleverness for its own sake — not its C-specific tab width or brace placement.
 
 Prefer surgical edits. Before completion, run `npm run check:design`, `npm run build`, and relevant lint checks. Reject technically valid changes that violate the design contract.
