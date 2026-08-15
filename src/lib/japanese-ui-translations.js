@@ -353,6 +353,7 @@ const EXACT_TRANSLATIONS = {
   "1. choose a job": "1. 係を選ぶ",
   "2. spin the wheel": "2. ホイールを回す",
   "3. confirm or re-spin": "3. 確認するかやり直す",
+  "weekly class timetable": "毎週の時間割り",
   "assign this job": "この係を割り当てる",
   "this person or job is already assigned. re-spin as often as you like.": "この人またはこの係はすでに割り当て済みです。何度でも回し直せます。",
   "current jobs": "現在の係"
