@@ -1993,6 +1993,23 @@ html.is-scrolling .widget-loading-shell {
     content-visibility: auto;
     contain-intrinsic-size: auto 180px;
   }
+
+  /* A section holding a fullscreen widget must drop its containment.
+
+     content-visibility: auto implies contain: layout style paint, and a
+     paint-contained element becomes the containing block for any position:
+     fixed descendant. Announcements, Discussion, Jobs, Calendar, News and
+     Members all go fullscreen by adding `fixed inset-0` to themselves, so the
+     widget was being pinned to the section box rather than the viewport — it
+     looked as though the button did nothing.
+
+     Containment is only released for the one section that actually has a
+     fullscreen widget open, so the rest of the page keeps the skip-rendering
+     benefit. */
+  main [data-gp-section]:has(.mabis-widget.fixed) {
+    content-visibility: visible;
+    contain: none;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .widget-loading-shell { animation: none; }
