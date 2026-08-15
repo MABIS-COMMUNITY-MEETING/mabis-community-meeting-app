@@ -11,6 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 import SpinWheel from "@/components/wheel/SpinWheel";
 import JobCard from "@/components/jobs/JobCard";
 import OpenMoji from "@/components/OpenMoji";
+import JapaneseText from "@/components/JapaneseText";
 import { AnimatePresence } from "framer-motion";
 
 export default function JobWheel() {
@@ -101,16 +102,16 @@ export default function JobWheel() {
       <div>
         <h1 className="flex items-center gap-3 text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight">
           <OpenMoji hexcode="1F3B0" className="h-8 w-8 md:h-9 md:w-9" />
-          Job Wheel
+          <JapaneseText ja="ジョブホイール" japaneseClassName="text-base">Job Wheel</JapaneseText>
         </h1>
-        <p className="text-muted-foreground mt-1">Spin the wheel to assign jobs — may luck be on your side!</p>
+        <JapaneseText as="p" ja="ホイールを回して仕事を割り当て―幸運を祛ります！" className="text-muted-foreground mt-1" japaneseClassName="text-[0.9em]">Spin the wheel to assign jobs — may luck be on your side!</JapaneseText>
       </div>
 
       {members.length === 0 ? (
         <div className="text-center py-16 bg-card rounded-2xl border border-border">
           <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-30" />
-          <p className="text-lg text-muted-foreground">Add team members first</p>
-          <p className="text-sm text-muted-foreground mt-1">Go to the Team page to add people</p>
+          <JapaneseText as="p" ja="まずチームメンバーを追加してください" className="text-lg text-muted-foreground" japaneseClassName="text-[0.7em] block mt-1">Add team members first</JapaneseText>
+          <JapaneseText as="p" ja="チームページで人を追加してください" className="text-sm text-muted-foreground mt-1" japaneseClassName="text-[0.85em] block mt-1">Go to the Team page to add people</JapaneseText>
         </div>
       ) : (
         <div className="grid lg:grid-cols-2 gap-8 items-start">
@@ -121,11 +122,11 @@ export default function JobWheel() {
 
           {/* Active Jobs */}
           <div className="space-y-4">
-            <h2 className="font-display font-bold text-lg">Active Jobs ({activeJobs.length})</h2>
+            <h2 className="font-display font-bold text-lg"><JapaneseText ja={`進行中の仕事（${activeJobs.length}）`} japaneseClassName="text-xs">Active Jobs ({activeJobs.length})</JapaneseText></h2>
             <AnimatePresence>
               {activeJobs.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground text-sm bg-card rounded-2xl border border-border">
-                  Spin the wheel to assign jobs!
+                  <JapaneseText ja="ホイールを回して仕事を割り当てよう！" japaneseClassName="text-[0.9em] block mt-1">Spin the wheel to assign jobs!</JapaneseText>
                 </div>
               ) : (
                 activeJobs.map((job, i) => (
@@ -141,7 +142,7 @@ export default function JobWheel() {
 
             {completedJobs.length > 0 && (
               <>
-                <h2 className="font-display font-bold text-lg pt-4">Completed ({completedJobs.length})</h2>
+                <h2 className="font-display font-bold text-lg pt-4"><JapaneseText ja={`完了（${completedJobs.length}）`} japaneseClassName="text-xs">Completed ({completedJobs.length})</JapaneseText></h2>
                 {completedJobs.slice(0, 5).map((job, i) => (
                   <JobCard key={job.id} job={job} index={i} onStatusChange={() => {}} />
                 ))}
@@ -158,6 +159,7 @@ export default function JobWheel() {
             <DialogTitle className="flex items-center gap-2 font-display">
               <OpenMoji hexcode="1F3AF" className="h-5 w-5" />
               Assign Job to {selectedMember?.name}
+              <span lang="ja" className="text-xs font-normal text-muted-foreground">仕事を割り当てる</span>
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
@@ -175,7 +177,7 @@ export default function JobWheel() {
             />
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-muted-foreground font-medium mb-1 block">XP Reward</label>
+                <label className="text-xs text-muted-foreground font-medium mb-1 block"><JapaneseText ja="経験値報酬" japaneseClassName="text-[0.9em]">XP Reward</JapaneseText></label>
                 <Select
                   value={String(newJob.xp_reward)}
                   onValueChange={(v) => setNewJob({ ...newJob, xp_reward: Number(v) })}
@@ -187,32 +189,32 @@ export default function JobWheel() {
                     <SelectItem value="5">
                       <span className="flex items-center gap-2">
                         <OpenMoji hexcode="26A1" className="h-4 w-4" />
-                        5 XP - Easy
+                        5 XP - Easy <span lang="ja" className="text-xs">簡単</span>
                       </span>
                     </SelectItem>
                     <SelectItem value="10">
                       <span className="flex items-center gap-2">
                         <OpenMoji hexcode="26A1" className="h-4 w-4" />
-                        10 XP - Medium
+                        10 XP - Medium <span lang="ja" className="text-xs">普通</span>
                       </span>
                     </SelectItem>
                     <SelectItem value="25">
                       <span className="flex items-center gap-2">
                         <OpenMoji hexcode="26A1" className="h-4 w-4" />
-                        25 XP - Hard
+                        25 XP - Hard <span lang="ja" className="text-xs">難しい</span>
                       </span>
                     </SelectItem>
                     <SelectItem value="50">
                       <span className="flex items-center gap-2">
                         <OpenMoji hexcode="26A1" className="h-4 w-4" />
-                        50 XP - Epic!
+                        50 XP - Epic! <span lang="ja" className="text-xs">特別</span>
                       </span>
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground font-medium mb-1 block">Due Date</label>
+                <label className="text-xs text-muted-foreground font-medium mb-1 block"><JapaneseText ja="期限" japaneseClassName="text-[0.9em]">Due Date</JapaneseText></label>
                 <Input
                   type="date"
                   value={newJob.due_date}
@@ -236,11 +238,11 @@ export default function JobWheel() {
             >
               {sendingEmail ? (
                 <>
-                  <Send className="w-4 h-4 mr-2 animate-bounce" /> Sending Email...
+                  <Send className="w-4 h-4 mr-2 animate-bounce" /> <JapaneseText ja="メールを送信中..." layout="inline" japaneseClassName="text-[0.8em]">Sending Email...</JapaneseText>
                 </>
               ) : (
                 <>
-                  <Send className="w-4 h-4 mr-2" /> Assign & Notify
+                  <Send className="w-4 h-4 mr-2" /> <JapaneseText ja="割り当てて通知" layout="inline" japaneseClassName="text-[0.8em]">Assign & Notify</JapaneseText>
                 </>
               )}
             </Button>
