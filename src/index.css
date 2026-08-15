@@ -105,28 +105,28 @@
 @font-face {
   font-family: 'GNUFreeSansUI';
   font-style: normal;
-  font-display: swap;
+  font-display: block;
   font-weight: 400;
   src: url('/fonts/gnu-freefont/FreeSans.ttf?v=1') format('truetype');
 }
 @font-face {
   font-family: 'GNUFreeSansUI';
   font-style: normal;
-  font-display: swap;
+  font-display: block;
   font-weight: 700;
   src: url('/fonts/gnu-freefont/FreeSansBold.ttf?v=1') format('truetype');
 }
 @font-face {
   font-family: 'GNUFreeSansUI';
   font-style: italic;
-  font-display: swap;
+  font-display: block;
   font-weight: 400;
   src: url('/fonts/gnu-freefont/FreeSansOblique.ttf?v=1') format('truetype');
 }
 @font-face {
   font-family: 'GNUFreeSansUI';
   font-style: italic;
-  font-display: swap;
+  font-display: block;
   font-weight: 700;
   src: url('/fonts/gnu-freefont/FreeSansBoldOblique.ttf?v=1') format('truetype');
 }
@@ -134,28 +134,28 @@
 @font-face {
   font-family: 'GNUFreeSerifUI';
   font-style: normal;
-  font-display: swap;
+  font-display: block;
   font-weight: 400;
   src: url('/fonts/gnu-freefont/FreeSerif.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeSerifUI';
   font-style: normal;
-  font-display: swap;
+  font-display: block;
   font-weight: 700;
   src: url('/fonts/gnu-freefont/FreeSerifBold.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeSerifUI';
   font-style: italic;
-  font-display: swap;
+  font-display: block;
   font-weight: 400;
   src: url('/fonts/gnu-freefont/FreeSerifItalic.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeSerifUI';
   font-style: italic;
-  font-display: swap;
+  font-display: block;
   font-weight: 700;
   src: url('/fonts/gnu-freefont/FreeSerifBoldItalic.woff2?v=2') format('woff2');
 }
@@ -165,7 +165,7 @@
 @font-face {
   font-family: 'GNUFreeSerifThai';
   font-style: normal;
-  font-display: swap;
+  font-display: block;
   font-weight: 400;
   src: url('/fonts/gnu-freefont/FreeSerif.woff2?v=2') format('woff2');
   unicode-range: U+0E00-0E7F;
@@ -173,7 +173,7 @@
 @font-face {
   font-family: 'GNUFreeSerifThai';
   font-style: normal;
-  font-display: swap;
+  font-display: block;
   font-weight: 700;
   src: url('/fonts/gnu-freefont/FreeSerifBold.woff2?v=2') format('woff2');
   unicode-range: U+0E00-0E7F;
@@ -181,7 +181,7 @@
 @font-face {
   font-family: 'GNUFreeSerifThai';
   font-style: italic;
-  font-display: swap;
+  font-display: block;
   font-weight: 400;
   src: url('/fonts/gnu-freefont/FreeSerifItalic.woff2?v=2') format('woff2');
   unicode-range: U+0E00-0E7F;
@@ -189,7 +189,7 @@
 @font-face {
   font-family: 'GNUFreeSerifThai';
   font-style: italic;
-  font-display: swap;
+  font-display: block;
   font-weight: 700;
   src: url('/fonts/gnu-freefont/FreeSerifBoldItalic.woff2?v=2') format('woff2');
   unicode-range: U+0E00-0E7F;
@@ -198,28 +198,28 @@
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: normal;
-  font-display: swap;
+  font-display: block;
   font-weight: 400;
   src: url('/fonts/gnu-freefont/FreeMono.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: normal;
-  font-display: swap;
+  font-display: block;
   font-weight: 700;
   src: url('/fonts/gnu-freefont/FreeMonoBold.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: italic;
-  font-display: swap;
+  font-display: block;
   font-weight: 400;
   src: url('/fonts/gnu-freefont/FreeMonoOblique.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: italic;
-  font-display: swap;
+  font-display: block;
   font-weight: 700;
   src: url('/fonts/gnu-freefont/FreeMonoBoldOblique.woff2?v=2') format('woff2');
 }
