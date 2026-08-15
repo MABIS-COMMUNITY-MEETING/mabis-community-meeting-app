@@ -1058,6 +1058,26 @@ html.performance-lite body.theme-frutigeraero .bg-ink.ink-card::after {
   backdrop-filter: none;
 }
 
+/* ── Mobile: cap the blur ─────────────────────────────────
+   Every other glass surface in this app holds backdrop-filter blur at or
+   below 10px on narrow screens (see the @media (max-width: 640px) block in
+   src/styles/glass.css) — mobile GPUs start dropping frames past that value,
+   and backdrop-filter re-reads the layer beneath on every frame. This theme's
+   window frost was left at a flat 18px regardless of viewport, and with up to
+   ten .mabis-widget sections stacked on one page that is several times the
+   3-5 simultaneous blur surfaces mobile hardware tolerates — the direct cause
+   of choppy scrolling and broken/torn glass rendering on phones. Bring it in
+   line with the rest of the app instead of relying on performance-lite alone
+   to save it, since perfectly capable phones can still exceed the budget on a
+   long page before the frame monitor trips. */
+@media (max-width: 640px) {
+  body.theme-frutigeraero .mabis-widget::after,
+  body.theme-frutigeraero .bg-ink.ink-card::after {
+    -webkit-backdrop-filter: blur(9px) saturate(1.6);
+    backdrop-filter: blur(9px) saturate(1.6);
+  }
+}
+
 /* Full-viewport ink surfaces (mobile nav overlay, page-transition wipe,
    loading screen, splash): keep them a solid opaque panel rather than the
    card glass above — a `fixed inset-0` pane has no edges for a rim or corner
