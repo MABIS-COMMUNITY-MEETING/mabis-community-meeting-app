@@ -1630,7 +1630,7 @@ html.performance-lite body.theme-frutigeraero {
    which only fires once a device is already flagged as weak. */
 @media (max-width: 640px) {
   body.theme-frutigeraero .mabis-widget::after,
-  body.theme-frutigeraero .bg-ink::after {
+  body.theme-frutigeraero .bg-ink.ink-card::after {
     -webkit-backdrop-filter: blur(10px) saturate(1.9);
     backdrop-filter: blur(10px) saturate(1.9);
   }
