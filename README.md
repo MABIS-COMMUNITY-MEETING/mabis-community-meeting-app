@@ -26,9 +26,15 @@ If the AI cannot access current research sources, it must stop and ask for resea
 
 ## Mandatory code-style rule for AI contributors
 
-An AI agent, coding assistant, or generative model must **research the Linux kernel's coding style before writing or editing HTML, CSS, or JSX in this project**, in the same spirit as the Japanese-design research rule above: study the source discipline first, then adapt its underlying principles — not its literal C syntax, tab width, or brace placement — to this codebase.
+An AI agent, coding assistant, or generative model must **research the Linux kernel fully and read the entirety of its coding-style documentation before writing or editing HTML, CSS, or JSX in this project**, in the same spirit as the Japanese-design research rule above: study the source discipline first, then adapt its underlying principles — not its literal C syntax, tab width, or brace placement — to this codebase.
 
-Read the kernel's own coding-style documentation (`Documentation/process/coding-style.rst` in the Linux kernel source, also published at https://www.kernel.org/doc/html/latest/process/coding-style.html) and study how it plays out in practice — real subsystem code, `checkpatch.pl`, mailing-list review culture — rather than a secondhand summary.
+This is a full-documentation pass, not a single-file skim. At minimum, read in full:
+
+- `Documentation/process/coding-style.rst` (also published at https://www.kernel.org/doc/html/latest/process/coding-style.html) — the complete document, all sections, not an excerpt.
+- `Documentation/process/` more broadly — `submitting-patches.rst`, `submit-checklist.rst`, `deprecated.rst`, and neighboring process documents that explain how the style is actually enforced and why.
+- `Documentation/process/coding-style.rst`'s companion `checkpatch.pl` (`scripts/checkpatch.pl` in the kernel source) and, where accessible, real subsystem code and mailing-list review threads showing the style applied and enforced in practice, not just described.
+
+Do not rely on a secondhand summary, a blog post about the kernel style, or a partial read of one section. Study the whole thing before adapting any of it.
 
 Carry over the *principles*, translated to HTML/CSS/JSX, not the C-specific formatting rules that don't map onto this stack:
 
@@ -39,7 +45,7 @@ Carry over the *principles*, translated to HTML/CSS/JSX, not the C-specific form
 - **Consistency beats personal preference.** Match the formatting, structure, and naming already established in this repo's components, CSS, and utilities rather than introducing a competing personal style.
 - **Prefer the boring, obviously-correct approach.** The kernel distrusts "clever" code because that is where bugs hide; the same applies to reducers, effects, and CSS selectors here.
 
-This rule applies the same way the Japanese-design research rule applies to visual work: research first, then apply the underlying discipline, and note in the working summary that this pass was done.
+This rule applies the same way the Japanese-design research rule applies to visual work: research the full documentation first, then apply the underlying discipline, and note in the working summary which parts of the documentation were read and what was learned from them.
 
 ## Novesce UI mandate
 
