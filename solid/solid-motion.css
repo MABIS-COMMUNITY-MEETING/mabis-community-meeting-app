@@ -1,0 +1,29 @@
+/*
+ * The only CSS the Solid port adds.
+ *
+ * Everything else comes from the shared src/index.css. This file exists purely
+ * because one Splash animation was an infinite framer keyframe loop rather
+ * than a one-shot transition:
+ *
+ *   framer:  animate={{ y: [0, 8, 0] }}
+ *            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+ *
+ * Expressed as a compositor-only keyframe it costs no JS at all, where framer
+ * was driving it from rAF for the lifetime of the page.
+ */
+@keyframes splash-bob {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(8px); }
+  100% { transform: translateY(0); }
+}
+
+.splash-bob {
+  display: inline-block;
+  animation: splash-bob 1.6s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Respect the app-wide motion preference, same as the React build. */
+html.animations-disabled .splash-bob {
+  animation: none;
+}
