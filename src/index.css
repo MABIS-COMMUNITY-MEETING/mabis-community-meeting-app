@@ -581,6 +581,28 @@
 .jp-kicker { font-family:var(--font-mono); font-size:9px; letter-spacing:0.24em; text-transform:uppercase; color:hsl(var(--muted-foreground)); }
 .jp-index { font-family:var(--font-mono); font-variant-numeric:tabular-nums; letter-spacing:-0.06em; }
 
+/* automatic Japanese companion text — see src/components/JapaneseUiCompanion.jsx.
+   The component only sets data-ja-companion/data-ja-layout attributes; this is
+   what actually paints the translation next to the English original. */
+[data-ja-companion]::after {
+  content: attr(data-ja-companion);
+  font-family: var(--font-cjk);
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  opacity: 0.65;
+  font-size: 0.72em;
+}
+[data-ja-companion][data-ja-layout="inline"]::after {
+  display: inline;
+  margin-left: 0.375rem;
+}
+[data-ja-companion][data-ja-layout="block"]::after {
+  display: block;
+  margin-top: 0.125rem;
+}
+
 /* ── vertical text ── */
 .vert-text { writing-mode: vertical-rl; text-orientation: mixed; }
 
