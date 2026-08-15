@@ -8,6 +8,7 @@ import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import JapaneseText from "@/components/JapaneseText";
 import { toast } from "@/components/ui/use-toast";
 import { disableHackerMode } from "@/lib/hacker";
 
@@ -89,6 +90,7 @@ export default function Register() {
       <AuthLayout
         icon={Mail}
         title="Verify your email"
+        jaTitle="メールアドレスを確認"
         subtitle={`We sent a code to ${email}`}
       >
         {error && (
@@ -122,16 +124,16 @@ export default function Register() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
+              <JapaneseText ja="確認中..." layout="inline" japaneseClassName="text-[0.85em]">Verifying...</JapaneseText>
             </>
           ) : (
-            "Verify"
+            <JapaneseText ja="確認する" layout="inline" japaneseClassName="text-[0.85em]">Verify</JapaneseText>
           )}
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">
-          Didn't receive the code?{" "}
+          Didn't receive the code? <span lang="ja" className="text-xs">コードが届きませんか？</span>{" "}
           <button onClick={handleResend} className="text-primary font-medium hover:underline">
-            Resend
+            <JapaneseText ja="再送信" layout="inline" japaneseClassName="text-[0.85em]">Resend</JapaneseText>
           </button>
         </p>
       </AuthLayout>
@@ -142,10 +144,12 @@ export default function Register() {
     <AuthLayout
       icon={UserPlus}
       title="Create your account"
+      jaTitle="アカウントを作成"
       subtitle="Sign up to get started"
+      jaSubtitle="登録して始めましょう"
       footer={
         <>
-          Already have an account?{" "}
+          Already have an account? <span lang="ja" className="text-[0.9em]">すでにアカウントをお持ちですか？</span>{" "}
           <Link to="/login" className="text-primary font-medium hover:underline">
             Log in
           </Link>
@@ -160,7 +164,7 @@ export default function Register() {
         aria-busy={googleLoading}
       >
         {googleLoading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <GoogleIcon className="w-5 h-5 mr-2" />}
-        {googleLoading ? "Connecting to Google…" : "Continue with Google"}
+        <JapaneseText ja={googleLoading ? "Googleに接続中…" : "Googleで続行"} layout="inline" japaneseClassName="text-[0.85em]">{googleLoading ? "Connecting to Google…" : "Continue with Google"}</JapaneseText>
       </Button>
 
       <div className="relative mb-6">
@@ -168,7 +172,7 @@ export default function Register() {
           <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
+          <span className="bg-card px-3 text-muted-foreground">or <span lang="ja" className="normal-case">または</span></span>
         </div>
       </div>
 
@@ -180,7 +184,7 @@ export default function Register() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email"><JapaneseText ja="メールアドレス" japaneseClassName="text-[0.85em]">Email</JapaneseText></Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -197,7 +201,7 @@ export default function Register() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password"><JapaneseText ja="パスワード" japaneseClassName="text-[0.85em]">Password</JapaneseText></Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -213,7 +217,7 @@ export default function Register() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirm">Confirm Password</Label>
+          <Label htmlFor="confirm"><JapaneseText ja="パスワードを確認" japaneseClassName="text-[0.85em]">Confirm Password</JapaneseText></Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -232,10 +236,10 @@ export default function Register() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating account...
+              <JapaneseText ja="アカウントを作成中..." layout="inline" japaneseClassName="text-[0.85em]">Creating account...</JapaneseText>
             </>
           ) : (
-            "Create account"
+            <JapaneseText ja="アカウントを作成" layout="inline" japaneseClassName="text-[0.85em]">Create account</JapaneseText>
           )}
         </Button>
       </form>
