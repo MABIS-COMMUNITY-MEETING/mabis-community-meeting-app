@@ -4,11 +4,12 @@ import { ThumbsUp, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import MemberAvatar from "@/components/shared/MemberAvatar";
+import JapaneseText from "@/components/JapaneseText";
 
 const statusConfig = {
-  pending: { label: "Pending", icon: Clock, className: "bg-amber-100 text-amber-700 border-amber-200" },
-  discussed: { label: "Discussed", icon: CheckCircle2, className: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-  deferred: { label: "Deferred", icon: Clock, className: "bg-muted text-muted-foreground border-border" },
+  pending: { label: "Pending", ja: "保留中", icon: Clock, className: "bg-amber-100 text-amber-700 border-amber-200" },
+  discussed: { label: "Discussed", ja: "議論済み", icon: CheckCircle2, className: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+  deferred: { label: "Deferred", ja: "先送り", icon: Clock, className: "bg-muted text-muted-foreground border-border" },
 };
 
 export default function TopicCard({ topic, onVote, hasVoted, index }) {
@@ -27,7 +28,7 @@ export default function TopicCard({ topic, onVote, hasVoted, index }) {
           <div className="flex items-center gap-2 mb-2">
             <Badge variant="outline" className={`text-[10px] ${status.className}`}>
               <StatusIcon className="w-3 h-3 mr-1" />
-              {status.label}
+              <JapaneseText ja={status.ja} layout="inline" japaneseClassName="text-[0.85em] ml-1">{status.label}</JapaneseText>
             </Badge>
           </div>
           <h3 className="font-display font-semibold text-foreground text-lg leading-tight mb-1">{topic.title}</h3>
