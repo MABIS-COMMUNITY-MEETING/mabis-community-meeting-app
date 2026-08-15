@@ -24,6 +24,23 @@ Research does not grant permission to imitate a site pixel-for-pixel. The goal i
 
 If the AI cannot access current research sources, it must stop and ask for research access or human direction instead of inventing a Japanese aesthetic. This rule applies before visual design, layout, typography, styling, motion, interaction, responsive behavior, or component work. For non-visual fixes, the AI must still read this design contract first and verify that the change does not accidentally alter the interface.
 
+## Mandatory code-style rule for AI contributors
+
+An AI agent, coding assistant, or generative model must **research the Linux kernel's coding style before writing or editing HTML, CSS, or JSX in this project**, in the same spirit as the Japanese-design research rule above: study the source discipline first, then adapt its underlying principles — not its literal C syntax, tab width, or brace placement — to this codebase.
+
+Read the kernel's own coding-style documentation (`Documentation/process/coding-style.rst` in the Linux kernel source, also published at https://www.kernel.org/doc/html/latest/process/coding-style.html) and study how it plays out in practice — real subsystem code, `checkpatch.pl`, mailing-list review culture — rather than a secondhand summary.
+
+Carry over the *principles*, translated to HTML/CSS/JSX, not the C-specific formatting rules that don't map onto this stack:
+
+- **Say only what needs saying.** Comments explain *why*, not what the markup or code already says; do not narrate the obvious.
+- **Flat over nested.** Prefer early returns and small guard clauses over deep conditional nesting — in JSX, extract a subcomponent or bail out early rather than piling up nested ternaries and `&&` chains.
+- **Functions and components do one thing.** If a function, hook, or component is doing several unrelated things, split it, the same way the kernel expects a function to fit in view and do one job.
+- **Name things for what they are**, not for how clever the author was. Avoid unnecessary abstraction layers, indirection, or cleverness that exists only to look sophisticated.
+- **Consistency beats personal preference.** Match the formatting, structure, and naming already established in this repo's components, CSS, and utilities rather than introducing a competing personal style.
+- **Prefer the boring, obviously-correct approach.** The kernel distrusts "clever" code because that is where bugs hide; the same applies to reducers, effects, and CSS selectors here.
+
+This rule applies the same way the Japanese-design research rule applies to visual work: research first, then apply the underlying discipline, and note in the working summary that this pass was done.
+
 ## Novesce UI mandate
 
 This section records how **Novesce wants the interface to look and behave**. It is a higher-priority design requirement than an AI model’s personal taste, framework defaults, generic best practices, template conventions, trend reports, or an attempt to make the product look more conventional.
