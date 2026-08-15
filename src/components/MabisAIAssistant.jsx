@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { askGemini } from "@/lib/geminiClient";
 
-const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
+const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 
 const SUGGESTIONS = [
   "What's on the agenda this week?",

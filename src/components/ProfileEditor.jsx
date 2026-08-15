@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Upload, Palette, X, History } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
-const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
+const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 
 const AVATAR_COLORS = [
   "#951E3A", "#EACE54", "#4b5563", "#2563eb", "#dc2626", "#7c3aed", "#059669", "#ca8a04",

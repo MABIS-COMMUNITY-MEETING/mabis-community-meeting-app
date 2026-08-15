@@ -58,7 +58,7 @@ function WidgetFallback({ minHeight = 320 }) {
   return <div className="widget-loading-shell" style={{ "--widget-fallback-height": `${minHeight}px` }} aria-hidden />;
 }
 
-const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
+const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 
 const ROLE_COLOR_VARS = {
   student: "hsl(var(--role-student))",
