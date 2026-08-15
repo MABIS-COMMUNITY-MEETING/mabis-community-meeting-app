@@ -37,6 +37,11 @@ import "quill/dist/quill.snow.css";
  * embed-aware empty check) is carried over unchanged.
  */
 
+function countStats(html) {
+  const text = stripHtml(html || "").trim();
+  return { words: text ? text.split(/\s+/).length : 0, characters: text.length };
+}
+
 function ToolButton(props) {
   return (
     <button
@@ -197,10 +202,10 @@ export default function DocsEditor(props) {
   const [findResult, setFindResult] = createSignal("");
   const [zoom, setZoom] = createSignal(100);
   const [fullscreen, setFullscreen] = createSignal(false);
-  const [stats, setStats] = createSignal(() => {
-    const text = stripHtml(props.initialHtml || "").trim();
-    return { words: text ? text.split(/\s+/).length : 0, characters: text.length };
-  }());
+  // Computed eagerly, not passed as a function: React's useState treats a
+  // function argument as a lazy initialiser, Solid's createSignal does not —
+  // it would store the function itself as the value.
+  const [stats, setStats] = createSignal(countStats(props.initialHtml));
 
   const getQuill = () => quill;
 
