@@ -135,11 +135,11 @@ export default function AnalyticsTab({ feedback, members = [] }) {
         ) : (
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={ratingData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="rating" tick={{ fontSize: 12 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-              <Tooltip cursor={{ fill: "#f5f5f5" }} />
-              <Bar dataKey="count" fill="#951E3A" radius={[4, 4, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+              <XAxis dataKey="rating" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+              <Tooltip cursor={{ fill: CHART_CURSOR_FILL }} contentStyle={TOOLTIP_STYLE} />
+              <Bar dataKey="count" fill={CHART_PRIMARY} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -153,11 +153,11 @@ export default function AnalyticsTab({ feedback, members = [] }) {
         ) : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={weekData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="week" tick={{ fontSize: 11 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-              <Tooltip cursor={{ fill: "#f5f5f5" }} formatter={(v) => [v, "Feedback"]} labelFormatter={(l, payload) => payload?.[0]?.payload?.weekLabel || l} />
-              <Bar dataKey="count" fill="#EACE54" radius={[4, 4, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+              <XAxis dataKey="week" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+              <Tooltip cursor={{ fill: CHART_CURSOR_FILL }} contentStyle={TOOLTIP_STYLE} formatter={(v) => [v, "Feedback"]} labelFormatter={(l, payload) => payload?.[0]?.payload?.weekLabel || l} />
+              <Bar dataKey="count" fill={CHART_SECONDARY} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -183,7 +183,7 @@ export default function AnalyticsTab({ feedback, members = [] }) {
                   <th className="text-center py-2 px-2 text-xs font-bold text-muted-foreground uppercase">Avg Rating</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-border">
                 {memberStats.map(s => (
                   <tr key={s.name} className="hover:bg-muted">
                     <td className="py-2 px-2">
