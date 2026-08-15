@@ -256,6 +256,7 @@ const EXACT_TRANSLATIONS = {
   "search": "検索",
   "search the font library...": "フォントを検索...",
   "secondary": "サブカラー",
+  "select a member to remove...": "削除するメンバーを選ぶ...",
   "selected!": "選ばれました！",
   "selected navigation": "選択中のメニュー",
   "send": "送信",
