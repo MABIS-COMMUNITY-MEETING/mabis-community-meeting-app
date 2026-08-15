@@ -18,9 +18,9 @@ export const FONT_CATALOG = BY_WOMXN_FONTS
   .map((font) => ({
     ...font,
     detail: "Embedded libre webfont · Libre Fonts by Womxn",
-    heading: `'${font.family}', 'GoUI'`,
-    body: `'${font.family}', 'GoUI'`,
-    mono: `'${font.family}', 'GoMonoUI'`,
+    heading: `'${font.family}'`,
+    body: `'${font.family}'`,
+    mono: `'${font.family}'`,
     localOnly: false,
     featured: false,
   }));
