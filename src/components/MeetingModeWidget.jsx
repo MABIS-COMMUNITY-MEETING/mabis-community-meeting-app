@@ -110,7 +110,7 @@ export default function MeetingModeWidget({ onStartMeeting, canStart = true }) {
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleWidgetClick(); } }}
-      className={`relative bg-ink text-bone border border-ink overflow-hidden select-none ${(meetingEnded || !canStart) ? "" : "cursor-pointer"}`}
+      className={`relative bg-ink ink-card text-bone border border-ink overflow-hidden select-none ${(meetingEnded || !canStart) ? "" : "cursor-pointer"}`}
     >
       <div className="flex flex-col items-stretch justify-between gap-5 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6 sm:p-8">
         <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-5">
