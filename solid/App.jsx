@@ -1,16 +1,28 @@
-import Splash from "~/pages/Splash";
+import { lazy, Suspense } from "solid-js";
+import { Router, Route } from "@solidjs/router";
 
 /*
- * Solid migration — Splash vertical slice.
+ * Solid migration — routing shell.
  *
- * Renders the ported Splash page against the shared theme engine and
- * stylesheet, so it can be compared side by side with the React build at
- * dist/ before the remaining pages are touched.
- *
- * Routing is intentionally not wired yet: @solidjs/router replaces
- * react-router-dom as its own migration step, and pulling it in here would
- * mix two concerns into one slice.
+ * Splash is eager because it is the landing view; Home is code-split so the
+ * landing page never downloads the heavier route. Solid's lazy() + Suspense
+ * mirror the React build's boundaries, and the fallback reserves height so a
+ * route swap does not shift layout.
  */
+const Splash = lazy(() => import("~/pages/Splash"));
+const Home = lazy(() => import("~/pages/Home"));
+
+function RouteFallback() {
+  return <div style={{ "min-height": "100vh" }} aria-hidden />;
+}
+
 export default function App() {
-  return <Splash />;
+  return (
+    <Suspense fallback={<RouteFallback />}>
+      <Router>
+        <Route path="/" component={Splash} />
+        <Route path="/home" component={Home} />
+      </Router>
+    </Suspense>
+  );
 }
