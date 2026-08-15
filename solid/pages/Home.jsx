@@ -8,6 +8,7 @@ import { useAuth } from "~/lib/AuthContext";
 // view never downloads its chunk. Combined with LazySection's shared observer
 // this means first paint pays for the masthead and index only.
 const LunchMenuWidget = lazy(() => import("~/components/LunchMenuWidget"));
+const ScheduleWidget = lazy(() => import("~/components/ScheduleWidget"));
 
 /**
  * Home — SolidJS port of src/pages/Home.jsx (shell).
@@ -81,6 +82,7 @@ const SECTIONS = [
 ];
 
 const WIDGETS = {
+  "06": ScheduleWidget,
   "08": LunchMenuWidget,
 };
 
