@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import JapaneseText from "@/components/JapaneseText";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search, Plus, Trash2, CheckCircle2, Loader2, X, Image as ImageIcon, PackageSearch, Maximize2, History } from "lucide-react";
@@ -167,7 +168,7 @@ export default function MissingItemsWidget({ members }) {
           <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl flex items-center gap-2">
             <Search className="w-5 h-5" /> Missing Items
           </h2>
-          <p className="text-primary-foreground/60 text-xs mt-0.5">{activeItems.length} active · {foundItems.length} found</p>
+          <JapaneseText as="p" ja={`探し中${activeItems.length}件・発見${foundItems.length}件`} className="text-primary-foreground-muted text-xs mt-0.5" japaneseClassName="block mt-0.5 text-[0.9em]">{activeItems.length} active · {foundItems.length} found</JapaneseText>
         </div>
         <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
           <Button size="sm" variant="outline"
