@@ -742,18 +742,6 @@ const REQUESTED_FONTS = [
     featured: true,
   },
   {
-    key: "transgender-grotesk",
-    name: "Transgender Grotesk",
-    detail: "Licensed/local face · GNU FreeMono fallback",
-    source: "Featured",
-    family: "TransgenderGroteskUI",
-    heading: "'TransgenderGroteskUI'",
-    body: "'TransgenderGroteskUI'",
-    mono: "'TransgenderGroteskUI'",
-    localOnly: true,
-    featured: true,
-  },
-  {
     key: "atlas-mono",
     name: "Atlas Mono",
     detail: "Licensed/local face · GNU FreeMono fallback",
