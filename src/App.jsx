@@ -31,6 +31,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import MotionPreference from '@/components/MotionPreference';
 import PrefsSync from '@/components/PrefsSync';
 import CjkFontLoader from '@/components/CjkFontLoader';
+import JapaneseUiCompanion from '@/components/JapaneseUiCompanion';
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -81,6 +82,7 @@ function App() {
             <ScrollToTop />
             <PrefsSync />
             <CjkFontLoader />
+            <JapaneseUiCompanion />
             <SoundEffects />
             <GrainOverlay />
             <PrideAmbience />
