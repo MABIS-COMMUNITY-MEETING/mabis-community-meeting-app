@@ -48,6 +48,30 @@ const noopFetch = () => Promise.resolve({ ok: true, status: 200, text: () => Pro
 window.fetch = noopFetch;
 globalThis.fetch = noopFetch;
 
+// There is no Base44 backend here. AuthProvider probes the session on mount,
+// and an XHR with nothing listening leaves the process hanging forever, so
+// requests fail immediately instead. The provider already treats a failed
+// probe as "signed out", which is the correct state for this check — Splash
+// renders identically either way.
+class DeadXHR {
+  open() {}
+  setRequestHeader() {}
+  abort() {}
+  addEventListener(type, cb) { if (type === "error") this._onerror = cb; }
+  removeEventListener() {}
+  getAllResponseHeaders() { return ""; }
+  send() { setTimeout(() => { this.status = 0; this.readyState = 4; this.onerror?.(new Error("offline")); this._onerror?.(new Error("offline")); this.onreadystatechange?.(); }, 0); }
+}
+window.XMLHttpRequest = DeadXHR;
+globalThis.XMLHttpRequest = DeadXHR;
+
+// Hard watchdog: a parity check that hangs is a broken check, not a pass.
+const watchdog = setTimeout(() => {
+  console.error("Solid parity: timed out after 30s (something never settled).");
+  process.exit(1);
+}, 30000);
+watchdog.unref?.();
+
 // NB: `performance` is deliberately excluded. jsdom's Performance delegates to
 // the global one, so assigning it back onto globalThis makes now() recurse
 // into itself and blow the stack. Node's native performance works fine here.
