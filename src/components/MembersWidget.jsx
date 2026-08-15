@@ -157,7 +157,7 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
           <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl flex items-center gap-2">
             <Users className="w-5 h-5" /> Community Members
           </h2>
-          <p className="text-primary-foreground/60 text-xs mt-0.5">{members.length} members</p>
+          <p className="text-primary-foreground-muted text-xs mt-0.5">{members.length} members</p>
         </div>
         <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
           {fullscreen ? (
