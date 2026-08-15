@@ -352,9 +352,7 @@ const EXACT_TRANSLATIONS = {
   "pick a person…": "人を選ぶ…",
   "1. choose a job": "1. 係を選ぶ",
   "2. spin the wheel": "2. ホイールを回す",
-  "3. confirm or re-spin": "3. 確認するかやり直す",
-  "manage students": "生徒を管理",
-  "clear all": "すべてクリア"
+  "3. confirm or re-spin": "3. 確認するかやり直す"
 };
 
 const NOUNS = {
