@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { askGeminiVision } from "@/lib/geminiClient";
+import JapaneseText from "@/components/JapaneseText";
 
 const EVENT_COLORS = {
   event:    { bg: "bg-primary/10",  text: "text-primary",  label: "Event",    dot: "#c98a96", pill: "bg-primary/10 text-primary" },
@@ -224,6 +225,17 @@ export default function CalendarWidget() {
     return viewDate.getFullYear().toString();
   };
 
+  const headerTitleJa = () => {
+    if (view === "Month") return new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long" }).format(viewDate);
+    if (view === "Week") {
+      const ws = startOfWeek(viewDate, { weekStartsOn: 0 });
+      const we = endOfWeek(viewDate, { weekStartsOn: 0 });
+      return `${new Intl.DateTimeFormat("ja-JP", { month: "long", day: "numeric" }).format(ws)} 〜 ${new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric" }).format(we)}`;
+    }
+    if (view === "Day") return new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "long" }).format(viewDate);
+    return `${viewDate.getFullYear()}年`;
+  };
+
   // ── Month view ───────────────────────────────────────────────────────────────
   const MonthView = () => {
     const monthStart = startOfMonth(viewDate);
@@ -396,7 +408,9 @@ export default function CalendarWidget() {
       <div className="mabis-widget-header bg-primary px-4 py-3 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:flex-wrap">
         <div className="flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary-foreground" />
-          <h2 className="mabis-widget-title min-w-0 break-words font-display font-bold text-primary-foreground text-lg">{headerTitle()}</h2>
+          <h2 className="mabis-widget-title min-w-0 break-words font-display font-bold text-primary-foreground text-lg">
+            <JapaneseText ja={headerTitleJa()} japaneseClassName="block text-[0.6em] font-normal opacity-80 mt-0.5">{headerTitle()}</JapaneseText>
+          </h2>
         </div>
         <div className="flex items-center gap-1 sm:ml-2">
           <button onClick={goBack} className="p-1.5 rounded-lg hover:bg-card/20 text-primary-foreground transition-colors">
