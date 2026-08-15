@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 import PageNav from "@/components/PageNav";
 import { useAuth } from "@/lib/AuthContext";
 import { Star, Bug, CheckCircle2, Eye, Loader2, BarChart3, Trash2, Archive } from "lucide-react";
+import JapaneseText from "@/components/JapaneseText";
 const AnalyticsTab = lazy(() => import("@/components/AnalyticsTab"));
 const PasswordModal = lazy(() => import("@/components/PasswordModal"));
 
@@ -71,20 +72,21 @@ export default function Feedback() {
 
       <main className="mx-auto max-w-7xl px-4 pb-8 pt-20 sm:px-8 sm:pt-32">
         <div className="mb-10 sm:mb-14">
-          <div className="tech-label text-primary mb-4"> ARCHIVE — 05</div>
+          <JapaneseText ja="アーカイブ — 05" as="div" className="tech-label text-primary mb-4" japaneseClassName="text-[0.8em] normal-case tracking-normal"> ARCHIVE — 05</JapaneseText>
           <h1 className="font-display text-[clamp(2.65rem,13vw,4.5rem)] font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl">
             FEEDBACK<br />& BUGS
           </h1>
+          <p lang="ja" className="mt-1 text-sm text-muted-foreground">フィードバックと不具合報告</p>
           <div className="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
-            <span>INBOX</span><span className="h-1 w-1 bg-primary" /><span>REPORTS</span><span className="h-1 w-1 bg-primary" /><span>ADMIN</span>
+            <JapaneseText ja="受信箱" as="span" japaneseClassName="text-[0.8em] normal-case tracking-normal">INBOX</JapaneseText><span className="h-1 w-1 bg-primary" /><JapaneseText ja="報告" as="span" japaneseClassName="text-[0.8em] normal-case tracking-normal">REPORTS</JapaneseText><span className="h-1 w-1 bg-primary" /><span>ADMIN</span>
           </div>
         </div>
 
         <div className="mobile-horizontal-scroll mb-6 flex w-full gap-1 overflow-x-auto border border-foreground/15 bg-card p-1 sm:w-fit sm:flex-wrap sm:overflow-visible">
-          {["all", "feedback", "bug", "archived", "analytics"].map(f => (
+          {[["all", "すべて"], ["feedback", "意見"], ["bug", "不具合"], ["archived", "アーカイブ"], ["analytics", "分析"]].map(([f, ja]) => (
             <button key={f} onClick={() => startTransition(() => setFilter(f))}
               className={`flex shrink-0 items-center gap-1.5 px-4 py-2 tech-label transition-colors ${filter === f ? "bg-foreground text-bone" : "text-muted-foreground hover:bg-foreground/5"}`}>
-              {f === "all" ? "ALL" : f === "feedback" ? "FEEDBACK" : f === "bug" ? "BUGS" : f === "archived" ? "ARCHIVED" : <><BarChart3 className="w-3.5 h-3.5" /> ANALYTICS</>}
+              {f === "all" ? <JapaneseText ja={ja} japaneseClassName="text-[0.8em] normal-case tracking-normal">ALL</JapaneseText> : f === "feedback" ? <JapaneseText ja={ja} japaneseClassName="text-[0.8em] normal-case tracking-normal">FEEDBACK</JapaneseText> : f === "bug" ? <JapaneseText ja={ja} japaneseClassName="text-[0.8em] normal-case tracking-normal">BUGS</JapaneseText> : f === "archived" ? <JapaneseText ja={ja} japaneseClassName="text-[0.8em] normal-case tracking-normal">ARCHIVED</JapaneseText> : <><BarChart3 className="w-3.5 h-3.5" /> <JapaneseText ja={ja} japaneseClassName="text-[0.8em] normal-case tracking-normal">ANALYTICS</JapaneseText></>}
             </button>
           ))}
         </div>
@@ -98,7 +100,7 @@ export default function Feedback() {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-muted-foreground py-20">No feedback yet</p>
+          <JapaneseText as="p" ja="まだフィードバックがありません" className="text-center text-muted-foreground py-20" japaneseClassName="text-[0.7em] block mt-1">No feedback yet</JapaneseText>
         ) : (
           <div className="space-y-3">
             {filtered.map(f => (
@@ -127,30 +129,30 @@ export default function Feedback() {
                       {f.status !== "reviewed" && f.status !== "resolved" && (
                         <button onClick={() => updateMutation.mutate({ id: f.id, data: { status: "reviewed" } })}
                           className="text-[10px] font-bold text-yellow-700 bg-yellow-50 hover:bg-yellow-100 px-2.5 py-1 rounded-md flex items-center gap-1">
-                          <Eye className="w-3 h-3" /> Reviewed
+                          <Eye className="w-3 h-3" /> <JapaneseText ja="確認済み" layout="inline" japaneseClassName="text-[0.85em]">Reviewed</JapaneseText>
                         </button>
                       )}
                       {f.status !== "resolved" && (
                         <button onClick={() => updateMutation.mutate({ id: f.id, data: { status: "resolved" } })}
                           className="text-[10px] font-bold text-green-700 bg-green-50 hover:bg-green-100 px-2.5 py-1 rounded-md flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Resolved
+                          <CheckCircle2 className="w-3 h-3" /> <JapaneseText ja="解決済み" layout="inline" japaneseClassName="text-[0.85em]">Resolved</JapaneseText>
                         </button>
                       )}
                       {f.status !== "new" && f.status !== "archived" && (
                         <button onClick={() => updateMutation.mutate({ id: f.id, data: { status: "new" } })}
                           className="text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md">
-                          Reopen
+                          <JapaneseText ja="再オープン" layout="inline" japaneseClassName="text-[0.85em]">Reopen</JapaneseText>
                         </button>
                       )}
                       {f.status !== "archived" && (
                         <button onClick={() => handleArchive(f)}
                           className="text-[10px] font-bold text-muted-foreground bg-muted hover:bg-muted px-2.5 py-1 rounded-md flex items-center gap-1">
-                          <Archive className="w-3 h-3" /> Archive
+                          <Archive className="w-3 h-3" /> <JapaneseText ja="アーカイブ" layout="inline" japaneseClassName="text-[0.85em]">Archive</JapaneseText>
                         </button>
                       )}
                       <button onClick={() => handleDelete(f)}
                         className="text-[10px] font-bold text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-md flex items-center gap-1">
-                        <Trash2 className="w-3 h-3" /> Delete
+                        <Trash2 className="w-3 h-3" /> <JapaneseText ja="削除" layout="inline" japaneseClassName="text-[0.85em]">Delete</JapaneseText>
                       </button>
                     </div>
                   </div>
