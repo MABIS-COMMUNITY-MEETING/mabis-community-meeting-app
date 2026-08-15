@@ -1,7 +1,13 @@
-import { onMount, onCleanup, For } from "solid-js";
+import { onMount, onCleanup, lazy, Suspense, For, Show } from "solid-js";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection, EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
 import { installScrollStateClass } from "~/lib/perf";
+import { useAuth } from "~/lib/AuthContext";
+
+// Widgets are code-split individually, so a section that never scrolls into
+// view never downloads its chunk. Combined with LazySection's shared observer
+// this means first paint pays for the masthead and index only.
+const LunchMenuWidget = lazy(() => import("~/components/LunchMenuWidget"));
 
 /**
  * Home — SolidJS port of src/pages/Home.jsx (shell).
@@ -74,7 +80,17 @@ const SECTIONS = [
   },
 ];
 
+const WIDGETS = {
+  "08": LunchMenuWidget,
+};
+
 export default function Home() {
+  const auth = useAuth();
+  const isAdmin = () => {
+    const role = auth.user()?.role_override || auth.user()?.role;
+    return role === "admin" || role === "editor";
+  };
+
   onMount(() => {
     const stop = installScrollStateClass();
     onCleanup(stop);
@@ -107,17 +123,38 @@ export default function Home() {
                 intrinsicHeight={s.height + 160}
               >
                 <LazySection minHeight={s.height}>
-                  {/* Widget ports land here one at a time. The placeholder
-                      reserves the same space the real widget will occupy, so
-                      swapping it in shifts nothing. */}
-                  <div
-                    class="lazy-section-placeholder"
-                    style={{
-                      "--lazy-min-height": `${s.height}px`,
-                      "contain-intrinsic-size": `auto ${s.height}px`,
-                    }}
-                    aria-hidden
-                  />
+                  {/* Ported widgets render here; the rest still reserve their
+                      exact final height, so swapping one in shifts nothing. */}
+                  <Show
+                    when={WIDGETS[s.index]}
+                    fallback={
+                      <div
+                        class="lazy-section-placeholder"
+                        style={{
+                          "--lazy-min-height": `${s.height}px`,
+                          "contain-intrinsic-size": `auto ${s.height}px`,
+                        }}
+                        aria-hidden
+                      />
+                    }
+                  >
+                    {(Widget) => (
+                      <Suspense
+                        fallback={
+                          <div
+                            class="lazy-section-placeholder"
+                            style={{ "--lazy-min-height": `${s.height}px` }}
+                            aria-hidden
+                          />
+                        }
+                      >
+                        {(() => {
+                          const W = Widget();
+                          return <W isAdmin={isAdmin()} />;
+                        })()}
+                      </Suspense>
+                    )}
+                  </Show>
                 </LazySection>
               </EditorialSection>
             )}
