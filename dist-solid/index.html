@@ -2,21 +2,56 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!--
+      Lighthouse notes:
+      · theme-color + manifest are what move the PWA/installability audits.
+      · The icon is served through the CDN resize transform; the source asset
+        is an 800x800 PNG (326 KB) and this renders at 32px.
+      · description/og/twitter satisfy the SEO and social-preview audits.
+    -->
+    <title>Home | MABIS Community Meeting App</title>
+    <meta name="description" content="A shared working space for MABIS community meetings, announcements, schedules, jobs, notes and community records." />
+    <meta name="theme-color" content="#951E3A" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/png" href="https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png/v1/fill/w_96,h_96/icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Home on MABIS Community Meeting App. MABIS Community Meeting App ✨." />
+    <link rel="apple-touch-icon" href="https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png/v1/fill/w_180,h_180/icon.png" />
+
+    <meta property="og:title" content="MABIS Community Meeting App" />
+    <meta property="og:description" content="A shared working space for MABIS community meetings, announcements, schedules, jobs, notes and community records." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MABIS Community Meeting App" />
+    <meta property="og:image" content="https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png/v1/fill/w_1200,h_630/preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="MABIS Community Meeting App" />
+
+    <!-- preconnect before preload: the connection must exist before the font
+         request can use it, and these are same-origin-critical for first paint -->
     <link rel="preconnect" href="https://media.base44.com" crossorigin />
-    <!-- Same first-paint font bootstrap as the React build: the default face is
-         requested before the app module so the loader never paints in a browser
-         fallback and swaps a moment later. -->
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMono.woff2?v=2" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMonoBold.woff2?v=2" />
-    <style>html,body,#root{min-height:100%;margin:0;background:#11131a}</style>
-    <title>Home | MABIS Community Meeting App</title>
+
+    <!-- Inlined so the first paint has a background and correct box sizing
+         without waiting for the stylesheet; prevents a white flash on slow
+         connections, which Lighthouse scores as a poor FCP experience. -->
+    <style>
+      html, body, #root { min-height: 100%; margin: 0; background: #11131a; }
+      #root:empty { min-height: 100vh; }
+    </style>
     <script type="module" crossorigin src="/assets/index-BX8Ocq7E.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BnUffRtK.css">
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <p style="color:#e8e3d8;font-family:monospace;padding:2rem">
+        This app needs JavaScript enabled.
+      </p>
+    </noscript>
   </body>
 </html>
