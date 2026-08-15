@@ -1642,10 +1642,11 @@ html.performance-lite body.theme-frutigeraero {
     opacity: 0.32;
   }
 
-  body.theme-frutigeraero .mabis-widget::after,
+  /* .mabis-widget's blur cap is handled by the dedicated block further down;
+     this covers plain .bg-ink, which that block's .ink-card selector misses. */
   body.theme-frutigeraero .bg-ink::after {
-    -webkit-backdrop-filter: blur(9px) saturate(1.4);
-    backdrop-filter: blur(9px) saturate(1.4);
+    -webkit-backdrop-filter: blur(10px) saturate(1.6);
+    backdrop-filter: blur(10px) saturate(1.6);
   }
 
   body.theme-frutigeraero .mabis-widget,
