@@ -175,9 +175,14 @@ export default function SiteHeader({ rightSlot }) {
               </div>
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-auto flex items-end justify-between pt-2 sm:mt-0 sm:pt-0">
-                <div className="tech-label text-bone/40">
+                <JapaneseText
+                  as="div"
+                  ja="セカンダリー・コミュニティ・ミーティング・アプリ 2026"
+                  className="tech-label text-bone/40"
+                  japaneseClassName="mt-1 block normal-case tracking-normal text-[0.85em]"
+                >
                   SECONDARY COMMUNITY<br />MEETING APP 2026
-                </div>
+                </JapaneseText>
                 <div className="tech-label text-bone/40 text-right">
                   EST. MABIS<br />BANGKOK TH
                 </div>
