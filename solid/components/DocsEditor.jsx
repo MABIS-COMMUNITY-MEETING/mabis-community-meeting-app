@@ -456,8 +456,24 @@ export default function DocsEditor(props) {
 
   const f = () => formats();
 
+  const handleShellKeyDown = (event) => {
+    const mod = event.ctrlKey || event.metaKey;
+    if (mod && event.key.toLowerCase() === "s") {
+      event.preventDefault();
+      props.onSave?.();
+    }
+    if (mod && event.key.toLowerCase() === "f") {
+      event.preventDefault();
+      setFindOpen(true);
+    }
+    if (event.key === "Escape" && fullscreen()) setFullscreen(false);
+  };
+
   return (
-    <div class={`docs-editor ${fullscreen() ? "fixed inset-0 z-[120] bg-background p-4 overflow-auto" : ""}`}>
+    <div
+      class={`docs-editor ${fullscreen() ? "fixed inset-0 z-[120] bg-background p-4 overflow-auto" : ""}`}
+      onKeyDown={handleShellKeyDown}
+    >
       <Show when={props.onTitleChange}>
         <input
           value={props.title || ""}
