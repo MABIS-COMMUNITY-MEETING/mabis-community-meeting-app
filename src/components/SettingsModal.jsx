@@ -23,35 +23,52 @@ const SIMPLE_FONT_LABELS = {
 
 function FontPreview({ font, eager = false }) {
   const ref = useRef(null);
-  const [active, setActive] = useState(eager);
+  // Previews used to show the CURRENT site font (whatever that happened to
+  // be) until the target font finished loading, then swap — a visible flash
+  // of a mismatched face. This instead actively loads the target font via
+  // the Font Loading API and only switches the style once it has actually
+  // resolved, so there is no intermediate wrong-font paint. Before that, the
+  // placeholder is always the embedded default (GNU FreeMono), never
+  // whichever font happens to be active.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (eager) {
-      setActive(true);
-      return undefined;
+    let cancelled = false;
+    let observer;
+
+    const loadTarget = () => {
+      if (!document.fonts) {
+        if (!cancelled) setReady(true);
+        return;
+      }
+      document.fonts.load(`17px ${font.body}`, FONT_PREVIEW_TEXT)
+        .catch(() => {})
+        .finally(() => { if (!cancelled) setReady(true); });
+    };
+
+    if (eager || !ref.current || typeof IntersectionObserver === "undefined") {
+      loadTarget();
+    } else {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) {
+            loadTarget();
+            observer.disconnect();
+          }
+        },
+        { rootMargin: "180px 0px" },
+      );
+      observer.observe(ref.current);
     }
-    if (!ref.current || typeof IntersectionObserver === "undefined") {
-      setActive(true);
-      return undefined;
-    }
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setActive(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "180px 0px" },
-    );
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [eager]);
+
+    return () => { cancelled = true; observer?.disconnect(); };
+  }, [eager, font.body]);
 
   return (
     <div
       ref={ref}
       className="rounded-lg border border-border bg-background px-3 py-3 text-[17px] leading-snug text-foreground break-words"
-      style={{ fontFamily: active ? font.body : "var(--font-body)" }}
+      style={{ fontFamily: ready ? font.body : "'GNUFreeMonoUI'" }}
     >
       {FONT_PREVIEW_TEXT}
     </div>
