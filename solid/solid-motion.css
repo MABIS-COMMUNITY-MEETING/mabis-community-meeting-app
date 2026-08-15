@@ -1,29 +1,124 @@
 /*
- * The only CSS the Solid port adds.
+ * Solid build — rendering budget.
  *
- * Everything else comes from the shared src/index.css. This file exists purely
- * because one Splash animation was an infinite framer keyframe loop rather
- * than a one-shot transition:
- *
- *   framer:  animate={{ y: [0, 8, 0] }}
- *            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
- *
- * Expressed as a compositor-only keyframe it costs no JS at all, where framer
- * was driving it from rAF for the lifetime of the page.
+ * Everything visual still comes from the shared src/index.css. This file only
+ * adds the containment and scroll rules that make a long, heavy page hold
+ * frame rate on weak hardware.
+ */
+
+/* ── Splash scroll cue ─────────────────────────────────────────────────────
+ * framer:  animate={{ y: [0,8,0] }} transition={{ duration: 1.6, repeat: Infinity }}
+ * As a keyframe this runs entirely on the compositor and costs no JS.
  */
 @keyframes splash-bob {
   0%   { transform: translateY(0); }
   50%  { transform: translateY(8px); }
   100% { transform: translateY(0); }
 }
-
 .splash-bob {
   display: inline-block;
   animation: splash-bob 1.6s ease-in-out infinite;
   will-change: transform;
 }
+html.animations-disabled .splash-bob { animation: none; }
 
-/* Respect the app-wide motion preference, same as the React build. */
-html.animations-disabled .splash-bob {
-  animation: none;
+/* ── Off-screen sections cost nothing ──────────────────────────────────────
+ * content-visibility: auto lets the browser skip layout AND paint for any
+ * section outside the viewport. On this ten-section page that is the single
+ * largest scroll win available: instead of compositing every section on every
+ * frame, the browser handles only the one or two on screen.
+ *
+ * It implies `contain: layout style paint`, which also means a style
+ * recalculation inside one section can never invalidate its siblings — the
+ * usual cause of a whole-page relayout when one widget updates.
+ *
+ * contain-intrinsic-size is supplied per element in shell.jsx so each section
+ * reserves a realistic height; `auto` makes the browser remember the true size
+ * once measured, so the scrollbar stops drifting after first pass.
+ */
+@supports (content-visibility: auto) {
+  .cv-section {
+    content-visibility: auto;
+  }
+}
+
+/* Never skip rendering for the section the user jumped to, or one containing
+   focus — otherwise an anchor jump can land on unpainted content. */
+.cv-section:target,
+.cv-section:focus-within {
+  content-visibility: visible;
+}
+
+/* ── Placeholder for not-yet-mounted widgets ───────────────────────────────
+   Holds real space so mounting never shifts layout (CLS) or jumps scroll. */
+.lazy-section-placeholder {
+  min-height: var(--lazy-min-height, 480px);
+  contain: strict;
+}
+
+/* ── Scroll: buy frames back while the finger is down ──────────────────────
+ * backdrop-filter is the most expensive thing on this page — it re-samples
+ * the layer beneath it every single frame, and the design stacks it on every
+ * widget. During an active scroll that cost lands exactly when the frame
+ * budget is tightest.
+ *
+ * So while scrolling we drop the blur to a flat translucent fill. The surface
+ * keeps its shape, border and tint, and the effect returns the moment scroll
+ * settles (~140ms). This is invisible in motion and is worth entire frames on
+ * an integrated GPU.
+ *
+ * `is-scrolling` is toggled by installScrollStateClass() in lib/perf.js,
+ * rAF-coalesced so many scroll events collapse into one class write.
+ */
+html.is-scrolling .lg-surface::after,
+html.is-scrolling .mabis-widget::after,
+html.is-scrolling .bg-ink.ink-card::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Grain is a full-viewport multiply layer — pure cost during scroll. */
+html.is-scrolling .grain-layer { opacity: 0 !important; }
+
+/* Pause decorative infinite animations while scrolling: they force compositor
+   work on layers the user is not looking at during the gesture. */
+html.is-scrolling .marquee-track,
+html.is-scrolling .splash-bob,
+html.is-scrolling .blob-drift,
+html.is-scrolling .blob-drift-2,
+html.is-scrolling .spin-slow {
+  animation-play-state: paused;
+}
+
+/* ── Weak hardware: drop the effects entirely, keep the design ─────────────
+ * Driven by the app's existing performance-tier detection. The layout, type
+ * and colour system are untouched — only the per-frame GPU effects go.
+ */
+html.performance-lite .lg-surface::after,
+html.performance-lite .mabis-widget::after,
+html.performance-lite .bg-ink.ink-card::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html.performance-lite .grain-layer { display: none; }
+html.performance-lite .blob-drift,
+html.performance-lite .blob-drift-2,
+html.performance-lite .spin-slow { animation: none; }
+
+/* ── will-change discipline ────────────────────────────────────────────────
+ * will-change promotes an element to its own compositor layer, which costs
+ * GPU memory. Left on permanently across many elements it causes the layer
+ * explosion it was meant to prevent, which is worse on low-memory devices
+ * than the paint it avoids. So it is applied only while actually animating.
+ */
+.cv-section > * { will-change: auto; }
+
+/* ── Respect the user, and the platform ────────────────────────────────────*/
+@media (prefers-reduced-motion: reduce) {
+  .splash-bob { animation: none; }
+  .cv-section,
+  .cv-section * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
