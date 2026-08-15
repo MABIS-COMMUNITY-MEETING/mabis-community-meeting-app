@@ -1,4 +1,8 @@
-import { dehydrate, hydrate } from "@tanstack/react-query";
+// Imported from query-core rather than react-query: dehydrate/hydrate are
+// framework-agnostic and live in the core package, which both the React and
+// Solid wrappers re-export. Sourcing them here keeps this module usable by
+// both builds during the Solid migration without forking it.
+import { dehydrate, hydrate } from "@tanstack/query-core";
 
 const DB_NAME = "mabis-offline-cache";
 const DB_VERSION = 1;
