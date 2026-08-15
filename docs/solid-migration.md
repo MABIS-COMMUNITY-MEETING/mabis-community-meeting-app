@@ -36,25 +36,26 @@ node scripts/check-solid-parity.mjs             # Solid renders at parity
 | Field metrics | LoAF/INP/CLS monitor, opt-in via `?perf=1` |
 | Pages | Splash (23/23 parity), Home shell |
 | Widgets | LunchMenu, Schedule |
-| UI primitives | Button, Input, Textarea, Badge, spinner, empty state |
+| UI primitives | Button, Input, Textarea, Badge, spinner, empty state, Select |
+| Kobalte primitives | Dialog, Tabs, Popover, DropdownMenu — ported 2026-08-15, verified against `vite.solid.config.js` |
+| Dead code removal | `Dashboard/Meetings/Topics/JobWheel/Register/ForgotPassword/Team/ResetPassword` pages deleted from `src/pages/`, along with the components only they used (`topics/TopicCard`, `meetings/MeetingCalendar`, `jobs/JobCard`, `wheel/SpinWheel`). React build verified green after removal. |
 
 ## Remaining
 
-**94 files / ~13,500 lines**, but a meaningful share is dead code — these pages
-are not routed in `src/App.jsx` and emit no chunks, so they should be **deleted,
-not ported**:
+Dead-page removal (previously listed here) is done — see above. Real remaining
+work, in dependency order:
 
-```
-Dashboard  Meetings  Topics  JobWheel  Register
-ForgotPassword  Team  ResetPassword
-```
-
-Real remaining work, in dependency order:
-
-1. **Kobalte primitives** — Dialog, Select, Tabs, Popover, DropdownMenu.
-   30 files depend on these; everything else is blocked behind them.
+1. ~~**Kobalte primitives**~~ — done (Select was already in; Dialog, Tabs,
+   Popover, DropdownMenu ported this session as `solid/components/ui/{dialog,tabs,popover,dropdown-menu}.jsx`).
+   Note the Kobalte→Tailwind data-attribute swap: Radix's `data-[state=open|closed]`
+   becomes Kobalte's `data-[expanded]` / `data-[closed]` (Dialog, Popover,
+   DropdownMenu) or `data-[selected]` (Tabs active trigger). Popover's Content
+   takes `gutter` (not `sideOffset`) for offset.
 2. **Widgets** — Announcements, Members, MissingItems, News, MeetingMode,
-   Calendar (571), Jobs (1060), Discussion (1184).
+   Calendar (571), Jobs (1060), Discussion (1184). `solid/components/DiscussionWidget.jsx`
+   and `solid/components/discussion/{AttendancePanel,TopicItem}.jsx` already
+   exist but are smaller than the React source (23.9KB vs 60.3KB) — verify
+   parity before assuming Discussion is done rather than partial.
 3. **DocsEditor (1397)** — the largest single item. `react-quill` has no Solid
    port, so this is a rewrite against Quill core.
 4. **Pages** — Login, History, AnnouncementsHistory, NewsHistory, Feedback.
