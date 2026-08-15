@@ -60,7 +60,10 @@ export async function askGeminiVision({ prompt, imageBase64, mimeType = "image/j
         { inlineData: { data: imageBase64, mimeType } },
       ],
     }],
-    generationConfig: { temperature: 0.3, maxOutputTokens: 8192, responseMimeType: "application/json" },
+    // Low temperature: this extracts factual dates/names from an image, so we
+    // want the same screenshot to produce the same result every time rather
+    // than occasionally drifting to a different date for the same entry.
+    generationConfig: { temperature: 0, maxOutputTokens: 8192, responseMimeType: "application/json" },
   };
   if (responseSchema) body.generationConfig.responseSchema = responseSchema;
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
