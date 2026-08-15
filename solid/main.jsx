@@ -6,6 +6,7 @@ import "~/solid-motion.css";
 import { applyTheme, getStoredTheme, getStoredCustomColors, applyCustomColors, applyFont, getStoredFont } from "@/lib/themes";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
+import { startPerfMonitor } from "~/lib/perf-monitor";
 
 /*
  * Identical bootstrap order to src/main.jsx.
@@ -32,6 +33,10 @@ async function bootstrap() {
   document.documentElement.classList.add("ui-font-ready");
 
   render(() => <App />, document.getElementById("root"));
+
+  // Opt-in only (?perf=1). Costs nothing otherwise — a monitor that slows the
+  // page down would defeat its own purpose.
+  startPerfMonitor();
 }
 
 bootstrap();
