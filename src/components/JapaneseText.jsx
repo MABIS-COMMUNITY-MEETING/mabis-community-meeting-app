@@ -17,7 +17,7 @@ export default function JapaneseText({
 
   return (
     <Tag className={className} {...props}>
-      <span>{children}</span>
+      <span data-ja-skip>{children}</span>
       {enabled && ja && (
         <span
           lang="ja"
