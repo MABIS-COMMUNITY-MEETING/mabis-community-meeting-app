@@ -104,7 +104,7 @@ export default function JobWheel() {
           <OpenMoji hexcode="1F3B0" className="h-8 w-8 md:h-9 md:w-9" />
           <JapaneseText ja="ジョブホイール" japaneseClassName="text-base">Job Wheel</JapaneseText>
         </h1>
-        <JapaneseText as="p" ja="ホイールを回して仕事を割り当て―幸運を祛ります！" className="text-muted-foreground mt-1" japaneseClassName="text-[0.9em]">Spin the wheel to assign jobs — may luck be on your side!</JapaneseText>
+        <JapaneseText as="p" ja="ホイールを回して仕事を割り当て―幸運を祈ります！" className="text-muted-foreground mt-1" japaneseClassName="text-[0.9em]">Spin the wheel to assign jobs — may luck be on your side!</JapaneseText>
       </div>
 
       {members.length === 0 ? (
