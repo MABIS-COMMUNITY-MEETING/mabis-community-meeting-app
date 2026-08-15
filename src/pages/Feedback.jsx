@@ -93,9 +93,11 @@ export default function Feedback() {
         </div>
 
         {filter === "analytics" ? (
-          <Suspense fallback={<div className="widget-loading-shell" style={{ "--widget-fallback-height": "520px" }} aria-hidden />}>
-            <AnalyticsTab feedback={feedback} members={members} />
-          </Suspense>
+          <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}>
+            <Suspense fallback={<div className="widget-loading-shell" style={{ "--widget-fallback-height": "520px" }} aria-hidden />}>
+              <AnalyticsTab feedback={feedback} members={members} />
+            </Suspense>
+          </motion.div>
         ) : isLoading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
