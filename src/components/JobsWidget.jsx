@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Trash2, Maximize2, X, CheckCircle2, UserPlus, AlertCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import JapaneseText from "@/components/JapaneseText";
 import { useAuth } from "@/lib/AuthContext";
 import { displayName } from "@/lib/names";
 import {
@@ -272,9 +273,9 @@ function WinnerBanner({ winner, jobLabel, onConfirm, onRemoveAndNext, onReject, 
             </button>
           </div>
         ) : (
-          <p className="text-primary-foreground/60 text-xs">Waiting for admin to confirm...</p>
+          <p className="text-primary-foreground-muted text-xs">Waiting for admin to confirm...</p>
         )}
-        {isAdmin && !canAssign && <p className="mt-3 text-xs text-primary-foreground/70">This person or job is already assigned. Re-spin as often as you like.</p>}
+        {isAdmin && !canAssign && <p className="mt-3 text-xs text-primary-foreground-muted">This person or job is already assigned. Re-spin as often as you like.</p>}
       </div>
     </div>, document.body
   );
@@ -774,10 +775,15 @@ export default function JobsWidget({ members, isAdmin, compact = false }) {
               </button>
             </div>
             {wheelMembers.length > 0 && (
-              <p className="text-xs text-muted-foreground font-medium text-center">
+              <JapaneseText
+                as="p"
+                ja={`ホイールに${wheelMembers.length}人${repeatSpinMode ? "。追加スピンは無制限です" : ""}`}
+                className="text-xs text-muted-foreground font-medium text-center"
+                japaneseClassName="block mt-0.5 text-[0.9em]"
+              >
                 {wheelMembers.length} student{wheelMembers.length !== 1 ? "s" : ""} on the wheel
                 {repeatSpinMode ? " · extra spins are unlimited" : ""}
-              </p>
+              </JapaneseText>
             )}
 
             {/* Pick someone directly instead of spinning.
