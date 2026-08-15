@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import JapaneseText from "@/components/JapaneseText";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -42,9 +43,14 @@ export default function HomeMasthead({ week_label, date_label }) {
 
         <div className="mt-7 flex max-w-2xl items-start gap-4 border-t jp-rule pt-4">
           <span className="tech-label shrink-0">01</span>
-          <p className="max-w-xl text-xs sm:text-sm leading-6 text-muted-foreground">
+          <JapaneseText
+            as="p"
+            ja="ミーティング、お知らせ、スケジュール、係、メモ、コミュニティの記録をまとめて使える、みんなで使う作業スペースです。"
+            className="max-w-xl text-xs sm:text-sm leading-6 text-muted-foreground"
+            japaneseClassName="mt-1 block text-[0.9em]"
+          >
             A shared working space for meetings, announcements, schedules, jobs, notes and community records.
-          </p>
+          </JapaneseText>
         </div>
       </div>
 
