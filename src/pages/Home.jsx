@@ -197,7 +197,7 @@ export default function Home() {
       )}
 
       <main className="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
-        <HomeMasthead week_label={weekLabel} date_label={dateLabel} />
+        <HomeMasthead week_label={weekLabel} date_label={dateLabel} date={now} />
 
         <div className="pb-6 pt-5 sm:pb-10 sm:pt-8">
           <HomeSectionIndex />
