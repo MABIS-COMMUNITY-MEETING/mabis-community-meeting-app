@@ -2,6 +2,7 @@ import React from "react";
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isToday, isSameMonth } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import JapaneseText from "@/components/JapaneseText";
 
 export default function MeetingCalendar({ meetings, currentMonth, onMonthChange, onDayClick }) {
   const monthStart = startOfMonth(currentMonth);
@@ -40,9 +41,9 @@ export default function MeetingCalendar({ meetings, currentMonth, onMonthChange,
       </div>
 
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+        {[["Sun", "日"], ["Mon", "月"], ["Tue", "火"], ["Wed", "水"], ["Thu", "木"], ["Fri", "金"], ["Sat", "土"]].map(([d, ja]) => (
           <div key={d} className="text-center text-[10px] font-medium text-muted-foreground uppercase tracking-wider py-2">
-            {d}
+            <JapaneseText ja={ja} japaneseClassName="text-[0.85em] tracking-normal normal-case">{d}</JapaneseText>
           </div>
         ))}
       </div>
