@@ -1177,6 +1177,18 @@ body.theme-frutigeraero [class*="bg-[#"] {
     inset 0 -1px 0 hsl(205 60% 20% / 0.18);
 }
 
+/* Widget header type.
+
+   These headers used to be solid maroon with white text. The surface is now
+   pale glass, so anything still asking for the on-primary colour — titles, and
+   especially the subtitles at 60% — renders white on near-white and disappears.
+   Repointed to dark aqua with a white lift beneath. */
+body.theme-frutigeraero .mabis-widget-title,
+body.theme-frutigeraero .mabis-widget [class*="text-primary-foreground"]:not(button):not([class~="bg-primary"]) {
+  color: hsl(207 68% 22%);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.65);
+}
+
 /* Text-led elements opt out of the wash entirely. A widget header or a table
    row is type on a surface, not a surface in its own right. */
 body.theme-frutigeraero .mabis-widget-title,
