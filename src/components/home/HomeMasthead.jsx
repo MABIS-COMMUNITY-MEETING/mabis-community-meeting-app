@@ -1,10 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
 import JapaneseText from "@/components/JapaneseText";
+import JapaneseDate from "@/components/JapaneseDate";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-export default function HomeMasthead({ week_label, date_label }) {
+export default function HomeMasthead({ week_label, date_label, date }) {
   return (
     <section className="relative grid min-h-0 grid-cols-1 items-end gap-x-12 gap-y-7 border-b pb-8 pt-5 jp-rule sm:min-h-[58vh] sm:gap-y-10 sm:pb-14 sm:pt-0 lg:grid-cols-[1fr_15rem]">
       <div className="min-w-0">
@@ -66,7 +67,9 @@ export default function HomeMasthead({ week_label, date_label }) {
         </div>
         <dl className="grid grid-cols-2 gap-x-5 gap-y-2.5 tech-label text-muted-foreground lg:block lg:space-y-2.5">
           <div className="flex justify-between gap-4"><dt>WEEK</dt><dd className="text-foreground tabular-nums">{week_label}</dd></div>
-          <div className="flex justify-between gap-4"><dt>DATE</dt><dd className="text-foreground tabular-nums">{date_label}</dd></div>
+          <div className="flex justify-between gap-4"><dt>DATE</dt><dd className="text-foreground tabular-nums">
+            <JapaneseDate as="span" date={date} options={{ year: "numeric", month: "long", day: "numeric" }} layout="inline" japaneseClassName="text-[0.7em] opacity-70 ml-1">{date_label}</JapaneseDate>
+          </dd></div>
           <div className="flex justify-between gap-4"><dt>CYCLE</dt><dd className="text-foreground">FRIDAY</dd></div>
           <div className="flex justify-between gap-4"><dt>INDEX</dt><dd className="text-foreground tabular-nums">10</dd></div>
         </dl>
