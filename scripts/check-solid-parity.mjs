@@ -46,7 +46,7 @@ if (!window.requestIdleCallback) window.requestIdleCallback = (fn) => setTimeout
 for (const k of ["window", "document", "navigator", "localStorage", "sessionStorage", "requestAnimationFrame", "cancelAnimationFrame", "matchMedia", "getComputedStyle", "Node", "Element", "HTMLElement", "CustomEvent", "Event", "MutationObserver"]) {
   globalThis[k] = window[k];
 }
-window.performance = globalThis.performance;
+Object.defineProperty(window, "performance", { value: globalThis.performance, configurable: true });
 globalThis.self = window;
 
 const code = fs.readFileSync(path.join(dist, "assets", entry), "utf8");
