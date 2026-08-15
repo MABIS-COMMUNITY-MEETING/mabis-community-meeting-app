@@ -26,4 +26,8 @@ Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be
 
 For visual work, complete and record current research on real Japanese web design before implementation. If research access is unavailable, stop and ask rather than inventing an aesthetic.
 
+Do not forget about mobile: verify every change at a phone-width viewport, even backend-only or non-visual ones. Mobile is a primary layout, not a shrink target.
+
+For any HTML, CSS, or JSX authorship, research the Linux kernel's coding style (`Documentation/process/coding-style.rst`) and apply its underlying discipline — flat control flow, single-purpose functions and components, comments that explain why rather than what, no cleverness for its own sake — not its C-specific tab width or brace placement. See `Mandatory code-style rule for AI contributors` in `README.md`.
+
 Before finishing, run `npm run check:design`, `npm run build`, and relevant lint checks. A technically valid change that violates Novesce's design philosophy is not complete.
