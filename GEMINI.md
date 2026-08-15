@@ -16,6 +16,7 @@ Rich-text editors and rendered rich text must pair semantic card/ink tokens; sel
 
 Keep Home easy to navigate with its numbered editorial sections, plain-language page guide, and contextual instructions; usability aids must clarify the existing Japanese editorial hierarchy rather than replace it with a generic dashboard.
 - Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang="ja"` so Maple Mono CJK fallback applies; the default remains off.
+- **When adding or changing any UI copy**, add its Japanese companion in the same change. Short static strings go in `EXACT_TRANSLATIONS` in `src/lib/japanese-ui-translations.js`; dynamic text (dates, counts, composed sentences) gets an explicit `ja` prop via `JapaneseText`/`JapaneseDate`. Do not ship new user-facing English text without its Japanese counterpart.
 - Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.
 
 Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.
