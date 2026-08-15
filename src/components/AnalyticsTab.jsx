@@ -1,8 +1,28 @@
 import React, { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Eye, Star, MessageSquare, Users } from "lucide-react";
+import { Eye, Star, MessageSquare, Users, Monitor } from "lucide-react";
 import { format } from "date-fns";
 import { displayName } from "@/lib/names";
+import { base44 } from "@/api/base44Client";
+import { detectOS } from "@/lib/detectOS";
+import JapaneseText from "@/components/JapaneseText";
+
+// Theme-aware chart colours: fixed hex values (including Recharts' own white
+// tooltip default) ignored the active theme and painted a plain white/grey
+// box over dark or colourful themes. hsl(var(--token)) tracks whichever theme
+// is active, same as the rest of the UI.
+const CHART_GRID = "hsl(var(--border))";
+const CHART_CURSOR_FILL = "hsl(var(--muted))";
+const CHART_PRIMARY = "hsl(var(--primary))";
+const CHART_SECONDARY = "hsl(var(--secondary))";
+const TOOLTIP_STYLE = {
+  background: "hsl(var(--popover))",
+  color: "hsl(var(--popover-foreground))",
+  border: "1px solid hsl(var(--border))",
+  borderRadius: 8,
+  fontSize: 12,
+};
 
 export default function AnalyticsTab({ feedback, members = [] }) {
   const [visits, setVisits] = useState(0);
@@ -12,6 +32,26 @@ export default function AnalyticsTab({ feedback, members = [] }) {
     localStorage.setItem("feedback_visits", String(count));
     setVisits(count);
   }, []);
+
+  // One VisitLog record per browser session (not per render/tab-switch), so
+  // the OS breakdown reflects real people rather than re-renders.
+  useEffect(() => {
+    if (sessionStorage.getItem("mabis_visit_logged")) return;
+    sessionStorage.setItem("mabis_visit_logged", "1");
+    base44.entities.VisitLog.create({ os: detectOS() }).catch(() => {});
+  }, []);
+
+  const { data: visitLogs = [] } = useQuery({
+    queryKey: ["visit-logs"],
+    queryFn: () => base44.entities.VisitLog.list("-created_date", 2000),
+  });
+
+  const osCounts = {};
+  visitLogs.forEach((v) => { osCounts[v.os] = (osCounts[v.os] || 0) + 1; });
+  const osStats = Object.entries(osCounts)
+    .map(([os, count]) => ({ os, count }))
+    .sort((a, b) => b.count - a.count);
+  const osTotal = osStats.reduce((sum, s) => sum + s.count, 0);
 
   const ratedFeedback = feedback.filter(f => f.rating != null);
   const avgRating = ratedFeedback.length > 0
