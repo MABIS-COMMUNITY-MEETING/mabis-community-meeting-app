@@ -1,4 +1,3 @@
-import "~/components/ui/dialog.jsx"; import "~/components/ui/tabs.jsx"; import "~/components/ui/popover.jsx"; import "~/components/ui/dropdown-menu.jsx";
 import { lazy, Suspense, Show } from "solid-js";
 import { Router, Route, Navigate } from "@solidjs/router";
 import { QueryClientProvider } from "@tanstack/solid-query";
