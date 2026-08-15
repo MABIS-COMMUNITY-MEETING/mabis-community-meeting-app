@@ -3,9 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, Trash2, Users } from "lucide-react";
 import PageNav from "@/components/PageNav";
-import { getISOWeek, getYear, nextFriday, isFriday, format } from "date-fns";
+import { getISOWeek, getYear, nextFriday, isFriday, format, parseISO } from "date-fns";
 import PageFooter from "@/components/PageFooter";
 import OpenMoji from "@/components/OpenMoji";
+import JapaneseText from "@/components/JapaneseText";
 
 function getCurrentWeekLabel() {
   const today = new Date();
@@ -58,7 +59,7 @@ function birthdayInWeek(birthDateStr, weekLabel) {
   if (!birthDateStr) return false;
   try {
     const friday = weekLabelToDate(weekLabel);
-    const bd = new Date(birthDateStr);
+    const bd = parseISO(birthDateStr);
     bd.setFullYear(friday.getFullYear());
     const monday = new Date(friday);
     monday.setDate(friday.getDate() - 4);
@@ -112,18 +113,19 @@ export default function History() {
 
       <main className="mx-auto max-w-7xl px-4 pb-2 pt-20 sm:px-8 sm:pt-32">
         <div className="mb-10 sm:mb-14">
-          <div className="tech-label text-primary mb-4"> ARCHIVE — 02</div>
+          <JapaneseText ja="アーカイブ — 02" as="div" className="tech-label text-primary mb-4" japaneseClassName="text-[0.8em] normal-case tracking-normal"> ARCHIVE — 02</JapaneseText>
           <h1 className="font-display text-[clamp(2.65rem,13vw,4.5rem)] font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl">
             MEETING<br />HISTORY
           </h1>
+          <p lang="ja" className="mt-1 text-sm text-muted-foreground">ミーティング履歴</p>
           <div className="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
-            <span>PAST MEETINGS</span><span className="h-1 w-1 bg-primary" /><span>WEEKLY FRIDAY</span><span className="h-1 w-1 bg-primary" /><span>MABIS</span>
+            <JapaneseText ja="過去のミーティング" as="span" japaneseClassName="text-[0.8em] normal-case tracking-normal">PAST MEETINGS</JapaneseText><span className="h-1 w-1 bg-primary" /><JapaneseText ja="毎週金曜日" as="span" japaneseClassName="text-[0.8em] normal-case tracking-normal">WEEKLY FRIDAY</JapaneseText><span className="h-1 w-1 bg-primary" /><span>MABIS</span>
           </div>
         </div>
         {pastWeeks.length === 0 && (
           <div className="border border-border bg-card p-8 text-center sm:rounded-2xl sm:p-16">
-            <p className="text-muted-foreground text-lg">No past meetings yet. They appear here once a meeting ends.</p>
-            <p className="text-muted-foreground text-sm mt-1">Past weeks will appear here as full meeting snapshots</p>
+            <JapaneseText as="p" ja="まだ過去のミーティングはありません。ミーティングが終了するとここに表示されます。" className="text-muted-foreground text-lg" japaneseClassName="text-[0.7em] block mt-1">No past meetings yet. They appear here once a meeting ends.</JapaneseText>
+            <JapaneseText as="p" ja="過去の週はミーティングの完全な記録としてここに表示されます" className="text-muted-foreground text-sm mt-1" japaneseClassName="text-[0.8em] block mt-1">Past weeks will appear here as full meeting snapshots</JapaneseText>
           </div>
         )}
 
@@ -150,17 +152,17 @@ export default function History() {
                     <div className="text-left">
                       <p className="font-semibold text-foreground text-base">{formatWeekFull(week)}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {weekTopics.length} topics · {presentNames.length} present{missingMembers.length > 0 ? ` · ${missingMembers.length} missing` : ""}
+                        {weekTopics.length} <span lang="ja">件のトピック</span> · {presentNames.length} <span lang="ja">出席</span>{missingMembers.length > 0 ? ` · ${missingMembers.length} `: ""}{missingMembers.length > 0 && <span lang="ja">欠席</span>}
                       </p>
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${done === weekTopics.length ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>{done}/{weekTopics.length} done</span>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${done === weekTopics.length ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>{done}/{weekTopics.length} <span lang="ja">完了</span></span>
                     {att?.meeting_date && !isFriday(new Date(att.meeting_date)) && (
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-primary-foreground">Date moved</span>
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-primary-foreground"><JapaneseText ja="日付変更" layout="inline" japaneseClassName="text-[0.85em]">Date moved</JapaneseText></span>
                     )}
                     {att && missingMembers.length > 0 && (
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700">{missingMembers.length} missing</span>
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700">{missingMembers.length} <span lang="ja">欠席</span></span>
                     )}
                     <button onClick={(e) => { e.stopPropagation(); if (window.confirm(`Delete all topics from ${formatWeekFull(week)}?`)) deleteWeekMutation.mutate(week); }}
                       className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors" title="Delete this week">
@@ -175,7 +177,7 @@ export default function History() {
                     {att && (
                       <div className="border-b border-border bg-red-50/40 px-4 py-4 sm:px-6">
                         <p className="text-xs font-bold text-red-700 uppercase mb-2 flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5" /> Missing ({missingMembers.length}) · {presentNames.length} present
+                          <Users className="w-3.5 h-3.5" /> Missing ({missingMembers.length}) · {presentNames.length} present <span lang="ja" className="normal-case text-[0.85em] font-normal">欠席（{missingMembers.length}）・{presentNames.length}名出席</span>
                         </p>
                         {missingMembers.length > 0 ? (
                           <div className="flex flex-wrap gap-1.5">
@@ -185,7 +187,7 @@ export default function History() {
                           </div>
                         ) : (
                           <p className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
-                            Everyone present
+                            <JapaneseText ja="全員出席です" layout="inline" japaneseClassName="text-[0.9em]">Everyone present</JapaneseText>
                             <OpenMoji hexcode="1F389" className="h-4 w-4" />
                           </p>
                         )}
@@ -194,7 +196,7 @@ export default function History() {
 
                     {/* Discussion topics */}
                     <div className="border-b border-border px-4 py-4 sm:px-6">
-                      <p className="text-xs font-bold text-primary uppercase mb-3">Discussion Topics</p>
+                      <p className="text-xs font-bold text-primary uppercase mb-3">Discussion Topics <span lang="ja" className="normal-case text-[0.85em] font-normal">議題</span></p>
                       <div className="space-y-2">
                         {weekTopics.map(t => (
                           <div key={t.id} className="flex items-start gap-3 p-3 rounded-xl border border-border bg-card">
