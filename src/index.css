@@ -1620,6 +1620,56 @@ html.performance-lite body.theme-frutigeraero {
   background-image: none;
 }
 
+/* ── Phones ────────────────────────────────────────────────────────
+   Three things scaled badly on a narrow screen:
+
+   1. background-attachment: fixed. iOS treats it as a viewport-sized layer
+      that does not scroll, so the sky jumped and re-scaled every time the
+      address bar collapsed. Anchored to the document instead.
+   2. Viewport units. vh changes as browser chrome hides, which resized both
+      the sky and the bubble field mid-scroll. svh is the stable one.
+   3. Desktop-weight blur and shadow. Two full-surface backdrop filters per
+      card, plus a 48px shadow, is far more than a phone GPU should carry, and
+      the large radii made panels look inflated at small widths. */
+@media (max-width: 640px) {
+  body.theme-frutigeraero {
+    background-attachment: scroll;
+    background-size: 100% 100svh;
+  }
+
+  body.theme-frutigeraero::after {
+    background-size: 100% 55svh;
+    opacity: 0.32;
+  }
+
+  body.theme-frutigeraero .mabis-widget::after,
+  body.theme-frutigeraero .bg-ink::after {
+    -webkit-backdrop-filter: blur(9px) saturate(1.4);
+    backdrop-filter: blur(9px) saturate(1.4);
+  }
+
+  body.theme-frutigeraero .mabis-widget,
+  body.theme-frutigeraero .bg-ink {
+    --aero-radius: 12px;
+    box-shadow:
+      0 1px 1px hsl(var(--hue) 55% 28% / 0.10),
+      0 4px 10px -4px hsl(var(--hue) 58% 32% / 0.18),
+      0 0 18px -6px hsl(196 100% 66% / 0.32),
+      0 0 0 1px hsl(var(--hue) 45% 60% / 0.3),
+      inset 0 0 0 1px rgb(255 255 255 / 0.9);
+  }
+
+  /* Buttons keep the gloss but lose the deep drop, which read as a halo at
+     phone scale. */
+  body.theme-frutigeraero [class~="bg-primary"],
+  body.theme-frutigeraero button[class~="from-primary"] {
+    box-shadow:
+      0 1px 2px hsl(235 55% 25% / 0.28),
+      0 3px 8px -3px hsl(235 55% 25% / 0.3),
+      0 0 16px -4px hsl(196 100% 66% / 0.5);
+  }
+}
+
 /* ── Mobile: same 10px ceiling as the liquid-glass system ───────────
    .mabis-widget::after and .bg-ink.ink-card::after hard-code blur(18px) rather than
    drawing it from --glass_blur, so neither one inherited the .lg-surface
