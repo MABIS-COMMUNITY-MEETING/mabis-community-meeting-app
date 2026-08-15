@@ -342,7 +342,19 @@ const EXACT_TRANSLATIONS = {
   "birthday": "誕生日",
   "friday meeting": "金曜ミーティング",
   "nothing planned for this day...": "この日の予定はありません。",
-  "colophon": "奥付"
+  "colophon": "奥付",
+  "remove from wheel": "ホイールから外す",
+  "or choose someone yourself": "または自分で選ぶ",
+  "picks that person instead of spinning. you still confirm before anything is saved.": "回さずにその人を選びます。保存前にはやばり確認が入ります。",
+  "no jobs assigned yet — spin the wheel!": "まだ係が決まっていません—ホイールを回してみましょう！",
+  "no jobs assigned yet.": "まだ係が決まっていません。",
+  "full screen": "全画面",
+  "pick a person…": "人を選ぶ…",
+  "1. choose a job": "１。係を選ぶ",
+  "2. spin the wheel": "２。ホイールを回す",
+  "3. confirm or re-spin": "３。確認するかやり直す",
+  "manage students": "生徒を管理",
+  "clear all": "すべてクリア"
 };
 
 const NOUNS = {
