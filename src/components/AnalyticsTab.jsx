@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Eye, Star, MessageSquare, Users, Monitor } from "lucide-react";
 import { format } from "date-fns";
 import { displayName } from "@/lib/names";
@@ -8,21 +7,43 @@ import { base44 } from "@/api/base44Client";
 import { detectOS } from "@/lib/detectOS";
 import JapaneseText from "@/components/JapaneseText";
 
-// Theme-aware chart colours: fixed hex values (including Recharts' own white
-// tooltip default) ignored the active theme and painted a plain white/grey
-// box over dark or colourful themes. hsl(var(--token)) tracks whichever theme
-// is active, same as the rest of the UI.
-const CHART_GRID = "hsl(var(--border))";
-const CHART_CURSOR_FILL = "hsl(var(--muted))";
 const CHART_PRIMARY = "hsl(var(--primary))";
 const CHART_SECONDARY = "hsl(var(--secondary))";
-const TOOLTIP_STYLE = {
-  background: "hsl(var(--popover))",
-  color: "hsl(var(--popover-foreground))",
-  border: "1px solid hsl(var(--border))",
-  borderRadius: 8,
-  fontSize: 12,
-};
+
+/**
+ * Minimal column chart.
+ *
+ * This replaced Recharts, which cost ~102 KiB gzip (plus a lodash isEqual
+ * chunk) to render two static bar charts. Recharts measures its container with
+ * a ResizeObserver and re-renders an SVG tree on every resize tick; these bars
+ * are plain flex children whose heights are a single percentage, so the
+ * browser lays them out natively and nothing re-renders on resize.
+ *
+ * Colours are theme tokens, not fixed hex, so all 133 themes stay correct —
+ * the previous fixed #951E3A / #EACE54 bars and Recharts' default white
+ * tooltip ignored the active theme entirely.
+ */
+function Columns({ data, color, height = 220, emptyLabel }) {
+  const max = Math.max(1, ...data.map((d) => d.value));
+
+  return (
+    <div className="flex items-stretch gap-1" style={{ height }} role="img" aria-label={emptyLabel}>
+      {data.map((d) => (
+        <div key={d.label} className="flex min-w-0 flex-1 flex-col items-center gap-1">
+          <span className="text-[10px] tabular-nums text-muted-foreground">{d.value || ""}</span>
+          <div className="flex w-full flex-1 items-end">
+            <div
+              className="w-full rounded-t-sm"
+              style={{ height: `${(d.value / max) * 100}%`, background: color, minHeight: d.value > 0 ? 2 : 0 }}
+              title={`${d.title || d.label}: ${d.value}`}
+            />
+          </div>
+          <span className="w-full truncate text-center text-[10px] text-muted-foreground">{d.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function AnalyticsTab({ feedback, members = [] }) {
   const [visits, setVisits] = useState(0);
