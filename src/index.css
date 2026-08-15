@@ -2143,6 +2143,21 @@ html.is-scrolling .widget-loading-shell {
     border-top: 1px solid hsl(var(--bone) / 0.15);
   }
 
+  /* The ADMIN/EDITOR role badges are written as `hidden md:inline` to stay
+     out of the way in the compact desktop header at tablet widths. The same
+     <span> is reused verbatim here (rightSlot renders once, shared between
+     the header and this panel), so that rule was also hiding it inside the
+     Quick Controls panel on every phone — there's no md breakpoint on a
+     phone for it to switch back on at. This panel has the full row width a
+     badge needs, so show it unconditionally here. */
+  .mobile-nav-controls > .hidden.md\:inline {
+    display: inline-flex !important;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+
   .mabis-widget {
     border-left-width: 0 !important;
     border-right-width: 0 !important;
