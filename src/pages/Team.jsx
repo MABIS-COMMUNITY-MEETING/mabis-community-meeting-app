@@ -9,16 +9,17 @@ import { Progress } from "@/components/ui/progress";
 import MemberAvatar from "@/components/shared/MemberAvatar";
 import XpBadge from "@/components/shared/XpBadge";
 import OpenMoji from "@/components/OpenMoji";
+import JapaneseText from "@/components/JapaneseText";
 import { motion } from "framer-motion";
 
 function getLevelInfo(xp) {
   const levels = [
-    { name: "Rookie", min: 0, max: 50, openMoji: "1F331" },
-    { name: "Apprentice", min: 50, max: 150, openMoji: "2694" },
-    { name: "Warrior", min: 150, max: 300, openMoji: "1F6E1" },
-    { name: "Champion", min: 300, max: 500, openMoji: "1F3C5" },
-    { name: "Legend", min: 500, max: 1000, openMoji: "1F451" },
-    { name: "Mythic", min: 1000, max: Infinity, openMoji: "1F525" },
+    { name: "Rookie", ja: "ルーキー", min: 0, max: 50, openMoji: "1F331" },
+    { name: "Apprentice", ja: "見習い", min: 50, max: 150, openMoji: "2694" },
+    { name: "Warrior", ja: "戦士", min: 150, max: 300, openMoji: "1F6E1" },
+    { name: "Champion", ja: "チャンピオン", min: 300, max: 500, openMoji: "1F3C5" },
+    { name: "Legend", ja: "伝説", min: 500, max: 1000, openMoji: "1F451" },
+    { name: "Mythic", ja: "神話", min: 1000, max: Infinity, openMoji: "1F525" },
   ];
   const level = levels.find((l) => xp >= l.min && xp < l.max) || levels[0];
   const progress = ((xp - level.min) / (level.max - level.min)) * 100;
@@ -55,18 +56,18 @@ export default function Team() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight">Team</h1>
-          <p className="text-muted-foreground mt-1">Manage your crew and track their progress</p>
+          <JapaneseText as="h1" ja="チーム" className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight" japaneseClassName="text-base">Team</JapaneseText>
+          <JapaneseText as="p" ja="メンバーを管理し、進捗を追跡" className="text-muted-foreground mt-1" japaneseClassName="text-[0.9em]">Manage your crew and track their progress</JapaneseText>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25">
-              <Plus className="w-4 h-4 mr-2" /> Add Member
+              <Plus className="w-4 h-4 mr-2" /> <JapaneseText ja="メンバーを追加" layout="inline" japaneseClassName="text-[0.8em]">Add Member</JapaneseText>
             </Button>
           </DialogTrigger>
           <DialogContent className="rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="font-display">Add Team Member</DialogTitle>
+              <DialogTitle className="font-display"><JapaneseText ja="チームメンバーを追加">Add Team Member</JapaneseText></DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <Input
@@ -87,7 +88,7 @@ export default function Team() {
                 disabled={!newMember.name || !newMember.email}
                 onClick={() => createMutation.mutate({ ...newMember, xp: 0, jobs_completed: 0 })}
               >
-                Add to Team
+                <JapaneseText ja="チームに追加" layout="inline" japaneseClassName="text-[0.8em]">Add to Team</JapaneseText>
               </Button>
             </div>
           </DialogContent>
@@ -97,8 +98,8 @@ export default function Team() {
       {sorted.length === 0 ? (
         <div className="text-center py-16 bg-card rounded-2xl border border-border">
           <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-30" />
-          <p className="text-lg text-muted-foreground">No team members yet</p>
-          <p className="text-sm text-muted-foreground mt-1">Add people to start the fun!</p>
+          <JapaneseText as="p" ja="チームメンバーがまだいません" className="text-lg text-muted-foreground" japaneseClassName="text-[0.7em] block mt-1">No team members yet</JapaneseText>
+          <JapaneseText as="p" ja="人を追加して始めましょう！" className="text-sm text-muted-foreground mt-1" japaneseClassName="text-[0.85em] block mt-1">Add people to start the fun!</JapaneseText>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -135,11 +136,12 @@ export default function Team() {
                   <div className="flex items-center gap-2 mt-3">
                     <OpenMoji hexcode={level.openMoji} className="h-5 w-5" />
                     <span className="text-sm font-display font-semibold text-foreground">{level.name}</span>
+                    <span lang="ja" className="text-xs font-normal text-muted-foreground">{level.ja}</span>
                   </div>
 
                   <div className="w-full mt-3">
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                      <span>Level Progress</span>
+                      <JapaneseText ja="レベル進捗" japaneseClassName="text-[0.85em]">Level Progress</JapaneseText>
                       <XpBadge xp={member.xp || 0} />
                     </div>
                     <Progress value={level.progress} className="h-2 rounded-full" />
@@ -148,12 +150,12 @@ export default function Team() {
                   <div className="flex items-center gap-4 mt-4 text-sm">
                     <div className="text-center">
                       <p className="font-display font-bold text-foreground text-lg">{member.jobs_completed || 0}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Jobs Done</p>
+                      <JapaneseText as="p" ja="完了件数" className="text-[10px] text-muted-foreground uppercase tracking-wider" japaneseClassName="text-[0.9em] normal-case tracking-normal">Jobs Done</JapaneseText>
                     </div>
                     <div className="w-px h-8 bg-border" />
                     <div className="text-center">
                       <p className="font-display font-bold text-foreground text-lg">#{i + 1}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rank</p>
+                      <JapaneseText as="p" ja="順位" className="text-[10px] text-muted-foreground uppercase tracking-wider" japaneseClassName="text-[0.9em] normal-case tracking-normal">Rank</JapaneseText>
                     </div>
                   </div>
                 </div>
