@@ -127,6 +127,34 @@ export default function AnalyticsTab({ feedback, members = [] }) {
         </div>
       </div>
 
+      {/* OS breakdown — one VisitLog record per visitor session, aggregated across everyone, not just this device */}
+      <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <Monitor className="w-4 h-4 text-primary" />
+          <JapaneseText as="p" ja="使用OSの内訳" className="text-sm font-bold text-foreground" japaneseClassName="text-[0.8em]">OS Usage</JapaneseText>
+        </div>
+        {osStats.length === 0 ? (
+          <JapaneseText as="p" ja="まだデータはありません" className="text-muted-foreground text-sm text-center py-8" japaneseClassName="text-[0.85em] block mt-1">No data yet</JapaneseText>
+        ) : (
+          <div className="space-y-2.5">
+            {osStats.map(({ os, count }) => (
+              <div key={os} className="flex items-center gap-3">
+                <span className="w-20 shrink-0 text-xs font-medium text-foreground">{os}</span>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${osTotal > 0 ? (count / osTotal) * 100 : 0}%` }}
+                  />
+                </div>
+                <span className="w-16 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+                  {count} · {osTotal > 0 ? Math.round((count / osTotal) * 100) : 0}%
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Rating distribution chart */}
       <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
         <p className="text-sm font-bold text-foreground mb-4">Rating Distribution</p>
