@@ -84,12 +84,12 @@ export default function LunchMenuWidget({ isAdmin }) {
                   <div className="bg-primary/10 px-3 py-2 text-center">
                     <span className="text-xs font-bold text-primary uppercase tracking-wide">{label}</span>
                   </div>
-                  <div className="p-2.5 space-y-2">
+                  <div className="p-3 space-y-2.5">
                     <div>
                       <p className="text-[10px] font-semibold text-muted-foreground uppercase mb-1">Snack</p>
                       {isAdmin ? (
                         <textarea value={draft[`${key}_snack`] || ""} onChange={(e) => setVal(`${key}_snack`, e.target.value)} rows={2}
-                          placeholder="—" className="w-full text-xs rounded-lg border border-border px-2 py-1.5 resize-none focus:outline-none focus:border-primary/50" />
+                          placeholder="—" className="w-full text-sm rounded-lg border border-border px-2.5 py-2 resize-none focus:outline-none focus:border-primary/50" />
                       ) : (
                         <p className="text-sm text-foreground min-h-[2.5rem] whitespace-pre-wrap">{draft[`${key}_snack`] || "—"}</p>
                       )}
@@ -98,7 +98,7 @@ export default function LunchMenuWidget({ isAdmin }) {
                       <p className="text-[10px] font-semibold text-muted-foreground uppercase mb-1">Lunch</p>
                       {isAdmin ? (
                         <textarea value={draft[`${key}_lunch`] || ""} onChange={(e) => setVal(`${key}_lunch`, e.target.value)} rows={2}
-                          placeholder="—" className="w-full text-xs rounded-lg border border-border px-2 py-1.5 resize-none focus:outline-none focus:border-primary/50" />
+                          placeholder="—" className="w-full text-sm rounded-lg border border-border px-2.5 py-2 resize-none focus:outline-none focus:border-primary/50" />
                       ) : (
                         <p className="text-sm text-foreground min-h-[2.5rem] whitespace-pre-wrap">{draft[`${key}_lunch`] || "—"}</p>
                       )}
