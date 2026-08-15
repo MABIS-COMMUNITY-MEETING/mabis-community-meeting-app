@@ -56,7 +56,7 @@ export default function ScheduleWidget({ isAdmin }) {
         <CalendarClock className="w-5 h-5 text-primary-foreground" />
         <div className="flex-1">
           <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Schedule</h2>
-          <p className="text-primary-foreground/60 text-xs mt-0.5">Weekly class timetable</p>
+          <p className="text-primary-foreground-muted text-xs mt-0.5">Weekly class timetable</p>
         </div>
         {isAdmin && savedUrl && !editing && (
           <Button size="sm" variant="outline"
