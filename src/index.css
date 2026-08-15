@@ -942,7 +942,6 @@ body.theme-frutigeraero .mabis-widget {
   --glass: hsl(var(--hue) 62% 88% / var(--glass-opacity));
   --aero-radius: 10px;
 
-  position: relative;
   isolation: isolate;
   border: 0;
   border-radius: var(--aero-radius);
@@ -959,6 +958,17 @@ body.theme-frutigeraero .mabis-widget {
     0 0 0 1px hsl(var(--hue) 45% 60% / 0.35),
     inset 0 0 0 1px rgb(255 255 255 / 0.95),
     inset 0 0 30px rgb(255 255 255 / 0.28);
+}
+
+/* Position is set only while the widget is in the page flow.
+
+   Announcements, Discussion, Jobs, Calendar, News and Members all go fullscreen
+   by adding Tailwind's `fixed inset-0` to this very element. A bare
+   `position: relative` here outranks `.fixed` on specificity, so the widget
+   stayed put and fullscreen silently did nothing — in this theme only.
+   Excluding .fixed lets the utility win when it is applied. */
+body.theme-frutigeraero .mabis-widget:not(.fixed) {
+  position: relative;
 }
 
 /* Tinted sheet: diagonal streak, top specular, vertical shade, colour. */
