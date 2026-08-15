@@ -9,6 +9,7 @@ import XpBadge from "@/components/shared/XpBadge";
 import MemberAvatar from "@/components/shared/MemberAvatar";
 import OpenMoji from "@/components/OpenMoji";
 import JapaneseText from "@/components/JapaneseText";
+import JapaneseDate from "@/components/JapaneseDate";
 
 function StatCard({ icon: Icon, label, ja, value, gradient, link }) {
   return (
@@ -89,7 +90,15 @@ export default function Dashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground text-sm truncate">{m.title}</p>
-                    <p className="text-xs text-muted-foreground">{format(new Date(m.date), "MMM d, yyyy · h:mm a")}</p>
+                    <JapaneseDate
+                      as="p"
+                      date={m.date}
+                      options={{ year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }}
+                      className="text-xs text-muted-foreground"
+                      japaneseClassName="block mt-0.5 text-[0.9em] opacity-80"
+                    >
+                      {format(new Date(m.date), "MMM d, yyyy · h:mm a")}
+                    </JapaneseDate>
                   </div>
                 </div>
               ))}
