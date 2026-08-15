@@ -1,7 +1,7 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
-import { balancedPalette, contrastSafeInk, contrastSafePair, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
+import { balancedPalette, contrastSafeInk, contrastSafePair, mutedForeground, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
@@ -536,6 +536,10 @@ export function applyTheme(themeKey) {
   // badges and alerts all read it, so every theme kept a red no matter its palette.
   root.style.setProperty("--destructive", vars["--primary"]);
   root.style.setProperty("--destructive-foreground", vars["--primary-foreground"]);
+  // Widget headers sit on bg-primary and use this for de-emphasised subtitles
+  // (counts, dates, captions). Computed fresh per theme so it can never fade
+  // into unreadable territory the way a flat opacity modifier could.
+  root.style.setProperty("--primary-foreground-muted", mutedForeground(vars["--primary-foreground"], vars["--primary"]));
   document.body.classList.toggle("theme-is-dark", isDark);
   applyPalette(theme.swatches, !!theme.pride || !!theme.exact);
   applyCharacterTokens(theme.character);
