@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import JapaneseText from "@/components/JapaneseText";
 import {
   getLoadingState,
   getServerLoadingState,
@@ -141,7 +142,7 @@ export default function LoadingScreen() {
 
       <div className="loading-footer tech-label text-bone/40">
         <img src={LOGO} alt="" decoding="async" fetchPriority="low" className="inline-block h-5 w-5 object-contain opacity-70" />
-        <span>SECONDARY COMMUNITY MEETING</span>
+        <JapaneseText ja="セカンダリー・コミュニティ・ミーティング" japaneseClassName="ml-1.5 inline normal-case tracking-normal text-[0.85em]" layout="inline">SECONDARY COMMUNITY MEETING</JapaneseText>
       </div>
     </div>
   );
