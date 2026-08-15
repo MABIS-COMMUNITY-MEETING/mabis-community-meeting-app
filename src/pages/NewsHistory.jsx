@@ -6,6 +6,7 @@ import PageNav from "@/components/PageNav";
 import { format } from "date-fns";
 import { formatWeekFull, groupByWeek } from "@/lib/weekHistory";
 import PageFooter from "@/components/PageFooter";
+import JapaneseText from "@/components/JapaneseText";
 
 export default function NewsHistory() {
   const [openWeeks, setOpenWeeks] = useState({});
@@ -23,18 +24,19 @@ export default function NewsHistory() {
 
       <main className="mx-auto max-w-7xl px-4 pb-2 pt-20 sm:px-8 sm:pt-32">
         <div className="mb-10 sm:mb-14">
-          <div className="tech-label text-primary mb-4"> ARCHIVE — 04</div>
+          <JapaneseText ja="アーカイブ — 04" as="div" className="tech-label text-primary mb-4" japaneseClassName="text-[0.8em] normal-case tracking-normal"> ARCHIVE — 04</JapaneseText>
           <h1 className="font-display text-[clamp(2.65rem,13vw,4.5rem)] font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl">
             NEWS<br />HISTORY
           </h1>
+          <p lang="ja" className="mt-1 text-sm text-muted-foreground">ニュース履歴</p>
           <div className="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
-            <span>{allNews.length} ARTICLES</span><span className="h-1 w-1 bg-primary" /><span>GROUPED BY WEEK</span><span className="h-1 w-1 bg-primary" /><span>MABIS</span>
+            <span>{allNews.length} <span lang="ja" className="normal-case tracking-normal text-[0.8em]">件の記事</span></span><span className="h-1 w-1 bg-primary" /><JapaneseText ja="週ごとにグループ化" as="span" japaneseClassName="text-[0.8em] normal-case tracking-normal">GROUPED BY WEEK</JapaneseText><span className="h-1 w-1 bg-primary" /><span>MABIS</span>
           </div>
         </div>
         {weeks.length === 0 && (
           <div className="border border-border bg-card p-8 text-center sm:rounded-2xl sm:p-16">
-            <p className="text-muted-foreground text-lg">No news yet</p>
-            <p className="text-muted-foreground text-sm mt-1">Published articles will be grouped here by week</p>
+            <JapaneseText as="p" ja="まだニュースがありません" className="text-muted-foreground text-lg" japaneseClassName="text-[0.7em] block mt-1">No news yet</JapaneseText>
+            <JapaneseText as="p" ja="公開された記事は週ごとにここにグループ化されます" className="text-muted-foreground text-sm mt-1" japaneseClassName="text-[0.8em] block mt-1">Published articles will be grouped here by week</JapaneseText>
           </div>
         )}
 
