@@ -356,7 +356,14 @@ const EXACT_TRANSLATIONS = {
   "weekly class timetable": "毎週の時間割り",
   "assign this job": "この係を割り当てる",
   "this person or job is already assigned. re-spin as often as you like.": "この人またはこの係はすでに割り当て済みです。何度でも回し直せます。",
-  "current jobs": "現在の係"
+  "current jobs": "現在の係",
+  "sun": "日",
+  "mon": "月",
+  "tue": "火",
+  "wed": "水",
+  "thu": "木",
+  "fri": "金",
+  "sat": "土"
 };
 
 const NOUNS = {
