@@ -1,0 +1,13 @@
+{
+  "name": "VisitLog",
+  "type": "object",
+  "properties": {
+    "os": {
+      "type": "string",
+      "description": "Detected operating system of the visitor (e.g. Windows, macOS, Linux, Android, iOS, Chrome OS, Other)"
+    }
+  },
+  "required": [
+    "os"
+  ]
+}
