@@ -341,7 +341,8 @@ const EXACT_TRANSLATIONS = {
   "meeting": "ミーティング",
   "birthday": "誕生日",
   "friday meeting": "金曜ミーティング",
-  "nothing planned for this day...": "この日の予定はありません。"
+  "nothing planned for this day...": "この日の予定はありません。",
+  "colophon": "奥付"
 };
 
 const NOUNS = {
