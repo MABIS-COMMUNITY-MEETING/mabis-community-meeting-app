@@ -1506,6 +1506,47 @@ body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:disa
   opacity: 0.35;
 }
 
+/* ── Button gloss, painted rather than layered ──────────────────────────
+   The glare streak and top highlight were ::before/::after. Even with a
+   stacking context that proved unreliable — the Spin button rendered as a flat
+   blue slab with no gloss at all, and earlier the same layers were covering
+   button labels.
+
+   Folding them into background-image removes the entire class of problem: they
+   cannot fail to paint, they cannot cover text, and no stacking context is
+   needed. It is the same approach already working on the panels.
+
+   Layer order is top-down: streak, top highlight, bottom glow, then the body. */
+body.theme-frutigeraero button::before,
+body.theme-frutigeraero button::after,
+body.theme-frutigeraero [role="button"]::before,
+body.theme-frutigeraero [role="button"]::after,
+body.theme-frutigeraero [role="combobox"]::before,
+body.theme-frutigeraero [role="combobox"]::after {
+  content: none;
+}
+
+/* Filled controls — primary, and the Spin button's gradient variant. */
+body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]),
+body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"] {
+  background-image:
+    linear-gradient(120deg, transparent 30%, rgb(255 255 255 / 0.38) 45%, rgb(255 255 255 / 0.06) 55%, transparent 70%),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.6) 0%, rgb(255 255 255 / 0.14) 42%, rgb(255 255 255 / 0) 46%),
+    radial-gradient(farthest-corner at bottom center, rgb(255 255 255 / 0.72), transparent 72%),
+    linear-gradient(to bottom, var(--bg-dark), var(--bg));
+}
+
+/* Pale controls — header capsules, outline and secondary buttons, selects. */
+body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="from-primary"]):not([class*="lg-"]),
+body.theme-frutigeraero [role="button"]:not([class*="lg-"]),
+body.theme-frutigeraero [role="combobox"] {
+  background-image:
+    linear-gradient(120deg, transparent 30%, rgb(255 255 255 / 0.5) 45%, rgb(255 255 255 / 0.08) 55%, transparent 70%),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.85) 0%, rgb(255 255 255 / 0.2) 44%, rgb(255 255 255 / 0) 48%),
+    radial-gradient(farthest-corner at bottom center, rgb(255 255 255 / 0.8), transparent 72%),
+    linear-gradient(to bottom, hsl(var(--hue, 202) 45% 84%), hsl(var(--hue, 202) 60% 97%));
+}
+
 /* Bloom: the era glowed. A soft light behind floating controls, cheap because
    it is a static shadow rather than a filter. */
 body.theme-frutigeraero .lg-navigation,
