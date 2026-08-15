@@ -4,7 +4,7 @@ import JapaneseText from "@/components/JapaneseText";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-export default function EditorialSection({ index = "00", label = "", jaLabel = "", description = "", children }) {
+export default function EditorialSection({ index = "00", label = "", jaLabel = "", description = "", jaDescription = "", children }) {
   const flag = `var(--flag-${((parseInt(index, 10) || 1) % 8) + 1}, hsl(var(--primary)))`;
 
   return (
@@ -48,9 +48,14 @@ export default function EditorialSection({ index = "00", label = "", jaLabel = "
                 who do not already know the product. Metrics follow the Japanese
                 body-text baseline: 160% leading, 2% tracking at small sizes. */}
             {description && (
-              <p className="mt-2 max-w-[54ch] text-[0.8125rem] leading-[1.6] tracking-[0.02em] text-muted-foreground sm:text-sm">
+              <JapaneseText
+                as="p"
+                ja={jaDescription}
+                className="mt-2 max-w-[54ch] text-[0.8125rem] leading-[1.6] tracking-[0.02em] text-muted-foreground sm:text-sm"
+                japaneseClassName="mt-1 block text-[0.9em]"
+              >
                 {description}
-              </p>
+              </JapaneseText>
             )}
           </div>
           <JapaneseText ja="MABIS セクション" className="hidden sm:block jp-kicker text-right" japaneseClassName="text-[0.82em]">MABIS SECTION</JapaneseText>
