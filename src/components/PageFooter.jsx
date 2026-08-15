@@ -1,5 +1,6 @@
 import React from "react";
 import { Plus } from "lucide-react";
+import JapaneseText from "@/components/JapaneseText";
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
 
@@ -15,9 +16,14 @@ export default function PageFooter() {
             <img src={MABIS_LOGO} alt="MABIS" className="h-11 w-11 object-contain" />
           </div>
           <div className="tech-label text-muted-foreground"> COLOPHON</div>
-          <h2 className="max-w-md font-display font-light tracking-ultra text-2xl sm:text-3xl">
+          <JapaneseText
+            as="h2"
+            ja="セカンダリー・コミュニティ・ミーティング・アプリ"
+            className="max-w-md font-display font-light tracking-ultra text-2xl sm:text-3xl"
+            japaneseClassName="mt-1 block text-[0.4em] tracking-normal opacity-70"
+          >
             Secondary Community<br />Meeting App
-          </h2>
+          </JapaneseText>
           <div className="flex items-center gap-3 tech-label text-muted-foreground">
             <span>MABIS</span>
             <Plus className="h-3 w-3 text-primary/60" />
