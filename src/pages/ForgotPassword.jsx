@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, ArrowLeft, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
+import JapaneseText from "@/components/JapaneseText";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -29,21 +30,23 @@ export default function ForgotPassword() {
     <AuthLayout
       icon={Mail}
       title="Reset password"
+      jaTitle="パスワードをリセット"
       subtitle="We'll send you a link to reset it"
+      jaSubtitle="リセット用のリンクを送信します"
       footer={
         <Link to="/login" className="text-primary font-medium hover:underline">
-          <ArrowLeft className="w-3 h-3 inline mr-1" />Back to log in
+          <ArrowLeft className="w-3 h-3 inline mr-1" /><JapaneseText ja="ログインに戻る" layout="inline" japaneseClassName="text-[0.85em]">Back to log in</JapaneseText>
         </Link>
       }
     >
       {sent ? (
-        <p className="text-sm text-foreground text-center">
+        <JapaneseText as="p" ja="このメールアドレスのアカウントが存在すれば、まもなくパスワードリセットのリンクが届きます。" className="text-sm text-foreground text-center" japaneseClassName="text-[0.85em] block mt-2">
           If an account exists with that email, you'll receive a password reset link shortly.
-        </p>
+        </JapaneseText>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email address</Label>
+            <Label htmlFor="email"><JapaneseText ja="メールアドレス" japaneseClassName="text-[0.85em]">Email address</JapaneseText></Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
               <Input
@@ -63,10 +66,10 @@ export default function ForgotPassword() {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Sending...
+                <JapaneseText ja="送信中..." layout="inline" japaneseClassName="text-[0.85em]">Sending...</JapaneseText>
               </>
             ) : (
-              "Send reset link"
+              <JapaneseText ja="リセットリンクを送信" layout="inline" japaneseClassName="text-[0.85em]">Send reset link</JapaneseText>
             )}
           </Button>
         </form>
