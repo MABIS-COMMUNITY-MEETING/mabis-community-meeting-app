@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import JapaneseText from "@/components/JapaneseText";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -101,7 +102,7 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
           <Megaphone className="w-5 h-5 text-primary-foreground" />
           <div>
             <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Announcements</h2>
-            <p className="text-primary-foreground/60 text-xs mt-0.5">{announcements.length} announcement{announcements.length !== 1 ? "s" : ""}</p>
+            <JapaneseText as="p" ja={`${announcements.length}件のお知らせ`} className="text-primary-foreground-muted text-xs mt-0.5" japaneseClassName="block mt-0.5 text-[0.9em]">{announcements.length} announcement{announcements.length !== 1 ? "s" : ""}</JapaneseText>
           </div>
         </div>
         <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
