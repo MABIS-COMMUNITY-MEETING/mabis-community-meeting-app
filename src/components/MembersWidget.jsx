@@ -94,7 +94,17 @@ export default function MembersWidget({ isAdmin, canChangeRoles }) {
   });
 
   const addMutation = useMutation({
-    mutationFn: (data) => base44.entities.Member.create(data),
+    // Granting someone a second permanent role (e.g. an existing student
+    // becoming an editor too) works by adding a brand-new row for the same
+    // name/email under the new role — that's how Boss, Olivia, Summer and
+    // Taas ended up with more than one row each. A fresh row starts with no
+    // avatar_url/avatar_color of its own, so without this the new role would
+    // silently go back to the default logo even though the person already
+    // has a custom picture on their other row. Carry it over at creation time.
+    mutationFn: (data) => {
+      const existing = members.find(m => m.email && data.email && m.email.toLowerCase() === data.email.toLowerCase() && (m.avatar_url || m.avatar_color));
+      return base44.entities.Member.create(existing ? { ...data, avatar_url: existing.avatar_url, avatar_color: existing.avatar_color } : data);
+    },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["members"] }); setName(""); setEmail(""); setNewRole("student"); },
   });
   const deleteMutation = useMutation({
