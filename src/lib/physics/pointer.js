@@ -238,11 +238,28 @@ export function startPointerEngine() {
     }
   };
 
+  // `pointerenter`/`pointerleave` on `document` are the only signal that
+  // clears `inside` back to true, and they don't reliably re-fire on every
+  // return crossing: moving the pointer out over an <iframe> (this app embeds
+  // one, in ScheduleWidget) hands hit-testing to a different document, and
+  // coming back from it — or from another app/tab entirely — can leave
+  // `inside` stuck false. Since `inside=false` hides the custom cursor *and*
+  // the real OS cursor stays hidden via `cursor-ready`'s `cursor: none`, a
+  // stuck flag means no visible cursor at all until this recovers.
+  // `mouseover` bubbles from whichever element the pointer lands back on —
+  // including re-entering from an iframe — so it catches returns that
+  // `pointerenter` misses. Regaining window focus is a second, independent
+  // recovery point for the tab/alt-tab case.
+  const onMouseOver = () => { pointer.inside = true; wake(); };
+  const onFocus = () => { pointer.inside = true; wake(); };
+
   window.addEventListener("pointermove", onMove, { passive: true });
   window.addEventListener("pointerdown", onDown, { passive: true });
   window.addEventListener("pointerup", onUp, { passive: true });
   document.addEventListener("pointerleave", onLeave, { passive: true });
   document.addEventListener("pointerenter", onEnter, { passive: true });
+  window.addEventListener("mouseover", onMouseOver, { passive: true });
+  window.addEventListener("focus", onFocus);
   window.addEventListener("resize", onReset, { passive: true });
   window.addEventListener("scroll", onScroll, { passive: true, capture: true });
   window.addEventListener("blur", onReset);
@@ -255,6 +272,8 @@ export function startPointerEngine() {
     window.removeEventListener("pointerup", onUp);
     document.removeEventListener("pointerleave", onLeave);
     document.removeEventListener("pointerenter", onEnter);
+    window.removeEventListener("mouseover", onMouseOver);
+    window.removeEventListener("focus", onFocus);
     window.removeEventListener("resize", onReset);
     window.removeEventListener("scroll", onScroll, true);
     window.removeEventListener("blur", onReset);
