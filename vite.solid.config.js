@@ -22,6 +22,8 @@ import path from "node:path";
 export default defineConfig({
   configFile: false,
   root: path.resolve(process.cwd(), "solid"),
+  // Fonts, logo and manifest are shared with the React build rather than copied.
+  publicDir: path.resolve(process.cwd(), "public"),
   plugins: [solid()],
   resolve: {
     alias: {
