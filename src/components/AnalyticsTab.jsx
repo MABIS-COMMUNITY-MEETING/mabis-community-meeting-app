@@ -100,8 +100,9 @@ export default function AnalyticsTab({ feedback, members = [] }) {
   })).sort((a, b) => b.total - a.total);
 
   const ratingData = [1,2,3,4,5,6,7,8,9,10].map(r => ({
-    rating: `${r}`,
-    count: ratedFeedback.filter(f => f.rating === r).length,
+    label: `${r}`,
+    title: `Rating ${r}`,
+    value: ratedFeedback.filter(f => f.rating === r).length,
   }));
 
   // Feedback over last 8 weeks — real dates
@@ -115,7 +116,7 @@ export default function AnalyticsTab({ feedback, members = [] }) {
       const d = new Date(f.created_date);
       return d >= weekStart && d < weekEnd;
     }).length;
-    return { week: format(weekStart, "dd/MM"), weekLabel: format(weekStart, "dd/MM/yyyy"), count };
+    return { label: format(weekStart, "dd/MM"), title: format(weekStart, "dd/MM/yyyy"), value: count };
   }).reverse();
 
   return (
@@ -182,15 +183,7 @@ export default function AnalyticsTab({ feedback, members = [] }) {
         {ratedFeedback.length === 0 ? (
           <p className="text-muted-foreground text-sm text-center py-8">No ratings yet</p>
         ) : (
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={ratingData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
-              <XAxis dataKey="rating" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-              <Tooltip cursor={{ fill: CHART_CURSOR_FILL }} contentStyle={TOOLTIP_STYLE} />
-              <Bar dataKey="count" fill={CHART_PRIMARY} radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <Columns data={ratingData} color={CHART_PRIMARY} height={230} emptyLabel="Rating distribution" />
         )}
       </div>
 
@@ -200,15 +193,7 @@ export default function AnalyticsTab({ feedback, members = [] }) {
         {feedback.length === 0 ? (
           <p className="text-muted-foreground text-sm text-center py-8">No feedback yet</p>
         ) : (
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={weekData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
-              <XAxis dataKey="week" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-              <Tooltip cursor={{ fill: CHART_CURSOR_FILL }} contentStyle={TOOLTIP_STYLE} formatter={(v) => [v, "Feedback"]} labelFormatter={(l, payload) => payload?.[0]?.payload?.weekLabel || l} />
-              <Bar dataKey="count" fill={CHART_SECONDARY} radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <Columns data={weekData} color={CHART_SECONDARY} height={190} emptyLabel="Feedback activity over the last 8 weeks" />
         )}
       </div>
 
