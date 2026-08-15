@@ -115,12 +115,32 @@ export default function CalendarWidget() {
         setImportMsg("No events found in the screenshot.");
       } else {
         const validTypes = ["event", "holiday", "meeting", "birthday", "other"];
-        const newEvents = extracted.map(ev => ({
+        const candidates = extracted.map(ev => ({
           title: ev.title || "Untitled",
           date: ev.date,
           type: validTypes.includes(ev.type) ? ev.type : "event",
           description: ev.description || ""
         }));
+
+        // De-dupe against what's already on the calendar (and against this same
+        // batch) so re-importing the same or an overlapping screenshot doesn't
+        // create a second copy of the same birthday/holiday on a slightly
+        // different date.
+        const norm = (s) => (s || "").trim().toLowerCase();
+        const monthDay = (d) => (d || "").slice(5, 10); // "MM-DD"
+        const seenKeys = new Set();
+        const existingKeys = new Set(
+          dbEvents.map(ev => `${ev.type}|${norm(ev.title)}|${ev.type === "birthday" ? monthDay(ev.date) : ev.date}`)
+        );
+        const newEvents = candidates.filter(ev => {
+          if (!ev.date) return false;
+          const key = `${ev.type}|${norm(ev.title)}|${ev.type === "birthday" ? monthDay(ev.date) : ev.date}`;
+          if (existingKeys.has(key) || seenKeys.has(key)) return false;
+          seenKeys.add(key);
+          return true;
+        });
+        const skipped = candidates.length - newEvents.length;
+
         if (newEvents.length > 0) {
           base44.entities.CalendarEvent.bulkCreate(newEvents).catch(() => {});
         }
@@ -130,7 +150,11 @@ export default function CalendarWidget() {
             bdayEvents.map(ev => ({ name: ev.title, date: ev.date }))
           ).catch(() => {});
         }
-        setImportMsg(`Added ${newEvents.length} item${newEvents.length !== 1 ? "s" : ""}!`);
+        if (newEvents.length === 0) {
+          setImportMsg("Everything in that screenshot is already on the calendar.");
+        } else {
+          setImportMsg(`Added ${newEvents.length} item${newEvents.length !== 1 ? "s" : ""}!${skipped > 0 ? ` (skipped ${skipped} already on the calendar)` : ""}`);
+        }
       }
       setTimeout(() => setImportMsg(""), 5000);
     } catch (err) {
