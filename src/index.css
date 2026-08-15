@@ -1067,7 +1067,7 @@ body.theme-frutigeraero .bg-card:not(.mabis-widget) {
    Frutiger green if you prefer it. Size variants are deliberately not carried
    over — padding and font-size would change the layout, and the app's buttons
    already have their own metrics. */
-body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]) {
+body.theme-frutigeraero [class~="bg-primary"] {
   --hue: 235;
   --sat: 0.2;
   --glow-intensity: 0.7;
@@ -1097,7 +1097,7 @@ body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]) {
 }
 
 /* The classic Web 2.0 glare streak, cutting diagonally across the face. */
-body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"])::before {
+body.theme-frutigeraero [class~="bg-primary"]::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1114,7 +1114,7 @@ body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"])::befor
 }
 
 /* Inset top highlight, floating just inside the pill. */
-body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"])::after {
+body.theme-frutigeraero [class~="bg-primary"]::after {
   content: "";
   position: absolute;
   top: 4%;
@@ -1128,21 +1128,21 @@ body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"])::after
   transition: background 400ms ease;
 }
 
-body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]):hover,
-body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]):focus-visible {
+body.theme-frutigeraero [class~="bg-primary"]:hover,
+body.theme-frutigeraero [class~="bg-primary"]:focus-visible {
   box-shadow: 0 6px 8px rgb(0 0 0 / 0.4);
   transform: translateY(-1px);
 }
-body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]):active {
+body.theme-frutigeraero [class~="bg-primary"]:active {
   box-shadow: 0 2px 4px rgb(0 0 0 / 0.4);
   transform: translateY(1px);
 }
 
 /* The lift is decoration, so it yields like everything else. */
 @media (prefers-reduced-motion: reduce) {
-  body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]) { transition: none; }
-  body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]):hover,
-  body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]):active { transform: none; }
+  body.theme-frutigeraero [class~="bg-primary"] { transition: none; }
+  body.theme-frutigeraero [class~="bg-primary"]:hover,
+  body.theme-frutigeraero [class~="bg-primary"]:active { transform: none; }
 }
 
 /* ── Universal gloss ───────────────────────────────────────────────
@@ -1200,7 +1200,7 @@ body.theme-frutigeraero .rounded-lg {
    small button get the same three-layer build as the primary one, in a pale
    variant: glass body, diagonal glare streak, inset top highlight. Only the
    colour differs, so the whole control set reads as one family. */
-body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]),
+body.theme-frutigeraero button:not([class~="bg-primary"]):not([class*="lg-"]),
 body.theme-frutigeraero [role="button"]:not([class*="lg-"]),
 body.theme-frutigeraero [role="combobox"] {
   --hue: 202;
@@ -1220,7 +1220,7 @@ body.theme-frutigeraero [role="combobox"] {
   transition: all 300ms ease;
 }
 
-body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"])::before,
+body.theme-frutigeraero button:not([class~="bg-primary"]):not([class*="lg-"])::before,
 body.theme-frutigeraero [role="button"]:not([class*="lg-"])::before,
 body.theme-frutigeraero [role="combobox"]::before {
   content: "";
@@ -1238,7 +1238,7 @@ body.theme-frutigeraero [role="combobox"]::before {
   );
 }
 
-body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"])::after,
+body.theme-frutigeraero button:not([class~="bg-primary"]):not([class*="lg-"])::after,
 body.theme-frutigeraero [role="button"]:not([class*="lg-"])::after,
 body.theme-frutigeraero [role="combobox"]::after {
   content: "";
@@ -1253,22 +1253,22 @@ body.theme-frutigeraero [role="combobox"]::after {
   background: linear-gradient(to bottom, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.12));
 }
 
-body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]):hover {
+body.theme-frutigeraero button:not([class~="bg-primary"]):not([class*="lg-"]):hover {
   transform: translateY(-1px);
   box-shadow:
     0 2px 2px hsl(var(--hue) 55% 30% / 0.14),
     0 6px 12px -3px hsl(var(--hue) 55% 32% / 0.2),
     0 0 20px -2px hsl(196 100% 70% / 0.6);
 }
-body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]):active {
+body.theme-frutigeraero button:not([class~="bg-primary"]):not([class*="lg-"]):active {
   transform: translateY(1px);
   box-shadow: inset 0 2px 4px -1px hsl(var(--hue) 60% 25% / 0.4);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]) { transition: none; }
-  body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]):hover,
-  body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="lg-"]):active { transform: none; }
+  body.theme-frutigeraero button:not([class~="bg-primary"]):not([class*="lg-"]) { transition: none; }
+  body.theme-frutigeraero button:not([class~="bg-primary"]):not([class*="lg-"]):hover,
+  body.theme-frutigeraero button:not([class~="bg-primary"]):not([class*="lg-"]):active { transform: none; }
 }
 
 /* Coloured variants keep their meaning: same glass build, different hue.
@@ -1434,7 +1434,7 @@ body.theme-frutigeraero canvas.rounded-full + .rounded-full {
    fell through to the pale variant. This is the hero control on the page, so
    it gets the full build at a larger scale. Declared after the generic pill
    rules so it wins on source order at equal specificity. */
-body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"] {
+body.theme-frutigeraero button[class~="from-primary"] {
   --hue: 235;
   --sat: 0.2;
   --glow-intensity: 0.8;
@@ -1458,7 +1458,7 @@ body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"] {
     0 0 30px -4px hsl(196 100% 66% / 0.7);
 }
 
-body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]::before {
+body.theme-frutigeraero button[class~="from-primary"]::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1474,7 +1474,7 @@ body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]::bef
   );
 }
 
-body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]::after {
+body.theme-frutigeraero button[class~="from-primary"]::after {
   content: "";
   position: absolute;
   top: 6%;
@@ -1487,22 +1487,22 @@ body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]::aft
   background: linear-gradient(to bottom, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.12));
 }
 
-body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:hover {
+body.theme-frutigeraero button[class~="from-primary"]:hover {
   box-shadow:
     0 3px 3px hsl(var(--hue) 55% 25% / 0.28),
     0 10px 20px -4px hsl(var(--hue) 55% 25% / 0.4),
     0 0 40px -2px hsl(196 100% 70% / 0.85);
 }
-body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:active {
+body.theme-frutigeraero button[class~="from-primary"]:active {
   box-shadow: inset 0 3px 6px -1px hsl(var(--hue) 60% 20% / 0.45);
 }
 
 /* Disabled while spinning: flat, no glow, no glare. */
-body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:disabled {
+body.theme-frutigeraero button[class~="from-primary"]:disabled {
   box-shadow: none;
 }
-body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:disabled::before,
-body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"]:disabled::after {
+body.theme-frutigeraero button[class~="from-primary"]:disabled::before,
+body.theme-frutigeraero button[class~="from-primary"]:disabled::after {
   opacity: 0.35;
 }
 
@@ -1527,8 +1527,8 @@ body.theme-frutigeraero [role="combobox"]::after {
 }
 
 /* Filled controls — primary, and the Spin button's gradient variant. */
-body.theme-frutigeraero [class*="bg-primary"]:not([class*="bg-primary/"]),
-body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"] {
+body.theme-frutigeraero [class~="bg-primary"],
+body.theme-frutigeraero button[class~="from-primary"] {
   background-image:
     linear-gradient(120deg, transparent 30%, rgb(255 255 255 / 0.38) 45%, rgb(255 255 255 / 0.06) 55%, transparent 70%),
     linear-gradient(to bottom, rgb(255 255 255 / 0.6) 0%, rgb(255 255 255 / 0.14) 42%, rgb(255 255 255 / 0) 46%),
@@ -1537,7 +1537,7 @@ body.theme-frutigeraero button[class*="from-primary"][class*="bg-gradient"] {
 }
 
 /* Pale controls — header capsules, outline and secondary buttons, selects. */
-body.theme-frutigeraero button:not([class*="bg-primary"]):not([class*="from-primary"]):not([class*="lg-"]),
+body.theme-frutigeraero button:not([class~="bg-primary"]):not([class~="from-primary"]):not([class*="lg-"]),
 body.theme-frutigeraero [role="button"]:not([class*="lg-"]),
 body.theme-frutigeraero [role="combobox"] {
   background-image:
