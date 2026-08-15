@@ -101,7 +101,6 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
     if (!document.fonts) return;
     let cancelled = false;
     const aliases = {
-      "transgender-grotesk": "TransgenderGroteskUI",
       "atlas-mono": "AtlasMonoUI",
     };
     const localFonts = FONTS.filter((font) => font.localOnly);
