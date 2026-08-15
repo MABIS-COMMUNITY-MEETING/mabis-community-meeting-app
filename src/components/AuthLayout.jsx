@@ -1,13 +1,14 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
+import JapaneseText from "@/components/JapaneseText";
 
 /**
  * Editorial auth shell: oversized background numeral, thin technical frame,
  * crosshair decorations, and a glass content card. Preserves the same
  * { logo, title, subtitle, footer, children } contract used by all auth pages.
  */
-export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, children }) {
+export default function AuthLayout({ icon: Icon, title, jaTitle, subtitle, jaSubtitle, footer, logo, children }) {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-bone text-foreground">
       <div className="grid-bg absolute inset-0 opacity-60" />
@@ -26,7 +27,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, 
 
       {/* top meta row */}
       <div className="absolute top-6 sm:top-9 left-0 right-0 flex items-center justify-between px-8 sm:px-14">
-        <span className="tech-label text-muted-foreground"> AUTH</span>
+        <JapaneseText ja="認証" as="span" className="tech-label text-muted-foreground" japaneseClassName="text-[0.8em] normal-case tracking-normal"> AUTH</JapaneseText>
         <span className="tech-label text-muted-foreground">N° 00</span>
       </div>
 
@@ -38,7 +39,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, 
           className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16"
         >
           <div className="lg:col-span-6 lg:col-start-1">
-            <div className="tech-label text-primary mb-4"> IDENTITY</div>
+            <JapaneseText ja="本人確認" as="div" className="tech-label text-primary mb-4" japaneseClassName="text-[0.8em] normal-case tracking-normal"> IDENTITY</JapaneseText>
             {logo ? (
               <div className="mb-6 inline-flex h-16 w-16 items-center justify-center border border-foreground/20 bg-card overflow-hidden">
                 {logo}
@@ -51,7 +52,8 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, logo, 
             <h1 className="font-display font-extralight tracking-ultra leading-[0.9] text-5xl sm:text-7xl lg:text-8xl">
               {title}
             </h1>
-            {subtitle && <p className="mt-3 text-sm text-muted-foreground">{subtitle}</p>}
+            {jaTitle && <p lang="ja" className="mt-2 text-lg text-muted-foreground">{jaTitle}</p>}
+            {subtitle && <JapaneseText as="p" ja={jaSubtitle} className="mt-3 text-sm text-muted-foreground" japaneseClassName="text-[0.9em]">{subtitle}</JapaneseText>}
           </div>
 
           <div className="lg:col-span-5 lg:col-start-8">
