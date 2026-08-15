@@ -583,6 +583,13 @@
 .jp-kicker { font-family:var(--font-mono); font-size:9px; letter-spacing:0.24em; text-transform:uppercase; color:hsl(var(--muted-foreground)); }
 .jp-index { font-family:var(--font-mono); font-variant-numeric:tabular-nums; letter-spacing:-0.06em; }
 
+/* Guaranteed-contrast "muted" text for widget headers (bg-primary). Unlike a
+   Tailwind opacity modifier, this is a real theme-computed colour (see
+   mutedForeground() in themeBalance.js / applyTheme() in themes.js), so it
+   never fades toward invisibility against its own background in low-contrast
+   themes the way text-primary-foreground/60 could. */
+.text-primary-foreground-muted { color: hsl(var(--primary-foreground-muted)); }
+
 /* automatic Japanese companion text — see src/components/JapaneseUiCompanion.jsx.
    The component only sets data-ja-companion/data-ja-layout attributes; this is
    what actually paints the translation next to the English original. */
