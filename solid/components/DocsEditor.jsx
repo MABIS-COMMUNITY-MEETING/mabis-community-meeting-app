@@ -405,12 +405,13 @@ export default function DocsEditor(props) {
     setFindResult(`Match at ${index}`);
   };
 
+  const activeFont = () => getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'GNUFreeMonoUI'";
+
   const downloadHtml = () => {
     if (!quill) return;
-    const blob = new Blob(
-      [`<!doctype html><meta charset="utf-8"><title>${props.title || "document"}</title>${quill.root.innerHTML}`],
-      { type: "text/html" },
-    );
+    const title = props.title || "document";
+    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{max-width:760px;margin:48px auto;padding:0 24px;font-family:${activeFont()};font-size:16px;line-height:1.65;color:#202124}img{max-width:100%}blockquote{border-left:3px solid #dadce0;margin-left:0;padding-left:16px;color:#5f6368}pre{white-space:pre-wrap;background:#f8f9fa;padding:12px;border-radius:8px}</style></head><body>${quill.root.innerHTML}</body></html>`;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -421,11 +422,13 @@ export default function DocsEditor(props) {
 
   const printDocument = () => {
     if (!quill) return;
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(`<!doctype html><meta charset="utf-8"><title>${props.title || "document"}</title>${quill.root.innerHTML}`);
-    win.document.close();
-    win.print();
+    const title = props.title || "document";
+    const popup = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
+    if (!popup) return;
+    popup.document.write(`<!doctype html><html><head><title>${title}</title><style>@page{margin:18mm}body{max-width:760px;margin:0 auto;font-family:${activeFont()};font-size:11pt;line-height:1.55;color:#111}img{max-width:100%;page-break-inside:avoid}blockquote{border-left:3px solid #aaa;margin-left:0;padding-left:14px}pre{white-space:pre-wrap}</style></head><body>${quill.root.innerHTML}</body></html>`);
+    popup.document.close();
+    popup.focus();
+    popup.print();
   };
 
   const copyPlainText = async () => {
