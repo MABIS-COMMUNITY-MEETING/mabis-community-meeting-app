@@ -40,9 +40,13 @@ window.matchMedia = (q) => ({
 });
 if (!window.requestIdleCallback) window.requestIdleCallback = (fn) => setTimeout(fn, 0);
 
-for (const k of ["window", "document", "navigator", "localStorage", "sessionStorage", "requestAnimationFrame", "cancelAnimationFrame", "matchMedia", "performance", "getComputedStyle", "Node", "Element", "HTMLElement", "CustomEvent", "Event", "MutationObserver"]) {
+// NB: `performance` is deliberately excluded. jsdom's Performance delegates to
+// the global one, so assigning it back onto globalThis makes now() recurse
+// into itself and blow the stack. Node's native performance works fine here.
+for (const k of ["window", "document", "navigator", "localStorage", "sessionStorage", "requestAnimationFrame", "cancelAnimationFrame", "matchMedia", "getComputedStyle", "Node", "Element", "HTMLElement", "CustomEvent", "Event", "MutationObserver"]) {
   globalThis[k] = window[k];
 }
+window.performance = globalThis.performance;
 globalThis.self = window;
 
 const code = fs.readFileSync(path.join(dist, "assets", entry), "utf8");
