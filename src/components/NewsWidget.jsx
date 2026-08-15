@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import JapaneseText from "@/components/JapaneseText";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Newspaper, Plus, Trash2, Loader2, X, Image as ImageIcon, Video, Maximize2, History } from "lucide-react";
@@ -79,7 +80,7 @@ export default function NewsWidget({ members, isAdmin, limit }) {
           <h2 className="mabis-widget-title font-display font-bold text-primary-foreground text-xl flex items-center gap-2">
             <Newspaper className="w-5 h-5" /> News
           </h2>
-          <p className="text-primary-foreground/60 text-xs mt-0.5">{news.length} articles</p>
+          <JapaneseText as="p" ja={`${news.length}件の記事`} className="text-primary-foreground-muted text-xs mt-0.5" japaneseClassName="block mt-0.5 text-[0.9em]">{news.length} articles</JapaneseText>
         </div>
         <div className="mabis-widget-actions flex items-center flex-wrap gap-2 shrink-0">
             <Link to="/history/news">
