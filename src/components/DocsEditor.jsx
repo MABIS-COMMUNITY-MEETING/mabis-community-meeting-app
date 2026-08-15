@@ -57,7 +57,6 @@ const FONTS = [
   { label: "Go Mono", value: "'GoMonoUI'" },
   { label: "GNU FreeSans", value: "'GNUFreeSansUI'" },
   { label: "GNU FreeSerif", value: "'GNUFreeSerifUI'" },
-  { label: "Transgender Grotesk", value: "'TransgenderGroteskUI', 'GNUFreeMonoUI'" },
   { label: "Atlas Mono", value: "'AtlasMonoUI', 'GNUFreeMonoUI'" },
   { label: "Iosevka", value: "'IosevkaUI'" },
   { label: "Lilex", value: "'LilexUI'" },
