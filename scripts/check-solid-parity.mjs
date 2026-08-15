@@ -162,4 +162,8 @@ if (failures.length) {
   failures.forEach((f) => console.error(`  - ${f}`));
   process.exit(1);
 }
+clearTimeout(watchdog);
 console.log("Splash slice renders at parity with the React source.\n");
+// jsdom keeps timers and observers alive, so exit explicitly rather than
+// waiting for the event loop to drain (it never will).
+process.exit(0);
