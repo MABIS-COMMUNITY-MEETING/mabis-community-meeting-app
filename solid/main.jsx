@@ -2,6 +2,7 @@ import { render } from "solid-js/web";
 import App from "~/App.jsx";
 import "@/index.css";
 import "@/styles/editorial-home.css";
+import "~/solid-motion.css";
 import { applyTheme, getStoredTheme, getStoredCustomColors, applyCustomColors, applyFont, getStoredFont } from "@/lib/themes";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
