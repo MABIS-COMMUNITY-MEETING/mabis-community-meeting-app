@@ -152,6 +152,9 @@ export default function Home() {
       <ThemeSwitcher />
       <button
         onClick={() => setShowHelp(true)}
+        onMouseEnter={preloadQuickStartGuide}
+        onFocus={preloadQuickStartGuide}
+        onPointerDown={preloadQuickStartGuide}
         data-cursor="HELP"
         title="How to use this site"
         className="flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"
@@ -159,7 +162,15 @@ export default function Home() {
         <CircleHelp className="w-4 h-4" />
         <span className="hidden text-[10px] font-bold uppercase tracking-wide sm:inline">Help</span>
       </button>
-      <button onClick={() => setShowSettings(true)} data-cursor="SET" title="Settings" className="h-9 w-9 flex items-center justify-center border border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors">
+      <button
+        onClick={() => setShowSettings(true)}
+        onMouseEnter={preloadSettingsModal}
+        onFocus={preloadSettingsModal}
+        onPointerDown={preloadSettingsModal}
+        data-cursor="SET"
+        title="Settings"
+        className="h-9 w-9 flex items-center justify-center border border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors"
+      >
         <Settings className="w-4 h-4" />
       </button>
       <div className="flex items-center gap-2.5 pl-1">
