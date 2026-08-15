@@ -129,7 +129,7 @@ The current script rules are mandatory:
 
 Every component must use the shared font variables or matching Tailwind utilities. Do not hard-code a font family inside a page, modal, loading screen, canvas, export routine, or component.
 
-The customizable font system must remain available. Featured choices include GNU FreeMono, GNU FreeSerif, GNU FreeSans, Go, Iosevka, Lilex, UnifontEX, Torrefarfan, and the legally embeddable Libre Fonts by Womxn catalogue. Commercial choices such as Atlas Mono or Transgender Grotesk may appear only as licensed/local options unless the correct webfont license and files are supplied.
+The customizable font system must remain available. Featured choices include GNU FreeMono, GNU FreeSerif, GNU FreeSans, Go, Iosevka, Lilex, UnifontEX, Torrefarfan, and the legally embeddable Libre Fonts by Womxn catalogue. Commercial choices such as Atlas Mono may appear only as licensed/local options unless the correct webfont license and files are supplied. Transgender Grotesk was removed from the picker at Novesce's request — do not re-add it.
 
 When selecting new fonts, prefer work from **publicly self-identified LGBTQ+, trans, non-binary, intersex, or FLINTA designers** when authorship, identity, licensing, and script support can be verified from reliable public sources. Never guess or infer a designer’s identity.
 
@@ -436,7 +436,7 @@ When adding a font:
 5. Test regular and bold text before making it featured.
 6. Confirm the loading screen does not flash through another font.
 
-Commercial fonts such as Transgender Grotesk and Atlas Mono must not be bundled without the correct web license.
+Commercial fonts such as Atlas Mono must not be bundled without the correct web license.
 
 ## Multilingual behavior
 
