@@ -11,6 +11,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { JSDOM } from "jsdom";
 
 const dist = path.join(process.cwd(), "dist-solid");
@@ -49,14 +50,16 @@ for (const k of ["window", "document", "navigator", "localStorage", "sessionStor
 Object.defineProperty(window, "performance", { value: globalThis.performance, configurable: true });
 globalThis.self = window;
 
-const code = fs.readFileSync(path.join(dist, "assets", entry), "utf8");
-const blobUrl = "data:text/javascript;base64," + Buffer.from(code).toString("base64");
+// Imported by real path, not a data: URL — the entry code-splits Splash and
+// Home into sibling chunks, and relative specifiers only resolve against a
+// real file URL.
+const entryUrl = pathToFileURL(path.join(dist, "assets", entry)).href;
 
 let mountError = null;
 try {
-  await import(blobUrl);
-  // Solid's render is synchronous, but the bootstrap awaits a font promise.
-  await new Promise((r) => setTimeout(r, 900));
+  await import(entryUrl);
+  // Bootstrap awaits a font promise, then the lazy route chunk resolves.
+  await new Promise((r) => setTimeout(r, 1200));
 } catch (e) {
   mountError = e;
 }
