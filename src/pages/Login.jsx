@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import JapaneseText from "@/components/JapaneseText";
 import { disableHackerMode } from "@/lib/hacker";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png";
@@ -34,7 +35,9 @@ export default function Login() {
     <AuthLayout
       logo={<img src={LOGO} alt="MABIS" className="w-12 h-12 object-contain" />}
       title="Sign in"
+      jaTitle="サインイン"
       subtitle="Continue with your MABIS Google account"
+      jaSubtitle="MABISのGoogleアカウントで続行"
     >
       {error && (
         <div
@@ -54,7 +57,7 @@ export default function Login() {
         className="group flex h-12 w-full items-center justify-center gap-2 border border-foreground/20 bg-card text-xs text-foreground tech-label transition-colors hover:bg-foreground hover:text-bone disabled:cursor-wait disabled:opacity-70"
       >
         {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon className="h-4 w-4" />}
-        {googleLoading ? "CONNECTING TO GOOGLE…" : "CONTINUE WITH GOOGLE"}
+        <JapaneseText ja={googleLoading ? "Googleに接続中…" : "Googleで続行"} layout="inline" japaneseClassName="text-[0.8em]">{googleLoading ? "CONNECTING TO GOOGLE…" : "CONTINUE WITH GOOGLE"}</JapaneseText>
       </button>
     </AuthLayout>
   );
