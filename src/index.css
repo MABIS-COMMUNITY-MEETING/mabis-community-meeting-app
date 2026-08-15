@@ -2003,10 +2003,15 @@ html.is-scrolling .widget-loading-shell {
      widget was being pinned to the section box rather than the viewport — it
      looked as though the button did nothing.
 
+     Two different fullscreen patterns are in play, so this matches the thing
+     they share rather than the element. Most widgets add `fixed inset-0` to
+     the .mabis-widget itself; Jobs early-returns a plain full-viewport div.
+     Keying on `.fixed.inset-0` catches both, and any future overlay too.
+
      Containment is only released for the one section that actually has a
      fullscreen widget open, so the rest of the page keeps the skip-rendering
      benefit. */
-  main [data-gp-section]:has(.mabis-widget.fixed) {
+  main [data-gp-section]:has(.fixed.inset-0) {
     content-visibility: visible;
     contain: none;
   }
