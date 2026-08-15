@@ -38,17 +38,36 @@ function Enter(props) {
     requestAnimationFrame(() => requestAnimationFrame(() => setShown(true)));
   });
 
+  // Only write `transform` when this element actually animates one.
+  //
+  // An inline transform beats a Tailwind transform utility, so setting it
+  // unconditionally would silently cancel classes like -translate-x-1/2. That
+  // is exactly how framer behaves too (it writes style.transform only for
+  // transform keys), so matching it is what keeps the port 1:1 — the giant
+  // cropped "MABIS" word animates opacity alone and must keep its Tailwind
+  // centering transform.
+  const animatesTransform = () =>
+    props.fromX !== undefined || props.fromY !== undefined || props.fromScaleX !== undefined;
+
   const style = () => {
     const d = props.duration ?? 0.6;
     const delay = props.delay ?? 0;
     const ease = props.ease ?? EASE_CSS;
-    return {
+    const base = {
       opacity: shown() ? (props.toOpacity ?? 1) : (props.fromOpacity ?? 0),
+      transition: animatesTransform()
+        ? `opacity ${d}s ${ease} ${delay}s, transform ${d}s ${ease} ${delay}s`
+        : `opacity ${d}s ${ease} ${delay}s`,
+      ...(props.extraStyle || {}),
+    };
+
+    if (!animatesTransform()) return base;
+
+    return {
+      ...base,
       transform: shown()
         ? "translate3d(0,0,0) scaleX(1)"
         : `translate3d(${props.fromX ?? 0}px, ${props.fromY ?? 0}px, 0) scaleX(${props.fromScaleX ?? 1})`,
-      transition: `opacity ${d}s ${ease} ${delay}s, transform ${d}s ${ease} ${delay}s`,
-      ...(props.extraStyle || {}),
     };
   };
 
