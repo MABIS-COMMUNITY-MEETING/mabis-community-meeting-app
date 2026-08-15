@@ -627,6 +627,7 @@ export function applyCustomColors(primaryHex, secondaryHex) {
   root.style.setProperty("--ring", primaryPair.fill);
   root.style.setProperty("--destructive", primaryPair.fill);
   root.style.setProperty("--destructive-foreground", primaryPair.foreground);
+  root.style.setProperty("--primary-foreground-muted", mutedForeground(primaryPair.foreground, primaryPair.fill));
   applyPalette([primaryHex, secondaryHex]);
   localStorage.setItem("mabis-custom-colors", JSON.stringify({ primary: primaryHex, secondary: secondaryHex }));
   window.dispatchEvent(new Event("themeChanged"));
