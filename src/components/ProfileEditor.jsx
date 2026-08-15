@@ -20,8 +20,14 @@ export default function ProfileEditor({ open, onClose }) {
 
   const syncAvatarToMember = async (data) => {
     try {
+      // A person can hold more than one Member row — one per role (student,
+      // admin, editor, ...), see @/lib/memberIdentity. Only ever writing
+      // matches[0] left every row but one stuck with whatever avatar it had
+      // when it happened to be first in the list, so the picture only ever
+      // showed up under a single role. Sync to every row that is this
+      // person so the avatar matches no matter which role is viewing.
       const matches = await base44.entities.Member.filter({ email: user?.email });
-      if (matches.length > 0) await base44.entities.Member.update(matches[0].id, data);
+      await Promise.all(matches.map((match) => base44.entities.Member.update(match.id, data)));
     } catch (e) { /* ignore */ }
   };
 
