@@ -69,6 +69,7 @@ page instead. There is an explicit assertion guarding exactly that.
 | UI primitives | Button, Input, Textarea, Badge, spinner, empty state, Select |
 | Kobalte primitives | Dialog, Tabs, Popover, DropdownMenu — ported 2026-08-15, verified against `vite.solid.config.js` |
 | Dead code removal | `Dashboard/Meetings/Topics/JobWheel/Register/ForgotPassword/Team/ResetPassword` pages deleted from `src/pages/`, along with the components only they used (`topics/TopicCard`, `meetings/MeetingCalendar`, `jobs/JobCard`, `wheel/SpinWheel`). React build verified green after removal. |
+| Jobs | `JobsWidget.jsx` + `jobs/{SpinWheel,tables}.jsx` — audited 2026-08-16 against the React source. Two real gaps found and fixed: `SpinWheel` never redrew when `members` changed outside a spin (unchecking someone in Manage Students, or "Remove from wheel", left the canvas stale — React got this for free from `useCallback`'s dependency array; Solid needed an explicit `createEffect`), and the Add Job name input had lost `autoFocus`. Wired into `DiscussionWidget`'s two remaining `PendingWidget` slots (meeting mode + normal-mode compact table) — `Home.jsx` already had it as the "04" section widget directly. Both `npm run build` and the Solid build verified green after each change. |
 
 ## Remaining
 
