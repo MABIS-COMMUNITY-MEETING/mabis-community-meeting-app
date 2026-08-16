@@ -1,1 +1,0 @@
-import{I as a}from"./Icon-FCMuTMao.js";import{c as r,m as t}from"./index-YBXDXjgh.js";var o=[["rect",{x:"14",y:"3",width:"5",height:"18",rx:"1",key:"kaeet6"}],["rect",{x:"5",y:"3",width:"5",height:"18",rx:"1",key:"1wsw3u"}]],s=e=>r(a,t(e,{iconNode:o,name:"pause"})),i=s;export{i as p};
