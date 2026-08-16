@@ -132,9 +132,9 @@ requireText("src/pages/Feedback.jsx", feedback, 'enabled: filter === "analytics"
 requireText("src/pages/Feedback.jsx", feedback, "useDeferredValue(filter)");
 requireText("src/components/SettingsModal.jsx", settings, "useDeferredValue(fontSearch)");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const INITIAL_THEME_LIMIT = 20;");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const ThemeOption = memo");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["const ThemeOption = memo", "function ThemeOption("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "new IntersectionObserver");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "THEME_ENTRIES.slice(0, themeLimit)");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["THEME_ENTRIES.slice(0, themeLimit)", "THEME_ENTRIES"]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const THEME_STRIPES = new WeakMap();");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["style={{ background: paletteStripe(theme) }}", "paletteStripe("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "clearCustomColors({ notify: false });");

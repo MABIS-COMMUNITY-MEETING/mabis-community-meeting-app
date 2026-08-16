@@ -235,14 +235,14 @@ requireText("src/pages/Login.jsx", login, 'base44.auth.loginWithProvider("google
 requireText("src/pages/Login.jsx", login, "CONTINUE WITH GOOGLE");
 forbidText("src/pages/Login.jsx", login, "loginViaEmailPassword");
 forbidText("src/pages/Login.jsx", login, "<form");
-requireText("src/App.jsx", app, '<Route path="/register" element={<Navigate to="/login" replace />} />');
+requireText("src/App.jsx", app, ['<Route path="/register" element={<Navigate to="/login" replace />} />', '<Route path="/register" component={RedirectToLogin} />']);
 requireText("src/App.jsx", app, ['<Route path="/forgot-password" element={<Navigate to="/login" replace />} />', '<Route path="/forgot-password" component={RedirectToLogin} />']);
 requireText("src/App.jsx", app, ['<Route path="/reset-password" element={<Navigate to="/login" replace />} />', '<Route path="/reset-password" component={RedirectToLogin} />']);
 forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/Register")');
 forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/ForgotPassword")');
 forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/ResetPassword")');
 requireText("src/components/OpenMoji.jsx", openMoji, 'OPENMOJI_VERSION = "17.0.0"');
-requireText("src/components/OpenMoji.jsx", openMoji, 'aria-hidden={label ? undefined : true}');
+requireText("src/components/OpenMoji.jsx", openMoji, ['aria-hidden={label ? undefined : true}', 'aria-hidden={props.label ? undefined : true}']);
 // The two Team.jsx assertions that used to sit here were removed when the
 // unrouted pages (Team, Dashboard, Meetings, Topics, JobWheel, Register,
 // ForgotPassword, ResetPassword) were deleted as dead code. They only pinned
