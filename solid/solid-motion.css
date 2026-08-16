@@ -134,6 +134,39 @@ html.animations-disabled .fade-in { animation: none; }
 }
 .modal-pop { animation: modal-pop 0.2s ease-out both; }
 
+/* ── Page transition ────────────────────────────────────────────────────
+ * Enter half only — the ink curtain wipes up off the incoming page while the
+ * content lifts in. There is no exit half: Solid has no AnimatePresence, so a
+ * leaving route unmounts at once.
+ *
+ * NOTE the fill modes. The curtain keeps `both` because it must stay fully
+ * clipped afterwards. The content lift uses `backwards`, NOT `both`, and this
+ * is load-bearing: `both` would leave the element with an animated transform
+ * forever, and any non-none transform makes an element the containing block
+ * for its position:fixed descendants — which is exactly the bug React hit,
+ * where every fullscreen widget (Jobs, Calendar, Members, Discussion) got
+ * pinned to this wrapper instead of the viewport. React had to clear the
+ * inline transform by hand in onAnimationComplete. `backwards` covers the
+ * delay and then leaves no transform at all, so the bug cannot occur.
+ */
+@keyframes curtain-wipe {
+  from { clip-path: inset(0 0 0 0); }
+  to   { clip-path: inset(0 0 100% 0); }
+}
+.page-curtain { animation: curtain-wipe 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes curtain-mark {
+  from { transform: translate(-50%, -50%) translateX(-8%); }
+  to   { transform: translate(-50%, -50%) translateX(8%); }
+}
+.page-curtain-mark { animation: curtain-mark 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes content-lift {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+.page-content-lift { animation: content-lift 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.18s backwards; }
+
 /* whileHover + whileTap pairs. */
 .press-sm, .press-lg { transition: transform 120ms ease; }
 .press-sm:hover { transform: scale(1.02); }
@@ -160,7 +193,15 @@ html.animations-disabled .assistant-pop,
 html.animations-disabled .feedback-pop,
 html.animations-disabled .dropdown-pop,
 html.animations-disabled .modal-pop,
+html.animations-disabled .page-curtain-mark,
+html.animations-disabled .page-content-lift,
 html.animations-disabled .success-pop { animation: none; }
+/* The curtain must still end up clipped away with motion off, or it would sit
+ * over the page as an opaque sheet. Snap it instead of animating it. */
+html.animations-disabled .page-curtain {
+  animation: none;
+  clip-path: inset(0 0 100% 0);
+}
 html.animations-disabled .assistant-fab,
 html.animations-disabled .feedback-fab,
 html.animations-disabled .press-sm,
