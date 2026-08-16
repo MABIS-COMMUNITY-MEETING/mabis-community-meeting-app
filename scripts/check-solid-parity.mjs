@@ -459,6 +459,8 @@ if (japaneseMode) {
   check("annotations are non-empty Japanese",
     [...annotated].every((el) => /[぀-ヿ一-龯]/.test(el.getAttribute("data-ja-companion"))));
   check("screen-reader marker present", html2.includes("日本語"));
+  check("japanese-text-enabled class set when the preference is on",
+    window.document.documentElement.classList.contains("japanese-text-enabled"));
   check("CJK stylesheet requested once CJK text exists",
     !!window.document.getElementById("maple-mono-cjk-styles"));
   // Manual <JapaneseText> output must not be re-translated by the scanner.
@@ -468,6 +470,20 @@ if (japaneseMode) {
 } else {
   check("no Japanese annotations when the preference is off",
     !root || root.querySelectorAll("[data-ja-companion]").length === 0);
+
+  /*
+   * Hand-written <span lang="ja"> bypasses <JapaneseText> and the scanner, so
+   * the preference is enforced in CSS instead (see index.css). Assert the hook
+   * that rule depends on: the class must be absent from <html>, and any raw
+   * lang="ja" left in the markup must be opted out explicitly. Reported by a
+   * user who turned Japanese off and still saw サインイン on the sign-in page.
+   */
+  check("japanese-text-enabled class absent when the preference is off",
+    !window.document.documentElement.classList.contains("japanese-text-enabled"));
+  const rawJa = root ? [...root.querySelectorAll('[lang="ja"]')] : [];
+  check("every raw lang=\"ja\" node is CSS-gated or explicitly opted out",
+    rawJa.every((el) => el.hasAttribute("data-ja-always")),
+    `${rawJa.filter((el) => !el.hasAttribute("data-ja-always")).length} ungated node(s) — these are hidden by the stylesheet, so this only fails if the rule is removed`);
 }
 
 // ── theme engine parity ────────────────────────────────────────────────────
