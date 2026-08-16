@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "~/lib/AuthContext";
 import { Toaster } from "~/lib/toast";
 import OptionalCustomCursor from "~/components/OptionalCustomCursor";
 import CjkFontLoader from "~/components/CjkFontLoader";
+import LoadingScreen from "~/components/LoadingScreen";
 import JapaneseUiCompanion from "~/components/JapaneseUiCompanion";
 
 /*
@@ -37,8 +38,14 @@ function RedirectToLogin() {
   return <Navigate href="/login" />;
 }
 
+/*
+ * React shows LoadingScreen both as the Suspense fallback and while auth is
+ * resolving. It is not lazy on purpose: it is the thing shown *while* chunks
+ * load, so putting it behind a chunk of its own would leave a blank screen
+ * exactly when it is needed.
+ */
 function RouteFallback() {
-  return <div style={{ "min-height": "100vh" }} aria-hidden />;
+  return <LoadingScreen />;
 }
 
 /** Mirrors the React ProtectedRoute: unauthenticated users go to login. */
