@@ -342,8 +342,6 @@ if (route === "/login") {
   for (const [index, label] of SECTIONS) {
     check(`section ${index} (${label}) rendered`, textNow().includes(label));
   }
-  // Placeholder counting is unreliable here: the minutes editor is a lazy
-  // chunk containing Quill, which jsdom loads slowly and never initialises.
   /*
    * Wait for the lazy widget chunks to settle before counting placeholders.
    *
@@ -379,11 +377,16 @@ if (route === "/login") {
   /*
    * The Discussion section is a per-week minutes document now.
    *
-   * NOTE: do not add assertions about DocsEditor's own DOM here. Quill never
-   * initialises under jsdom — .docs-editor-content is absent even in builds
-   * where the editor demonstrably works — so such checks fail for reasons that
-   * have nothing to do with the code under test. That cost a long debugging
-   * detour. Verify the editor itself in a browser.
+   * NOTE: keep assertions here to the document SURFACE (the container and its
+   * seeded HTML), not to Quill's own internals — toolbars, selection, key
+   * handling and clipboard all need layout jsdom does not do, so asserting on
+   * them fails for reasons unrelated to the code under test. Verify editing
+   * behaviour in a browser.
+   *
+   * An earlier version of this note claimed .docs-editor-content never appears
+   * under jsdom. It does; what was actually happening is that the check ran
+   * before the lazy chunk resolved (see the wait above). Do not re-weaken these
+   * assertions on the strength of that claim.
    */
   check("the retired topic list is gone",
     !textNow().includes("No topics yet"),
