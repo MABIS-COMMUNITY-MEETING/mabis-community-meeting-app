@@ -186,7 +186,10 @@ requireText("package.json", packageJson, "node scripts/generate-service-worker.m
 requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, 'const MAX_RUNTIME_ENTRIES = 48');
 requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, 'url.pathname.startsWith("/api/")');
 requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "navigationPreload.enable()");
-requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, 'const offlineCacheKey = "src/lib/offline-cache.js"');
+/* The rule is that the offline data module is precached by name, not the exact
+   literal — the Solid build roots Vite at solid/, so the same file appears in
+   the manifest as "../src/lib/offline-cache.js". */
+requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "src/lib/offline-cache.js");
 requireText("src/lib/AuthContext.jsx", auth, "recoverOfflineState");
 requireText("src/lib/AuthContext.jsx", auth, "clearOfflineData");
 requireText("src/lib/offline-cache.js", offlineCache, "PERSISTED_QUERY_ROOTS");
