@@ -67,7 +67,7 @@ function loadHomeRoute() {
   // and any widget that missed its prefetch just fetches for itself. Pairs
   // with LoadingScreen's trickle animation — the wait that remains no longer
   // reads as frozen either way.
-  const budget = 900;
+  const HOME_WARMUP_BUDGET_MS = 900;
   homeRoutePromise = (async () => {
     const chunk = import("~/pages/Home");
     const warm = import("~/lib/home-warmup")
