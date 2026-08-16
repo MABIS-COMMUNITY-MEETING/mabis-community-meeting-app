@@ -130,6 +130,37 @@ function dataTasks() {
  */
 const asIo = (tasks) => tasks.map((task) => ({ ...task, io: true }));
 
+/**
+ * Start Home's chunk downloads WITHOUT waiting for auth.
+ *
+ * Nothing in this list needs a token — they are static JS files. The data
+ * warm-up genuinely does need one (firing entity reads before auth resolves
+ * sends them unauthenticated, which is a bug this file has already had once),
+ * so only the modules move earlier.
+ *
+ * That matters because /home is gated on both auth round-trips resolving, so
+ * the chunks could not even begin downloading until the network had been idle
+ * for a full round-trip with nothing else to do.
+ *
+ * Safe to call more than once, and warmHomeRoute() calls the same loaders
+ * again: dynamic import is idempotent, so the second call gets the in-flight
+ * or already-resolved module out of the module registry rather than a second
+ * download. No memoisation needed here — the platform already does it.
+ *
+ * Fired all at once rather than through the burst scheduler. Sequencing exists
+ * to keep evaluation from blocking input, and there is no input to protect
+ * here: the loading screen is up, and getting the requests onto the wire while
+ * auth is in flight is the whole point.
+ */
+export function warmHomeModules() {
+  const constrained = isConstrainedNetwork();
+  for (const { load } of constrained ? SECTION_MODULES.slice(0, 3) : SECTION_MODULES) {
+    try {
+      void load().catch(() => {});
+    } catch { /* a warm-up failure must never break the page */ }
+  }
+}
+
 export async function warmHomeRoute(onProgress) {
   const constrained = isConstrainedNetwork();
 
