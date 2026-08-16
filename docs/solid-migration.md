@@ -59,7 +59,7 @@ page instead. There is an explicit assertion guarding exactly that.
 | 404 | `solid/pages/NotFound.jsx` on `path="*"` (React keeps it at `src/lib/PageNotFound.jsx`) |
 | Japanese | `JapaneseUiCompanion` auto-scanner + `CjkFontLoader`, mounted in the shell and verified annotating the DOM |
 | Assistant | `MabisAIAssistant` (+ `IdleMount`), mounted in Home and meeting mode; parity opens the panel and asserts the empty state, suggestions and composer |
-| Home chrome | Avatar + role ring, first name and SIGN OUT in the header (Solid had none of it), plus `ProfileEditor` and `FeedbackWidget` |
+| Home chrome | Avatar + role ring, first name and SIGN OUT in the header (Solid had none of it), plus `ProfileEditor`, `FeedbackWidget` and `JobReminder` — Home's `IdleMount` block now matches React's three children |
 | Loading | `LoadingScreen` replaces the blank route fallback, and is deliberately **not** lazy — it is what shows while chunks load |
 | Notes | `MeetingNotesEditor` + `notes/{BlockNotesEditor,NoteBlock,BlockToolbar}`, wired into meeting mode. `block_html.js` is **shared** with React, not forked — it is a zero-import leaf, so there is nothing for vite-plugin-solid to mis-compile and the storage format cannot drift |
 | Widgets | LunchMenu, Schedule |
@@ -94,16 +94,30 @@ to the login redirect instead of the explanatory screen. Port this with the
 shell.
 
 **3. Feature components not yet ported** (verified absent from `solid/`):
-`HistoryWidget`, `QuickStartGuide`, `BirthdayBanner`, `JobReminder`,
+`HistoryWidget`, `QuickStartGuide`, `BirthdayBanner`,
 `MeetingSummary`, `RoleSwitcher`, `RolePreviewToggle`, `HighlightPicker`,
 `FamicomController`, `DoveAnimation`, `MemberAvatar`, `XpBadge`,
 `SmoothScroll`, `Tilt3D`, `SectionReveal`.
 
-`JobReminder` belongs inside Home's `IdleMount` block alongside the assistant
-and feedback widget — there is a comment marking the spot.
-
 Solid `Home` is also missing `PageFooter` and `ScrollSectionIndicator`, which
 React renders.
+
+**⚠ Open product question — `JobReminder` never fires for configurable jobs.**
+The component carries its own private `scheduledDaysFor`, which disagrees with
+the shared one in `@/lib/jobsRotation`:
+
+| | `schedule_days` respected | title with no (1)/(2) |
+|---|---|---|
+| `@/lib/jobsRotation` | yes | all five weekdays |
+| `JobReminder`'s copy | **no** | **`[]`** |
+
+`pending` filters on `sched.length > 0`, so any job with a custom schedule or a
+plain name is silently skipped and its owner is never reminded. The Solid port
+preserves this byte-for-byte on purpose: switching to the shared helper would
+start showing the modal to people who have never seen it, which is a product
+call rather than a porting one. **If it is fixed, fix both builds together** —
+note `npm run check:jobs` already enforces configurable periods elsewhere, so
+the two are genuinely inconsistent today.
 
 **4. Do not judge a port by line count.** Two claims in earlier revisions of
 this document were both wrong, in the same way:
@@ -131,8 +145,8 @@ Measured over the React component/page modules reachable from `src/App.jsx`
 | Measure | Done |
 |---|---|
 | Routes rendering | 7 / 7 |
-| Source volume | ~90% |
-| Module count | 61 / 81 |
+| Source volume | ~91% |
+| Module count | 62 / 81 |
 
 Module count trails source volume because what remains is a long tail of small
 files — the median unported component is under 50 lines.
@@ -141,7 +155,6 @@ Remaining work, largest first:
 
 | Lines | Item |
 |---|---|
-| 102 | `JobReminder` |
 | 95 | `QuickStartGuide` |
 | 80 | `RoleSwitcher` |
 | ≤ 73 | shell tail: `SoundEffects`, `RolePreviewToggle`, `PrideAmbience`, `BirthdayBanner`, `PageTransition`, `ScrollSectionIndicator`, `ScrollVelocity`, `MotionPreference`, `PrefsSync`, `JapaneseDate`, `ScrollToTop`, `UserNotRegisteredError`, `ScrollScaleRitual` |
