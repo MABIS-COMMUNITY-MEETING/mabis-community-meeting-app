@@ -440,7 +440,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Languages className={`w-4 h-4 ${japaneseTextOn ? "text-primary" : "text-muted-foreground"}`} />
-                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Japanese Text <span lang="ja" className="normal-case tracking-normal text-muted-foreground">／日本語表示</span></h3>
+                  <h3 className="font-display font-bold text-foreground text-sm uppercase tracking-wide">Japanese Text <span lang="ja" data-ja-always className="normal-case tracking-normal text-muted-foreground">／日本語表示</span></h3>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
                   Show short Japanese translations alongside the English navigation and guidance. English stays visible, and this choice follows your account.
