@@ -14,6 +14,7 @@ const ScheduleWidget = lazy(() => import("~/components/ScheduleWidget"));
 const JobsWidget = lazy(() => import("~/components/JobsWidget"));
 const DiscussionWidget = lazy(() => import("~/components/DiscussionWidget"));
 const CalendarWidget = lazy(() => import("~/components/CalendarWidget"));
+const AnnouncementsWidget = lazy(() => import("~/components/AnnouncementsWidget"));
 
 /**
  * Home — SolidJS port of src/pages/Home.jsx (shell).
@@ -87,6 +88,7 @@ const SECTIONS = [
 ];
 
 const WIDGETS = {
+  "02": AnnouncementsWidget,
   "03": DiscussionWidget,
   "04": JobsWidget,
   "05": CalendarWidget,
