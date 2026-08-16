@@ -1,7 +1,7 @@
 import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search, MousePointer2, Languages } from "lucide-react";
+import { Settings, X, Lock, User, LogOut, Check, Volume2, VolumeX, Accessibility, Type, Search, MousePointer2, Languages, AlignLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
@@ -471,7 +471,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
               {/* Section descriptions */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Text className={`w-4 h-4 ${sectionDescriptionsOn ? "text-primary" : "text-muted-foreground"}`} />
+                  <AlignLeft className={`w-4 h-4 ${sectionDescriptionsOn ? "text-primary" : "text-muted-foreground"}`} />
                   <JapaneseText ja="見出しの説明文" as="h3" className="font-display font-bold text-foreground text-sm uppercase tracking-wide" japaneseClassName="text-[0.78em] normal-case tracking-normal">Section Descriptions</JapaneseText>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
