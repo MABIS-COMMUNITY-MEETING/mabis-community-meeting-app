@@ -63,6 +63,7 @@ function PendingWidget(props) {
 }
 
 export default function DiscussionWidget(props) {
+  console.log("[DEBUG DiscussionWidget] mounted");
   const location = useLocation();
   const queryClient = useQueryClient();
 
