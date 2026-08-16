@@ -13,6 +13,7 @@ const LunchMenuWidget = lazy(() => import("~/components/LunchMenuWidget"));
 const ScheduleWidget = lazy(() => import("~/components/ScheduleWidget"));
 const JobsWidget = lazy(() => import("~/components/JobsWidget"));
 const DiscussionWidget = lazy(() => import("~/components/DiscussionWidget"));
+const CalendarWidget = lazy(() => import("~/components/CalendarWidget"));
 
 /**
  * Home — SolidJS port of src/pages/Home.jsx (shell).
@@ -88,6 +89,7 @@ const SECTIONS = [
 const WIDGETS = {
   "03": DiscussionWidget,
   "04": JobsWidget,
+  "05": CalendarWidget,
   "06": ScheduleWidget,
   "08": LunchMenuWidget,
 };
