@@ -30,6 +30,8 @@ const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a
  * repeatedly. Everything else is 1:1.
  */
 export default function AnnouncementsWidget(props) {
+  /* Deleting is permanent and has no undo, so it no longer happens on one tap. */
+  const [pendingDelete, setPendingDelete] = createSignal(null);
   const queryClient = useQueryClient();
   const auth = useAuth();
 
@@ -321,7 +323,10 @@ export default function AnnouncementsWidget(props) {
                   </div>
 
                   <Show when={props.isAdmin}>
-                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    {/* Was opacity-0 group-hover:*, so these controls did not
+                        exist on touch — no hover, no button. Visible on coarse
+                        pointers, hover-revealed on mouse, focus-reachable. */}
+                    <div class="flex items-center gap-1 shrink-0 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
                       <button
                         onClick={() => pin.mutate({ id: ann.id, pinned: !ann.pinned })}
                         aria-label={ann.pinned ? "Unpin" : "Pin"}
@@ -330,8 +335,9 @@ export default function AnnouncementsWidget(props) {
                         <Pin class="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => remove.mutate(ann.id)}
-                        aria-label="Delete announcement"
+                        onClick={() => setPendingDelete(ann)}
+                        aria-label={`Remove ${ann.title}`}
+                        title="Remove announcement"
                         class="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                       >
                         <Trash2 class="w-3.5 h-3.5" />
@@ -344,6 +350,47 @@ export default function AnnouncementsWidget(props) {
           </For>
         </div>
       </div>
+
+      <Show when={pendingDelete()}>
+        {(ann) => (
+          <div
+            class="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4"
+            role="presentation"
+            onMouseDown={() => setPendingDelete(null)}
+          >
+            <div
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="remove-announcement-title"
+              class="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-2xl"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <h3 id="remove-announcement-title" class="font-display text-lg font-bold text-foreground">
+                Remove this announcement?
+              </h3>
+              <p class="mt-1 text-sm text-muted-foreground">
+                \u201c{ann().title}\u201d will be deleted for everyone. This cannot be undone.
+              </p>
+              <div class="mt-5 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPendingDelete(null)}
+                  class="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                >
+                  Keep it
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { remove.mutate(ann().id); setPendingDelete(null); }}
+                  class="flex-1 rounded-lg bg-destructive px-4 py-2.5 text-sm font-bold text-destructive-foreground hover:opacity-90 transition-opacity"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </Show>
     </div>
   );
 }
