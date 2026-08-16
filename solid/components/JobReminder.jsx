@@ -75,20 +75,20 @@ export default function JobReminder() {
     setDismissed(true);
   };
 
+  /*
+   * Gated on isSuccess, not on data being present.
+   *
+   * ["assignments"] is shared with the Jobs widget and the warm-up, so any
+   * invalidateQueries on that key refetches here too — and restoreOfflineQueries
+   * invalidates every persisted root right after hydration, so that happens on
+   * every load. While a refetch is in flight `data` can be momentarily absent,
+   * which emptied pending(), hid the overlay, then showed it again when the data
+   * returned: one full-screen flash per invalidation.
+   *
+   * isSuccess stays true across a background refetch, so the overlay's
+   * visibility now depends only on whether there is anything to remind about.
+   */
   return (
-    {/*
-      * Gated on isSuccess, not on data being present.
-      *
-      * ["assignments"] is shared with the Jobs widget and the warm-up, so any
-      * invalidateQueries on that key refetches here too — and restoreOfflineQueries
-      * invalidates every persisted root right after hydration, so that happens on
-      * every load. While a refetch is in flight `data` can be momentarily absent,
-      * which emptied pending(), hid the overlay, then showed it again when the
-      * data returned: one full-screen flash per invalidation.
-      *
-      * isSuccess stays true across a background refetch, so the overlay's
-      * visibility now depends only on whether there is anything to remind about.
-      */}
     <Show when={!dismissed() && assignmentsQuery.isSuccess && pending().length > 0}>
       <div
         class="fade-in fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4"
