@@ -21,7 +21,7 @@ import {
 
 const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
-const MeetingNotesEditor = lazy(() => import("~/components/MeetingNotesEditor"));
+const MeetingMinutes = lazy(() => import("~/components/MeetingMinutes"));
 
 /*
  * DiscussionWidget — Solid port of src/components/DiscussionWidget.jsx.
@@ -435,26 +435,24 @@ export default function DiscussionWidget(props) {
               <TopicForm editorHeight={140} />
             </Show>
 
-            <div class="flex items-center justify-between gap-2">
-              <h3 class="font-display font-bold text-lg text-foreground">
-                <JapaneseText ja="議題" layout="inline" japaneseClass="ml-1.5 inline text-[0.7em]">Topics</JapaneseText>
-              </h3>
-              <Button size="sm" variant="outline" class="text-xs gap-1" onClick={toggleAddTopicForm}>
-                <Plus class="w-3.5 h-3.5" /> Add Topic
-              </Button>
-            </div>
-
-            <TopicList compact />
-
-            {/* Meeting Notes */}
+            {/* Minutes — the same per-week document the normal view shows.
+                Meeting mode previously had a topic list AND a separate notes
+                editor; both wrote to the same __meeting_notes__ record, so they
+                are now one document. */}
             <section>
               <div class="flex items-center gap-3 mb-4">
                 <div class="w-1 h-6 bg-primary rounded-full" />
-                <h3 class="font-display font-bold text-foreground text-xl">Meeting Notes</h3>
+                <h3 class="font-display font-bold text-foreground text-xl">
+                  <JapaneseText ja="議事録" layout="inline" japaneseClass="ml-1.5 inline text-[0.7em]">Minutes</JapaneseText>
+                </h3>
                 <span class="text-xs text-muted-foreground">{formatWeekLabel(viewedWeek())}</span>
               </div>
-              <Suspense fallback={<PendingWidget name="Meeting notes" height={260} />}>
-                <MeetingNotesEditor weekLabel={viewedWeek()} />
+              <Suspense fallback={<PendingWidget name="Minutes" height={420} />}>
+                <MeetingMinutes
+                  weekLabel={viewedWeek()}
+                  weekTitle={`Minutes — ${formatWeekFull(viewedWeek())}`}
+                  canEdit={isCurrentWeek()}
+                />
               </Suspense>
             </section>
 
@@ -494,16 +492,6 @@ export default function DiscussionWidget(props) {
                 <History class="w-3.5 h-3.5" /> History
               </Button>
             </A>
-            <Show when={isCurrentWeek()}>
-              <Button
-                size="sm"
-                variant="outline"
-                class="w-full border-primary-foreground/40 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
-                onClick={toggleAddTopicForm}
-              >
-                <Plus class="w-3.5 h-3.5" /> Add Topic
-              </Button>
-            </Show>
             <Button
               size="sm"
               variant="outline"
@@ -552,18 +540,27 @@ export default function DiscussionWidget(props) {
           </div>
 
           {/* Looking at an older week is read only. Say so, rather than letting
-              the Add Topic button quietly disappear with no explanation. */}
+              the controls quietly disappear with no explanation. */}
           <Show when={!isCurrentWeek()}>
             <JapaneseText
-              ja="過去の週を見ているため、変更できません。追加するには今週に戻ってください。"
+              ja="過去の週を見ています。当時の議事録を表示しており、保存はされません。"
               class="block text-xs leading-[1.6] tracking-[0.02em] text-muted-foreground"
               japaneseClass="mt-1 block text-[0.9em]"
             >
-              You are looking at an earlier week, so it cannot be changed. Go back to this week to add a topic.
+              You are looking at an earlier week. Its minutes are shown as they were written and are not saved while you look through them.
             </JapaneseText>
           </Show>
 
-          <TopicList compact={false} />
+          {/* Any topics this week already had are formatted into the document
+              the first time it opens; the topic records themselves are left
+              untouched, so History still reads them. */}
+          <Suspense fallback={<PendingWidget name="Minutes" height={420} />}>
+            <MeetingMinutes
+              weekLabel={viewedWeek()}
+              weekTitle={`Minutes — ${formatWeekFull(viewedWeek())}`}
+              canEdit={isCurrentWeek()}
+            />
+          </Suspense>
 
           <div class="border-t border-border pt-4">
             <PendingWidget name="Jobs" height={240} />
