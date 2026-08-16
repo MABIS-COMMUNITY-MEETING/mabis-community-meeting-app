@@ -125,7 +125,16 @@ const SECTIONS = [
 ];
 
 const WIDGETS = {
+  "01": MeetingModeWidget,
+  "02": AnnouncementsWidget,
   "03": DiscussionWidget,
+  "04": JobsWidget,
+  "05": CalendarWidget,
+  "06": ScheduleWidget,
+  "08": LunchMenuWidget,
+  "07": MissingItemsWidget,
+  "09": NewsWidget,
+  "10": MembersWidget,
 };
 
 export default function Home() {
