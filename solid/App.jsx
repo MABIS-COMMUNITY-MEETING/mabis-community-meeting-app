@@ -17,11 +17,23 @@ import OptionalCustomCursor from "~/components/OptionalCustomCursor";
  * height-reserving fallback so a route swap cannot shift layout.
  */
 const Splash = lazy(() => import("~/pages/Splash"));
+const Login = lazy(() => import("~/pages/Login"));
 const Home = lazy(() => import("~/pages/Home"));
 const History = lazy(() => import("~/pages/History"));
 const AnnouncementsHistory = lazy(() => import("~/pages/AnnouncementsHistory"));
 const NewsHistory = lazy(() => import("~/pages/NewsHistory"));
 const Feedback = lazy(() => import("~/pages/Feedback"));
+const NotFound = lazy(() => import("~/pages/NotFound"));
+
+/*
+ * /register, /forgot-password and /reset-password are retired routes kept as
+ * redirects so old bookmarks and any link still in the wild land on the Google
+ * flow instead of a 404. Matches the React table exactly, including `replace`
+ * (Solid's <Navigate> always replaces, same as React's `replace` prop).
+ */
+function RedirectToLogin() {
+  return <Navigate href="/login" />;
+}
 
 function RouteFallback() {
   return <div style={{ "min-height": "100vh" }} aria-hidden />;
@@ -66,11 +78,16 @@ export default function App() {
         <Suspense fallback={<RouteFallback />}>
           <Router>
             <Route path="/" component={Splash} />
+            <Route path="/login" component={Login} />
+            <Route path="/register" component={RedirectToLogin} />
+            <Route path="/forgot-password" component={RedirectToLogin} />
+            <Route path="/reset-password" component={RedirectToLogin} />
             <Route path="/home" component={ProtectedHome} />
             <Route path="/history" component={ProtectedHistory} />
             <Route path="/history/announcements" component={ProtectedAnnouncementsHistory} />
             <Route path="/history/news" component={ProtectedNewsHistory} />
             <Route path="/feedback" component={ProtectedFeedback} />
+            <Route path="*" component={NotFound} />
           </Router>
         </Suspense>
         <OptionalCustomCursor />
