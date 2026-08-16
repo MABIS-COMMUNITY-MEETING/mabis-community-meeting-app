@@ -2,8 +2,8 @@
   "name": "untitled",
   "site": {
     "installCommand": "npm install",
-    "buildCommand": "npm run build",
-    "serveCommand": "npm run dev",
-    "outputDirectory": "./dist"
+    "buildCommand": "npm run build:solid",
+    "serveCommand": "npm run dev:solid",
+    "outputDirectory": "./dist-solid"
   }
 }
