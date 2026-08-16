@@ -1,7 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     darkMode: ["class"],
-    content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
+    /*
+     * The UI lives in solid/. src/ keeps the shared lib/api/styles layer.
+     *
+     * This listed only src/, so after the move to Solid every utility class
+     * used by a component was invisible to Tailwind and got purged — the
+     * stylesheet fell from ~171 KB to 78 KB and the app lost its spacing,
+     * sizing and layout. Both trees must be scanned.
+     */
+    content: [
+        "./index.html",
+        "./solid/index.html",
+        "./solid/**/*.{ts,tsx,js,jsx}",
+        "./src/**/*.{ts,tsx,js,jsx}",
+    ],
     theme: {
         extend: {
             borderRadius: {
