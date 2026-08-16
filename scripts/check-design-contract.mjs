@@ -4,7 +4,32 @@ import path from "node:path";
 const root = process.cwd();
 const failures = [];
 
-function read(relativePath) {
+/*
+ * Source-agnostic file lookup.
+ *
+ * These contracts were written when React was the only UI. Every assertion
+ * names a path under src/, so removing the React UI layer would fail the build
+ * at prebuild with "Missing mandatory file" before Vite even runs — the design
+ * rules would look violated when all that changed was which framework renders
+ * them. The rules are about the product, not the framework.
+ *
+ * So a React UI path that no longer exists falls back to its Solid counterpart.
+ * While both builds exist this never triggers; once src/ holds only the shared
+ * lib/api/styles layer, the same rules keep being enforced against solid/.
+ */
+function resolveSourcePath(relativePath) {
+    if (fs.existsSync(path.join(root, relativePath))) return relativePath;
+    const solidPath = relativePath
+        .replace(/^src\/components\//, "solid/components/")
+        .replace(/^src\/pages\//, "solid/pages/")
+        .replace(/^src\/(App|main)\.jsx$/, "solid/$1.jsx");
+    return solidPath !== relativePath && fs.existsSync(path.join(root, solidPath))
+        ? solidPath
+        : relativePath;
+}
+
+function read(requestedPath) {
+    const relativePath = resolveSourcePath(requestedPath);
     const absolutePath = path.join(root, relativePath);
     if (!fs.existsSync(absolutePath)) {
         failures.push(`Missing mandatory file: ${relativePath}`);
