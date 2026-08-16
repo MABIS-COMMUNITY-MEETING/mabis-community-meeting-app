@@ -42,6 +42,9 @@ function resolveSourcePath(relativePath) {
  */
 const SOLID_EQUIVALENTS = {
   "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
+  // The React AuthContext went with the React UI; Solid has its own carrying
+  // the same offline-recovery guarantees this rule protects.
+  "src/lib/AuthContext.jsx": ["solid/lib/AuthContext.jsx"],
   "src/components/JobsWidget.jsx": ["solid/components/JobsWidget.jsx", "solid/components/jobs/SpinWheel.jsx"],
 };
 
