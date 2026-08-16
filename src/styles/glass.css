@@ -57,6 +57,28 @@
   backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
   -webkit-backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
 
+  /*
+   * Bound the blur to this element's own box.
+   *
+   * backdrop-filter cost scales with the area the compositor has to sample and
+   * re-raster. Without containment the browser has no promise that this layer's
+   * paint stays inside its bounds, so invalidation upstream can drag the blur
+   * into a wider raster than the surface actually occupies — the expensive case
+   * on integrated graphics, where fill rate is the limit.
+   *
+   * `contain: paint` is safe HERE specifically because this is the blur
+   * pseudo-element: absolutely positioned, no children, nothing to clip. The
+   * same declaration on the surface itself would clip dropdowns and shadows,
+   * which is why it is not applied there.
+   *
+   * `contain: size` is deliberately NOT included — the layer must keep
+   * inheriting the surface's dimensions.
+   *
+   * Appearance is unchanged: containment restricts where painting may happen,
+   * not what is painted.
+   */
+  contain: paint;
+
   border: 1px solid hsl(var(--bone) / 0.20);
   /* inner top edge lit, inner bottom edge shaded → thickness */
   box-shadow:
