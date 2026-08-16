@@ -36,6 +36,18 @@ const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 export default function MeetingMinutes(props) {
   const queryClient = useQueryClient();
   const [savedFlash, setSavedFlash] = createSignal(false);
+  /*
+   * The editor is not mounted until someone actually wants to edit.
+   *
+   * DocsEditor carries Quill — 236 KB raw. When the Discussion section was a
+   * topic list that only loaded on "Add Topic", it never reached Home's
+   * critical path. Making minutes the section itself put Quill on every Home
+   * visit and made the page markedly slower to become interactive.
+   *
+   * The document is HTML, so reading it costs nothing: it renders as plain
+   * markup, and the editor loads on the first click into it.
+   */
+  const [editing, setEditing] = createSignal(false);
   let flashTimer;
 
   // { week, html } — whose week this HTML belongs to.
@@ -123,7 +135,7 @@ export default function MeetingMinutes(props) {
 
   // Changing week flushes rather than cancels — the payload already names its
   // own week, so sending it is correct and dropping it would lose typing.
-  createEffect(on(() => props.weekLabel, () => { onCleanup(flushPending); }));
+  createEffect(on(() => props.weekLabel, () => { setEditing(false); onCleanup(flushPending); }));
   onCleanup(() => { clearTimeout(flashTimer); flushPending(); });
 
   /* One component identity per week — changing week swaps the identity, which
@@ -165,12 +177,46 @@ export default function MeetingMinutes(props) {
         </div>
       }
     >
-      {/* Keyed on the week so a week change builds a fresh editor: DocsEditor
-          reads initialHtml once at mount, and reusing the instance would leave
-          the previous week's text on screen. <Dynamic> is used rather than a
-          keyed <Show> because a keyed Show nested inside another Show did not
-          re-render the child here at all. */}
-      <Dynamic component={editorFor(props.weekLabel)} />
+      <Show
+        when={editing()}
+        fallback={
+          <div
+            class="docs-editor-readonly rounded-lg border border-border bg-card p-4 sm:p-6"
+            onClick={() => props.canEdit !== false && setEditing(true)}
+            onFocusIn={() => props.canEdit !== false && setEditing(true)}
+            tabindex={props.canEdit === false ? undefined : 0}
+            role={props.canEdit === false ? undefined : "button"}
+            aria-label={props.canEdit === false ? undefined : "Edit these minutes"}
+            style={{ "min-height": "420px", cursor: props.canEdit === false ? "default" : "text" }}
+          >
+            <Show
+              when={(initialHtml() || "").trim()}
+              fallback={
+                <p class="text-sm text-muted-foreground">
+                  {props.canEdit === false
+                    ? "No minutes were written for this week."
+                    : "No minutes yet \u2014 click here to start writing."}
+                </p>
+              }
+            >
+              <div class="theme-rich-text" innerHTML={initialHtml()} />
+            </Show>
+          </div>
+        }
+      >
+        <Suspense fallback={<div style={{ "min-height": "420px" }} aria-label="Minutes editor loading" />}>
+          <DocsEditor
+            title={props.weekTitle || "Meeting minutes"}
+            initialHtml={initialHtml()}
+            onChange={handleChange}
+            onSave={props.canEdit === false ? undefined : handleSave}
+            saving={saveMutation.isPending}
+            saved={savedFlash()}
+            minHeight="420px"
+            placeholder="Write the minutes for this week\u2026"
+          />
+        </Suspense>
+      </Show>
     </Show>
   );
 }
