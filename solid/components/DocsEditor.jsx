@@ -503,15 +503,17 @@ export default function DocsEditor(props) {
 
         <Dropdown width="w-44" trigger={<span class="flex items-center gap-1 text-xs"><Type class="h-3.5 w-3.5" />{fontLabel()}<ChevronDown class="h-3 w-3" /></span>}>
           {(close) => (
-            <For each={FONTS}>
+            {/* Index, not For: FONTS is a module constant and never reorders,
+                so keyed reconciliation is pure overhead here. */}
+            <Index each={FONTS}>
               {(font) => (
                 <MenuItem
-                  label={font.label}
-                  style={{ "font-family": font.value }}
-                  onClick={() => { setFont(font); close(); }}
+                  label={font().label}
+                  style={{ "font-family": font().value }}
+                  onClick={() => { setFont(font()); close(); }}
                 />
               )}
-            </For>
+            </Index>
           )}
         </Dropdown>
 
@@ -534,31 +536,31 @@ export default function DocsEditor(props) {
 
         <Dropdown width="w-52" trigger={<Palette class="h-4 w-4" />}>
           {(close) => (
-            <For each={THEME_TEXT_COLORS}>
+            <Index each={THEME_TEXT_COLORS}>
               {(color) => (
                 <MenuItem
-                  label={color.label}
-                  active={f().color === color.value}
-                  icon={<span class="docs-color-line" style={{ background: color.token ? `hsl(var(${color.token}))` : "currentColor" }} />}
-                  onClick={() => { applyThemeInk(color); close(); }}
+                  label={color().label}
+                  active={f().color === color().value}
+                  icon={<span class="docs-color-line" style={{ background: color().token ? `hsl(var(${color().token}))` : "currentColor" }} />}
+                  onClick={() => { applyThemeInk(color()); close(); }}
                 />
               )}
-            </For>
+            </Index>
           )}
         </Dropdown>
 
         <Dropdown width="w-56" trigger={<Highlighter class="h-4 w-4" />}>
           {(close) => (
-            <For each={THEME_HIGHLIGHTS}>
+            <Index each={THEME_HIGHLIGHTS}>
               {(hl) => (
                 <MenuItem
-                  label={hl.label}
-                  active={f().background === hl.value}
-                  icon={<span class="docs-color-line" style={{ background: hl.token ? `hsl(var(${hl.token}))` : "transparent" }} />}
-                  onClick={() => { applyThemeHighlight(hl); close(); }}
+                  label={hl().label}
+                  active={f().background === hl().value}
+                  icon={<span class="docs-color-line" style={{ background: hl().token ? `hsl(var(${hl().token}))` : "transparent" }} />}
+                  onClick={() => { applyThemeHighlight(hl()); close(); }}
                 />
               )}
-            </For>
+            </Index>
           )}
         </Dropdown>
 
@@ -589,9 +591,9 @@ export default function DocsEditor(props) {
         <ToolButton title="Zoom out" onClick={() => setZoom((z) => ZOOM_LEVELS[Math.max(0, ZOOM_LEVELS.indexOf(z) - 1)] ?? z)}><ZoomOut class="h-4 w-4" /></ToolButton>
         <Dropdown width="w-24" trigger={<span class="w-9 text-center text-[11px] tabular-nums">{zoom()}%</span>}>
           {(close) => (
-            <For each={ZOOM_LEVELS}>
-              {(level) => <MenuItem label={`${level}%`} active={zoom() === level} onClick={() => { setZoom(level); close(); }} />}
-            </For>
+            <Index each={ZOOM_LEVELS}>
+              {(level) => <MenuItem label={`${level()}%`} active={zoom() === level()} onClick={() => { setZoom(level()); close(); }} />}
+            </Index>
           )}
         </Dropdown>
         <ToolButton title="Zoom in" onClick={() => setZoom((z) => ZOOM_LEVELS[Math.min(ZOOM_LEVELS.length - 1, ZOOM_LEVELS.indexOf(z) + 1)] ?? z)}><ZoomIn class="h-4 w-4" /></ToolButton>
