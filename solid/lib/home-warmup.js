@@ -2,6 +2,7 @@ import { base44 } from "@/api/base44Client";
 import { isConstrainedNetwork } from "@/lib/performance-tier";
 import { queryClientInstance } from "~/lib/query-client";
 import { getWeekLabel } from "~/lib/weeks";
+import { runBurstOrdered, loadPenalties, savePenalties } from "~/lib/burst-scheduler";
 
 /*
  * What the "CACHING STUFF" screen is actually for.
@@ -191,11 +192,23 @@ export async function warmHomeRoute(onProgress) {
    * one at a time with a yield between, so starting thirteen of them cannot
    * become a single long task while the user is trying to interact.
    */
+  /*
+   * Background work runs through the burst-oriented scheduler.
+   *
+   * These thirteen tasks have wildly different costs — importing DocsEditor
+   * evaluates ~236 KB of Quill, while prefetching the lunch menu is a small
+   * JSON read. Firing them in declaration order means the expensive one can
+   * land in front of the user at random.
+   *
+   * The scheduler measures each task's synchronous burn, penalises the greedy
+   * ones on a log2 curve, and orders the next run shortest-first. Penalties
+   * persist in localStorage, so by the second visit the cheap warms are
+   * already known to go first and the heavy ones trail behind a yield.
+   */
   void (async () => {
-    for (const { run } of background) {
-      try { void Promise.resolve(run()).catch(() => {}); } catch { /* best effort */ }
-    }
-    await yieldToBrowser();
+    const penalties = loadPenalties();
+    await runBurstOrdered(background, penalties);
+    savePenalties(penalties);
   })();
 
   await Promise.allSettled(blocking.map(async ({ label, run }) => {
