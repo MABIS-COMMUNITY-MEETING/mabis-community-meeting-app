@@ -18,6 +18,7 @@ import OptionalCustomCursor from "~/components/OptionalCustomCursor";
  */
 const Splash = lazy(() => import("~/pages/Splash"));
 const Home = lazy(() => import("~/pages/Home"));
+const History = lazy(() => import("~/pages/History"));
 
 function RouteFallback() {
   return <div style={{ "min-height": "100vh" }} aria-hidden />;
@@ -36,11 +37,11 @@ function Protected(props) {
 }
 
 function ProtectedHome() {
-  return (
-    <Protected>
-      <Home />
-    </Protected>
-  );
+  return <Protected><Home /></Protected>;
+}
+
+function ProtectedHistory() {
+  return <Protected><History /></Protected>;
 }
 
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
           <Router>
             <Route path="/" component={Splash} />
             <Route path="/home" component={ProtectedHome} />
+            <Route path="/history" component={ProtectedHistory} />
           </Router>
         </Suspense>
         <OptionalCustomCursor />
