@@ -75,6 +75,19 @@ html.animations-disabled .nav-item {
 }
 html.animations-disabled .auth-rise { animation: none; }
 
+/* ── Plain fade ────────────────────────────────────────────────────────────
+ * framer:  initial {opacity:0} → animate {opacity:1}, duration 0.5.
+ * Used by the 404 label. Opacity-only, so it never leaves the compositor.
+ */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-in {
+  animation: fade-in 0.5s ease both;
+}
+html.animations-disabled .fade-in { animation: none; }
+
 /* ── Off-screen sections cost nothing ──────────────────────────────────────
  * content-visibility: auto lets the browser skip layout AND paint for any
  * section outside the viewport. On this ten-section page that is the single
