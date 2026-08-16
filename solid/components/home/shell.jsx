@@ -18,7 +18,7 @@ export function LazySection(props) {
   const [ref, visible] = createVisibility();
 
   return (
-    <div ref={ref}>
+    <div ref={ref} class="lazy-section-host">
       <Show
         when={visible()}
         fallback={

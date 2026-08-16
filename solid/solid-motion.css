@@ -235,8 +235,22 @@ html.animations-disabled .tap-85:active { transform: none; }
  * reserves a realistic height; `auto` makes the browser remember the true size
  * once measured, so the scrollbar stops drifting after first pass.
  */
+/*
+ * content-visibility is applied to the WIDGET, not the section.
+ *
+ * On .cv-section it skipped rendering the whole section while off-screen — and
+ * a CSS transition cannot animate content the browser never rendered. Each
+ * section was painted straight into its final state on scroll-in, so the
+ * entrance slide-up was computed and discarded. That is why the sections
+ * appeared to have no transition at all.
+ *
+ * The heading, index rule and body are what animate, so they must stay
+ * renderable. The widget below them is the expensive part and is the thing
+ * worth skipping — and it is inside LazySection, which does not even mount it
+ * until it is near the viewport, so the saving is kept either way.
+ */
 @supports (content-visibility: auto) {
-  .cv-section {
+  .cv-section .lazy-section-host {
     content-visibility: auto;
   }
 }
