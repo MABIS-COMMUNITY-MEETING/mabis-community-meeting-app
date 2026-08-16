@@ -86,6 +86,36 @@ export function topicsToMinutesHtml(topics, weekLabel, { heading } = {}) {
 }
 
 /**
+ * Decide what a week's editor should open with.
+ *
+ * Extracted from the component because getting this wrong is invisible until
+ * someone opens a week and reads the wrong week's minutes — which is exactly
+ * what happened. Pure, so it can be tested without a renderer.
+ *
+ * `memo` is caller-owned state from the previous call: `{ seededWeek, week,
+ * html }`, or null on first use. The returned `memo` must be stored back.
+ *
+ * The rules, in order:
+ *   1. A stored document with real content always wins. Never seed over it.
+ *   2. If this exact week has already been resolved, reuse it — a background
+ *      refetch must not re-derive the seed mid-edit.
+ *   3. Otherwise derive the seed from this week's topics.
+ *
+ * Rule 2 must compare the WEEK, not a boolean. A boolean latch carries across a
+ * week change and hands back the previous week's html.
+ */
+export function resolveMinutesDocument({ week, storedHtml, topics, heading, memo }) {
+  if (!isBlankDocument(storedHtml)) {
+    return { html: storedHtml, memo: { seededWeek: week, week, html: storedHtml } };
+  }
+  if (memo && memo.seededWeek === week && memo.week === week) {
+    return { html: memo.html, memo };
+  }
+  const seed = topicsToMinutesHtml(topics, week, { heading });
+  return { html: seed, memo: { seededWeek: week, week, html: seed } };
+}
+
+/**
  * True when a stored document has no real content — an empty editor still
  * serialises to markup like "<p><br></p>", which must not count as written.
  */
