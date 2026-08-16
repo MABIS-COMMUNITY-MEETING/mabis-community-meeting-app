@@ -2,6 +2,7 @@ import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
 import { balancedPalette, contrastSafeInk, contrastSafePair, mutedForeground, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
+import { saveThemeSnapshot } from "@/lib/theme-boot";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
@@ -545,6 +546,9 @@ export function applyTheme(themeKey) {
   applyCharacterTokens(theme.character);
   applyThemeBodyClass(theme.bodyClass);
   localStorage.setItem("mabis-theme", resolvedThemeKey);
+  // Cache the painted result so the next boot can replay it without importing
+  // this module and its palettes. See lib/theme-boot.js.
+  saveThemeSnapshot(resolvedThemeKey, null);
   window.dispatchEvent(new Event("themeChanged"));
 }
 
@@ -848,6 +852,7 @@ function applyResolvedFont(font) {
   }
 
   localStorage.setItem("mabis-font", font.key);
+  saveThemeSnapshot(null, font.key);
   window.dispatchEvent(new CustomEvent("fontChanged", { detail: { key: font.key } }));
   window.dispatchEvent(new Event("themeChanged"));
   return loadPromise;
