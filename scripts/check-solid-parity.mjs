@@ -40,6 +40,22 @@ if (!entry) {
   process.exit(1);
 }
 
+/*
+ * Built-HTML parity, asserted before anything is mounted.
+ *
+ * These come from the entry HTML and the Base44 plugin's production injection,
+ * not from any component, so no amount of DOM checking below would catch them
+ * going missing. Both WERE missing from dist-solid at one point: the Solid
+ * config omitted the plugin entirely, and solid/index.html had no JSON-LD.
+ */
+check("analytics tracker injected into the production build",
+  /getPageNameFromPath/.test(html),
+  "the @base44/vite-plugin production injection is absent");
+check("Organization structured data present",
+  /application\/ld\+json/.test(html) && /schema\.org/.test(html));
+check("manifest linked (PWA installability)", /rel="manifest"/.test(html));
+check("theme-color set", /name="theme-color"/.test(html));
+
 const dom = new JSDOM(html, { url: `http://localhost${route}`, pretendToBeVisual: true, runScripts: "outside-only" });
 const { window } = dom;
 
