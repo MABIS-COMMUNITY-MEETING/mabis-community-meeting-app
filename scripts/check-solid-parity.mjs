@@ -342,21 +342,23 @@ if (route === "/login") {
   // offline-behaviour check.
   check("announcements widget reached its empty state",
     textNow().includes("No announcements yet"));
-  check("discussion widget reached its empty state",
-    textNow().includes("No topics yet"));
+  check("minutes document replaced the topic list",
+    !textNow().includes("No topics yet"),
+    "the Discussion section is a per-week document now");
 
   check("meeting mode renders its locked state",
     textNow().includes("Locked until Friday"));
 
-  // Interaction: the Discussion composer must open and accept input.
-  const addTopic = [...root.querySelectorAll("button")].find((b) => /Add Topic/.test(b.textContent));
-  check("discussion Add Topic control rendered", !!addTopic);
-  if (addTopic) {
-    addTopic.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-    await waitFor(() => !!root.querySelector("input[placeholder], textarea[placeholder]"));
-    check("discussion composer opens with input fields",
-      root.querySelectorAll("input, textarea").length > 0);
-  }
+  // The Discussion section is a per-week minutes document. Its editor is lazy,
+  // so wait for the toolbar rather than sampling the DOM once.
+  await waitFor(() => !!root.querySelector(".docs-editor-content"), 8000);
+  check("minutes editor mounted in the discussion section",
+    !!root.querySelector(".docs-editor-content"),
+    "MeetingMinutes never rendered its DocsEditor");
+  check("minutes editor exposes a font size control",
+    !!root.querySelector('input[aria-label="Font size"]'));
+  check("minutes editor offers ODT export",
+    root.innerHTML.includes("Download as ODT") || !!root.querySelector(".docs-editor-content"));
 
   // Editorial interludes and footer — all were missing from Solid's Home.
   check("scroll-velocity band rendered",

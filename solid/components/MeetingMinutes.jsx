@@ -135,8 +135,6 @@ export default function MeetingMinutes(props) {
     });
   };
 
-  createEffect(() => console.log("DBG-MM week=", JSON.stringify(props.weekLabel), "isLoading=", topicsQuery.isLoading, "status=", topicsQuery.status, "initial.len=", (initialHtml()||"").length));
-
   return (
     <Show
       when={!topicsQuery.isLoading}
