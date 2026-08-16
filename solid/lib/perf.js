@@ -40,10 +40,20 @@ function getObserver() {
         }
       }
     },
-    // A generous margin means a section is always mounted well before it is
-    // reached, so the user never sees a placeholder swap. Tightened on
-    // constrained networks so we do not speculatively fetch on a slow link.
-    { rootMargin: isConstrainedNetwork() ? "900px 0px" : "1600px 0px" }
+    /*
+     * How far ahead a section mounts.
+     *
+     * This was 1600px, which on any normal screen put every one of Home's ten
+     * sections inside the margin at once. They all mounted on load, so all ten
+     * widget chunks downloaded and all sixteen entity queries fired
+     * simultaneously — well past the browser's ~6 connections per host, so they
+     * queued and the widgets that mattered (Meeting Mode, Announcements) waited
+     * behind ones the user had not scrolled to yet.
+     *
+     * 500px still mounts a section before it is reached at ordinary scroll
+     * speed, but only two or three are ever in flight together.
+     */
+    { rootMargin: isConstrainedNetwork() ? "250px 0px" : "500px 0px" }
   );
   return sharedObserver;
 }
