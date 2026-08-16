@@ -126,6 +126,27 @@ export default function MeetingMinutes(props) {
   createEffect(on(() => props.weekLabel, () => { onCleanup(flushPending); }));
   onCleanup(() => { clearTimeout(flashTimer); flushPending(); });
 
+  /* One component identity per week — changing week swaps the identity, which
+     is what forces DocsEditor to remount with that week's initialHtml. */
+  const editors = new Map();
+  const editorFor = (week) => {
+    if (!editors.has(week)) {
+      editors.set(week, () => (
+        <DocsEditor
+          title={props.weekTitle || "Meeting minutes"}
+          initialHtml={initialHtml()}
+          onChange={handleChange}
+          onSave={props.canEdit === false ? undefined : handleSave}
+          saving={saveMutation.isPending}
+          saved={savedFlash()}
+          minHeight="420px"
+          placeholder="Write the minutes for this week…"
+        />
+      ));
+    }
+    return editors.get(week);
+  };
+
   const handleSave = () => {
     if (pending) return flushPending();
     saveMutation.mutate({
@@ -144,30 +165,12 @@ export default function MeetingMinutes(props) {
         </div>
       }
     >
-      {/* keyed: DocsEditor reads initialHtml once at mount, so a week change
-          must build a fresh editor rather than leave last week's text behind. */}
-      <Show when={props.weekLabel} keyed>
-        {() => (
-          <Suspense
-            fallback={
-              <div class="border border-border bg-card px-4 py-6 text-sm text-muted-foreground">
-                Loading minutes…
-              </div>
-            }
-          >
-            <DocsEditor
-              title={props.weekTitle || "Meeting minutes"}
-              initialHtml={initialHtml()}
-              onChange={handleChange}
-              onSave={props.canEdit === false ? undefined : handleSave}
-              saving={saveMutation.isPending}
-              saved={savedFlash()}
-              minHeight="420px"
-              placeholder="Write the minutes for this week…"
-            />
-          </Suspense>
-        )}
-      </Show>
+      {/* Keyed on the week so a week change builds a fresh editor: DocsEditor
+          reads initialHtml once at mount, and reusing the instance would leave
+          the previous week's text on screen. <Dynamic> is used rather than a
+          keyed <Show> because a keyed Show nested inside another Show did not
+          re-render the child here at all. */}
+      <Dynamic component={editorFor(props.weekLabel)} />
     </Show>
   );
 }
