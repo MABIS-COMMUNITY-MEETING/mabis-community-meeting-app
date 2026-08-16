@@ -15,6 +15,10 @@ import {
   JAPANESE_TEXT_STORAGE_KEY,
   JAPANESE_TEXT_UPDATED_AT_KEY,
 } from "@/lib/japanese-text-preference";
+import {
+  applySectionDescriptionsPreference,
+  SECTION_DESCRIPTIONS_EVENT,
+} from "@/lib/section-descriptions-preference";
 
 /* Every UI preference the app stores locally lives under a "mabis" key.
    We mirror that whole bag onto the signed-in user so settings follow them
@@ -39,6 +43,7 @@ export function applyStoredPrefs() {
   applyAnimationPreference();
   applyCursorPreference();
   applyJapaneseTextPreference();
+  applySectionDescriptionsPreference();
   return animationPreferenceChanged;
 }
 
