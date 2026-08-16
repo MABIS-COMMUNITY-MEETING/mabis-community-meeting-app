@@ -271,6 +271,20 @@ export default function Home() {
           <HomeSectionIndex />
         </div>
 
+        {/* restrained editorial interlude */}
+        <div class="-mx-4 overflow-hidden border-b py-3 jp-rule sm:-mx-10 sm:py-5">
+          <ScrollVelocity
+            items={["MABIS", "COMMUNITY", "FRIDAY", "BANGKOK"]}
+            class="font-display font-light tracking-[-0.035em] text-foreground/16 text-[clamp(1.35rem,7vw,2.15rem)] sm:text-[4.2vw]"
+          />
+        </div>
+
+        <ScrollScaleRitual />
+
+        <div class="pb-8 pt-4 sm:pb-14 sm:pt-6">
+          <BirthdayBanner />
+        </div>
+
         <div class="space-y-12 sm:space-y-24">
           <For each={SECTIONS}>
             {(s) => (
@@ -328,6 +342,8 @@ export default function Home() {
             )}
           </For>
         </div>
+
+        <PageFooter />
       </main>
 
       {/* Deferred until the browser is idle, as in React — same three, same order. */}
