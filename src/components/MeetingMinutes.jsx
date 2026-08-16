@@ -7,37 +7,55 @@ import { topicsToMinutesHtml, isBlankDocument } from "@/lib/minutes-format";
 /*
  * The week's minutes document.
  *
- * Replaces the old "add a topic" list: one document per week, edited like a
- * word processor, with File › Download as ODT.
+ * One document per week, edited like a word processor, with File › Download as
+ * ODT. Replaces the old "add a topic" list.
  *
  * ── How the old data is preserved ──────────────────────────────────────────
  * Each week's minutes live in the DiscussionTopic record titled
  * "__meeting_notes__" for that week_label — the same record the previous notes
- * editor used, so any notes already written are picked up unchanged.
- *
- * When a week has no document yet, its existing topics are formatted into one
- * (see lib/minutes-format.js). That seed is held in memory and is only written
- * when the document is actually saved. Consequences, in order of importance:
+ * editor used, so notes already written are picked up unchanged. A week with no
+ * document yet is seeded from its existing topics (see lib/minutes-format.js).
+ * That seed is held in memory and only written when the document is saved, so:
  *
  *   · Topic records are never modified or deleted. History still reads them.
  *   · Opening a week read-only writes nothing at all.
- *   · Once a document has real content, the seed is never applied again, so a
- *     save can never overwrite edited minutes with the original topic list.
+ *   · Once a document has real content the seed never applies again, so a save
+ *     cannot overwrite edited minutes with the original topic list.
  *
- * That last property is why `seededRef` exists rather than recomputing: React
- * Query refetches `topics` on its own schedule, and without the latch a refetch
- * arriving mid-edit would re-derive the seed and fight the user's typing.
+ * ── Everything here is keyed by week, deliberately ─────────────────────────
+ * The first version of this component kept `seeded`, `latestHtml` and
+ * `recordId` as bare refs, and it produced two bugs:
+ *
+ *   1. The seed latch was reset in an effect on [weekLabel], but initialHtml is
+ *      computed in a memo DURING render. Effects run after. So the first render
+ *      of the new week still saw the previous week's latch and returned the
+ *      previous week's HTML — "21 August" opened showing 14 August's minutes.
+ *
+ *   2. Worse and silent: the debounced save read recordId from a ref at FIRE
+ *      time, not schedule time. Type in one week, switch within the debounce,
+ *      and the timer wrote that text into the newly-selected week's document.
+ *
+ * Both had the same root cause — mutable state with no week identity, read at a
+ * different moment than it was written. Every ref below therefore carries the
+ * week it belongs to, the latch is compared during render rather than reset by
+ * an effect, and a pending save captures its full target up front.
  */
 export default function MeetingMinutes({ weekLabel, weekTitle, canEdit = true }) {
   const queryClient = useQueryClient();
   const [savedFlash, setSavedFlash] = useState(false);
-  const saveTimer = useRef(null);
   const flashTimer = useRef(null);
-  // The record id lives in a ref so a create → update transition never
-  // remounts the editor mid-typing.
-  const recordIdRef = useRef(null);
-  const seededRef = useRef(false);
-  const latestHtmlRef = useRef("");
+
+  // { week, html } — whose week this HTML belongs to, so it can never be
+  // written into a different week's document.
+  const latestRef = useRef({ week: null, html: "" });
+  // The week whose seed has already been resolved. Compared during render.
+  const seededForWeekRef = useRef(null);
+  // Ids of records this component created, keyed by week. Without this a second
+  // save before the query refetches would not see the new record and would
+  // create a duplicate __meeting_notes__ row for the same week.
+  const createdIdsRef = useRef(new Map());
+  // { timer, payload } for the debounced save, so it can be flushed intact.
+  const pendingRef = useRef(null);
 
   const { data: allTopics = [], isLoading } = useQuery({
     queryKey: ["topics"],
@@ -51,39 +69,49 @@ export default function MeetingMinutes({ weekLabel, weekTitle, canEdit = true })
     [allTopics, weekLabel],
   );
 
-  useEffect(() => { recordIdRef.current = notesRecord?.id ?? null; }, [notesRecord]);
-
-  // Reset the latch when the week changes — a different week gets its own
-  // document and its own one-time seed.
-  useEffect(() => { seededRef.current = false; }, [weekLabel]);
+  const recordIdFor = (week) =>
+    (week === weekLabel ? notesRecord?.id : undefined) ?? createdIdsRef.current.get(week) ?? null;
 
   const initialHtml = useMemo(() => {
     if (isLoading) return "";
+
     const stored = notesRecord?.description;
     if (!isBlankDocument(stored)) {
-      seededRef.current = true;          // a real document exists; never seed over it
+      // A real document exists — never seed over it.
+      seededForWeekRef.current = weekLabel;
+      latestRef.current = { week: weekLabel, html: stored };
       return stored;
     }
-    if (seededRef.current) return latestHtmlRef.current;
+
+    // Already resolved for THIS week: reuse what we have rather than
+    // re-deriving mid-edit when the topics query refetches.
+    if (seededForWeekRef.current === weekLabel && latestRef.current.week === weekLabel) {
+      return latestRef.current.html;
+    }
+
     const seed = topicsToMinutesHtml(allTopics, weekLabel, { heading: weekTitle });
-    seededRef.current = true;
+    seededForWeekRef.current = weekLabel;
+    latestRef.current = { week: weekLabel, html: seed };
     return seed;
+    // allTopics is intentionally absent: a refetch must not re-seed a week that
+    // has already been resolved, or it would fight the user's typing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, weekLabel, notesRecord?.id]);
+  }, [isLoading, weekLabel, notesRecord?.id, notesRecord?.description]);
 
   const saveMutation = useMutation({
-    mutationFn: async (html) => {
-      if (recordIdRef.current) {
-        return base44.entities.DiscussionTopic.update(recordIdRef.current, { description: html });
+    // The payload carries its own target. Nothing is read from a ref here.
+    mutationFn: async ({ html, week, recordId }) => {
+      if (recordId) {
+        return base44.entities.DiscussionTopic.update(recordId, { description: html });
       }
       const created = await base44.entities.DiscussionTopic.create({
         title: "__meeting_notes__",
         submitted_by: "system",
-        week_label: weekLabel,
+        week_label: week,
         is_jobs_topic: true,
         description: html,
       });
-      recordIdRef.current = created.id;
+      createdIdsRef.current.set(week, created.id);
       return created;
     },
     onSuccess: () => {
@@ -94,17 +122,39 @@ export default function MeetingMinutes({ weekLabel, weekTitle, canEdit = true })
     },
   });
 
-  const handleChange = (html) => {
-    latestHtmlRef.current = html;
-    if (!canEdit) return;
-    clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => saveMutation.mutate(html), 800);
+  // Kept in a ref so the flush below always calls the current mutate without
+  // needing it in an effect dependency list.
+  const mutateRef = useRef(saveMutation.mutate);
+  mutateRef.current = saveMutation.mutate;
+
+  /** Send a queued save immediately, to the week it was written for. */
+  const flushPending = () => {
+    const pending = pendingRef.current;
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    pendingRef.current = null;
+    mutateRef.current(pending.payload);
   };
 
-  useEffect(() => () => {
-    clearTimeout(saveTimer.current);
-    clearTimeout(flashTimer.current);
-  }, []);
+  const handleChange = (html) => {
+    latestRef.current = { week: weekLabel, html };
+    if (!canEdit) return;
+
+    // Target captured now, while we are definitely still on this week.
+    const payload = { html, week: weekLabel, recordId: recordIdFor(weekLabel) };
+    if (pendingRef.current) clearTimeout(pendingRef.current.timer);
+    const timer = setTimeout(() => {
+      pendingRef.current = null;
+      mutateRef.current(payload);
+    }, 800);
+    pendingRef.current = { timer, payload };
+  };
+
+  // Changing week (or unmounting) flushes rather than cancels — the payload
+  // already names its own week, so sending it is correct and dropping it would
+  // silently lose up to 800ms of typing.
+  useEffect(() => flushPending, [weekLabel]);
+  useEffect(() => () => clearTimeout(flashTimer.current), []);
 
   if (isLoading) {
     return (
@@ -116,14 +166,20 @@ export default function MeetingMinutes({ weekLabel, weekTitle, canEdit = true })
 
   return (
     <DocsEditor
-      // Keyed on the week: DocsEditor reads initialHtml once at mount, so a
-      // week change must build a fresh editor rather than leave last week's
-      // text in place.
+      // DocsEditor reads initialHtml once at mount, so a week change must build
+      // a fresh editor rather than leave the previous week's text in place.
       key={weekLabel}
       title={weekTitle || "Meeting minutes"}
       initialHtml={initialHtml}
       onChange={handleChange}
-      onSave={canEdit ? () => saveMutation.mutate(latestHtmlRef.current || initialHtml) : undefined}
+      onSave={canEdit ? () => {
+        if (pendingRef.current) return flushPending();
+        mutateRef.current({
+          html: latestRef.current.week === weekLabel ? latestRef.current.html : initialHtml,
+          week: weekLabel,
+          recordId: recordIdFor(weekLabel),
+        });
+      } : undefined}
       saving={saveMutation.isPending}
       saved={savedFlash}
       minHeight="420px"
