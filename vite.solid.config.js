@@ -28,6 +28,10 @@ export default defineConfig({
   plugins: [base44({ analyticsTracker: true }), solid()],
   resolve: {
     alias: {
+      // Must come first and must include the trailing-slash form: the base44
+      // plugin contributes its own `"@/": "/src/"` alias, which is
+      // filesystem-root-relative and would resolve @/lib/* to /src/lib/*.
+      "@/": `${path.resolve(process.cwd(), "src")}/`,
       "@": path.resolve(process.cwd(), "src"),
       "~": path.resolve(process.cwd(), "solid"),
     },
