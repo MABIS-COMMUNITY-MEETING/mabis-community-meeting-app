@@ -112,28 +112,23 @@ function dataTasks() {
  * user more than the wait it saves.
  */
 /*
- * Bursty, not fair.
+ * Bursty, not fair — mark a task as I/O so the scheduler fires it rather than
+ * sequencing it.
  *
- * Every request is issued in one go, then the main thread is handed back once.
+ * STARTING a fetch is microseconds. The expensive work is parsing the response,
+ * and that happens later regardless of how the kickoffs were spaced. An earlier
+ * version yielded between each kickoff and paid a real cost — thirteen trips
+ * through the task queue, delaying the last request by that much — to avoid a
+ * long task that was never in the kickoff loop to begin with.
  *
- * The earlier version yielded between each kickoff, which was the wrong shape:
- * STARTING a fetch is microseconds — the expensive work is evaluating the
- * resolved chunk and parsing the response, and that happens later regardless of
- * how the kickoffs were spaced. So fair scheduling paid a real cost (thirteen
- * trips through the task queue, delaying the last request by that much) to
- * avoid a long task that was never in the kickoff loop to begin with.
+ * Firing them together also gets every request onto the wire immediately, so
+ * they queue against the browser's connection limit instead of against each
+ * other, and the whole batch finishes sooner.
  *
- * Bursting also gets every request onto the wire immediately, so they queue
- * against the browser's connection limit instead of against each other — the
- * whole batch finishes sooner and the widgets are warm earlier.
- *
- * The single yield afterwards is what keeps this from being rude: it releases
- * the thread before responses start landing, so the first tap after Home paints
- * is not waiting behind the burst.
+ * Chunk imports are NOT tagged: their cost is parse and evaluate, which really
+ * does land on this thread, so they are worth sequencing and ordering.
  */
-const yieldToBrowser = typeof scheduler !== "undefined" && typeof scheduler.yield === "function"
-  ? () => scheduler.yield()
-  : () => new Promise((resolve) => setTimeout(resolve, 0));
+const asIo = (tasks) => tasks.map((task) => ({ ...task, io: true }));
 
 export async function warmHomeRoute(onProgress) {
   const constrained = isConstrainedNetwork();
