@@ -13,7 +13,7 @@
     "build": "vite build && node scripts/generate-service-worker.mjs && node scripts/check-bundle-budget.mjs",
     "build:solid": "vite build --config vite.solid.config.js",
     "check:solid": "node scripts/check-solid-compiles.mjs",
-    "check:solid:parity": "node scripts/check-solid-parity.mjs / && node scripts/check-solid-parity.mjs /login && node scripts/check-solid-parity.mjs /nowhere",
+    "check:solid:parity": "node scripts/check-solid-parity.mjs / && node scripts/check-solid-parity.mjs /login && node scripts/check-solid-parity.mjs /nowhere && node scripts/check-solid-parity.mjs / ja && node scripts/check-solid-parity.mjs /login ja",
     "verify:solid": "npm run build:solid && npm run check:solid && npm run check:solid:parity",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
