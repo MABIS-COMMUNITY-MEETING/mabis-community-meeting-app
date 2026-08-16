@@ -50,17 +50,18 @@ function resolveSourceFiles(relativePath) {
 }
 
 function read(requestedPath) {
-  const relativePath = resolveSourcePath(requestedPath);
-  const absolutePath = path.join(root, relativePath);
-  if (!fs.existsSync(absolutePath)) {
-    failures.push(`Missing performance file: ${relativePath}`);
+  const files = resolveSourceFiles(requestedPath);
+  const missing = files.filter((f) => !fs.existsSync(path.join(root, f)));
+  if (missing.length) {
+    failures.push(`Missing performance file: ${missing.join(", ")}`);
     return "";
   }
-  return fs.readFileSync(absolutePath, "utf8");
+  return files.map((f) => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
 }
 
 function requireText(relativePath, content, text) {
-  if (!content.includes(text)) failures.push(`${relativePath} must contain: ${text}`);
+  const wanted = Array.isArray(text) ? text : [text];
+  if (!content.includes(text)) failures.push(`${relativePath} must contain: ${wanted.join(" OR ")}`);
 }
 
 function forbidText(relativePath, content, text) {
