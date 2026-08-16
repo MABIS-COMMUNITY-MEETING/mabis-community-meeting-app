@@ -344,6 +344,17 @@ if (route === "/login") {
   }
   // Placeholder counting is unreliable here: the minutes editor is a lazy
   // chunk containing Quill, which jsdom loads slowly and never initialises.
+  /*
+   * Wait for the lazy widget chunks to settle before counting placeholders.
+   *
+   * Every widget sits behind <Suspense>, so a placeholder means "this chunk has
+   * not resolved YET" — not "this section is broken". The hero paints long
+   * before those imports land, so asserting as soon as COMMUNITY DASHBOARD
+   * appears was racing them and counting eight fallbacks that were about to go
+   * away. The assertion below is unchanged; this only stops it firing early.
+   */
+  await waitFor(() => (root.innerHTML.match(/lazy-section-placeholder/g) || []).length <= 2, 20000);
+
   if (process.env.PARITY_DEBUG) {
     const html = root.innerHTML;
     console.log("[debug] placeholders:", (html.match(/lazy-section-placeholder/g) || []).length);
