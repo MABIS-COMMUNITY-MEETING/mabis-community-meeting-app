@@ -3,7 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const dist = path.join(root, "dist");
+// Accepts an explicit target dir so this can generate a service worker for
+// either build (`node scripts/generate-service-worker.mjs dist-solid`). With
+// no argument it keeps its original default so the legacy `npm run build`
+// (React, vite.config.js → dist/) still works unchanged.
+const distName = process.argv[2] || "dist";
+const dist = path.join(root, distName);
 const manifestPath = path.join(dist, ".vite", "manifest.json");
 
 if (!fs.existsSync(manifestPath)) {
