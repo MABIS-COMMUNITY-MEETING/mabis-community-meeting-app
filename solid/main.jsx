@@ -6,6 +6,7 @@ import "~/solid-motion.css";
 import { applyTheme, getStoredTheme, getStoredCustomColors, applyCustomColors, applyFont, getStoredFont } from "@/lib/themes";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
+import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
 import { startPerfMonitor } from "~/lib/perf-monitor";
 
 /*
@@ -20,6 +21,7 @@ import { startPerfMonitor } from "~/lib/perf-monitor";
 async function bootstrap() {
   applyAnimationPreference();
   applyJapaneseTextPreference();
+  applySectionDescriptionsPreference();
 
   applyTheme(getStoredTheme());
   const customColors = getStoredCustomColors();
