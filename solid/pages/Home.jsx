@@ -2,7 +2,7 @@ import { createSignal, onMount, onCleanup, lazy, Suspense, For, Show } from "sol
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection, EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
 import { useQuery } from "@tanstack/solid-query";
-import { CircleHelp, Settings } from "lucide-solid";
+import { Settings } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
