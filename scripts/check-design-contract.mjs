@@ -17,30 +17,52 @@ const failures = [];
  * While both builds exist this never triggers; once src/ holds only the shared
  * lib/api/styles layer, the same rules keep being enforced against solid/.
  */
-function resolveSourcePath(relativePath) {
-    if (fs.existsSync(path.join(root, relativePath))) return relativePath;
-    const solidPath = relativePath
+/*
+ * Where a rule lives once the UI is Solid.
+ *
+ * Solid groups several of these differently — JapaneseText and OpenMoji are
+ * exported from shared primitive modules rather than standing alone, and the
+ * job wheel's canvas work sits in its own component. The RULES are unchanged;
+ * only the file holding them moved. A mapped entry may list several files,
+ * whose contents are concatenated, so a rule split across modules still reads
+ * as one body of source.
+ */
+const SOLID_EQUIVALENTS = {
+    "src/components/JapaneseText.jsx": ["solid/components/primitives.jsx"],
+    "src/components/OpenMoji.jsx": ["solid/components/page-chrome.jsx"],
+    "src/components/home/HomeSectionIndex.jsx": ["solid/components/home/shell.jsx"],
+    "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
+    "src/components/JobsWidget.jsx": ["solid/components/JobsWidget.jsx", "solid/components/jobs/SpinWheel.jsx"],
+};
+
+function resolveSourceFiles(relativePath) {
+    if (fs.existsSync(path.join(root, relativePath))) return [relativePath];
+    const mapped = SOLID_EQUIVALENTS[relativePath];
+    if (mapped) {
+        const present = mapped.filter((p) => fs.existsSync(path.join(root, p)));
+        if (present.length) return present;
+    }
+    const guess = relativePath
         .replace(/^src\/components\//, "solid/components/")
         .replace(/^src\/pages\//, "solid/pages/")
         .replace(/^src\/(App|main)\.jsx$/, "solid/$1.jsx");
-    return solidPath !== relativePath && fs.existsSync(path.join(root, solidPath))
-        ? solidPath
-        : relativePath;
+    return fs.existsSync(path.join(root, guess)) ? [guess] : [relativePath];
 }
 
 function read(requestedPath) {
-    const relativePath = resolveSourcePath(requestedPath);
-    const absolutePath = path.join(root, relativePath);
-    if (!fs.existsSync(absolutePath)) {
-        failures.push(`Missing mandatory file: ${relativePath}`);
+    const files = resolveSourceFiles(requestedPath);
+    const missing = files.filter((f) => !fs.existsSync(path.join(root, f)));
+    if (missing.length) {
+        failures.push(`Missing mandatory file: ${missing.join(", ")}`);
         return "";
     }
-    return fs.readFileSync(absolutePath, "utf8");
+    return files.map((f) => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
 }
 
 function requireText(relativePath, content, requiredText) {
-    if (!content.includes(requiredText)) {
-        failures.push(`${relativePath} must contain: ${requiredText}`);
+    const wanted = Array.isArray(requiredText) ? requiredText : [requiredText];
+    if (!wanted.some((t) => content.includes(t))) {
+        failures.push(`${relativePath} must contain: ${wanted.join(' OR ')}`);
     }
 }
 

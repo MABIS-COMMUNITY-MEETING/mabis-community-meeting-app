@@ -17,15 +17,36 @@ const failures = [];
  * While both builds exist this never triggers; once src/ holds only the shared
  * lib/api/styles layer, the same rules keep being enforced against solid/.
  */
-function resolveSourcePath(relativePath) {
-    if (fs.existsSync(path.join(root, relativePath))) return relativePath;
-    const solidPath = relativePath
+/*
+ * Where a rule lives once the UI is Solid.
+ *
+ * Solid groups several of these differently — JapaneseText and OpenMoji are
+ * exported from shared primitive modules rather than standing alone, and the
+ * job wheel's canvas work sits in its own component. The RULES are unchanged;
+ * only the file holding them moved. A mapped entry may list several files,
+ * whose contents are concatenated, so a rule split across modules still reads
+ * as one body of source.
+ */
+const SOLID_EQUIVALENTS = {
+    "src/components/JapaneseText.jsx": ["solid/components/primitives.jsx"],
+    "src/components/OpenMoji.jsx": ["solid/components/page-chrome.jsx"],
+    "src/components/home/HomeSectionIndex.jsx": ["solid/components/home/shell.jsx"],
+    "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
+    "src/components/JobsWidget.jsx": ["solid/components/JobsWidget.jsx", "solid/components/jobs/SpinWheel.jsx"],
+};
+
+function resolveSourceFiles(relativePath) {
+    if (fs.existsSync(path.join(root, relativePath))) return [relativePath];
+    const mapped = SOLID_EQUIVALENTS[relativePath];
+    if (mapped) {
+        const present = mapped.filter((p) => fs.existsSync(path.join(root, p)));
+        if (present.length) return present;
+    }
+    const guess = relativePath
         .replace(/^src\/components\//, "solid/components/")
         .replace(/^src\/pages\//, "solid/pages/")
         .replace(/^src\/(App|main)\.jsx$/, "solid/$1.jsx");
-    return solidPath !== relativePath && fs.existsSync(path.join(root, solidPath))
-        ? solidPath
-        : relativePath;
+    return fs.existsSync(path.join(root, guess)) ? [guess] : [relativePath];
 }
 
 function read(requestedPath) {
@@ -129,13 +150,13 @@ requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListen
 requireText("src/lib/scroll-progress.js", scrollProgress, 'classList.toggle("is-scrolling", active)');
 requireText("src/lib/scroll-progress.js", scrollProgress, "new ResizeObserver(scheduleMetrics)");
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "style={{ scale, opacity }}");
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, ["style={{ scale, opacity }}", "lineEl.style.transform"]);
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
-requireText("src/components/JobsWidget.jsx", jobs, "appearanceRef");
-requireText("src/components/JobsWidget.jsx", jobs, "appearanceRafRef");
+requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf"]);
+requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRafRef", "appearanceRaf"]);
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
 requireText("src/index.css", css, "content-visibility: auto");
 requireText("src/index.css", css, "contain-intrinsic-size: auto 720px");
