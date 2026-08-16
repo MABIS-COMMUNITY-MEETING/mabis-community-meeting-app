@@ -22,6 +22,7 @@ import {
 const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
 const MeetingMinutes = lazy(() => import("~/components/MeetingMinutes"));
+const JobsWidget = lazy(() => import("~/components/JobsWidget"));
 
 /*
  * DiscussionWidget — Solid port of src/components/DiscussionWidget.jsx.
