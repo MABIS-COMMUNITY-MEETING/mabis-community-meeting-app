@@ -34,7 +34,20 @@ FontAttr.whitelist = FONTS.map((font) => font.value);
 Quill.register(FontAttr, true);
 
 const Parchment = Quill.import("parchment");
-const LineHeightAttr = new Parchment.Attributor.Style("lineheight", "line-height", {
+/*
+ * NB: this is Quill 2.x, not the Quill 1.x react-quill bundles privately for
+ * the React build (react-quill depends on quill@^1.3.7, so npm nests its own
+ * copy rather than reuse the workspace's quill@2.0.3). Parchment's API is not
+ * the same shape across that major version: v1 exposes `Attributor.Style` /
+ * `Attributor.Class` as nested constructors, v2 flattens them to top-level
+ * `StyleAttributor` / `ClassAttributor`. Using the v1 shape here compiles fine
+ * but throws "Attributor.Style is not a constructor" at runtime, and because
+ * that throw happens inside this module's top-level evaluation, the dynamic
+ * import() that pulls in DocsEditor never resolves OR rejects visibly through
+ * Suspense (no ErrorBoundary catches it) — the editor just silently never
+ * mounts, with nothing in the console to point at this file.
+ */
+const LineHeightAttr = new Parchment.StyleAttributor("lineheight", "line-height", {
   scope: Parchment.Scope.BLOCK,
   whitelist: ["1", "1.15", "1.5", "2"],
 });
@@ -50,8 +63,8 @@ Quill.register(LineHeightAttr, true);
  * cannot be normalised away, and it keeps the colour bound to the theme token
  * so all 133 themes stay contrast-correct.
  */
-const ThemeInkClass = new Parchment.Attributor.Class("themeInk", "ql-ink", { scope: Parchment.Scope.INLINE });
-const ThemeHighlightClass = new Parchment.Attributor.Class("themeHighlight", "ql-hl", { scope: Parchment.Scope.INLINE });
+const ThemeInkClass = new Parchment.ClassAttributor("themeInk", "ql-ink", { scope: Parchment.Scope.INLINE });
+const ThemeHighlightClass = new Parchment.ClassAttributor("themeHighlight", "ql-hl", { scope: Parchment.Scope.INLINE });
 Quill.register(ThemeInkClass, true);
 Quill.register(ThemeHighlightClass, true);
 
