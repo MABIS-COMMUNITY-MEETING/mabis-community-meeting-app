@@ -1,4 +1,4 @@
-import { createSignal, createEffect, on, onMount, onCleanup } from "solid-js";
+import { createSignal, onMount, onCleanup } from "solid-js";
 import { JapaneseText } from "~/components/primitives";
 import { getLoadingState, subscribeToLoadingState } from "@/lib/loading-state";
 
