@@ -149,16 +149,24 @@ export default function MeetingMinutes(props) {
           must build a fresh editor rather than leave last week's text behind. */}
       <Show when={props.weekLabel} keyed>
         {() => (
-          <DocsEditor
-            title={props.weekTitle || "Meeting minutes"}
-            initialHtml={initialHtml()}
-            onChange={handleChange}
-            onSave={props.canEdit === false ? undefined : handleSave}
-            saving={saveMutation.isPending}
-            saved={savedFlash()}
-            minHeight="420px"
-            placeholder="Write the minutes for this week…"
-          />
+          <Suspense
+            fallback={
+              <div class="border border-border bg-card px-4 py-6 text-sm text-muted-foreground">
+                Loading minutes…
+              </div>
+            }
+          >
+            <DocsEditor
+              title={props.weekTitle || "Meeting minutes"}
+              initialHtml={initialHtml()}
+              onChange={handleChange}
+              onSave={props.canEdit === false ? undefined : handleSave}
+              saving={saveMutation.isPending}
+              saved={savedFlash()}
+              minHeight="420px"
+              placeholder="Write the minutes for this week…"
+            />
+          </Suspense>
         )}
       </Show>
     </Show>
