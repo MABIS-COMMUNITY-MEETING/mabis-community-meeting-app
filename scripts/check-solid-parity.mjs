@@ -343,6 +343,10 @@ if (route === "/login") {
   // offline-behaviour check.
   check("announcements widget reached its empty state",
     textNow().includes("No announcements yet"));
+  // Removal is admin-only and confirmed. The dialog only exists once a
+  // removal is requested, so assert the confirming copy is not shown unasked.
+  check("announcement removal is not pre-confirmed",
+    !textNow().includes("Remove this announcement?"));
   /*
    * The Discussion section is a per-week minutes document now.
    *
