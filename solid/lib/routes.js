@@ -40,7 +40,9 @@ function loadHomeRoute() {
    * the loading screen: past the budget the route resolves anyway and the
    * widgets fall back to fetching for themselves.
    */
-  const budget = 4000;
+  // React used 2800ms and waited for ALL warm-up tasks. This waits only for
+  // the first viewport, so the budget is a backstop rather than the norm.
+  const budget = 1500;
   homeRoutePromise = (async () => {
     const chunk = import("~/pages/Home");
     const warm = import("~/lib/home-warmup")
