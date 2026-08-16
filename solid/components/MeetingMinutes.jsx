@@ -1,4 +1,5 @@
 import { createSignal, createMemo, createEffect, on, onCleanup, lazy, Suspense, Show } from "solid-js";
+import IdleMount from "~/components/IdleMount";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
 import { resolveMinutesDocument } from "@/lib/minutes-format";
@@ -33,21 +34,50 @@ const DocsEditor = lazy(() => import("~/components/DocsEditor"));
  * document. resolveMinutesDocument() is shared with React and carries the
  * regression tests for the first; the payload capture below covers the second.
  */
+/* Shown only until the editor mounts. Same surface and reserved height as the
+   editor's document area so the swap causes no layout shift. */
+function ReadOnlyPaper(props) {
+  return (
+    <div
+      class="docs-editor-content rounded-lg border border-border"
+      style={{ "min-height": "420px", padding: "1rem 1.25rem" }}
+    >
+      <Show
+        when={(props.html || "").trim()}
+        fallback={
+          <p class="text-sm text-muted-foreground">
+            {props.canEdit === false
+              ? "No minutes were written for this week."
+              : "No minutes yet — start writing once the editor is ready."}
+          </p>
+        }
+      >
+        <div class="theme-rich-text" innerHTML={props.html} />
+      </Show>
+    </div>
+  );
+}
+
 export default function MeetingMinutes(props) {
   const queryClient = useQueryClient();
   const [savedFlash, setSavedFlash] = createSignal(false);
   /*
-   * The editor is not mounted until someone actually wants to edit.
+   * The editor mounts on idle, not on click.
    *
    * DocsEditor carries Quill — 236 KB raw. When the Discussion section was a
    * topic list that only loaded on "Add Topic", it never reached Home's
    * critical path. Making minutes the section itself put Quill on every Home
    * visit and made the page markedly slower to become interactive.
    *
-   * The document is HTML, so reading it costs nothing: it renders as plain
-   * markup, and the editor loads on the first click into it.
+   * Click-to-edit kept Quill off the critical path but changed how the section
+   * LOOKS: React always showed the full editor chrome, and a bare read-only
+   * card does not mirror it. So the real editor is mounted, just deferred to
+   * IdleMount — the document reads identically to React within a moment of the
+   * page becoming interactive, and Quill still never competes with first paint.
+   *
+   * The read-only paper underneath is the placeholder, sized to match, so the
+   * swap does not move the page.
    */
-  const [editing, setEditing] = createSignal(false);
   let flashTimer;
 
   // { week, html } — whose week this HTML belongs to.
@@ -189,34 +219,8 @@ export default function MeetingMinutes(props) {
         </div>
       }
     >
-      <Show
-        when={editing()}
-        fallback={
-          <div
-            class="docs-editor-content docs-editor-readonly rounded-lg border border-border"
-            onClick={() => props.canEdit !== false && setEditing(true)}
-            onFocusIn={() => props.canEdit !== false && setEditing(true)}
-            tabindex={props.canEdit === false ? undefined : 0}
-            role={props.canEdit === false ? undefined : "button"}
-            aria-label={props.canEdit === false ? undefined : "Edit these minutes"}
-            style={{ "min-height": "420px", padding: "1rem 1.25rem", cursor: props.canEdit === false ? "default" : "text" }}
-          >
-            <Show
-              when={(initialHtml() || "").trim()}
-              fallback={
-                <p class="text-sm text-muted-foreground">
-                  {props.canEdit === false
-                    ? "No minutes were written for this week."
-                    : "No minutes yet \u2014 click here to start writing."}
-                </p>
-              }
-            >
-              <div class="theme-rich-text" innerHTML={initialHtml()} />
-            </Show>
-          </div>
-        }
-      >
-        <Suspense fallback={<div style={{ "min-height": "420px" }} aria-label="Minutes editor loading" />}>
+      <IdleMount timeout={1200}>
+        <Suspense fallback={<ReadOnlyPaper html={initialHtml()} canEdit={props.canEdit} />}>
           <DocsEditor
             title={props.weekTitle || "Meeting minutes"}
             initialHtml={initialHtml()}
@@ -225,10 +229,10 @@ export default function MeetingMinutes(props) {
             saving={saveMutation.isPending}
             saved={savedFlash()}
             minHeight="420px"
-            placeholder="Write the minutes for this week\u2026"
+            placeholder="Write the minutes for this week…"
           />
         </Suspense>
-      </Show>
+      </IdleMount>
     </Show>
   );
 }
