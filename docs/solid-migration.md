@@ -72,8 +72,8 @@ page instead. There is an explicit assertion guarding exactly that.
 
 ## Remaining
 
-Every route now renders, so what is left is shell polish and the long tail of
-feature components — not structural work.
+The feature port is complete — see Progress below. This section records what is
+deliberately absent and what is still open.
 
 **1. Nothing reachable is missing.** Walking the import graph from
 `src/App.jsx` reaches 81 component/page modules (12,211 lines). All of them now
