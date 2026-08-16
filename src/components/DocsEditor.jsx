@@ -673,6 +673,19 @@ export default function DocsEditor({
     window.setTimeout(() => setCopiedFlash(false), 1200);
   };
 
+  /*
+   * ODT rather than HTML: these documents are meeting minutes, and minutes get
+   * opened in a word processor, not a browser. An .odt drops straight into
+   * LibreOffice, Word and Google Docs with its headings, lists and emphasis
+   * intact; the old .html export opened as a web page and lost the document
+   * structure the moment anyone tried to edit it.
+   */
+  const downloadOdtFile = () => {
+    const quill = getQuill();
+    if (!quill) return;
+    downloadOdt(quill.root.innerHTML, { title, filename: safeFilename(title) });
+  };
+
   const downloadHtml = () => {
     const quill = getQuill();
     if (!quill) return;
@@ -803,7 +816,7 @@ export default function DocsEditor({
               {onSave && (
                 <MenuItem label="Save" hint="Ctrl+S" onClick={() => { onSave(); close(); }} icon={<Check className="h-4 w-4" />} disabled={saving} />
               )}
-              <MenuItem label="Download as HTML" onClick={() => { downloadHtml(); close(); }} icon={<Download className="h-4 w-4" />} />
+              <MenuItem label="Download as ODT" hint="OpenDocument" onClick={() => { downloadOdtFile(); close(); }} icon={<Download className="h-4 w-4" />} />
               <MenuItem label="Print" hint="Ctrl+P" onClick={() => { printDocument(); close(); }} icon={<Printer className="h-4 w-4" />} />
               <MenuDivider />
               <MenuItem label="Copy plain text" onClick={() => { copyDocument(); close(); }} icon={<Copy className="h-4 w-4" />} />
