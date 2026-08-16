@@ -10,7 +10,7 @@
  *
  * Run: node scripts/check-minutes-format.mjs
  */
-const { topicsToMinutesHtml, topicsForWeek, isBlankDocument, RESERVED_TITLES } =
+const { topicsToMinutesHtml, topicsForWeek, isBlankDocument, resolveMinutesDocument, RESERVED_TITLES } =
   await import("../src/lib/minutes-format.js");
 
 const failures = [];
@@ -93,6 +93,51 @@ check("real content is not blank", isBlankDocument("<p>hello</p>") === false);
 check("an image-only document is NOT treated as blank",
   isBlankDocument('<p><img src="/a.png"></p>') === true,
   "known limitation: text-only heuristic, documented at the call site");
+
+/* ── week isolation ─────────────────────────────────────────────────────────
+ * Regression tests for a reported bug: opening 21 August showed 14 August's
+ * minutes. The seed latch was a boolean, so it carried across a week change and
+ * handed back the previous week's html. Every case below would have caught it.
+ */
+const W33 = "2026-W33";
+const W34 = "2026-W34";
+const twoWeeks = [
+  { id: "a", title: "Week 33 topic", week_label: W33, submitted_by: "Ana", description: "<p>33</p>" },
+  { id: "b", title: "Week 34 topic", week_label: W34, submitted_by: "Ben", description: "<p>34</p>" },
+];
+
+// Open W33, then switch to W34 — exactly the reported sequence.
+let r = resolveMinutesDocument({ week: W33, storedHtml: "", topics: twoWeeks, memo: null });
+check("first week seeds from its own topics", r.html.includes("Week 33 topic"));
+r = resolveMinutesDocument({ week: W34, storedHtml: "", topics: twoWeeks, memo: r.memo });
+check("switching week does NOT reuse the previous week's document",
+  !r.html.includes("Week 33 topic"),
+  "the reported bug: 21 August showed 14 August's minutes");
+check("switching week seeds from the NEW week's topics", r.html.includes("Week 34 topic"));
+
+// Switching back must likewise re-derive, not hand back W34.
+r = resolveMinutesDocument({ week: W33, storedHtml: "", topics: twoWeeks, memo: r.memo });
+check("switching back re-derives the original week",
+  r.html.includes("Week 33 topic") && !r.html.includes("Week 34 topic"));
+
+// A refetch arriving mid-edit must not re-seed and clobber typing.
+const edited = { seededWeek: W33, week: W33, html: "<p>my typed minutes</p>" };
+r = resolveMinutesDocument({ week: W33, storedHtml: "", topics: twoWeeks, memo: edited });
+check("a refetch on the same week reuses in-memory content, not a fresh seed",
+  r.html === "<p>my typed minutes</p>");
+
+// A stored document always wins over the seed.
+r = resolveMinutesDocument({ week: W33, storedHtml: "<p>saved minutes</p>", topics: twoWeeks, memo: null });
+check("a stored document is never seeded over", r.html === "<p>saved minutes</p>");
+r = resolveMinutesDocument({ week: W33, storedHtml: "<p>saved minutes</p>", topics: twoWeeks, memo: edited });
+check("a stored document beats stale in-memory content", r.html === "<p>saved minutes</p>");
+
+// A blank stored document still seeds.
+r = resolveMinutesDocument({ week: W34, storedHtml: "<p><br></p>", topics: twoWeeks, memo: null });
+check("an empty stored document still seeds from topics", r.html.includes("Week 34 topic"));
+
+// The returned memo must always name the week it describes.
+check("returned memo is tagged with its week", r.memo.week === W34 && r.memo.seededWeek === W34);
 
 console.log(`\nMinutes conversion: ${count - failures.length}/${count} checks passed\n`);
 if (failures.length) {
