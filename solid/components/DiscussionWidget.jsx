@@ -21,19 +21,17 @@ import {
 
 const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
-const MeetingMinutes = lazy(() => import("~/components/MeetingMinutes"));
-const JobsWidget = lazy(() => import("~/components/JobsWidget"));
+const MeetingNotesEditor = lazy(() => import("~/components/MeetingNotesEditor"));
 
 /*
  * DiscussionWidget — Solid port of src/components/DiscussionWidget.jsx.
  *
  * Meeting mode is a hub: the React version lazy-loads JobsWidget,
- * AnnouncementsWidget and CalendarWidget into it (the assistant, the meeting
- * notes editor and Jobs are ported and mount for real now). Announcements and
- * Calendar are not ported yet, so they still render through PendingWidget —
- * reserved space carrying the same intrinsic height the real widget will
- * take, exactly like Home's WIDGETS map. Swapping each one in later shifts
- * nothing.
+ * AnnouncementsWidget and CalendarWidget into it (the assistant and the meeting
+ * notes editor are ported and mount for real). Those are not ported yet, so
+ * they render through PendingWidget —
+ * reserved space carrying the same intrinsic height the real widget will take,
+ * exactly like Home's WIDGETS map. Swapping each one in later shifts nothing.
  *
  * Everything else is 1:1, including the behaviours that were bug fixes:
  *   · one form for create AND edit, so a second Quill never mounts late and
@@ -437,31 +435,31 @@ export default function DiscussionWidget(props) {
               <TopicForm editorHeight={140} />
             </Show>
 
-            {/* Minutes — the same per-week document the normal view shows.
-                Meeting mode previously had a topic list AND a separate notes
-                editor; both wrote to the same __meeting_notes__ record, so they
-                are now one document. */}
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="font-display font-bold text-lg text-foreground">
+                <JapaneseText ja="議題" layout="inline" japaneseClass="ml-1.5 inline text-[0.7em]">Topics</JapaneseText>
+              </h3>
+              <Button size="sm" variant="outline" class="text-xs gap-1" onClick={toggleAddTopicForm}>
+                <Plus class="w-3.5 h-3.5" /> Add Topic
+              </Button>
+            </div>
+
+            <TopicList compact />
+
+            {/* Meeting Notes */}
             <section>
               <div class="flex items-center gap-3 mb-4">
                 <div class="w-1 h-6 bg-primary rounded-full" />
-                <h3 class="font-display font-bold text-foreground text-xl">
-                  <JapaneseText ja="議事録" layout="inline" japaneseClass="ml-1.5 inline text-[0.7em]">Minutes</JapaneseText>
-                </h3>
+                <h3 class="font-display font-bold text-foreground text-xl">Meeting Notes</h3>
                 <span class="text-xs text-muted-foreground">{formatWeekLabel(viewedWeek())}</span>
               </div>
-              <Suspense fallback={<PendingWidget name="Minutes" height={420} />}>
-                <MeetingMinutes
-                  weekLabel={viewedWeek()}
-                  weekTitle={`Minutes — ${formatWeekFull(viewedWeek())}`}
-                  canEdit={isCurrentWeek()}
-                />
+              <Suspense fallback={<PendingWidget name="Meeting notes" height={260} />}>
+                <MeetingNotesEditor weekLabel={viewedWeek()} />
               </Suspense>
             </section>
 
             {/* Ports pending — reserved at the height each widget will occupy. */}
-            <Suspense fallback={<PendingWidget name="Jobs" height={320} />}>
-              <JobsWidget members={members()} isAdmin={props.isAdmin} />
-            </Suspense>
+            <PendingWidget name="Jobs" height={320} />
             <PendingWidget name="Announcements" height={280} />
             <PendingWidget name="Calendar" height={360} />
           </div>
@@ -496,6 +494,16 @@ export default function DiscussionWidget(props) {
                 <History class="w-3.5 h-3.5" /> History
               </Button>
             </A>
+            <Show when={isCurrentWeek()}>
+              <Button
+                size="sm"
+                variant="outline"
+                class="w-full border-primary-foreground/40 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
+                onClick={toggleAddTopicForm}
+              >
+                <Plus class="w-3.5 h-3.5" /> Add Topic
+              </Button>
+            </Show>
             <Button
               size="sm"
               variant="outline"
@@ -544,32 +552,21 @@ export default function DiscussionWidget(props) {
           </div>
 
           {/* Looking at an older week is read only. Say so, rather than letting
-              the controls quietly disappear with no explanation. */}
+              the Add Topic button quietly disappear with no explanation. */}
           <Show when={!isCurrentWeek()}>
             <JapaneseText
-              ja="過去の週を見ています。当時の議事録を表示しており、保存はされません。"
+              ja="過去の週を見ているため、変更できません。追加するには今週に戻ってください。"
               class="block text-xs leading-[1.6] tracking-[0.02em] text-muted-foreground"
               japaneseClass="mt-1 block text-[0.9em]"
             >
-              You are looking at an earlier week. Its minutes are shown as they were written and are not saved while you look through them.
+              You are looking at an earlier week, so it cannot be changed. Go back to this week to add a topic.
             </JapaneseText>
           </Show>
 
-          {/* Any topics this week already had are formatted into the document
-              the first time it opens; the topic records themselves are left
-              untouched, so History still reads them. */}
-          <Suspense fallback={<PendingWidget name="Minutes" height={420} />}>
-            <MeetingMinutes
-              weekLabel={viewedWeek()}
-              weekTitle={`Minutes — ${formatWeekFull(viewedWeek())}`}
-              canEdit={isCurrentWeek()}
-            />
-          </Suspense>
+          <TopicList compact={false} />
 
           <div class="border-t border-border pt-4">
-            <Suspense fallback={<PendingWidget name="Jobs" height={240} />}>
-              <JobsWidget members={members()} isAdmin={props.isAdmin} compact />
-            </Suspense>
+            <PendingWidget name="Jobs" height={240} />
           </div>
         </div>
       </div>
