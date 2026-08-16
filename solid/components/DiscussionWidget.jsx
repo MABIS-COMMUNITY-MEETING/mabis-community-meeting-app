@@ -21,7 +21,6 @@ import {
 
 const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
-const MeetingMinutes = lazy(() => import("~/components/MeetingMinutes"));
 const MeetingNotesEditor = lazy(() => import("~/components/MeetingNotesEditor"));
 
 /*
@@ -564,15 +563,7 @@ export default function DiscussionWidget(props) {
             </JapaneseText>
           </Show>
 
-          {/* Any topics this week already had are formatted into the document
-              the first time it opens; the topic records are left untouched. */}
-          <Suspense fallback={<PendingWidget name="Minutes" height={420} />}>
-            <MeetingMinutes
-              weekLabel={viewedWeek()}
-              weekTitle={`Minutes — ${formatWeekFull(viewedWeek())}`}
-              canEdit={isCurrentWeek()}
-            />
-          </Suspense>
+          <TopicList compact={false} />
 
           <div class="border-t border-border pt-4">
             <PendingWidget name="Jobs" height={240} />
