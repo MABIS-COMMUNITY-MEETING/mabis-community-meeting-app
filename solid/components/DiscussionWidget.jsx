@@ -21,16 +21,7 @@ import {
 
 const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
-const MeetingMinutes = lazy(() => {
-  console.log("[DEBUG] MeetingMinutes lazy import starting");
-  return import("~/components/MeetingMinutes").then((m) => {
-    console.log("[DEBUG] MeetingMinutes lazy import resolved", !!m?.default);
-    return m;
-  }).catch((e) => {
-    console.log("[DEBUG] MeetingMinutes lazy import REJECTED", String(e));
-    throw e;
-  });
-});
+const MeetingMinutes = lazy(() => import("~/components/MeetingMinutes"));
 const JobsWidget = lazy(() => import("~/components/JobsWidget"));
 
 /*
@@ -72,7 +63,6 @@ function PendingWidget(props) {
 }
 
 export default function DiscussionWidget(props) {
-  console.log("[DEBUG DiscussionWidget] mounted");
   const location = useLocation();
   const queryClient = useQueryClient();
 
