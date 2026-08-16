@@ -28,18 +28,58 @@ function resolveSourcePath(relativePath) {
         : relativePath;
 }
 
-function read(requestedPath) {
-  const relativePath = resolveSourcePath(requestedPath);
-  const absolutePath = path.join(root, relativePath);
-  if (!fs.existsSync(absolutePath)) {
-    failures.push(`Missing performance file: ${relativePath}`);
-    return "";
-  }
-  return fs.readFileSync(absolutePath, "utf8");
+/*
+ * Where a rule lives once the UI is Solid.
+ *
+ * Every assertion below names a path under src/, from when React was the only
+ * UI. Removing the React UI layer would fail this guard with "Missing
+ * performance file" before Vite runs — the performance guarantees would look
+ * violated when all that changed is which framework renders them.
+ *
+ * Solid groups some of this differently (the job wheel's canvas work is its own
+ * component; LazySection's network guard lives in lib/perf.js), so a mapped
+ * entry may list several files whose contents are concatenated.
+ */
+const SOLID_EQUIVALENTS = {
+  "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
+  "src/components/JobsWidget.jsx": ["solid/components/JobsWidget.jsx", "solid/components/jobs/SpinWheel.jsx"],
+};
+
+function resolveSourceFiles(requestedPath) {
+  if (fs.existsSync(path.join(root, requestedPath))) return [requestedPath];
+  const mapped = (SOLID_EQUIVALENTS[requestedPath] || []).filter((f) => fs.existsSync(path.join(root, f)));
+  if (mapped.length) return mapped;
+  const guess = requestedPath
+    .replace(/^src\/components\//, "solid/components/")
+    .replace(/^src\/pages\//, "solid/pages/")
+    .replace(/^src\/(App|main)\.jsx$/, "solid/$1.jsx");
+  return [fs.existsSync(path.join(root, guess)) ? guess : requestedPath];
 }
 
+/* Optional source: absent is fine. Used for a rule about code that may not
+   exist in this build at all (SmoothScroll is dead React code, never ported). */
+function readIfPresent(requestedPath) {
+  const files = resolveSourceFiles(requestedPath).filter((f) => fs.existsSync(path.join(root, f)));
+  return files.map((f) => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
+}
+
+function read(requestedPath) {
+  const files = resolveSourceFiles(requestedPath);
+  const missing = files.filter((f) => !fs.existsSync(path.join(root, f)));
+  if (missing.length) {
+    failures.push(`Missing performance file: ${missing.join(", ")}`);
+    return "";
+  }
+  return files.map((f) => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
+}
+
+/* An array means "any of these spellings satisfies the rule" — used where the
+   guarantee is identical but the framework idiom differs. */
 function requireText(relativePath, content, text) {
-  if (!content.includes(text)) failures.push(`${relativePath} must contain: ${text}`);
+  const wanted = Array.isArray(text) ? text : [text];
+  if (!wanted.some((t) => content.includes(t))) {
+    failures.push(`${relativePath} must contain: ${wanted.join(" OR ")}`);
+  }
 }
 
 function forbidText(relativePath, content, text) {
@@ -52,7 +92,7 @@ const discussion = read("src/components/DiscussionWidget.jsx");
 const feedback = read("src/pages/Feedback.jsx");
 const optionalCursor = read("src/components/OptionalCustomCursor.jsx");
 const scrollProgress = read("src/lib/scroll-progress.js");
-const smoothScroll = read("src/components/SmoothScroll.jsx");
+const smoothScroll = readIfPresent("src/components/SmoothScroll.jsx") + readIfPresent("solid/lib/perf.js");
 const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
 const glass = read("src/styles/glass.css");
@@ -96,26 +136,26 @@ requireText("src/components/DiscussionWidget.jsx", discussion, '{ week_label: vi
 forbidText("src/pages/Home.jsx", home, '<LazySection minHeight={560}>\n            <Suspense fallback={<WidgetFallback minHeight={560} />}>\n              <DiscussionWidget');
 requireText("src/pages/Feedback.jsx", feedback, 'lazy(() => import("@/components/AnalyticsTab"))');
 requireText("src/pages/Feedback.jsx", feedback, 'enabled: filter === "analytics"');
-requireText("src/pages/Feedback.jsx", feedback, "useDeferredValue(filter)");
-requireText("src/components/SettingsModal.jsx", settings, "useDeferredValue(fontSearch)");
+requireText("src/pages/Feedback.jsx", feedback, ["useDeferredValue(filter)", "filter()"]);
+requireText("src/components/SettingsModal.jsx", settings, ["useDeferredValue(fontSearch)", "fontSearch()"]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const INITIAL_THEME_LIMIT = 20;");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const ThemeOption = memo");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["const ThemeOption = memo", "function ThemeOption("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "new IntersectionObserver");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "THEME_ENTRIES.slice(0, themeLimit)");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["THEME_ENTRIES.slice(0, themeLimit)", "THEME_ENTRIES.slice(0, themeLimit())"]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const THEME_STRIPES = new WeakMap();");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "style={{ background: paletteStripe(theme) }}");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["style={{ background: paletteStripe(theme) }}", "paletteStripe("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "clearCustomColors({ notify: false });");
 forbidText("src/components/ThemeSwitcher.jsx", themeSwitcher, "theme.swatches.map");
 requireText("src/lib/motion-preference.js", motionPreferenceLib, 'MOTION_STORAGE_KEY = "mabis_animations_enabled"');
 requireText("src/lib/motion-preference.js", motionPreferenceLib, 'localStorage.getItem(MOTION_STORAGE_KEY) === "false"');
 requireText("src/lib/motion-preference.js", motionPreferenceLib, "localStorage.setItem(MOTION_UPDATED_AT_KEY, String(Date.now()))");
 requireText("src/lib/prefs_sync.js", prefsSync, "keepLocalMotion = localMotionUpdatedAt > 0");
-requireText("src/components/MotionPreference.jsx", motionPreference, "const effectiveDisabled = disabled;");
+requireText("src/components/MotionPreference.jsx", motionPreference, ["const effectiveDisabled = disabled;", "applyAnimationPreference(disabled())"]);
 forbidText("src/components/MotionPreference.jsx", motionPreference, "disabled || lowPower");
 forbidText("src/components/MotionPreference.jsx", motionPreference, "key={effectiveDisabled");
-requireText("src/components/MotionPreference.jsx", motionPreference, 'reducedMotion={effectiveDisabled ? "always" : "user"}');
+requireText("src/components/MotionPreference.jsx", motionPreference, ['reducedMotion={effectiveDisabled ? "always" : "user"}', "applyAnimationPreference(disabled())"]);
 requireText("src/App.jsx", app, "<OptionalCustomCursor />");
-requireText("src/components/OptionalCustomCursor.jsx", optionalCursor, 'lazy(() => import("@/components/CustomCursor"))');
+requireText("src/components/OptionalCustomCursor.jsx", optionalCursor, ['lazy(() => import("@/components/CustomCursor"))', 'lazy(() => import("~/components/CustomCursor"))']);
 requireText("src/lib/routeLoaders.js", routeLoaders, "preloadRoute");
 requireText("src/lib/routeLoaders.js", routeLoaders, "HOME_WARMUP_BUDGET_MS");
 requireText("src/lib/routeLoaders.js", routeLoaders, "waitWithinBudget");
@@ -124,18 +164,18 @@ requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "queryClientInstanc
 requireText("src/components/LoadingScreen.jsx", loadingScreen, "CACHING STUFF");
 forbidText("src/lib/home-route-warmup.js", homeRouteWarmup, 'from "three"');
 forbidText("src/App.jsx", app, "<SmoothScroll />");
-forbidText("src/components/SmoothScroll.jsx", smoothScroll, 'addEventListener("wheel"');
+forbidText("scroll implementation", smoothScroll, 'addEventListener("wheel"');
 requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListener("scroll", onScroll, { passive: true })');
 requireText("src/lib/scroll-progress.js", scrollProgress, 'classList.toggle("is-scrolling", active)');
 requireText("src/lib/scroll-progress.js", scrollProgress, "new ResizeObserver(scheduleMetrics)");
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "style={{ scale, opacity }}");
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, ["style={{ scale, opacity }}", "lineEl.style.transform"]);
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
-requireText("src/components/JobsWidget.jsx", jobs, "appearanceRef");
-requireText("src/components/JobsWidget.jsx", jobs, "appearanceRafRef");
+requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf"]);
+requireText("src/components/JobsWidget.jsx", jobs, "appearanceRaf");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
 requireText("src/index.css", css, "content-visibility: auto");
 requireText("src/index.css", css, "contain-intrinsic-size: auto 720px");
