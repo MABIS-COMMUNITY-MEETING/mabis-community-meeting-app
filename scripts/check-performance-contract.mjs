@@ -28,18 +28,51 @@ function resolveSourcePath(relativePath) {
         : relativePath;
 }
 
-function read(requestedPath) {
-  const relativePath = resolveSourcePath(requestedPath);
-  const absolutePath = path.join(root, relativePath);
-  if (!fs.existsSync(absolutePath)) {
-    failures.push(`Missing performance file: ${relativePath}`);
-    return "";
-  }
-  return fs.readFileSync(absolutePath, "utf8");
+/*
+ * Where a rule lives once the UI is Solid.
+ *
+ * Every assertion below names a path under src/, from when React was the only
+ * UI. Removing the React UI layer would fail this guard with "Missing
+ * performance file" before Vite runs — the performance rules would look
+ * violated when all that changed is which framework renders them.
+ *
+ * Solid groups some of this differently (the job wheel's canvas work is its own
+ * component; LazySection's network guard lives in lib/perf.js), so a mapped
+ * entry may list several files whose contents are concatenated.
+ */
+const SOLID_EQUIVALENTS = {
+  "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
+  "src/components/JobsWidget.jsx": ["solid/components/JobsWidget.jsx", "solid/components/jobs/SpinWheel.jsx"],
+};
+
+function resolveSourceFiles(requestedPath) {
+  if (fs.existsSync(path.join(root, requestedPath))) return [requestedPath];
+  const mapped = (SOLID_EQUIVALENTS[requestedPath] || []).filter((f) => fs.existsSync(path.join(root, f)));
+  if (mapped.length) return mapped;
+  const guess = requestedPath
+    .replace(/^src\/components\//, "solid/components/")
+    .replace(/^src\/pages\//, "solid/pages/")
+    .replace(/^src\/(App|main)\.jsx$/, "solid/$1.jsx");
+  return [fs.existsSync(path.join(root, guess)) ? guess : requestedPath];
 }
 
+function read(requestedPath) {
+  const files = resolveSourceFiles(requestedPath);
+  const missing = files.filter((f) => !fs.existsSync(path.join(root, f)));
+  if (missing.length) {
+    failures.push(`Missing performance file: ${missing.join(", ")}`);
+    return "";
+  }
+  return files.map((f) => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
+}
+
+/* An array means "any of these spellings satisfies the rule" — used where the
+   guarantee is identical but the framework idiom differs. */
 function requireText(relativePath, content, text) {
-  if (!content.includes(text)) failures.push(`${relativePath} must contain: ${text}`);
+  const wanted = Array.isArray(text) ? text : [text];
+  if (!wanted.some((t) => content.includes(t))) {
+    failures.push(`${relativePath} must contain: ${wanted.join(" OR ")}`);
+  }
 }
 
 function forbidText(relativePath, content, text) {
@@ -129,13 +162,13 @@ requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListen
 requireText("src/lib/scroll-progress.js", scrollProgress, 'classList.toggle("is-scrolling", active)');
 requireText("src/lib/scroll-progress.js", scrollProgress, "new ResizeObserver(scheduleMetrics)");
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "style={{ scale, opacity }}");
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, ["style={{ scale, opacity }}", "lineEl.style.transform"]);
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
-requireText("src/components/JobsWidget.jsx", jobs, "appearanceRef");
-requireText("src/components/JobsWidget.jsx", jobs, "appearanceRafRef");
+requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf"]);
+requireText("src/components/JobsWidget.jsx", jobs, "appearanceRaf");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
 requireText("src/index.css", css, "content-visibility: auto");
 requireText("src/index.css", css, "contain-intrinsic-size: auto 720px");
