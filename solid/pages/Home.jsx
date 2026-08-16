@@ -9,8 +9,10 @@ import { useAuth } from "~/lib/AuthContext";
 import { usePresenceHeartbeat } from "~/lib/usePresence";
 import SiteHeader from "~/components/SiteHeader";
 import ThemeSwitcher from "~/components/ThemeSwitcher";
+import IdleMount from "~/components/IdleMount";
 
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
+const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
 
 // Widgets are code-split individually, so a section that never scrolls into
 // view never downloads its chunk. Combined with LazySection's shared observer
@@ -239,6 +241,14 @@ export default function Home() {
           </For>
         </div>
       </main>
+
+      {/* Deferred until the browser is idle, as in React. JobReminder and
+          FeedbackWidget belong in here too once they are ported. */}
+      <IdleMount timeout={1800}>
+        <Suspense fallback={null}>
+          <MabisAIAssistant />
+        </Suspense>
+      </IdleMount>
     </div>
   );
 }
