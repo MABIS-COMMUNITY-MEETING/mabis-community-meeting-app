@@ -35,6 +35,32 @@ html.animations-disabled .splash-bob { animation: none; }
 }
 html.animations-disabled .meeting-nudge { animation: none; }
 
+/* ── Nav overlay ───────────────────────────────────────────────────────────
+ * framer:  initial clipPath inset(0 0 100% 0) → inset(0 0 0 0), 0.5s
+ * plus a per-item rise. Both are compositor-friendly as keyframes, and the
+ * stagger is a per-item animation-delay rather than a JS-scheduled sequence.
+ */
+@keyframes nav-reveal {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+.site-nav-overlay {
+  animation: nav-reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes nav-item-rise {
+  from { transform: translateY(60px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.nav-item {
+  animation: nav-item-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+html.animations-disabled .site-nav-overlay,
+html.animations-disabled .nav-item {
+  animation: none;
+}
+
 /* ── Off-screen sections cost nothing ──────────────────────────────────────
  * content-visibility: auto lets the browser skip layout AND paint for any
  * section outside the viewport. On this ten-section page that is the single
