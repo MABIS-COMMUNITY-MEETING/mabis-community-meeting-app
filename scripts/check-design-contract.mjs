@@ -65,7 +65,6 @@ const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const app = read("src/App.jsx");
 const routeLoaders = read("src/lib/routeLoaders.js");
 const openMoji = read("src/components/OpenMoji.jsx");
-const team = read("src/pages/Team.jsx");
 const openMojiLicense = read("public/openmoji/LICENSE.txt");
 
 const readmeRules = [
@@ -191,8 +190,12 @@ forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/ForgotPassw
 forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/ResetPassword")');
 requireText("src/components/OpenMoji.jsx", openMoji, 'OPENMOJI_VERSION = "17.0.0"');
 requireText("src/components/OpenMoji.jsx", openMoji, 'aria-hidden={label ? undefined : true}');
-requireText("src/pages/Team.jsx", team, 'import OpenMoji from "@/components/OpenMoji"');
-requireText("src/pages/Team.jsx", team, '<OpenMoji hexcode={level.openMoji}');
+// The two Team.jsx assertions that used to sit here were removed when the
+// unrouted pages (Team, Dashboard, Meetings, Topics, JobWheel, Register,
+// ForgotPassword, ResetPassword) were deleted as dead code. They only pinned
+// ONE call site of OpenMoji; the principle itself is still enforced, and more
+// broadly, by the component contract above, the pinned-asset existence check
+// below, and the repo-wide ban on platform-native emoji glyphs.
 requireText("public/openmoji/LICENSE.txt", openMojiLicense, "Attribution-ShareAlike 4.0 International");
 
 const openMojiAssets = ["1F331", "2694", "1F6E1", "1F3C5", "1F451", "1F525", "1F3B0", "1F3AF", "1F389", "1F3C6", "1F947", "1F948", "1F949", "26A1", "2705", "23F3"];
