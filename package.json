@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:solid": "vite --config vite.solid.config.js",
+    "preview:solid": "vite preview --config vite.solid.config.js",
     "check:design": "node scripts/check-design-contract.mjs",
     "check:themes": "node scripts/check-theme-balance.mjs",
     "check:performance": "node scripts/check-performance-contract.mjs",
