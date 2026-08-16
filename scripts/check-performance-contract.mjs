@@ -228,6 +228,27 @@ requireText("src/lib/query-client.js", queryClient, "CACHE_LIFETIME");
 requireText("src/components/home/LazySection.jsx", lazySection, "isConstrainedNetwork()");
 requireText("src/components/IdleMount.jsx", idleMount, "isConstrainedNetwork()");
 
+/*
+ * Auth must not serialise ahead of Home's chunk downloads.
+ *
+ * Two separate guarantees, both easy to undo by accident:
+ *
+ *   1. The session probe is ISSUED before the app-state response is awaited.
+ *      Re-inlining `await base44.auth.me()` into the call below restores the
+ *      old two-round-trip stall, and nothing about the app looks broken — it
+ *      is just slower on every cold load.
+ *
+ *   2. The chunk warm-up is started from onMount, NOT the component body.
+ *      The body runs during render, which is before AuthProvider's own
+ *      onMount, so a dozen chunk requests would go out ahead of the auth
+ *      calls they exist to overlap — turning an optimisation into a delay.
+ */
+const appShell = read("src/App.jsx");
+requireText("src/lib/AuthContext.jsx", auth, "const session = base44.auth.me();");
+requireText("src/lib/AuthContext.jsx", auth, "session });");
+requireText("src/App.jsx", appShell, "onMount(() => { void startHomeModuleWarmup(); });");
+requireText("src/lib/routeLoaders.js", routeLoaders, "warmHomeModules");
+
 if (failures.length > 0) {
   console.error("\nPerformance-contract check failed:\n");
   failures.forEach((failure) => console.error(`- ${failure}`));
