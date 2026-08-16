@@ -146,40 +146,40 @@ if (route === "/login") {
 } else if (route === "/") {
   // ── content parity with src/pages/Splash.jsx ──────────────────────────────
   check('hero headline "COMMUNITY" present', text.includes("COMMUNITY"));
-check('hero headline "MEETING" present', text.includes("MEETING"));
-check("eyebrow label present", text.includes("SECONDARY COMMUNITY MEETING APP"));
-check("mission copy present", text.includes("Voice your words with presence and shared decision"));
-check("CTA present", text.includes("ENTER LOG IN"));
-check("N° 02 button index present", text.includes("N° 02"));
-check("EST. BANGKOK TH present", text.includes("EST. BANGKOK TH"));
-check("N° 2026 EDITION present", text.includes("N° 2026 EDITION"));
-check("SCROLL cue present", text.includes("SCROLL"));
+  check('hero headline "MEETING" present', text.includes("MEETING"));
+  check("eyebrow label present", text.includes("SECONDARY COMMUNITY MEETING APP"));
+  check("mission copy present", text.includes("Voice your words with presence and shared decision"));
+  check("CTA present", text.includes("ENTER LOG IN"));
+  check("N° 02 button index present", text.includes("N° 02"));
+  check("EST. BANGKOK TH present", text.includes("EST. BANGKOK TH"));
+  check("N° 2026 EDITION present", text.includes("N° 2026 EDITION"));
+  check("SCROLL cue present", text.includes("SCROLL"));
 
-// ── structural parity ──────────────────────────────────────────────────────
-check("SplitChars split the headline per glyph",
-  (html2.match(/overflow: ?hidden/g) || []).length >= 16,
-  "expected one clipping span per glyph of COMMUNITY+MEETING");
+  // ── structural parity ────────────────────────────────────────────────────
+  check("SplitChars split the headline per glyph",
+    (html2.match(/overflow: ?hidden/g) || []).length >= 16,
+    "expected one clipping span per glyph of COMMUNITY+MEETING");
 
-check("marquee duplicated its children for the seamless loop",
-  (html2.match(/MABIS BANGKOK/g) || []).length === 12,
-  `found ${(html2.match(/MABIS BANGKOK/g) || []).length}, expected 12 (6 items x 2 copies)`);
+  check("marquee duplicated its children for the seamless loop",
+    (html2.match(/MABIS BANGKOK/g) || []).length === 12,
+    `found ${(html2.match(/MABIS BANGKOK/g) || []).length}, expected 12 (6 items x 2 copies)`);
 
-check("KineticBackground layers rendered", html2.includes("blob-drift") && html2.includes("spin-slow"));
-check("corner bracket rendered", html2.includes("corner-bracket"));
-check("liquid button classes preserved", html2.includes("liquid-btn") && html2.includes("liquid-ink"));
-check("theme tokens used (bg-ink / text-bone)", html2.includes("bg-ink") && html2.includes("text-bone"));
+  check("KineticBackground layers rendered", html2.includes("blob-drift") && html2.includes("spin-slow"));
+  check("corner bracket rendered", html2.includes("corner-bracket"));
+  check("liquid button classes preserved", html2.includes("liquid-btn") && html2.includes("liquid-ink"));
+  check("theme tokens used (bg-ink / text-bone)", html2.includes("bg-ink") && html2.includes("text-bone"));
 
-// The giant cropped word animates opacity only, so its Tailwind centering
-// transform must survive — an inline transform here would be the regression.
-const hugeCrop = root && root.querySelector(".huge-crop");
-check("huge-crop word rendered", !!hugeCrop);
-check("huge-crop keeps its Tailwind transform (no inline transform override)",
-  hugeCrop && !/transform/i.test(hugeCrop.getAttribute("style") || ""),
-  hugeCrop ? `style="${hugeCrop.getAttribute("style")}"` : "");
+  // The giant cropped word animates opacity only, so its Tailwind centering
+  // transform must survive — an inline transform here would be the regression.
+  const hugeCrop = root && root.querySelector(".huge-crop");
+  check("huge-crop word rendered", !!hugeCrop);
+  check("huge-crop keeps its Tailwind transform (no inline transform override)",
+    hugeCrop && !/transform/i.test(hugeCrop.getAttribute("style") || ""),
+    hugeCrop ? `style="${hugeCrop.getAttribute("style")}"` : "");
 
-// Elements that DO animate a transform should have one inline.
-const vertLabels = root ? [...root.querySelectorAll(".vert-text")] : [];
-check("vertical side labels rendered", vertLabels.length >= 2);
+  // Elements that DO animate a transform should have one inline.
+  const vertLabels = root ? [...root.querySelectorAll(".vert-text")] : [];
+  check("vertical side labels rendered", vertLabels.length >= 2);
 } else {
   // src/lib/PageNotFound.jsx — any unmatched path.
   check("404 numeral present", text.includes("404"));
