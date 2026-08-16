@@ -193,6 +193,8 @@ export default function DocsEditor(props) {
   let searchFrom = 0;
 
   const [uploading, setUploading] = createSignal(false);
+  /* Reflects what the caret is sitting in: "UI font" normally, or the family
+     a legacy document pinned before the picker was removed. */
   const [fontLabel, setFontLabel] = createSignal("UI font");
   const [sizeInput, setSizeInput] = createSignal("14");
   const [formats, setFormats] = createSignal(EMPTY_FORMATS);
@@ -352,7 +354,6 @@ export default function DocsEditor(props) {
   };
 
   const stepSize = (delta) => applySize(String((Number.parseInt(sizeInput(), 10) || 14) + delta));
-  const setFont = (font) => { setFontLabel(font.label); focusAndFormat("font", font.value || false); };
 
   const clearFormatting = () => {
     if (!quill) return;
@@ -501,22 +502,21 @@ export default function DocsEditor(props) {
         <ToolButton title="Format painter" active={painterArmed()} onClick={handlePainter}><Paintbrush class="h-4 w-4" /></ToolButton>
         <ToolbarDivider />
 
-        <Dropdown width="w-44" trigger={<span class="flex items-center gap-1 text-xs"><Type class="h-3.5 w-3.5" />{fontLabel()}<ChevronDown class="h-3 w-3" /></span>}>
-          {/* Index rather than For throughout this toolbar: every one of these
-              lists is a module constant that never reorders, so For's keyed
-              reconciliation allocates a lookup it can never use. */}
-          {(close) => (
-            <Index each={FONTS}>
-              {(font) => (
-                <MenuItem
-                  label={font().label}
-                  style={{ "font-family": font().value }}
-                  onClick={() => { setFont(font()); close(); }}
-                />
-              )}
-            </Index>
-          )}
-        </Dropdown>
+        {/*
+          * No font picker: the document always uses the UI font.
+          *
+          * Minutes are read inside the app, where the reader has already chosen
+          * a typeface in Settings. Letting the author pin a different family
+          * per-span meant a document could ignore that choice entirely, and it
+          * pulled a second face into a page that had deliberately loaded one.
+          * The size, spacing and emphasis controls are unaffected.
+          *
+          * The Quill font attributor stays registered in quill-setup.js so any
+          * document already carrying a font span still renders as written.
+          */}
+        <span class="tech-label px-2 text-muted-foreground" title="Documents use the interface font">
+          {fontLabel()}
+        </span>
 
         <ToolButton title="Decrease font size" onClick={() => stepSize(-1)}>−</ToolButton>
         <input
