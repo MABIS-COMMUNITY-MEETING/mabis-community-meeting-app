@@ -53,10 +53,16 @@ export function AuthProvider(props) {
     return true;
   };
 
-  const checkUserAuth = async ({ silentUnauthenticated = false } = {}) => {
+  /*
+   * `session` lets the caller hand in an already-in-flight base44.auth.me().
+   * Everything else about this function — the order it writes signals in, the
+   * error branches — is unchanged, which is the point: the request moves
+   * earlier, the state machine does not move at all.
+   */
+  const checkUserAuth = async ({ silentUnauthenticated = false, session } = {}) => {
     try {
       setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
+      const currentUser = await (session || base44.auth.me());
       disableHackerMode();
       setUser(currentUser);
       setIsAuthenticated(true);
@@ -108,11 +114,27 @@ export function AuthProvider(props) {
         interceptResponses: true,
       });
 
+      /*
+       * Who you are and how the app is configured are independent questions,
+       * but they used to be asked one after the other — so every cold load
+       * paid two serial round-trips before a single entity read could start,
+       * and /home's widgets were stuck behind both.
+       *
+       * Issued here, awaited below in exactly the old order. Overlapping the
+       * REQUESTS is safe; overlapping the state writes would not be, because
+       * the failure branches below decide which error wins.
+       */
+      const session = base44.auth.me();
+      /* Marks `session` handled so a failing app-state check — which returns
+         before the await below — cannot surface as an unhandled rejection.
+         The rejection is still delivered to checkUserAuth, which owns it. */
+      session.catch(() => {});
+
       try {
         const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
         setAppPublicSettings(publicSettings);
 
-        const hasBase44Session = await checkUserAuth({ silentUnauthenticated: !appParams.token });
+        const hasBase44Session = await checkUserAuth({ silentUnauthenticated: !appParams.token, session });
 
         if (!hasBase44Session && !appParams.token && isHackerMode()) {
           setUser(HACKER_USER);
