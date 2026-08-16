@@ -29,6 +29,12 @@ import { getWeekLabel } from "~/lib/weeks";
  */
 
 const SECTION_MODULES = [
+  /*
+   * Section 01 is Start Meeting — the first thing on the page, and it was the
+   * only widget missing from this list, so the one widget guaranteed to be
+   * on screen was the one guaranteed not to be warmed.
+   */
+  { label: "SECTION 01 / 10", load: () => import("~/components/MeetingModeWidget") },
   { label: "SECTION 02 / 10", load: () => import("~/components/AnnouncementsWidget") },
   { label: "SECTION 03 / 10", load: () => import("~/components/DiscussionWidget") },
   { label: "SECTION 04 / 10", load: () => import("~/components/JobsWidget") },
@@ -80,7 +86,7 @@ function dataTasks() {
 export async function warmHomeRoute(onProgress) {
   const constrained = isConstrainedNetwork();
 
-  const modules = (constrained ? SECTION_MODULES.slice(0, 2) : SECTION_MODULES)
+  const modules = (constrained ? SECTION_MODULES.slice(0, 3) : SECTION_MODULES)
     .map(({ label, load }) => ({ label, run: load }));
   const data = constrained ? dataTasks().slice(0, 4) : dataTasks();
   const tasks = [...modules, ...data];
