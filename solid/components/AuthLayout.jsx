@@ -1,6 +1,6 @@
 import { Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { Plus } from "~/components/icons";
+import { Plus } from "lucide-solid";
 import { JapaneseText } from "~/components/primitives";
 
 /**
