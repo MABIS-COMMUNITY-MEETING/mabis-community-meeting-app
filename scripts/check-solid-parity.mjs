@@ -359,9 +359,10 @@ if (route === "/login") {
   check("the retired topic list is gone",
     !textNow().includes("No topics yet"),
     "Discussion is a document now, not a topic list");
-  check("minutes section reserves its height while the editor loads",
-    root.innerHTML.includes('aria-label="Minutes loading"')
-      || !!root.querySelector(".docs-editor-content"));
+  // The minutes render as plain HTML and only swap to the editor on click, so
+  // Quill stays off Home's critical path. Assert the document surface is there.
+  check("minutes document surface rendered",
+    !!root.querySelector(".docs-editor-content, .docs-editor-readonly"));
 
   check("meeting mode renders its locked state",
     textNow().includes("Locked until Friday"));

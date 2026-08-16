@@ -181,13 +181,13 @@ export default function MeetingMinutes(props) {
         when={editing()}
         fallback={
           <div
-            class="docs-editor-readonly rounded-lg border border-border bg-card p-4 sm:p-6"
+            class="docs-editor-content docs-editor-readonly rounded-lg border border-border"
             onClick={() => props.canEdit !== false && setEditing(true)}
             onFocusIn={() => props.canEdit !== false && setEditing(true)}
             tabindex={props.canEdit === false ? undefined : 0}
             role={props.canEdit === false ? undefined : "button"}
             aria-label={props.canEdit === false ? undefined : "Edit these minutes"}
-            style={{ "min-height": "420px", cursor: props.canEdit === false ? "default" : "text" }}
+            style={{ "min-height": "420px", padding: "1rem 1.25rem", cursor: props.canEdit === false ? "default" : "text" }}
           >
             <Show
               when={(initialHtml() || "").trim()}
