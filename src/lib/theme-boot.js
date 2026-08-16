@@ -25,6 +25,21 @@ const SNAPSHOT_KEY = "mabis-theme-snapshot-v1";
    left alone, so replaying cannot clobber classes another module set. */
 const OWNED_BODY_CLASSES = ["pride-active", "theme-is-dark"];
 
+/**
+ * The stored theme key, without importing the catalogue.
+ *
+ * themes.js exports getStoredTheme() too, but reaching for it costs the entire
+ * catalogue — which is how one decorative background layer kept 117 KB of
+ * palettes in the boot chunk. Anything that only needs the *key* uses this.
+ */
+export function getStoredThemeKey() {
+  try {
+    return localStorage.getItem("mabis-theme") || "default";
+  } catch {
+    return "default";
+  }
+}
+
 function readSnapshot() {
   try {
     return JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || "null");
