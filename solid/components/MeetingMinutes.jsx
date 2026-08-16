@@ -60,9 +60,21 @@ export default function MeetingMinutes(props) {
   // { timer, payload } for the debounced save, so it can be flushed intact.
   let pending = null;
 
+  /*
+   * Week-scoped, and deliberately the SAME key DiscussionWidget uses.
+   *
+   * This used to list 500 topics under ["topics"] while the widget around it
+   * fetched ["topics", week] — two requests for overlapping data on every Home
+   * load, one of them pulling the entire history. Sharing the key means one
+   * request, scoped to the week, served from cache for whichever mounts second.
+   * Everything below only ever needs this week: the __meeting_notes__ record
+   * and the topics being seeded into it.
+   */
   const topicsQuery = useQuery(() => ({
-    queryKey: ["topics"],
-    queryFn: () => base44.entities.DiscussionTopic.list("-created_date", 500),
+    queryKey: ["topics", props.weekLabel],
+    queryFn: () => base44.entities.DiscussionTopic.filter(
+      { week_label: props.weekLabel }, "-created_date", 100,
+    ),
   }));
   const allTopics = () => topicsQuery.data || [];
   const notesRecord = () => allTopics().find(
