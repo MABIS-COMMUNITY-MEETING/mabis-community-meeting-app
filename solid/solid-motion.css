@@ -61,6 +61,20 @@ html.animations-disabled .nav-item {
   animation: none;
 }
 
+/* ── Auth shell entrance ───────────────────────────────────────────────────
+ * framer:  initial {opacity:0, y:16} → animate {opacity:1, y:0}
+ *          transition {duration:0.6, ease:[0.16,1,0.3,1]}
+ * One compositor-only keyframe, no JS on the auth pages' critical path.
+ */
+@keyframes auth-rise {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.auth-rise {
+  animation: auth-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+html.animations-disabled .auth-rise { animation: none; }
+
 /* ── Off-screen sections cost nothing ──────────────────────────────────────
  * content-visibility: auto lets the browser skip layout AND paint for any
  * section outside the viewport. On this ten-section page that is the single
