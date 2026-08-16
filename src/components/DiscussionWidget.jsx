@@ -915,51 +915,6 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               </Suspense>
             </section>
 
-            {/* Retired: the meeting-mode add-topic form and topic list. */}
-            <section className="hidden" aria-hidden>
-
-              {/* Inline add form in meeting mode */}
-              {showForm && !editingTopicId && (
-                <div className="border border-border rounded-2xl p-5 bg-muted space-y-4 mb-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Select value={submittedBy} onValueChange={setSubmittedBy}>
-                      <SelectTrigger className="rounded-lg border-border bg-card">
-                        <SelectValue placeholder="Name..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="All">All</SelectItem>
-                        {members.map((m) => (
-                          <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input placeholder="Topic title..." value={title} onChange={(e) => setTitle(e.target.value)}
-                      className="rounded-lg border-border bg-card" />
-                  </div>
-                  <Suspense fallback={<ChunkFallback height={140} />}>
-                    <DocsEditor key={editingTopicId || "new-mm"} title={title} onTitleChange={setTitle} placeholder="Write your topic description, paste screenshots, add context…" onChange={setDescription} minHeight="140px" initialHtml={description} />
-                  </Suspense>
-                  <div className="flex items-center gap-2 flex-wrap pt-1">
-                    <span className="text-xs text-muted-foreground font-medium">Priority:</span>
-                    {[1,2,3,4,5].map(p => (
-                      <button key={p} onClick={() => setPriority(String(p))}
-                        className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all border-2 ${priority === String(p)
-                          ? PRIORITY_COLORS[p] + " border-transparent scale-105 shadow"
-                          : "bg-card text-muted-foreground border-border hover:border-border"}`}>
-                        {PRIORITY_LABELS[p]}
-                      </button>
-                    ))}
-                    <Button onClick={handleAdd}
-                      disabled={!title.trim() || !submittedBy.trim() || addMutation.isPending || updateTopicMutation.isPending}
-                      className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-sm">
-                      {addMutation.isPending ? "Adding..." : "Add"}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-            </section>
-
             {/* Jobs */}
             <section>
               <div className="flex items-center gap-3 mb-4">
