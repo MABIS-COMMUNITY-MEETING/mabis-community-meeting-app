@@ -57,6 +57,25 @@ const SECTION_MODULES = [
   { label: "SECTION 08 / 10", load: () => import("~/components/LunchMenuWidget") },
   { label: "SECTION 09 / 10", load: () => import("~/components/NewsWidget") },
   { label: "SECTION 10 / 10", load: () => import("~/components/MembersWidget") },
+  /*
+   * Not one of the 10 numbered sections — these two are nested lazy imports
+   * *inside* section 03. DiscussionWidget above is warmed like every other
+   * section, but it unconditionally renders <MeetingMinutes>, which
+   * unconditionally renders <DocsEditor> (Quill) — neither is gated behind
+   * scroll or interaction, so once DiscussionWidget mounts both start
+   * downloading anyway, just as a two-step network waterfall (mount →
+   * discover MeetingMinutes needs fetching → fetch it → discover DocsEditor
+   * needs fetching → fetch that) instead of in parallel with everything else
+   * during the loading screen. Warming them here turns that waterfall into
+   * one more concurrent download alongside the ten sections.
+   *
+   * Deliberately last in the list: on a constrained connection the slice(0, 3)
+   * below still cuts them, same as section chunks 4–10 — DocsEditor alone is
+   * ~70 KiB gzip, the single heaviest chunk in the app after the entry bundle,
+   * and that's real bandwidth cost on a slow link, not something to force.
+   */
+  { label: "DISCUSSION / MINUTES EDITOR", load: () => import("~/components/MeetingMinutes") },
+  { label: "DISCUSSION / DOCS ENGINE", load: () => import("~/components/DocsEditor") },
 ];
 
 function dataTasks() {
