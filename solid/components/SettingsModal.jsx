@@ -1,7 +1,7 @@
 import { createSignal, createMemo, createEffect, onMount, Show, For, Index } from "solid-js";
 import {
   Settings, X, Type, Search, Check, Volume2, VolumeX, Accessibility,
-  MousePointer2, Languages, User, LogOut, Lock,
+  MousePointer2, Languages, User, LogOut, Lock, AlignLeft,
 } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { CORE_FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
@@ -9,6 +9,7 @@ import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
 import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
 import { japaneseTextEnabled, setJapaneseTextEnabled } from "@/lib/japanese-text-preference";
+import { sectionDescriptionsEnabled, setSectionDescriptionsEnabled } from "@/lib/section-descriptions-preference";
 import { ensureFontCatalogStyles, FONT_CATALOG } from "@/lib/font-catalog";
 import { Dialog, DialogPortal, DialogOverlay } from "~/components/ui/dialog";
 import { Dialog as KDialog } from "@kobalte/core/dialog";
@@ -103,6 +104,7 @@ export default function SettingsModal(props) {
   const [animationsOn, setAnimationsOn] = createSignal(!animationsDisabled());
   const [customCursorOn, setCustomCursorOn] = createSignal(customCursorEnabled());
   const [japaneseTextOn, setJapaneseTextOn] = createSignal(japaneseTextEnabled());
+  const [sectionDescriptionsOn, setSectionDescriptionsOn] = createSignal(sectionDescriptionsEnabled());
 
   const [currentFont, setCurrentFont] = createSignal(getStoredFont());
   const [fontAvailability, setFontAvailability] = createSignal({});
@@ -498,6 +500,24 @@ export default function SettingsModal(props) {
                   label={japaneseTextOn() ? "On · Japanese appears with English" : "Off · English only"}
                   sublabel={japaneseTextOn() ? "オン・英語と日本語を表示" : "オフ・英語のみ"}
                   onToggle={() => { const v = !japaneseTextOn(); setJapaneseTextOn(v); setJapaneseTextEnabled(v); }}
+                />
+              </div>
+
+              <div>
+                <div class="flex items-center gap-2 mb-3">
+                  <AlignLeft class={`w-4 h-4 ${sectionDescriptionsOn() ? "text-primary" : "text-muted-foreground"}`} />
+                  <JapaneseText ja="見出しの説明文" as="h3" class="block font-display font-bold text-foreground text-sm uppercase tracking-wide" japaneseClass="text-[0.78em] normal-case tracking-normal">
+                    Section Descriptions
+                  </JapaneseText>
+                </div>
+                <p class="text-xs text-muted-foreground mb-3">
+                  The explanatory line under each section heading on the Home page. Off by default — turn it on if you are new here or showing someone around.
+                </p>
+                <ToggleRow
+                  on={sectionDescriptionsOn()}
+                  label={sectionDescriptionsOn() ? "On · Show the description under each heading" : "Off · Headings only"}
+                  sublabel={sectionDescriptionsOn() ? "オン・見出しの下に説明を表示" : "オフ・見出しのみ"}
+                  onToggle={() => { const v = !sectionDescriptionsOn(); setSectionDescriptionsOn(v); setSectionDescriptionsEnabled(v); }}
                 />
               </div>
 
