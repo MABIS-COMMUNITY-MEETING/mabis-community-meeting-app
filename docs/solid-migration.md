@@ -78,6 +78,23 @@ work, in dependency order:
   directly in the scheduler's render phase.
 - **Only set inline `transform` if you animate one** — it overrides Tailwind
   transform utilities, which is how the centred hero word broke.
+- **Never import `@/lib/routeLoaders` from Solid.** It dynamic-imports the
+  React pages, so pulling it in drags React source into the Solid module graph
+  where vite-plugin-solid compiles it with the Solid JSX transform — it builds
+  clean and is nonsense at runtime. It inflated the bundle 281 → 686 KiB gzip
+  before the compiler's malformed-HTML warning gave it away. Use
+  `~/lib/routes.js` instead.
+- **Watch for "The HTML provided is malformed" at build time.** It is Solid's
+  template compiler telling you the JSX cannot nest that way; it is never
+  cosmetic. In practice it has meant a component tree was being parsed that
+  should not have been.
+
+## Known visual differences
+
+- **Nav active indicator.** framer's `layoutId="nav-active"` slides a shared
+  element between nav items; Motion One has no layout animation, so the Solid
+  header shows a static bar on the active item instead. Only known motion
+  difference in the port.
 
 ## Known gaps
 
