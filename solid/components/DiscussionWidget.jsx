@@ -21,12 +21,7 @@ import {
 
 const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
-const MeetingMinutes = lazy(() => {
-  console.log("[DEBUG] MeetingMinutes import() called");
-  const p = import("~/components/MeetingMinutes");
-  p.then((m) => console.log("[DEBUG] MeetingMinutes import() resolved", !!m?.default), (e) => console.log("[DEBUG] MeetingMinutes import() REJECTED", String(e)));
-  return p;
-});
+const MeetingMinutes = lazy(() => import("~/components/MeetingMinutes"));
 const JobsWidget = lazy(() => import("~/components/JobsWidget"));
 
 /*
