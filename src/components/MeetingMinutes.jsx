@@ -88,7 +88,7 @@ export default function MeetingMinutes({ weekLabel, weekTitle, canEdit = true })
     return html;
     // allTopics is intentionally absent: a refetch must not re-seed a week that
     // has already been resolved, or it would fight the user's typing.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isLoading, weekLabel, notesRecord?.id, notesRecord?.description]);
 
   const saveMutation = useMutation({
