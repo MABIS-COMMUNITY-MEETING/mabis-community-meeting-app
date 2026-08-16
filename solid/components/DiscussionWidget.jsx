@@ -28,11 +28,12 @@ const JobsWidget = lazy(() => import("~/components/JobsWidget"));
  * DiscussionWidget — Solid port of src/components/DiscussionWidget.jsx.
  *
  * Meeting mode is a hub: the React version lazy-loads JobsWidget,
- * AnnouncementsWidget and CalendarWidget into it (the assistant and the meeting
- * notes editor are ported and mount for real). Those are not ported yet, so
- * they render through PendingWidget —
- * reserved space carrying the same intrinsic height the real widget will take,
- * exactly like Home's WIDGETS map. Swapping each one in later shifts nothing.
+ * AnnouncementsWidget and CalendarWidget into it (the assistant, the meeting
+ * notes editor and Jobs are ported and mount for real now). Announcements and
+ * Calendar are not ported yet, so they still render through PendingWidget —
+ * reserved space carrying the same intrinsic height the real widget will
+ * take, exactly like Home's WIDGETS map. Swapping each one in later shifts
+ * nothing.
  *
  * Everything else is 1:1, including the behaviours that were bug fixes:
  *   · one form for create AND edit, so a second Quill never mounts late and
