@@ -487,7 +487,7 @@ export default function SettingsModal(props) {
                 <div class="flex items-center gap-2 mb-3">
                   <Languages class={`w-4 h-4 ${japaneseTextOn() ? "text-primary" : "text-muted-foreground"}`} />
                   <h3 class="font-display font-bold text-foreground text-sm uppercase tracking-wide">
-                    Japanese Text <span lang="ja" class="normal-case tracking-normal text-muted-foreground">／日本語表示</span>
+                    Japanese Text <span lang="ja" data-ja-always class="normal-case tracking-normal text-muted-foreground">／日本語表示</span>
                   </h3>
                 </div>
                 <p class="text-xs text-muted-foreground mb-3">
