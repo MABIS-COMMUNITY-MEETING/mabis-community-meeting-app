@@ -21,14 +21,15 @@ import {
 
 const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
+const MeetingNotesEditor = lazy(() => import("~/components/MeetingNotesEditor"));
 
 /*
  * DiscussionWidget — Solid port of src/components/DiscussionWidget.jsx.
  *
  * Meeting mode is a hub: the React version lazy-loads JobsWidget,
- * MeetingNotesEditor, AnnouncementsWidget and CalendarWidget into it (the
- * assistant is ported and mounts for real). Those are not ported yet, so they
- * render through PendingWidget —
+ * AnnouncementsWidget and CalendarWidget into it (the assistant and the meeting
+ * notes editor are ported and mount for real). Those are not ported yet, so
+ * they render through PendingWidget —
  * reserved space carrying the same intrinsic height the real widget will take,
  * exactly like Home's WIDGETS map. Swapping each one in later shifts nothing.
  *
@@ -445,8 +446,19 @@ export default function DiscussionWidget(props) {
 
             <TopicList compact />
 
+            {/* Meeting Notes */}
+            <section>
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-1 h-6 bg-primary rounded-full" />
+                <h3 class="font-display font-bold text-foreground text-xl">Meeting Notes</h3>
+                <span class="text-xs text-muted-foreground">{formatWeekLabel(viewedWeek())}</span>
+              </div>
+              <Suspense fallback={<PendingWidget name="Meeting notes" height={260} />}>
+                <MeetingNotesEditor weekLabel={viewedWeek()} />
+              </Suspense>
+            </section>
+
             {/* Ports pending — reserved at the height each widget will occupy. */}
-            <PendingWidget name="Meeting notes" height={220} />
             <PendingWidget name="Jobs" height={320} />
             <PendingWidget name="Announcements" height={280} />
             <PendingWidget name="Calendar" height={360} />
