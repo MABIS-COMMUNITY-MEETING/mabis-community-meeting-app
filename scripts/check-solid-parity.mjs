@@ -262,6 +262,11 @@ if (route === "/login") {
       root.innerHTML.includes("dropdown-pop"));
   }
 
+  // JobReminder is the third IdleMount child. With no assignment data it must
+  // render nothing at all rather than an empty modal over the page.
+  check("job reminder stays closed with no pending jobs",
+    !textNow().includes("Job Reminder"));
+
   // FeedbackWidget: the other half of Home's IdleMount block.
   await waitFor(() => byTitle("Feedback & Bug Reports"));
   const feedbackFab = byTitle("Feedback & Bug Reports");
