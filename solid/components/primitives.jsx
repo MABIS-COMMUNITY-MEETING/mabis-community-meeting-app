@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, For, Show } from "solid-js";
+import { createSignal, onMount, onCleanup, splitProps, For, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { subscribe } from "@/lib/physics/scheduler";
 import { integrateSpring } from "@/lib/physics/math";
@@ -14,12 +14,16 @@ const EASE_CSS = "cubic-bezier(0.16, 1, 0.3, 1)";
 export function JapaneseText(props) {
   const enabled = useJapaneseText();
   const layout = () => (props.layout === "inline" ? "ml-1.5 inline" : "mt-0.5 block");
+  // Anything the caller passes beyond the known props is forwarded to the
+  // element, matching React's `...props`. Without this, attributes like
+  // data-section-description and id were silently dropped.
+  const [, rest] = splitProps(props, ["as", "ja", "class", "japaneseClass", "layout", "children"]);
 
   // `as` is load-bearing, not cosmetic: callers pass as="div"/as="p" and rely
   // on the element being block-level (mb-4 on an inline span is ignored).
   // Dynamic swaps the tag without introducing a wrapper node.
   return (
-    <Dynamic component={props.as || "span"} class={props.class}>
+    <Dynamic component={props.as || "span"} class={props.class} {...rest}>
       <span data-ja-skip>{props.children}</span>
       <Show when={enabled() && props.ja}>
         <span
