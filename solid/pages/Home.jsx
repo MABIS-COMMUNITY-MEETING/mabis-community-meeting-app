@@ -2,7 +2,7 @@ import { createSignal, onMount, onCleanup, lazy, Suspense, For, Show } from "sol
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection, EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
 import { useQuery } from "@tanstack/solid-query";
-import { Settings, Palette } from "lucide-solid";
+import { Settings, Palette, CircleHelp } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
@@ -10,12 +10,23 @@ import { usePresenceHeartbeat } from "~/lib/usePresence";
 import SiteHeader from "~/components/SiteHeader";
 import ThemeSwitcher from "~/components/ThemeSwitcher";
 import IdleMount from "~/components/IdleMount";
+import ScrollVelocity from "~/components/ScrollVelocity";
+import ScrollScaleRitual from "~/components/home/ScrollScaleRitual";
+import BirthdayBanner from "~/components/BirthdayBanner";
+import { ScrollSectionIndicator } from "~/components/chrome";
+import { PageFooter } from "~/components/page-chrome";
 
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
 const FeedbackWidget = lazy(() => import("~/components/FeedbackWidget"));
 const ProfileEditor = lazy(() => import("~/components/ProfileEditor"));
 const JobReminder = lazy(() => import("~/components/JobReminder"));
+
+// Memoised so hover/focus/pointerdown all warm the same import rather than
+// queueing three, matching the React page's preloadQuickStartGuide.
+let quickStartModulePromise;
+const preloadQuickStartGuide = () => (quickStartModulePromise ||= import("~/components/QuickStartGuide"));
+const QuickStartGuide = lazy(preloadQuickStartGuide);
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 
@@ -144,6 +155,7 @@ export default function Home() {
 
   const [showSettings, setShowSettings] = createSignal(false);
   const [editingProfile, setEditingProfile] = createSignal(false);
+  const [showHelp, setShowHelp] = createSignal(false);
 
   const effectiveRole = () => auth.user()?.role_override || auth.user()?.role;
   const roleColor = () => ROLE_COLOR_VARS[effectiveRole()] || "hsl(var(--primary))";
@@ -159,6 +171,18 @@ export default function Home() {
   const controls = () => (
     <>
       <ThemeSwitcher />
+      <button
+        onClick={() => setShowHelp(true)}
+        onMouseEnter={preloadQuickStartGuide}
+        onFocus={preloadQuickStartGuide}
+        onPointerDown={preloadQuickStartGuide}
+        data-cursor="HELP"
+        title="How to use this site"
+        class="flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"
+      >
+        <CircleHelp class="w-4 h-4" />
+        <span class="hidden text-[10px] font-bold uppercase tracking-wide sm:inline">Help</span>
+      </button>
       <button
         onMouseEnter={preloadSettings}
         onFocus={preloadSettings}
@@ -220,6 +244,13 @@ export default function Home() {
   return (
     <div class="editorial-home min-h-screen bg-background overflow-x-hidden">
       <SiteHeader rightSlot={controls} />
+      <ScrollSectionIndicator total={10} />
+
+      <Show when={showHelp()}>
+        <Suspense fallback={null}>
+          <QuickStartGuide open onClose={() => setShowHelp(false)} />
+        </Suspense>
+      </Show>
 
       <Show when={editingProfile()}>
         <Suspense fallback={null}>
