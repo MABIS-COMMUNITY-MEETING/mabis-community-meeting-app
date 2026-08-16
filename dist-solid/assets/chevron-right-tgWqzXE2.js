@@ -1,0 +1,1 @@
+import{I as e}from"./primitives-B7-mMYG3.js";import{c as o,m as a}from"./index-DtSWtwAG.js";var t=[["path",{d:"m9 18 6-6-6-6",key:"mthhwq"}]],m=r=>o(e,a(r,{iconNode:t,name:"chevron-right"})),c=m;export{c};
