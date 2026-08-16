@@ -153,6 +153,34 @@ const html2 = root ? root.innerHTML : "";
 
 check("app mounted into #root", root && root.children.length > 0);
 
+/*
+ * jsdom's querySelector silently fails to match an attribute selector whose
+ * value contains "&" — button[title="Feedback & Bug Reports"] returns null
+ * even though the element is present and getAttribute reads the value back
+ * correctly. It does not throw, so the result is indistinguishable from a
+ * component that never mounted, and it cost a real debugging detour. Match by
+ * iteration instead of trusting the selector engine.
+ */
+const byTitle = (title) => (root
+  ? [...root.querySelectorAll("[title]")].find((el) => el.getAttribute("title") === title)
+  : undefined);
+
+/*
+ * Lazy chunks resolve on the timer queue, so a fixed sleep after a click is a
+ * race — the same assertion passed and failed on consecutive runs before this.
+ * Poll to a deadline instead.
+ */
+const waitFor = async (predicate, timeoutMs = 3000) => {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (predicate()) return true;
+    await new Promise((r) => setTimeout(r, 25));
+  }
+  return predicate();
+};
+
+const textNow = () => (root ? root.textContent.replace(/\s+/g, " ") : "");
+
 // ── route-specific parity ──────────────────────────────────────────────────
 // Only the landing route asserts the Splash slice; the auth and fallback
 // routes assert their own source of truth. Everything below the divider is
@@ -189,16 +217,17 @@ if (route === "/login") {
 
   // MabisAIAssistant: lazy, inside IdleMount, so it appears only after the idle
   // callback fires and its chunk resolves.
-  const fab = root && root.querySelector('button[title="MABIS Omni AI Assistant"]');
+  await waitFor(() => byTitle("MABIS Omni AI Assistant"));
+  const fab = byTitle("MABIS Omni AI Assistant");
   check("assistant FAB mounted after idle", !!fab,
     "IdleMount never fired, or the lazy chunk failed to resolve");
   check("assistant panel closed on first paint",
-    !text.includes("How can I help?"));
+    !textNow().includes("How can I help?"));
 
   if (fab) {
     fab.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 150));
-    const t2 = root.textContent.replace(/\s+/g, " ");
+    await waitFor(() => textNow().includes("How can I help?"));
+    const t2 = textNow();
     const h2b = root.innerHTML;
     check("assistant panel opens on click", t2.includes("MABIS Assistant"));
     check("empty-state prompt rendered", t2.includes("How can I help?"));
@@ -216,16 +245,16 @@ if (route === "/login") {
 
   // Header controls: React renders the avatar, first name and sign-out beside
   // the theme/settings buttons. Solid was missing the whole block.
-  check("sign-out control rendered", text.includes("SIGN OUT"));
-  check("signed-in user's first name shown", text.includes("PARITY"),
+  check("sign-out control rendered", textNow().includes("SIGN OUT"));
+  check("signed-in user's first name shown", textNow().includes("PARITY"),
     "expected the seeded user's first name, upper-cased");
-  const avatarBtn = root && root.querySelector('button[title="Customize Profile Picture"]');
+  const avatarBtn = byTitle("Customize Profile Picture");
   check("profile-picture button rendered", !!avatarBtn);
 
   if (avatarBtn) {
     avatarBtn.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 150));
-    const t3 = root.textContent.replace(/\s+/g, " ");
+    await waitFor(() => textNow().includes("Upload Photo"));
+    const t3 = textNow();
     check("ProfileEditor opens on click", t3.includes("Customize Profile Picture"));
     check("ProfileEditor upload control rendered", t3.includes("Upload Photo"));
     check("ProfileEditor reset control rendered", t3.includes("Reset to default"));
@@ -234,13 +263,14 @@ if (route === "/login") {
   }
 
   // FeedbackWidget: the other half of Home's IdleMount block.
-  const feedbackFab = root && root.querySelector('button[title="Feedback & Bug Reports"]');
+  await waitFor(() => byTitle("Feedback & Bug Reports"));
+  const feedbackFab = byTitle("Feedback & Bug Reports");
   check("feedback FAB mounted after idle", !!feedbackFab);
 
   if (feedbackFab) {
     feedbackFab.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 150));
-    const t4 = root.textContent.replace(/\s+/g, " ");
+    await waitFor(() => textNow().includes("Report Issue or Bug"));
+    const t4 = textNow();
     check("feedback panel opens on click", t4.includes("Report Issue or Bug"));
     check("satisfaction scale rendered", t4.includes("Satisfaction:"));
     check("rating defaults to 8/10", t4.includes("8/10"));
