@@ -20,13 +20,15 @@ import {
 } from "~/lib/weeks";
 
 const DocsEditor = lazy(() => import("~/components/DocsEditor"));
+const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
 
 /*
  * DiscussionWidget — Solid port of src/components/DiscussionWidget.jsx.
  *
  * Meeting mode is a hub: the React version lazy-loads JobsWidget,
- * MeetingNotesEditor, AnnouncementsWidget, CalendarWidget and MabisAIAssistant
- * into it. Those are not ported yet, so they render through PendingWidget —
+ * MeetingNotesEditor, AnnouncementsWidget and CalendarWidget into it (the
+ * assistant is ported and mounts for real). Those are not ported yet, so they
+ * render through PendingWidget —
  * reserved space carrying the same intrinsic height the real widget will take,
  * exactly like Home's WIDGETS map. Swapping each one in later shifts nothing.
  *
@@ -450,6 +452,7 @@ export default function DiscussionWidget(props) {
             <PendingWidget name="Calendar" height={360} />
           </div>
         </div>
+        <Suspense fallback={null}><MabisAIAssistant /></Suspense>
       </Portal>
     }>
       {/* ── NORMAL MODE ────────────────────────────────────────────────────── */}
