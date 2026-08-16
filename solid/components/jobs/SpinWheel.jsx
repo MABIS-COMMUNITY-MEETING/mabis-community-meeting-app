@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, Show } from "solid-js";
+import { createSignal, createEffect, on, onMount, onCleanup, Show } from "solid-js";
 import { Loader2 } from "lucide-solid";
 import { displayName } from "@/lib/names";
 import { playWheelTick, playWheelStart, playWheelWin } from "@/lib/wheel_sound";
