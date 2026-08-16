@@ -894,18 +894,29 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               </Suspense>
             </section>
 
-            {/* Topics */}
+            {/* Minutes — the same per-week document the Discussion section
+                shows. Meeting mode previously had a topic list here AND a
+                separate "Meeting Notes" editor below; both are now this one
+                document, because the old notes editor wrote to the very same
+                __meeting_notes__ record and two editors on one record fight
+                each other. */}
             <section>
               <div className="flex flex-wrap items-center gap-3 mb-4">
                 <div className="w-1 h-6 bg-primary rounded-full" />
-                <h3 className="font-display font-bold text-foreground text-xl">Discussion Topics</h3>
-                <span className="text-sm text-muted-foreground">{viewedTopics.filter(t => t.completed).length}/{viewedTopics.length} done</span>
-                <Button size="sm" variant="outline"
-                  className="ml-auto border-primary/40 text-primary hover:bg-primary/5 text-xs gap-1"
-                  onClick={toggleAddTopicForm}>
-                  <Plus className="w-3.5 h-3.5" /> Add Topic
-                </Button>
+                <h3 className="font-display font-bold text-foreground text-xl">Minutes</h3>
+                <span className="text-sm text-muted-foreground">{formatWeekLabel(viewedWeek)}</span>
               </div>
+              <Suspense fallback={<ChunkFallback height={420} />}>
+                <MeetingMinutes
+                  weekLabel={viewedWeek}
+                  weekTitle={`Minutes — ${formatWeekFull(viewedWeek)}`}
+                  canEdit={isCurrentWeek}
+                />
+              </Suspense>
+            </section>
+
+            {/* Retired: the meeting-mode add-topic form and topic list. */}
+            <section className="hidden" aria-hidden>
 
               {/* Inline add form in meeting mode */}
               {showForm && !editingTopicId && (
@@ -947,30 +958,6 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
                 </div>
               )}
 
-              {viewedTopics.length === 0 ? (
-                <p className="text-center text-muted-foreground text-sm py-8 bg-card rounded-xl border border-border">Nothing to discuss yet. Use Add Topic above to put something on the list for Friday.</p>
-              ) : (
-                <div className="space-y-2">
-                  {viewedTopics.map((topic, topicIndex) => (
-                    <TopicItem key={topic.id} topic={topic} index={topicIndex} compact isAdmin={topicAdmin}
-                      onToggle={(id, completed) => toggleMutation.mutate({ id, completed })}
-                      onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic}
-                      {...inlineEditProps(topic)} />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Meeting Notes */}
-            <section>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-primary rounded-full" />
-                <h3 className="font-display font-bold text-foreground text-xl">Meeting Notes</h3>
-                <span className="text-xs text-muted-foreground">{formatWeekLabel(viewedWeek)}</span>
-              </div>
-              <Suspense fallback={<ChunkFallback height={260} />}>
-                <MeetingNotesEditor weekLabel={viewedWeek} />
-              </Suspense>
             </section>
 
             {/* Jobs */}
