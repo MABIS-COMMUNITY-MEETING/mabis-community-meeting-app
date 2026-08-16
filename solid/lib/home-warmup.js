@@ -110,6 +110,26 @@ function dataTasks() {
  * visible first — speculatively pulling ten datasets over 2G would cost the
  * user more than the wait it saves.
  */
+/*
+ * Hand the main thread back between background kickoffs.
+ *
+ * The fetches themselves are async and cheap to start, but each resolved chunk
+ * has to be EVALUATED and each response parsed — and firing thirteen of those
+ * in one synchronous burst builds a long task that blocks input. The user is
+ * reading Home while this runs; a tap landing during that burst waits for it.
+ *
+ * scheduler.yield() resumes at the FRONT of the queue, so unlike
+ * setTimeout(0) the warm-up does not lose its place behind unrelated work —
+ * it just stops hogging. Chrome 129+; the timeout path is the fallback and is
+ * merely adequate.
+ *
+ * Blocking tasks deliberately do NOT yield: they gate the loading screen, so
+ * spreading them out would delay the very paint they exist to bring forward.
+ */
+const yieldToBrowser = typeof scheduler !== "undefined" && typeof scheduler.yield === "function"
+  ? () => scheduler.yield()
+  : () => new Promise((resolve) => setTimeout(resolve, 0));
+
 export async function warmHomeRoute(onProgress) {
   const constrained = isConstrainedNetwork();
 
@@ -162,10 +182,17 @@ export async function warmHomeRoute(onProgress) {
   const blocking = tasks.filter((t) => FIRST_VIEW.has(t.label));
   const background = [...tasks.filter((t) => !FIRST_VIEW.has(t.label)), ...deferredData];
 
-  // Fired, never awaited: these continue past the loading screen.
-  for (const { run } of background) {
-    try { void Promise.resolve(run()).catch(() => {}); } catch { /* best effort */ }
-  }
+  /*
+   * Fired, never awaited: these continue past the loading screen. Kicked off
+   * one at a time with a yield between, so starting thirteen of them cannot
+   * become a single long task while the user is trying to interact.
+   */
+  void (async () => {
+    for (const { run } of background) {
+      try { void Promise.resolve(run()).catch(() => {}); } catch { /* best effort */ }
+      await yieldToBrowser();
+    }
+  })();
 
   await Promise.allSettled(blocking.map(async ({ label, run }) => {
     try {
