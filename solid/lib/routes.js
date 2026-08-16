@@ -56,6 +56,9 @@ let moduleWarmupPromise;
 export function startHomeModuleWarmup() {
   if (moduleWarmupPromise) return moduleWarmupPromise;
   if (saveDataEnabled()) return undefined;
+  /* Home's own chunk first — it is the one every widget renders inside, and
+     it is memoised, so loadHomeRoute() below reuses this exact promise. */
+  void homeChunk().catch(() => undefined);
   moduleWarmupPromise = import("~/lib/home-warmup")
     .then(({ warmHomeModules }) => warmHomeModules())
     .catch(() => undefined);
