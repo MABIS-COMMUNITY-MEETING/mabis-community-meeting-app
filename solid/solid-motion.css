@@ -88,6 +88,32 @@ html.animations-disabled .auth-rise { animation: none; }
 }
 html.animations-disabled .fade-in { animation: none; }
 
+/* ── Assistant panel + FAB ──────────────────────────────────────────────
+ * framer:  panel  initial {opacity:0, y:20, scale:0.95} → animate {1, 0, 1}
+ *                 transition {duration:0.2}
+ *          FAB    whileHover {scale:1.1}, whileTap {scale:0.95}
+ *
+ * The FAB's hover/tap were a JS animation driving a transform; CSS does the
+ * same job on the compositor with no runtime at all. The panel's *exit*
+ * animation is gone — Solid has no AnimatePresence, so it unmounts at once.
+ */
+@keyframes assistant-pop {
+  from { transform: translateY(20px) scale(0.95); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.assistant-pop {
+  animation: assistant-pop 0.2s ease both;
+}
+.assistant-fab {
+  transition: transform 120ms ease;
+}
+.assistant-fab:hover { transform: scale(1.1); }
+.assistant-fab:active { transform: scale(0.95); }
+html.animations-disabled .assistant-pop { animation: none; }
+html.animations-disabled .assistant-fab { transition: none; }
+html.animations-disabled .assistant-fab:hover,
+html.animations-disabled .assistant-fab:active { transform: none; }
+
 /* ── Off-screen sections cost nothing ──────────────────────────────────────
  * content-visibility: auto lets the browser skip layout AND paint for any
  * section outside the viewport. On this ten-section page that is the single
