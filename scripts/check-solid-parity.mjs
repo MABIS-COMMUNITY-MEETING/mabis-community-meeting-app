@@ -128,26 +128,22 @@ window.XMLHttpRequest = DeadXHR;
 globalThis.XMLHttpRequest = DeadXHR;
 
 /*
- * Vite's dynamic-import preload helper waits for each async chunk's CSS
- * dependency to actually load -- it adds a stylesheet <link> to <head> and
- * returns a promise that resolves on that link's `load` event (see the
- * generated __vitePreload in the entry bundle). Real browsers fire that
- * event once the stylesheet request completes; jsdom never does, because
- * nothing here is fetching or applying the linked CSS at all. Without a
- * shim, any lazy component whose module graph imports a CSS file (DocsEditor
- * pulls in quill/dist/quill.snow.css) has its import() promise stuck pending
- * forever -- not erroring, not resolving -- which silently starves every
- * Suspense boundary above it. Fire `load` on the next tick, matching the
- * success path a real network request takes.
+ * KNOWN GAP: DocsEditor's module graph imports quill/dist/quill.snow.css, so
+ * Vite's dynamic-import preload helper adds a stylesheet <link> and waits for
+ * its `load` event before resolving the import (see __vitePreload in the
+ * entry bundle) -- real browsers fire that once the stylesheet request
+ * completes. jsdom never fires it (nothing here actually fetches the linked
+ * CSS), so DocsEditor's import() sits pending forever and the four
+ * DocsEditor-dependent checks below fail even though the port is correct.
+ *
+ * Tried firing a synthetic `load` on every stylesheet <link> so the import
+ * resolves. That works, but once DocsEditor (and Quill) actually mount here,
+ * something downstream churns hard enough that the run never reaches a
+ * settled state within any reasonable timeout, even with the 30s watchdog
+ * below -- worse than the known, narrow failure this was meant to fix. Left
+ * out. Verifying the editor itself needs a real browser (Playwright et al.),
+ * not a deeper jsdom shim.
  */
-const realCreateElement = window.document.createElement.bind(window.document);
-window.document.createElement = function (tagName, ...rest) {
-  const el = realCreateElement(tagName, ...rest);
-  if (String(tagName).toLowerCase() === "link") {
-    setTimeout(() => { if (el.rel === "stylesheet") el.dispatchEvent(new window.Event("load")); }, 0);
-  }
-  return el;
-};
 
 // Hard watchdog: a parity check that hangs is a broken check, not a pass.
 const watchdog = setTimeout(() => {
