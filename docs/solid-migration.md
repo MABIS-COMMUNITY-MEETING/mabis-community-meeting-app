@@ -14,11 +14,22 @@ location. There is no fork, so the design system cannot drift between them.
 Verify with:
 
 ```bash
-npx vite build                                  # React, must stay green
-npx vite build --config vite.solid.config.js    # Solid
-node scripts/check-bundle-budget.mjs            # React budgets
-node scripts/check-solid-parity.mjs             # Solid renders at parity
+npm run build            # React, must stay green (runs all four contracts)
+npm run verify:solid     # Solid: build + compile-check + parity across routes
 ```
+
+`verify:solid` is the one to run. It chains three things that fail for
+different reasons:
+
+| Step | Catches |
+|---|---|
+| `build:solid` | anything in the module graph that does not compile |
+| `check:solid` | the same for **orphan** files nothing imports yet — Vite tree-shakes those out of the build, so a broken one stays invisible |
+| `check:solid:parity` | components that compile but throw, drop content, or render wrong, asserted against the React source |
+
+Parity runs one route per process (`/`, `/login`, `/nowhere`, plus `/` and
+`/login` with the Japanese preference on). The bundle is a singleton, so a
+second route in the same process would assert against the first route's DOM.
 
 ## Done
 
@@ -34,7 +45,10 @@ node scripts/check-solid-parity.mjs             # Solid renders at parity
 | Toast | Signal + portal (replaces the Radix toaster) |
 | Perf core | Shared IntersectionObserver, `content-visibility`, scroll-state class |
 | Field metrics | LoAF/INP/CLS monitor, opt-in via `?perf=1` |
-| Pages | Splash (23/23 parity), Home shell |
+| Pages | Splash, Home, History, Archive/Announcements/News, Feedback |
+| Auth | Login + AuthLayout + GoogleIcon; `/register`, `/forgot-password`, `/reset-password` redirect to `/login` as in React |
+| 404 | `solid/pages/NotFound.jsx` on `path="*"` (React keeps it at `src/lib/PageNotFound.jsx`) |
+| Japanese | `JapaneseUiCompanion` auto-scanner + `CjkFontLoader`, mounted in the shell and verified annotating the DOM |
 | Widgets | LunchMenu, Schedule |
 | UI primitives | Button, Input, Textarea, Badge, spinner, empty state, Select |
 | Kobalte primitives | Dialog, Tabs, Popover, DropdownMenu — ported 2026-08-15, verified against `vite.solid.config.js` |
@@ -42,25 +56,45 @@ node scripts/check-solid-parity.mjs             # Solid renders at parity
 
 ## Remaining
 
-Dead-page removal (previously listed here) is done — see above. Real remaining
-work, in dependency order:
+Every route now renders, so what is left is shell polish and the long tail of
+feature components — not structural work.
 
-1. ~~**Kobalte primitives**~~ — done (Select was already in; Dialog, Tabs,
-   Popover, DropdownMenu ported this session as `solid/components/ui/{dialog,tabs,popover,dropdown-menu}.jsx`).
-   Note the Kobalte→Tailwind data-attribute swap: Radix's `data-[state=open|closed]`
-   becomes Kobalte's `data-[expanded]` / `data-[closed]` (Dialog, Popover,
-   DropdownMenu) or `data-[selected]` (Tabs active trigger). Popover's Content
-   takes `gutter` (not `sideOffset`) for offset.
-2. **Widgets** — Announcements, Members, MissingItems, News, MeetingMode,
-   Calendar (571), Jobs (1060), Discussion (1184). `solid/components/DiscussionWidget.jsx`
-   and `solid/components/discussion/{AttendancePanel,TopicItem}.jsx` already
-   exist but are smaller than the React source (23.9KB vs 60.3KB) — verify
-   parity before assuming Discussion is done rather than partial.
-3. **DocsEditor (1397)** — the largest single item. `react-quill` has no Solid
-   port, so this is a rewrite against Quill core.
-4. **Pages** — Login, History, AnnouncementsHistory, NewsHistory, Feedback.
-5. **Chrome** — SiteHeader, SettingsModal, ThemeSwitcher, CustomCursor,
-   MabisAIAssistant.
+**1. App-shell components React mounts and Solid does not.** This list is
+exact: it is the diff between the two `App.jsx` trees.
+
+| Component | Effect of its absence |
+|---|---|
+| `MotionPreference` | reduced-motion preference not applied app-wide |
+| `PrefsSync` | preferences not synced back to the account |
+| `ScrollToTop` | scroll position persists across navigation |
+| `SoundEffects` | UI sounds silent |
+| `GrainOverlay`, `PaletteStripe`, `PrideAmbience` | decorative layers missing |
+| `ScrollProgress` | no scroll progress indicator |
+| `LoadingScreen` | Suspense falls back to a blank height-reserving div |
+| `UserNotRegisteredError` | see below |
+
+**2. Auth error states.** React's `AuthenticatedApp` branches on
+`authError.type`: `user_not_registered` renders `UserNotRegisteredError`, and
+`auth_required` calls `navigateToLogin()`. Solid's `Protected` only checks
+`isAuthenticated()`, so an unregistered Google account currently falls through
+to the login redirect instead of the explanatory screen. Port this with the
+shell.
+
+**3. Feature components not yet ported** (verified absent from `solid/`):
+`ProfileEditor`, `BlockNotesEditor` + `BlockToolbar` + `NoteBlock`,
+`HistoryWidget`, `QuickStartGuide`, `BirthdayBanner`, `JobReminder`,
+`MeetingSummary`, `RoleSwitcher`, `RolePreviewToggle`, `HighlightPicker`,
+`FamicomController`, `DoveAnimation`, `MemberAvatar`, `XpBadge`,
+`FeedbackWidget`, `SmoothScroll`, `Tilt3D`, `SectionReveal`, `IdleMount`.
+
+**4. Audit, do not assume.** Several Solid widgets are much smaller than their
+React sources and may be partial ports rather than finished ones — notably
+`DiscussionWidget` (23.9 KB vs 60.3 KB). Check before ticking these off.
+
+Kobalte primitives are done (Select, Dialog, Tabs, Popover, DropdownMenu). Note
+the Radix→Kobalte data-attribute swap: `data-[state=open|closed]` becomes
+`data-[expanded]` / `data-[closed]`, or `data-[selected]` for the active Tabs
+trigger. Popover's Content takes `gutter`, not `sideOffset`.
 
 ## Rules learned porting (read before continuing)
 
@@ -84,6 +118,22 @@ work, in dependency order:
   clean and is nonsense at runtime. It inflated the bundle 281 → 686 KiB gzip
   before the compiler's malformed-HTML warning gave it away. Use
   `~/lib/routes.js` instead.
+- **Icons come from `lucide-solid`, not `lucide-react`.** There is no
+  `~/components/icons` barrel — an earlier session invented one, and because
+  the only file importing it (`AuthLayout`) was an orphan at the time, Vite
+  tree-shook it away and the build stayed green while the file was broken.
+  `npm run check:solid` exists precisely to catch this class of failure; run it,
+  not just the build.
+- **A green build does not mean a working port.** Orphan files are excluded
+  from it entirely, and a component that compiles can still throw on mount.
+  `verify:solid` is the real gate.
+- **`useEffect(fn, [dep])` → `createEffect` with `onCleanup` *inside* it.**
+  Registering cleanup inside the effect body gives React's exact teardown
+  semantics: it runs before each re-run and once on disposal. See
+  `JapaneseUiCompanion`.
+- **Clear your own timers.** React tolerates `setState` after unmount as a
+  no-op; a Solid signal write after disposal is a real leak. `Login` tracks its
+  15s retry timer and clears it in `onCleanup`.
 - **Watch for "The HTML provided is malformed" at build time.** It is Solid's
   template compiler telling you the JSX cannot nest that way; it is never
   cosmetic. In practice it has meant a component tree was being parsed that
