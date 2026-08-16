@@ -26,6 +26,19 @@ import { getWeekLabel } from "~/lib/weeks";
  *
  * Everything runs through Promise.allSettled: a warm-up is an optimisation, so
  * one failing request must never keep the user on the loading screen.
+ *
+ * dataTasks() is deliberately the SAME five reads as the React source
+ * (src/lib/home-route-warmup.js): Members, Birthdays, Announcements,
+ * Discussion, Attendance — "first-view critical" only. An earlier revision of
+ * this file had grown to eleven, adding Jobs/Rotation/Schedule/Lost and
+ * Found/Lunch Menu/News/Calendar on top — none of which are needed for first
+ * paint, and all of them racing the five that ARE against the same bandwidth
+ * and backend capacity. That's a real cost, not just a longer list: with ten
+ * section-module imports also in flight, twenty-one concurrent tasks meant
+ * every one of them — including Members — sat and waited its turn more often
+ * than the tuned five-task set ever did. The seven removed reads still
+ * happen — each of those widgets fetches for itself on mount, same as any
+ * cache miss — they just don't get to hold up the loading screen doing it.
  */
 
 const SECTION_MODULES = [
@@ -46,11 +59,6 @@ const SECTION_MODULES = [
   { label: "SECTION 10 / 10", load: () => import("~/components/MembersWidget") },
 ];
 
-/* Must equal SETTING_KEY in ScheduleWidget.jsx. Verified against it, not
-   guessed: a mismatch here caches under a key nothing reads, which costs a
-   request and saves nothing. */
-const SCHEDULE_SETTING_KEY = "schedule_url";
-
 function dataTasks() {
   const weekLabel = getWeekLabel(new Date());
   const prefetch = (queryKey, queryFn) => () =>
@@ -58,6 +66,7 @@ function dataTasks() {
 
   return [
     { label: "DATA / MEMBERS", run: prefetch(["members"], () => base44.entities.Member.list("name", 200)) },
+    { label: "DATA / BIRTHDAYS", run: prefetch(["birthdays"], () => base44.entities.Birthday.list("name", 200)) },
     { label: "DATA / ANNOUNCEMENTS", run: prefetch(["announcements"], () => base44.entities.Announcement.list("-created_date", 50)) },
     {
       label: "DATA / DISCUSSION",
@@ -65,14 +74,13 @@ function dataTasks() {
         { week_label: weekLabel }, "-created_date", 100,
       )),
     },
-    { label: "DATA / JOBS", run: prefetch(["assignments"], () => base44.entities.JobAssignment.list("-created_date", 500)) },
-    { label: "DATA / ROTATION", run: prefetch(["job-definitions"], () => base44.entities.JobDefinition.list("title", 100)) },
-    { label: "DATA / SCHEDULE", run: prefetch(["app_settings", SCHEDULE_SETTING_KEY], () => base44.entities.AppSetting.filter({ key: SCHEDULE_SETTING_KEY })) },
-    { label: "DATA / LOST AND FOUND", run: prefetch(["missing-items"], () => base44.entities.MissingItem.list("-created_date", 200)) },
-    { label: "DATA / LUNCH MENU", run: prefetch(["lunchmenu", weekLabel], () => base44.entities.LunchMenu.filter({ week_label: weekLabel })) },
-    { label: "DATA / NEWS", run: prefetch(["news"], () => base44.entities.NewsItem.list("-created_date", 100)) },
-    { label: "DATA / CALENDAR", run: prefetch(["calendarevents"], () => base44.entities.CalendarEvent.list("-created_date", 500)) },
-    { label: "DATA / BIRTHDAYS", run: prefetch(["birthdays"], () => base44.entities.Birthday.list("name", 200)) },
+    {
+      // Matches AttendancePanel.jsx's own queryKey exactly — was missing
+      // from this file entirely before, unlike the React source which has
+      // always had it.
+      label: "DATA / ATTENDANCE",
+      run: prefetch(["attendance", weekLabel], () => base44.entities.Attendance.filter({ week_label: weekLabel })),
+    },
   ];
 }
 
