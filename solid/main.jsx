@@ -95,7 +95,7 @@ async function bootstrap() {
  */
 function idlePreloadRemainingRoutes() {
   const run = () => {
-    import("@/lib/routes").then(({ preloadRoute, routeLoaders }) => {
+    import("~/lib/routes").then(({ preloadRoute, routeLoaders }) => {
       const current = window.location.pathname;
       Object.keys(routeLoaders).forEach((path) => {
         if (path !== current) preloadRoute(path);
