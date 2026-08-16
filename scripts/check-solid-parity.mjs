@@ -276,6 +276,9 @@ if (route === "/login") {
    * the placeholder. That is the same path a browser with no IO support takes,
    * which makes this a real assertion, not an artefact of the harness.
    */
+  // Copied from the label column of src/pages/Home.jsx, in order. Note these
+  // are the SECTION labels, which differ from the wording the nav index uses
+  // for the same sections ("MEMBERS" vs "People").
   const SECTIONS = [
     ["01", "MEETING MODE"],
     ["02", "ANNOUNCEMENTS"],
@@ -284,9 +287,9 @@ if (route === "/login") {
     ["05", "CALENDAR"],
     ["06", "SCHEDULE"],
     ["07", "LOST AND FOUND"],
-    ["08", "LUNCH"],
+    ["08", "LUNCH MENU"],
     ["09", "NEWS"],
-    ["10", "PEOPLE"],
+    ["10", "MEMBERS"],
   ];
   for (const [index, label] of SECTIONS) {
     check(`section ${index} (${label}) rendered`, textNow().includes(label));
