@@ -547,6 +547,7 @@ export default function JobsWidget(props) {
                 <label class="block text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                   Job name
                   <input
+                    autofocus
                     value={newJob.title}
                     onInput={(e) => { setNewJob("title", e.currentTarget.value); setAddJobError(""); }}
                     onKeyDown={(e) => { if (e.key === "Enter") handleAddJob(); }}
