@@ -236,24 +236,17 @@ html.animations-disabled .tap-85:active { transform: none; }
  * once measured, so the scrollbar stops drifting after first pass.
  */
 /*
- * content-visibility is applied to the WIDGET, not the section.
+ * content-visibility is deliberately NOT used on Home's sections.
  *
- * On .cv-section it skipped rendering the whole section while off-screen — and
- * a CSS transition cannot animate content the browser never rendered. Each
- * section was painted straight into its final state on scroll-in, so the
- * entrance slide-up was computed and discarded. That is why the sections
- * appeared to have no transition at all.
+ * It tells the browser to skip rendering off-screen content — and content that
+ * was never rendered cannot run a CSS transition. With it on, every section and
+ * widget was painted straight into its final state on scroll-in and the
+ * entrance animations were computed and discarded.
  *
- * The heading, index rule and body are what animate, so they must stay
- * renderable. The widget below them is the expensive part and is the thing
- * worth skipping — and it is inside LazySection, which does not even mount it
- * until it is near the viewport, so the saving is kept either way.
+ * The saving it offered is already covered better by LazySection, which does
+ * not mount an off-screen widget at all. contain-intrinsic-size stays, so the
+ * scrollbar still settles without the paint-skipping side effect.
  */
-@supports (content-visibility: auto) {
-  .cv-section .lazy-section-host {
-    content-visibility: auto;
-  }
-}
 
 /* Never skip rendering for the section the user jumped to, or one containing
    focus — otherwise an anchor jump can land on unpainted content. */
@@ -335,4 +328,25 @@ html.performance-lite .spin-slow { animation: none; }
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* ── Widget entrance ───────────────────────────────────────────────────────
+ * LazySection mounts a widget as it approaches the viewport. Without this it
+ * simply appears, fully formed, which reads as a jump rather than an arrival.
+ * Same curve and distance as the section header above it so the two feel like
+ * one movement: 0.55s on the shared editorial ease.
+ *
+ * animation, not transition: the element is newly created at mount, so there
+ * is no previous value for a transition to run from.
+ */
+@keyframes widget-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.widget-rise {
+  animation: widget-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+html.animations-disabled .widget-rise { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .widget-rise { animation: none; }
 }
