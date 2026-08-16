@@ -126,6 +126,14 @@ html.animations-disabled .fade-in { animation: none; }
 }
 .dropdown-pop { animation: dropdown-pop 0.2s ease-out both; }
 
+/* initial {scale:0.9, y:20} with no opacity of its own — the backdrop fade
+ * carries the opacity, so adding it here would double up and read as a flash. */
+@keyframes modal-pop {
+  from { transform: translateY(20px) scale(0.9); }
+  to   { transform: none; }
+}
+.modal-pop { animation: modal-pop 0.2s ease-out both; }
+
 /* whileHover + whileTap pairs. */
 .press-sm, .press-lg { transition: transform 120ms ease; }
 .press-sm:hover { transform: scale(1.02); }
@@ -151,6 +159,7 @@ html.animations-disabled .fade-in { animation: none; }
 html.animations-disabled .assistant-pop,
 html.animations-disabled .feedback-pop,
 html.animations-disabled .dropdown-pop,
+html.animations-disabled .modal-pop,
 html.animations-disabled .success-pop { animation: none; }
 html.animations-disabled .assistant-fab,
 html.animations-disabled .feedback-fab,
