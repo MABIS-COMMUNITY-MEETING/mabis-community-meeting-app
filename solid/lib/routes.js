@@ -17,6 +17,7 @@ import { saveDataEnabled } from "@/lib/performance-tier";
 const loaders = {
   "/": () => import("~/pages/Splash"),
   "/home": () => import("~/pages/Home"),
+  "/history": () => import("~/pages/History"),
 };
 
 const started = new Map();
