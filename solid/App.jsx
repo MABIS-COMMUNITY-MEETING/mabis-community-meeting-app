@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/solid-query";
 import { queryClientInstance } from "~/lib/query-client";
 import { AuthProvider, useAuth } from "~/lib/AuthContext";
 import { Toaster } from "~/lib/toast";
+import OptionalCustomCursor from "~/components/OptionalCustomCursor";
 
 /*
  * Solid migration — application shell.
@@ -52,6 +53,7 @@ export default function App() {
             <Route path="/home" component={ProtectedHome} />
           </Router>
         </Suspense>
+        <OptionalCustomCursor />
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>
