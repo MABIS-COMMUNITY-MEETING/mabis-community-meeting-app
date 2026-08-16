@@ -35,6 +35,12 @@ function waitWithinBudget(promise, ms) {
   ]).finally(() => clearTimeout(timer));
 }
 
+let homeChunkPromise;
+function homeChunk() {
+  if (!homeChunkPromise) homeChunkPromise = import("~/pages/Home");
+  return homeChunkPromise;
+}
+
 let homeRoutePromise;
 function loadHomeRoute() {
   if (homeRoutePromise) return homeRoutePromise;
@@ -69,7 +75,7 @@ function loadHomeRoute() {
   // reads as frozen either way.
   const HOME_WARMUP_BUDGET_MS = 900;
   homeRoutePromise = (async () => {
-    const chunk = import("~/pages/Home");
+    const chunk = homeChunk();
     const warm = import("~/lib/home-warmup")
       .then(({ warmHomeRoute }) => warmHomeRoute((p) => setLoadingState({
         progress: p.progress, label: "CACHING STUFF", detail: p.detail,
@@ -94,7 +100,20 @@ function loadHomeRoute() {
 const loaders = {
   "/": () => import("~/pages/Splash"),
   "/login": () => import("~/pages/Login"),
-  "/home": loadHomeRoute,
+  /*
+   * Chunk only — deliberately NOT loadHomeRoute.
+   *
+   * This map drives preloadRoute(), which runs on hover and on the idle
+   * pre-loader that warms every route in the background. Pointing it at
+   * loadHomeRoute meant the full warm-up — twelve chunks and eleven entity
+   * reads — fired while the visitor was still on the splash screen and not yet
+   * signed in. So pressing "ENTER LOG IN" queued behind work for a page they
+   * had not reached, and the reads went out unauthenticated.
+   *
+   * App.jsx calls loadHomeRoute() directly when /home actually renders, which
+   * is the point at which warming is worth doing.
+   */
+  "/home": homeChunk,
   "/history": () => import("~/pages/History"),
   "/history/announcements": () => import("~/pages/AnnouncementsHistory"),
   "/history/news": () => import("~/pages/NewsHistory"),
@@ -114,3 +133,4 @@ export function preloadRoute(pathname) {
 }
 
 export const routeLoaders = loaders;
+export { loadHomeRoute };
