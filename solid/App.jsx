@@ -137,7 +137,7 @@ export default function App() {
           <PrideAmbience />
           <PaletteStripe />
           <ScrollProgress />
-          <Suspense fallback={<RouteFallback />}>
+          <Suspense fallback={<ChunkFallback />}>
             <Router root={ScrollResetRoot}>
               <Route path="/" component={Splash} />
               <Route path="/login" component={TransitionedLogin} />
