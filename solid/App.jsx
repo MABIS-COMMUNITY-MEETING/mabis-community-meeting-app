@@ -5,6 +5,8 @@ import { queryClientInstance } from "~/lib/query-client";
 import { AuthProvider, useAuth } from "~/lib/AuthContext";
 import { Toaster } from "~/lib/toast";
 import OptionalCustomCursor from "~/components/OptionalCustomCursor";
+import CjkFontLoader from "~/components/CjkFontLoader";
+import JapaneseUiCompanion from "~/components/JapaneseUiCompanion";
 
 /*
  * Solid migration — application shell.
@@ -75,6 +77,11 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClientInstance}>
       <AuthProvider>
+        {/* Shell effects, mounted once and never re-run by navigation. Order
+            matches the React tree: the CJK stylesheet is requested before the
+            companion layer starts writing lang="ja" nodes into the DOM. */}
+        <CjkFontLoader />
+        <JapaneseUiCompanion />
         <Suspense fallback={<RouteFallback />}>
           <Router>
             <Route path="/" component={Splash} />
