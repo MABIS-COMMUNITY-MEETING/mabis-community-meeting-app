@@ -56,6 +56,7 @@ async function bootstrap() {
   startPerfMonitor();
 
   if (replayed) reconcileThemeAfterPaint();
+  idlePreloadRemainingRoutes();
 
   // Installing after load keeps precache traffic out of the critical path.
   // The worker is a progressive enhancement and never intercepts Base44 APIs.
@@ -73,6 +74,38 @@ async function bootstrap() {
     if (document.readyState === "complete") register();
     else window.addEventListener("load", register, { once: true });
   }
+}
+
+/*
+ * Warm every remaining route chunk once the app is up, so a first visit to a
+ * new section resolves from cache instead of suspending.
+ *
+ * SiteHeader already preloads on pointerenter/focus, but that only gives a
+ * real head start with a mouse. On touch, pointerenter fires essentially
+ * alongside the tap itself — no dwell time before the click — so on a phone
+ * (the app's primary layout) every first visit to Home, History, Feedback etc.
+ * still suspended and the fixed-fullscreen LoadingScreen took the whole app
+ * over again, on top of the one shown on initial boot. That repeat takeover is
+ * the "splashes multiple times" symptom. Warming all chunks here means the
+ * Suspense boundary almost never has anything left to wait on after boot.
+ *
+ * Idle-scheduled and route-loader-driven (preloadRoute already yields when
+ * the user has Save-Data on), so it never competes with first paint or a slow
+ * connection.
+ */
+function idlePreloadRemainingRoutes() {
+  const run = () => {
+    import("@/lib/routes").then(({ preloadRoute, routeLoaders }) => {
+      const current = window.location.pathname;
+      Object.keys(routeLoaders).forEach((path) => {
+        if (path !== current) preloadRoute(path);
+      });
+    }).catch(() => {
+      /* offline or a chunk 404: navigation still works, it just suspends again */
+    });
+  };
+  if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 4000 });
+  else window.setTimeout(run, 1800);
 }
 
 /*
