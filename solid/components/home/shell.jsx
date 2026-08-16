@@ -104,6 +104,7 @@ export function EditorialSection(props) {
             <Show when={props.description}>
               <JapaneseText
                 ja={props.jaDescription}
+                data-section-description
                 class="mt-2 block max-w-[54ch] text-[0.8125rem] leading-[1.6] tracking-[0.02em] text-muted-foreground sm:text-sm"
                 japaneseClass="mt-1 block text-[0.9em]"
               >
