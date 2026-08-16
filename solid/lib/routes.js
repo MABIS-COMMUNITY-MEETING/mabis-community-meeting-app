@@ -41,6 +41,27 @@ function homeChunk() {
   return homeChunkPromise;
 }
 
+/*
+ * Kick off Home's chunk downloads while auth is still in flight.
+ *
+ * /home is gated on both auth round-trips resolving before <Home> renders, and
+ * only then does lazy() start fetching. Since none of those chunks need a
+ * token, that left the connection idle for a full round-trip with work
+ * available to do. Called from App.jsx's ProtectedHome.
+ *
+ * Deliberately NOT the data warm-up: entity reads issued before auth resolves
+ * go out unauthenticated. Only the static files move earlier.
+ */
+let moduleWarmupPromise;
+export function startHomeModuleWarmup() {
+  if (moduleWarmupPromise) return moduleWarmupPromise;
+  if (saveDataEnabled()) return undefined;
+  moduleWarmupPromise = import("~/lib/home-warmup")
+    .then(({ warmHomeModules }) => warmHomeModules())
+    .catch(() => undefined);
+  return moduleWarmupPromise;
+}
+
 let homeRoutePromise;
 function loadHomeRoute() {
   if (homeRoutePromise) return homeRoutePromise;
