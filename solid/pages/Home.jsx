@@ -13,6 +13,7 @@ import IdleMount from "~/components/IdleMount";
 
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
+const FeedbackWidget = lazy(() => import("~/components/FeedbackWidget"));
 
 // Widgets are code-split individually, so a section that never scrolls into
 // view never downloads its chunk. Combined with LazySection's shared observer
@@ -242,11 +243,12 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Deferred until the browser is idle, as in React. JobReminder and
-          FeedbackWidget belong in here too once they are ported. */}
+      {/* Deferred until the browser is idle, as in React. JobReminder belongs
+          in here too once it is ported. */}
       <IdleMount timeout={1800}>
         <Suspense fallback={null}>
           <MabisAIAssistant />
+          <FeedbackWidget />
         </Suspense>
       </IdleMount>
     </div>
