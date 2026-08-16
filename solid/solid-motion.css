@@ -236,17 +236,27 @@ html.animations-disabled .tap-85:active { transform: none; }
  * once measured, so the scrollbar stops drifting after first pass.
  */
 /*
- * content-visibility is deliberately NOT used on Home's sections.
+ * content-visibility, applied only AFTER a section has revealed.
  *
- * It tells the browser to skip rendering off-screen content — and content that
- * was never rendered cannot run a CSS transition. With it on, every section and
- * widget was painted straight into its final state on scroll-in and the
- * entrance animations were computed and discarded.
+ * The naive version put `content-visibility: auto` on every .cv-section. That
+ * skips rendering off-screen content — and content the browser never rendered
+ * cannot run a CSS transition, so each section was painted straight into its
+ * final state and the entrance slide-up was computed and discarded.
  *
- * The saving it offered is already covered better by LazySection, which does
- * not mount an off-screen widget at all. contain-intrinsic-size stays, so the
- * scrollbar still settles without the paint-skipping side effect.
+ * Removing it outright fixed the animation but handed weak hardware the full
+ * layout and paint cost of all ten sections, which is the opposite of what this
+ * page needs.
+ *
+ * So it is gated on `cv-ready`, which EditorialSection sets once its entrance
+ * has played. The animation runs on a fully rendered element, and from then on
+ * the section is skippable whenever it scrolls out of view — the paint saving
+ * is kept for every subsequent scroll, which is where it actually matters.
  */
+@supports (content-visibility: auto) {
+  .cv-section.cv-ready {
+    content-visibility: auto;
+  }
+}
 
 /* Never skip rendering for the section the user jumped to, or one containing
    focus — otherwise an anchor jump can land on unpainted content. */
@@ -350,3 +360,26 @@ html.animations-disabled .widget-rise { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .widget-rise { animation: none; }
 }
+
+/* ── Weak hardware ─────────────────────────────────────────────────────────
+ * performance-lite is set by applyLowPowerMode() when the device fails the
+ * frame-budget probe in lib/performance-tier. On that hardware an entrance
+ * animation per section is not polish, it is dropped frames during the exact
+ * gesture the user is making — so the content simply appears.
+ *
+ * Scrolling stays smooth because nothing is animating while it scrolls; the
+ * layout, colours and structure are identical either way.
+ */
+html.performance-lite .widget-rise,
+html.performance-lite .cv-section [style*="translateY"] {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+}
+
+/* Promote only what is genuinely moving, and only while it moves. A permanent
+   will-change on ten sections costs VRAM on integrated graphics for layers the
+   compositor is not touching. */
+.widget-rise { will-change: transform, opacity; }
+.widget-rise:not(:hover) { will-change: auto; }

@@ -78,6 +78,7 @@ export function EditorialSection(props) {
       tabindex={-1}
       aria-label={`${index()} ${props.label ?? ""}`}
       class="cv-section relative grid scroll-mt-20 grid-cols-1 gap-x-8 outline-none lg:grid-cols-[6.5rem_1fr]"
+      classList={{ "cv-ready": revealed() }}
       style={{ "contain-intrinsic-size": `auto ${props.intrinsicHeight ?? 640}px` }}
     >
       <div class="hidden lg:flex flex-col items-end select-none">
