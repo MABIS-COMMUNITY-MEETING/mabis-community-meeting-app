@@ -502,9 +502,10 @@ export default function DocsEditor(props) {
         <ToolbarDivider />
 
         <Dropdown width="w-44" trigger={<span class="flex items-center gap-1 text-xs"><Type class="h-3.5 w-3.5" />{fontLabel()}<ChevronDown class="h-3 w-3" /></span>}>
+          {/* Index rather than For throughout this toolbar: every one of these
+              lists is a module constant that never reorders, so For's keyed
+              reconciliation allocates a lookup it can never use. */}
           {(close) => (
-            {/* Index, not For: FONTS is a module constant and never reorders,
-                so keyed reconciliation is pure overhead here. */}
             <Index each={FONTS}>
               {(font) => (
                 <MenuItem
