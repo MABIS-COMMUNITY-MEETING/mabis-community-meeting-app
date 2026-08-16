@@ -56,6 +56,32 @@ if (!window.requestIdleCallback) window.requestIdleCallback = (fn) => setTimeout
 // change event works, not the initial-mount path.
 if (japaneseMode) window.localStorage.setItem("mabis-japanese-text-enabled", "true");
 
+/*
+ * Signed-in routes need a session. Rather than stand up a fake Base44 backend,
+ * this uses the app's own offline-recovery path: base44.auth.me() fails (there
+ * is no server), AuthContext falls back to restoreOfflineUser(), and that reads
+ * a localStorage record keyed by a hash of the access token. Seed both and the
+ * protected routes render exactly as they would for a real signed-in user.
+ *
+ * tokenMarker is FNV-1a, copied from src/lib/offline-cache.js — it must stay in
+ * step with that function or the record is silently rejected as another user's.
+ */
+const SEEDED_USER = { id: "parity-user", full_name: "Parity Tester", email: "parity@example.com", role: "admin" };
+if (route.startsWith("/home")) {
+  const token = "parity-token";
+  let hash = 2166136261;
+  for (let i = 0; i < token.length; i += 1) {
+    hash ^= token.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  window.localStorage.setItem("base44_access_token", token);
+  window.localStorage.setItem("mabis-offline-user-v1", JSON.stringify({
+    user: SEEDED_USER,
+    marker: (hash >>> 0).toString(36),
+    savedAt: Date.now(),
+  }));
+}
+
 // Vite's modulepreload polyfill fetches each chunk to warm the cache. There is
 // no server here and it is only a prefetch, so make it a no-op rather than let
 // an unhandled rejection kill the run.
@@ -152,6 +178,41 @@ if (route === "/login") {
   // loading signal initialised wrong and sign-in would be dead on arrival.
   const cta = root && root.querySelector('button[data-cursor="GOOGLE"]');
   check("Google button is clickable on first paint", cta && !cta.disabled);
+} else if (route === "/home") {
+  // The shell must render for a signed-in user — if offline recovery failed we
+  // would be looking at the login redirect instead, and every check below would
+  // be vacuously true, so assert we are NOT on login first.
+  check("signed-in session recovered (not bounced to login)",
+    !text.includes("CONTINUE WITH GOOGLE"),
+    "landed on /login — the seeded offline session was rejected");
+  check("home masthead rendered", text.includes("MABIS"));
+
+  // MabisAIAssistant: lazy, inside IdleMount, so it appears only after the idle
+  // callback fires and its chunk resolves.
+  const fab = root && root.querySelector('button[title="MABIS Omni AI Assistant"]');
+  check("assistant FAB mounted after idle", !!fab,
+    "IdleMount never fired, or the lazy chunk failed to resolve");
+  check("assistant panel closed on first paint",
+    !text.includes("How can I help?"));
+
+  if (fab) {
+    fab.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 150));
+    const t2 = root.textContent.replace(/\s+/g, " ");
+    const h2b = root.innerHTML;
+    check("assistant panel opens on click", t2.includes("MABIS Assistant"));
+    check("empty-state prompt rendered", t2.includes("How can I help?"));
+    check("all four suggestions rendered",
+      t2.includes("What's on the agenda this week?")
+      && t2.includes("What did we discuss last meeting?")
+      && t2.includes("Who's on jobs this week?")
+      && t2.includes("Any announcements I should know about?"));
+    check("composer rendered", h2b.includes("Reply to MABIS Assistant"));
+    check("entrance is the CSS keyframe, not framer", h2b.includes("assistant-pop"));
+    check("send button disabled while the composer is empty",
+      !!root.querySelector("textarea")
+      && [...root.querySelectorAll("button")].some((b) => b.disabled));
+  }
 } else if (route === "/") {
   // ── content parity with src/pages/Splash.jsx ──────────────────────────────
   check('hero headline "COMMUNITY" present', text.includes("COMMUNITY"));
