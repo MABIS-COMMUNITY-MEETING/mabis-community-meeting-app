@@ -604,6 +604,25 @@
   margin-top: 0.125rem;
 }
 
+/* ── the Japanese toggle actually has to turn Japanese OFF ──────────────────
+   <JapaneseText> and the auto-companion scanner both check the preference, but
+   a lot of UI hand-writes a plain <span lang="ja"> instead, and those ignored
+   it completely — the sign-in page showed サインイン with the setting off, and so
+   did History, Feedback and both archive pages.
+
+   Gating it here rather than in each component is deliberate: one rule covers
+   every site that exists today, every site added later, and BOTH builds (they
+   share this stylesheet). applyJapaneseTextPreference() already toggles
+   .japanese-text-enabled on <html> at boot and on every change, so the hook
+   was there and simply unused.
+
+   Opt out with data-ja-always on anything that must stay visible regardless —
+   currently just the Settings toggle's own label, since hiding the Japanese on
+   the control that enables Japanese is user-hostile. */
+html:not(.japanese-text-enabled) [lang="ja"]:not([data-ja-always]) {
+  display: none;
+}
+
 /* ── vertical text ── */
 .vert-text { writing-mode: vertical-rl; text-orientation: mixed; }
 
