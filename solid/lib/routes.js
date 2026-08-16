@@ -20,6 +20,7 @@ const loaders = {
   "/history": () => import("~/pages/History"),
   "/history/announcements": () => import("~/pages/AnnouncementsHistory"),
   "/history/news": () => import("~/pages/NewsHistory"),
+  "/feedback": () => import("~/pages/Feedback"),
 };
 
 const started = new Map();
