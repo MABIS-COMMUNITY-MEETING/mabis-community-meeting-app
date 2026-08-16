@@ -60,6 +60,18 @@ function RouteFallback() {
 }
 
 /*
+ * Fallback for a plain route swap.
+ *
+ * LoadingScreen says "CACHING STUFF" and reports warm-up progress — that is
+ * Home's story, and showing it while a 2.5 KiB Login chunk loads is both a lie
+ * and slower-feeling than nothing. Signed-out routes get a height-reserving
+ * blank instead, so the page cannot shift and no false progress is implied.
+ */
+function ChunkFallback() {
+  return <div style={{ "min-height": "100vh" }} aria-hidden />;
+}
+
+/*
  * Mirrors React's ProtectedRoute + AuthenticatedApp, including the auth-error
  * branch that was missing from this build: an unregistered Google account gets
  * the explanatory screen rather than being bounced silently back to login.

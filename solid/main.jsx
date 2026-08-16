@@ -45,6 +45,9 @@ async function bootstrap() {
   // still warms every OTHER route, just later, since only this one is on the
   // critical path for first paint.
   preloadRoute(window.location.pathname);
+  // The splash has exactly one destination. Warming it here means the button
+  // press is a render, not a download.
+  if (window.location.pathname === "/") preloadRoute("/login");
 
   applyAnimationPreference();
   applyJapaneseTextPreference();
