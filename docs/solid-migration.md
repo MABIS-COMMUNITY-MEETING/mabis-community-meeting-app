@@ -27,9 +27,17 @@ different reasons:
 | `check:solid` | the same for **orphan** files nothing imports yet — Vite tree-shakes those out of the build, so a broken one stays invisible |
 | `check:solid:parity` | components that compile but throw, drop content, or render wrong, asserted against the React source |
 
-Parity runs one route per process (`/`, `/login`, `/nowhere`, plus `/` and
-`/login` with the Japanese preference on). The bundle is a singleton, so a
+Parity runs one route per process (`/`, `/login`, `/nowhere`, `/home`, plus `/`
+and `/login` with the Japanese preference on). The bundle is a singleton, so a
 second route in the same process would assert against the first route's DOM.
+
+`/home` is signed-in. The harness does not fake a backend — it seeds
+`localStorage` so the app's own **offline-recovery** path restores a session:
+`base44.auth.me()` fails, `AuthContext` falls back to `restoreOfflineUser()`,
+and that reads a record keyed by an FNV-1a hash of the access token. If
+`tokenMarker()` in `src/lib/offline-cache.js` ever changes, the copy in the
+harness must change with it or `/home` will silently start testing the login
+page instead. There is an explicit assertion guarding exactly that.
 
 ## Done
 
@@ -49,6 +57,7 @@ second route in the same process would assert against the first route's DOM.
 | Auth | Login + AuthLayout + GoogleIcon; `/register`, `/forgot-password`, `/reset-password` redirect to `/login` as in React |
 | 404 | `solid/pages/NotFound.jsx` on `path="*"` (React keeps it at `src/lib/PageNotFound.jsx`) |
 | Japanese | `JapaneseUiCompanion` auto-scanner + `CjkFontLoader`, mounted in the shell and verified annotating the DOM |
+| Assistant | `MabisAIAssistant` (+ `IdleMount`), mounted in Home and meeting mode; parity opens the panel and asserts the empty state, suggestions and composer |
 | Widgets | LunchMenu, Schedule |
 | UI primitives | Button, Input, Textarea, Badge, spinner, empty state, Select |
 | Kobalte primitives | Dialog, Tabs, Popover, DropdownMenu — ported 2026-08-15, verified against `vite.solid.config.js` |
@@ -85,7 +94,13 @@ shell.
 `HistoryWidget`, `QuickStartGuide`, `BirthdayBanner`, `JobReminder`,
 `MeetingSummary`, `RoleSwitcher`, `RolePreviewToggle`, `HighlightPicker`,
 `FamicomController`, `DoveAnimation`, `MemberAvatar`, `XpBadge`,
-`FeedbackWidget`, `SmoothScroll`, `Tilt3D`, `SectionReveal`, `IdleMount`.
+`FeedbackWidget`, `SmoothScroll`, `Tilt3D`, `SectionReveal`.
+
+`JobReminder` and `FeedbackWidget` belong inside Home's `IdleMount` block
+alongside the assistant — there is a comment marking the spot.
+
+Solid `Home` is also missing `PageFooter`, which React renders at the end of
+`<main>`.
 
 **4. Do not judge a port by line count.** Two claims in earlier revisions of
 this document were both wrong, in the same way:
@@ -123,7 +138,6 @@ Remaining work, largest first:
 
 | Lines | Item |
 |---|---|
-| 324 | `MabisAIAssistant` |
 | 278 | notes cluster: `BlockNotesEditor` + `NoteBlock` + `BlockToolbar` + `block_html` |
 | 171 | `FeedbackWidget` |
 | 155 | `ProfileEditor` |
@@ -131,7 +145,7 @@ Remaining work, largest first:
 | 102 | `JobReminder` |
 | 95 | `QuickStartGuide` |
 | 80 | `RoleSwitcher` |
-| ≤ 73 | shell tail: `SoundEffects`, `RolePreviewToggle`, `PrideAmbience`, `BirthdayBanner`, `PageTransition`, `ScrollSectionIndicator`, `ScrollVelocity`, `MotionPreference`, `IdleMount`, `PrefsSync`, `JapaneseDate`, `ScrollToTop`, `UserNotRegisteredError`, `ScrollScaleRitual` |
+| ≤ 73 | shell tail: `SoundEffects`, `RolePreviewToggle`, `PrideAmbience`, `BirthdayBanner`, `PageTransition`, `ScrollSectionIndicator`, `ScrollVelocity`, `MotionPreference`, `PrefsSync`, `JapaneseDate`, `ScrollToTop`, `UserNotRegisteredError`, `ScrollScaleRitual` |
 
 Kobalte primitives are done (Select, Dialog, Tabs, Popover, DropdownMenu). Note
 the Radix→Kobalte data-attribute swap: `data-[state=open|closed]` becomes
@@ -173,6 +187,12 @@ trigger. Popover's Content takes `gutter`, not `sideOffset`.
   Registering cleanup inside the effect body gives React's exact teardown
   semantics: it runs before each re-run and once on disposal. See
   `JapaneseUiCompanion`.
+- **Solid setters are synchronous — re-read state with care.** React code often
+  calls `setMessages(prev => [...prev, msg])` and then reads `messages` in the
+  same function, still getting the *pre-update* array because setState is
+  deferred. In Solid that read returns the updated array. `MabisAIAssistant`
+  captures `priorHistory` before appending; without that it would send the
+  user's own message as prior chat history and duplicate it against `prompt`.
 - **Clear your own timers.** React tolerates `setState` after unmount as a
   no-op; a Solid signal write after disposal is a real leak. `Login` tracks its
   15s retry timer and clears it in `onCleanup`.
