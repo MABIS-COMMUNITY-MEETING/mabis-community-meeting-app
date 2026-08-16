@@ -1,0 +1,1 @@
+import{I as r}from"./Icon-BnDdgDX_.js";import{c as t,m as o}from"./index-D536JQbc.js";import{t as e}from"./Home-BJt9k4i4.js";var c=[["path",{d:"M21 12a9 9 0 1 1-6.219-8.56",key:"13zald"}]],d=a=>t(r,o(a,{iconNode:c,name:"loader-circle"})),f=d;function p(a){return e(a).getDay()}function y(a){return e(a).getDay()===5}export{p as g,y as i,f as l};
