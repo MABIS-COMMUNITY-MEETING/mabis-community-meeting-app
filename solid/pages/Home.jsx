@@ -1,6 +1,8 @@
 import { onMount, onCleanup, lazy, Suspense, For, Show } from "solid-js";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection, EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
+import { useQuery } from "@tanstack/solid-query";
+import { base44 } from "@/api/base44Client";
 import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
 
@@ -96,6 +98,15 @@ export default function Home() {
     const role = auth.user()?.role_override || auth.user()?.role;
     return role === "admin" || role === "editor";
   };
+
+  // Fetched once here and passed down, mirroring the React page: the widgets
+  // that need the roster all share this single query rather than each issuing
+  // its own.
+  const membersQuery = useQuery(() => ({
+    queryKey: ["members"],
+    queryFn: () => base44.entities.Member.list("name", 200),
+  }));
+  const members = () => membersQuery.data || [];
 
   onMount(() => {
     const stop = installScrollStateClass();
