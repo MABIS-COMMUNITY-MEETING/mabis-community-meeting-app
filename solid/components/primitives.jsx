@@ -1,4 +1,5 @@
 import { createSignal, onMount, onCleanup, For, Show } from "solid-js";
+import { Dynamic } from "solid-js/web";
 import { subscribe } from "@/lib/physics/scheduler";
 import { integrateSpring } from "@/lib/physics/math";
 import { springFromFramer, useJapaneseText, finePointer } from "~/lib/motion";
@@ -14,8 +15,11 @@ export function JapaneseText(props) {
   const enabled = useJapaneseText();
   const layout = () => (props.layout === "inline" ? "ml-1.5 inline" : "mt-0.5 block");
 
+  // `as` is load-bearing, not cosmetic: callers pass as="div"/as="p" and rely
+  // on the element being block-level (mb-4 on an inline span is ignored).
+  // Dynamic swaps the tag without introducing a wrapper node.
   return (
-    <span class={props.class}>
+    <Dynamic component={props.as || "span"} class={props.class}>
       <span data-ja-skip>{props.children}</span>
       <Show when={enabled() && props.ja}>
         <span
@@ -25,7 +29,7 @@ export function JapaneseText(props) {
           {props.ja}
         </span>
       </Show>
-    </span>
+    </Dynamic>
   );
 }
 
