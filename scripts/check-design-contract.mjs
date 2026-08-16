@@ -36,6 +36,9 @@ function resolveSourcePath(relativePath) {
  * from shared primitive modules rather than as standalone files.
  */
 const SOLID_EQUIVALENTS = {
+    // Solid's route table lives in solid/lib/routes.js and deliberately does
+    // not reuse the React loaders — see the note in that file.
+    "src/lib/routeLoaders.js": ["solid/lib/routes.js"],
     "src/components/JapaneseText.jsx": ["solid/components/primitives.jsx"],
     "src/components/OpenMoji.jsx": ["solid/components/page-chrome.jsx"],
     "src/components/home/HomeSectionIndex.jsx": ["solid/components/home/shell.jsx"],
