@@ -1,4 +1,4 @@
-import { createSignal, onMount, For, Index, Show } from "solid-js";
+import { createSignal, For, Index, Show } from "solid-js";
 import { useQuery } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
 import { Bell, X } from "lucide-solid";
@@ -33,20 +33,31 @@ function scheduledDaysFor(jobTitle) {
 
 export default function JobReminder() {
   const auth = useAuth();
-  const [dismissed, setDismissed] = createSignal(false);
+  /*
+   * Read synchronously during setup, NOT in onMount.
+   *
+   * onMount runs after the first render, so dismissed() was false for that
+   * frame on every single load. This component renders a full-viewport
+   * bg-black/50 backdrop-blur overlay, and one frame of that is a very visible
+   * dark flash — the reminder appeared to "splash" even after being dismissed.
+   */
+  const [dismissed, setDismissed] = createSignal((() => {
+    try {
+      return !!localStorage.getItem(`job_reminder_${new Date().toDateString()}`);
+    } catch {
+      return false;   // private mode: the reminder simply shows again
+    }
+  })());
   const todayKey = `job_reminder_${new Date().toDateString()}`;
   const currentWeek = getWeekLabel(new Date());
 
   const assignmentsQuery = useQuery(() => ({
     queryKey: ["assignments"],
+    /* A revalidation must not empty the list underneath a visible overlay. */
+    keepPreviousData: true,
     queryFn: () => base44.entities.JobAssignment.list("-created_date", 300),
   }));
 
-  onMount(() => {
-    try {
-      if (localStorage.getItem(todayKey)) setDismissed(true);
-    } catch { /* private mode */ }
-  });
 
   const myJobs = () => (assignmentsQuery.data || []).filter((a) =>
     a.week_label === currentWeek && auth.user()?.email && a.assigned_to_email === auth.user().email
@@ -65,7 +76,20 @@ export default function JobReminder() {
   };
 
   return (
-    <Show when={!dismissed() && pending().length > 0}>
+    {/*
+      * Gated on isSuccess, not on data being present.
+      *
+      * ["assignments"] is shared with the Jobs widget and the warm-up, so any
+      * invalidateQueries on that key refetches here too — and restoreOfflineQueries
+      * invalidates every persisted root right after hydration, so that happens on
+      * every load. While a refetch is in flight `data` can be momentarily absent,
+      * which emptied pending(), hid the overlay, then showed it again when the
+      * data returned: one full-screen flash per invalidation.
+      *
+      * isSuccess stays true across a background refetch, so the overlay's
+      * visibility now depends only on whether there is anything to remind about.
+      */}
+    <Show when={!dismissed() && assignmentsQuery.isSuccess && pending().length > 0}>
       <div
         class="fade-in fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4"
         onClick={handleDismiss}
