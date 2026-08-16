@@ -342,23 +342,26 @@ if (route === "/login") {
   // offline-behaviour check.
   check("announcements widget reached its empty state",
     textNow().includes("No announcements yet"));
-  check("discussion widget reached its empty state",
-    textNow().includes("No topics yet"));
+  /*
+   * The Discussion section is a per-week minutes document now.
+   *
+   * NOTE: do not add assertions about DocsEditor's own DOM here. Quill never
+   * initialises under jsdom — .docs-editor-content is absent even in builds
+   * where the editor demonstrably works — so such checks fail for reasons that
+   * have nothing to do with the code under test. That cost a long debugging
+   * detour. Verify the editor itself in a browser.
+   */
+  check("the retired topic list is gone",
+    !textNow().includes("No topics yet"),
+    "Discussion is a document now, not a topic list");
+  check("minutes section is not stuck on its loading placeholder",
+    !root.innerHTML.includes('aria-label="Minutes (not yet migrated)"'));
 
   check("meeting mode renders its locked state",
     textNow().includes("Locked until Friday"));
 
-  // Interaction: the Discussion composer must open and accept input.
-  const addTopic = [...root.querySelectorAll("button")].find((b) => /Add Topic/.test(b.textContent));
-  check("discussion Add Topic control rendered", !!addTopic);
-  if (addTopic) {
-    addTopic.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-    await waitFor(() => !!root.querySelector("input[placeholder], textarea[placeholder]"));
-    await waitFor(() => !!root.querySelector(".docs-editor-content"), 8000);
-    console.log("DBG docs-editor-mounts-in-topic-form:", !!root.querySelector(".docs-editor-content"));
-    check("discussion composer opens with input fields",
-      root.querySelectorAll("input, textarea").length > 0);
-  }
+  check("the retired Add Topic control is gone",
+    !textNow().includes("Add Topic"));
 
   // Editorial interludes and footer — all were missing from Solid's Home.
   check("scroll-velocity band rendered",
