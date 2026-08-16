@@ -666,7 +666,7 @@ export default function DocsEditor(props) {
       </Show>
 
       <div
-        class="docs-editor-content rounded-b-lg border border-t-0 border-border"
+        class="docs-editor-content theme-rich-text rounded-b-lg border border-t-0 border-border"
         style={{ "min-height": props.minHeight || "180px", zoom: `${zoom()}%` }}
       >
         <div ref={editorEl} />
