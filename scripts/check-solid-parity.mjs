@@ -344,6 +344,15 @@ if (route === "/login") {
   }
   // Placeholder counting is unreliable here: the minutes editor is a lazy
   // chunk containing Quill, which jsdom loads slowly and never initialises.
+  if (process.env.PARITY_DEBUG) {
+    const html = root.innerHTML;
+    console.log("[debug] placeholders:", (html.match(/lazy-section-placeholder/g) || []).length);
+    console.log("[debug] docs-editor-* classes:",
+      JSON.stringify([...new Set(html.match(/docs-editor[\w-]*/g) || [])]));
+    console.log("[debug] announcements copy:", html.includes("No announcements yet"));
+    console.log("[debug] loading screen still up:", textNow().includes("CACHING"));
+    console.log("[debug] text sample:", textNow().replace(/\s+/g, " ").slice(0, 400));
+  }
   check("no MORE than the expected sections reserve space",
     (root.innerHTML.match(/lazy-section-placeholder/g) || []).length <= 2);
 
