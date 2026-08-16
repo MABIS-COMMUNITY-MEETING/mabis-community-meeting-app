@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2, Maximize2, X, ChevronLeft, ChevronRight, History, Pause, Square, Loader2, UserCheck, RefreshCw, Pencil, UserPlus, MessagesSquare } from "lucide-react";
+import { Maximize2, X, ChevronLeft, ChevronRight, History, Pause, Square, UserCheck, RefreshCw, UserPlus, MessagesSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import JapaneseText from "@/components/JapaneseText";
 import { Input } from "@/components/ui/input";
