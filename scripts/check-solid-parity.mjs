@@ -34,6 +34,11 @@ function check(name, condition, detail = "") {
 }
 
 const html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
+// The compiled stylesheet, for rules whose effect jsdom cannot compute.
+const builtCss = fs.readdirSync(path.join(dist, "assets"))
+  .filter((f) => f.endsWith(".css"))
+  .map((f) => fs.readFileSync(path.join(dist, "assets", f), "utf8"))
+  .join("\n");
 const entry = fs.readdirSync(path.join(dist, "assets")).find((f) => /^index-.*\.js$/.test(f));
 if (!entry) {
   console.error("No Solid entry bundle found. Build first.");
@@ -480,10 +485,13 @@ if (japaneseMode) {
    */
   check("japanese-text-enabled class absent when the preference is off",
     !window.document.documentElement.classList.contains("japanese-text-enabled"));
-  const rawJa = root ? [...root.querySelectorAll('[lang="ja"]')] : [];
-  check("every raw lang=\"ja\" node is CSS-gated or explicitly opted out",
-    rawJa.every((el) => el.hasAttribute("data-ja-always")),
-    `${rawJa.filter((el) => !el.hasAttribute("data-ja-always")).length} ungated node(s) — these are hidden by the stylesheet, so this only fails if the rule is removed`);
+  // jsdom does not apply stylesheets, so assert the rule shipped rather than
+  // its computed effect. Both halves matter: the selector, and the opt-out.
+  check("stylesheet gates raw lang=\"ja\" on the preference",
+    /html:not\(\.japanese-text-enabled\)[^{]*\[lang=["']?ja["']?\]/.test(builtCss),
+    "the index.css rule that hides ungated Japanese is missing from the build");
+  check("stylesheet honours the data-ja-always opt-out",
+    /data-ja-always/.test(builtCss));
 }
 
 // ── theme engine parity ────────────────────────────────────────────────────
