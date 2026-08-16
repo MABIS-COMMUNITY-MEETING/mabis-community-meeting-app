@@ -157,6 +157,14 @@ export default function SpinWheel(props) {
     });
   });
 
+  // Redraw when the member list or size changes outside of a spin — e.g.
+  // unchecking someone in Manage Students, or "Remove from wheel" on the
+  // winner banner. The React version got this for free because drawWheel was
+  // useCallback'd on [members, size], so the mount effect's dependency
+  // (drawWheel's identity) changed too. Nothing does that automatically here,
+  // so it needs its own effect — otherwise the wheel visibly goes stale.
+  createEffect(on([members, size], () => drawWheel(rotation), { defer: true }));
+
   // Pointer at top (12 o'clock = -π/2) — wheelofnames style
   const POINTER_ANGLE = -Math.PI / 2;
 
