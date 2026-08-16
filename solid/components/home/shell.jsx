@@ -1,6 +1,6 @@
 import { createSignal, onMount, For, Show } from "solid-js";
 import { JapaneseText } from "~/components/primitives";
-import { createVisibility } from "~/lib/perf";
+import { createVisibility, createReveal } from "~/lib/perf";
 
 const EASE_CSS = "cubic-bezier(0.16, 1, 0.3, 1)";
 
@@ -57,13 +57,16 @@ export function LazySection(props) {
  * animation per child.
  */
 export function EditorialSection(props) {
-  const [ref, visible] = createVisibility();
+  // Two signals on purpose: `visible` mounts the section well ahead of the
+  // viewport so nothing is blank when reached; `revealed` fires as it actually
+  // comes into view so the entrance is seen rather than played off-screen.
+  const [ref, revealed] = createReveal();
   const index = () => props.index ?? "00";
   const flag = () => `var(--flag-${((parseInt(index(), 10) || 1) % 8) + 1}, hsl(var(--primary)))`;
 
   const reveal = (delay) => ({
-    opacity: visible() ? 1 : 0,
-    transform: visible() ? "translateY(0)" : "translateY(8px)",
+    opacity: revealed() ? 1 : 0,
+    transform: revealed() ? "translateY(0)" : "translateY(8px)",
     transition: `opacity 0.55s ${EASE_CSS} ${delay}s, transform 0.55s ${EASE_CSS} ${delay}s`,
   });
 
@@ -85,7 +88,7 @@ export function EditorialSection(props) {
           class="mt-5 w-px flex-1 min-h-[3rem] origin-top opacity-45"
           style={{
             background: flag(),
-            transform: visible() ? "scaleY(1)" : "scaleY(0)",
+            transform: revealed() ? "scaleY(1)" : "scaleY(0)",
             transition: `transform 0.65s ${EASE_CSS}`,
           }}
         />

@@ -53,7 +53,17 @@ function getObserver() {
      * 500px still mounts a section before it is reached at ordinary scroll
      * speed, but only two or three are ever in flight together.
      */
-    { rootMargin: isConstrainedNetwork() ? "250px 0px" : "500px 0px" }
+    /*
+     * How far ahead a section MOUNTS. Deliberately generous: home-warmup.js
+     * has already cached every widget chunk and its first query before Home
+     * renders, so mounting early costs no network — it only decides whether
+     * the content is ready before the user reaches it. Dropping this to 500px
+     * to relieve a request stampede was the wrong lever and left visible blank
+     * gaps while scrolling; the warm-up is what relieved the stampede.
+     *
+     * Revealing is a SEPARATE signal — see createReveal below.
+     */
+    { rootMargin: isConstrainedNetwork() ? "800px 0px" : "1400px 0px" }
   );
   return sharedObserver;
 }
@@ -68,6 +78,38 @@ export function onceVisible(el, fn) {
     viewportCallbacks.delete(el);
     io.unobserve(el);
   };
+}
+
+/*
+ * Reveal-on-view, separate from mounting.
+ *
+ * The section entrance used to read createVisibility(), which fires while the
+ * section is still ~1400px below the fold — so the slide-up ran entirely
+ * off-screen and had finished before it was ever looked at. That is why the
+ * sections appeared to have no transition at all.
+ *
+ * This observer uses React's original viewport margin ("-8% 0px"), so the
+ * animation starts as the section genuinely comes into view.
+ */
+export function createReveal() {
+  const [revealed, setRevealed] = createSignal(false);
+  let el;
+  const ref = (node) => { el = node; };
+
+  onMount(() => {
+    if (!el || typeof IntersectionObserver === "undefined") { setRevealed(true); return; }
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        io.unobserve(entry.target);   // once, like framer's viewport.once
+        setRevealed(true);
+      }
+    }, { rootMargin: "-8% 0px" });
+    io.observe(el);
+    onCleanup(() => io.disconnect());
+  });
+
+  return [ref, revealed];
 }
 
 /** Solid primitive: becomes true once the bound element nears the viewport. */
