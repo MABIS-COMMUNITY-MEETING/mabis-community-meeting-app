@@ -31,6 +31,10 @@ const PERSISTED_QUERY_ROOTS = new Set([
   "birthdays",
   "calendarevents",
   "jobs",
+  // JobDefinition backs the Jobs and Rotation widget's list of jobs. It was
+  // the one query on Home outside this set, so that widget could never paint
+  // from cache and always waited on the network while its neighbours did not.
+  "job-definitions",
   "lunchmenu",
   "meetings",
   "members",
