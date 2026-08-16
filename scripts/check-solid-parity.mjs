@@ -7,7 +7,12 @@
  * that throws on mount, children rendered once instead of twice, a Tailwind
  * transform silently cancelled by an inline style, or a dropped class.
  *
- * Run: node scripts/check-solid-parity.mjs
+ * Run: node scripts/check-solid-parity.mjs [route]   (default "/")
+ *
+ * One route per process on purpose. The bundle is a singleton — ESM caches it
+ * and the theme engine writes to documentElement once — so checking a second
+ * route in the same process would assert against the first route's DOM. The
+ * `parity` npm script fans out across routes instead.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -15,6 +20,7 @@ import { pathToFileURL } from "node:url";
 import { JSDOM } from "jsdom";
 
 const dist = path.join(process.cwd(), "dist-solid");
+const route = process.argv[2] || "/";
 const failures = [];
 const checks = [];
 
@@ -30,7 +36,7 @@ if (!entry) {
   process.exit(1);
 }
 
-const dom = new JSDOM(html, { url: "http://localhost/", pretendToBeVisual: true, runScripts: "outside-only" });
+const dom = new JSDOM(html, { url: `http://localhost${route}`, pretendToBeVisual: true, runScripts: "outside-only" });
 const { window } = dom;
 
 // jsdom lacks these; the port reads them through the shared preference and
@@ -112,8 +118,34 @@ const html2 = root ? root.innerHTML : "";
 
 check("app mounted into #root", root && root.children.length > 0);
 
-// ── content parity with src/pages/Splash.jsx ────────────────────────────────
-check('hero headline "COMMUNITY" present', text.includes("COMMUNITY"));
+// ── route-specific parity ──────────────────────────────────────────────────
+// Only the landing route asserts the Splash slice; the auth and fallback
+// routes assert their own source of truth. Everything below the divider is
+// shared shell behaviour and runs for every route.
+if (route === "/login") {
+  // src/pages/Login.jsx + src/components/AuthLayout.jsx
+  check("sign-in headline present", text.includes("Sign in"));
+  check("Japanese title present", text.includes("サインイン"));
+  check("subtitle present", text.includes("Continue with your MABIS Google account"));
+  check("Google CTA present", text.includes("CONTINUE WITH GOOGLE"));
+  check("AuthLayout IDENTITY label present", text.includes("IDENTITY"));
+  check("AuthLayout AUTH label present", text.includes("AUTH"));
+  check("AuthLayout N° 00 present", text.includes("N° 00"));
+  check("AuthLayout background word present", text.includes("MABIS"));
+  check("auth entrance keyframe applied (not framer)", html2.includes("auth-rise"));
+  check("logo slot rendered, not the icon fallback",
+    !!(root && root.querySelector('img[alt="MABIS"]')),
+    "AuthLayout should take the logo branch, so <Dynamic component={icon}> must not render");
+  check("Google mark rendered (4-path brand svg)",
+    (html2.match(/#4285F4|#34A853|#FBBC05|#EA4335/g) || []).length === 4);
+  check("cursor hint preserved", html2.includes('data-cursor="GOOGLE"'));
+  // The button is enabled until clicked; a disabled button here would mean the
+  // loading signal initialised wrong and sign-in would be dead on arrival.
+  const cta = root && root.querySelector('button[data-cursor="GOOGLE"]');
+  check("Google button is clickable on first paint", cta && !cta.disabled);
+} else if (route === "/") {
+  // ── content parity with src/pages/Splash.jsx ──────────────────────────────
+  check('hero headline "COMMUNITY" present', text.includes("COMMUNITY"));
 check('hero headline "MEETING" present', text.includes("MEETING"));
 check("eyebrow label present", text.includes("SECONDARY COMMUNITY MEETING APP"));
 check("mission copy present", text.includes("Voice your words with presence and shared decision"));
@@ -148,6 +180,16 @@ check("huge-crop keeps its Tailwind transform (no inline transform override)",
 // Elements that DO animate a transform should have one inline.
 const vertLabels = root ? [...root.querySelectorAll(".vert-text")] : [];
 check("vertical side labels rendered", vertLabels.length >= 2);
+} else {
+  // src/lib/PageNotFound.jsx — any unmatched path.
+  check("404 numeral present", text.includes("404"));
+  check("404 heading present", text.includes("Page Not Found"));
+  check("ERROR 404 label present", text.includes("ERROR 404"));
+  check("offending path echoed back", text.includes(route.slice(1)));
+  check("return-home CTA present", text.includes("RETURN HOME"));
+  check("fade keyframe applied (not framer)", html2.includes("fade-in"));
+  check("admin note hidden for signed-out visitor", !text.includes("ADMIN NOTE"));
+}
 
 // ── theme engine parity ────────────────────────────────────────────────────
 const rootStyle = window.document.documentElement.getAttribute("style") || "";
@@ -156,14 +198,14 @@ check("font stack applied by shared themes.js", /--font-body/.test(rootStyle));
 check("ui-font-ready set (first-paint font bootstrap ran)",
   window.document.documentElement.classList.contains("ui-font-ready"));
 
-console.log(`\nSolid parity: ${checks.length - failures.length}/${checks.length} checks passed\n`);
+console.log(`\nSolid parity [${route}]: ${checks.length - failures.length}/${checks.length} checks passed\n`);
 if (failures.length) {
-  console.error("FAILED:");
+  console.error(`FAILED (${route}):`);
   failures.forEach((f) => console.error(`  - ${f}`));
   process.exit(1);
 }
 clearTimeout(watchdog);
-console.log("Splash slice renders at parity with the React source.\n");
+console.log(`Route ${route} renders at parity with the React source.\n`);
 // jsdom keeps timers and observers alive, so exit explicitly rather than
 // waiting for the event loop to drain (it never will).
 process.exit(0);
