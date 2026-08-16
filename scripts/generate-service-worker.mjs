@@ -38,8 +38,12 @@ const homeKey = Object.keys(manifest).find((key) => manifest[key].name === "Home
 if (!homeKey) throw new Error("Home route missing from the Vite manifest.");
 addManifestEntry(homeKey);
 
-const offlineCacheKey = "src/lib/offline-cache.js";
-if (!manifest[offlineCacheKey]) throw new Error("Offline data module missing from the Vite manifest.");
+/* The Solid build roots Vite at solid/, so shared modules under src/ appear in
+   the manifest as "../src/...". Accept either spelling — the module is the
+   same file, only the path is relative to a different root. */
+const offlineCacheKey = ["src/lib/offline-cache.js", "../src/lib/offline-cache.js"]
+  .find((key) => manifest[key]);
+if (!offlineCacheKey) throw new Error("Offline data module missing from the Vite manifest.");
 addManifestEntry(offlineCacheKey);
 
 const revision = crypto.createHash("sha256");
