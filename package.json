@@ -30,14 +30,14 @@
     "@base44/vite-plugin": "^1.0.30",
     "@kobalte/core": "^0.13.13",
     "@solidjs/router": "^1.0.0",
+    "@tanstack/query-core": "5.101.4",
     "@tanstack/solid-query": "^5.101.4",
     "date-fns": "^3.6.0",
     "lucide-solid": "^1.31.0",
     "quill": "^2.0.3",
     "solid-js": "^1.9.14",
     "solid-motionone": "^1.0.4",
-    "tailwindcss-animate": "^1.0.7",
-    "@tanstack/query-core": "5.101.4"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
