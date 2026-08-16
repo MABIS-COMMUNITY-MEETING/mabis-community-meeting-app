@@ -267,6 +267,54 @@ if (route === "/login") {
   check("job reminder stays closed with no pending jobs",
     !textNow().includes("Job Reminder"));
 
+  /*
+   * The ten Home widgets.
+   *
+   * These render here even though jsdom has no IntersectionObserver, because
+   * perf.js's onceVisible() degrades to firing immediately when the observer
+   * is unavailable — so LazySection mounts its children rather than sitting on
+   * the placeholder. That is the same path a browser with no IO support takes,
+   * which makes this a real assertion, not an artefact of the harness.
+   */
+  const SECTIONS = [
+    ["01", "MEETING MODE"],
+    ["02", "ANNOUNCEMENTS"],
+    ["03", "DISCUSSION"],
+    ["04", "JOBS AND ROTATION"],
+    ["05", "CALENDAR"],
+    ["06", "SCHEDULE"],
+    ["07", "LOST AND FOUND"],
+    ["08", "LUNCH"],
+    ["09", "NEWS"],
+    ["10", "PEOPLE"],
+  ];
+  for (const [index, label] of SECTIONS) {
+    check(`section ${index} (${label}) rendered`, textNow().includes(label));
+  }
+  check("no section stuck on its lazy placeholder",
+    (root.innerHTML.match(/lazy-section-placeholder/g) || []).length <= 1,
+    "a widget failed to mount and left reserved space behind");
+
+  // Widgets must reach their empty state, not an error or a spinner. Every
+  // entity query fails in here (there is no backend), so this doubles as the
+  // offline-behaviour check.
+  check("announcements widget reached its empty state",
+    textNow().includes("No announcements yet"));
+  check("discussion widget reached its empty state",
+    textNow().includes("No topics yet"));
+  check("meeting mode renders its locked state",
+    textNow().includes("Locked until Friday"));
+
+  // Interaction: the Discussion composer must open and accept input.
+  const addTopic = [...root.querySelectorAll("button")].find((b) => /Add Topic/.test(b.textContent));
+  check("discussion Add Topic control rendered", !!addTopic);
+  if (addTopic) {
+    addTopic.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    await waitFor(() => !!root.querySelector('input[placeholder], textarea[placeholder]'));
+    const fields = root.querySelectorAll("input, textarea");
+    check("discussion composer opens with input fields", fields.length > 0);
+  }
+
   // Editorial interludes and footer — all were missing from Solid's Home.
   check("scroll-velocity band rendered",
     (textNow().match(/BANGKOK/g) || []).length >= 2,
