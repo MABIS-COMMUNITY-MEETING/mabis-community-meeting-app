@@ -87,9 +87,33 @@ shell.
 `FamicomController`, `DoveAnimation`, `MemberAvatar`, `XpBadge`,
 `FeedbackWidget`, `SmoothScroll`, `Tilt3D`, `SectionReveal`, `IdleMount`.
 
-**4. Audit, do not assume.** Several Solid widgets are much smaller than their
-React sources and may be partial ports rather than finished ones — notably
-`DiscussionWidget` (23.9 KB vs 60.3 KB). Check before ticking these off.
+**4. `DocsEditor` is a partial port** — 669 Solid lines against 1397 React
+lines (~47%). It is the one widget with a real shortfall, and the reason is
+known: `react-quill` has no Solid equivalent, so it is a rewrite against Quill
+core rather than a transcription. Audit it against the React source before
+treating it as done.
+
+Every other ported widget is at or above its React line count (Solid runs
+slightly longer — `Show`/`For` are more verbose than `&&` and `.map`).
+`DiscussionWidget` is at 95%, not the 40% an earlier revision of this document
+claimed; that figure compared the Solid file against the React file *plus* its
+sub-components, and was wrong.
+
+## Progress
+
+Measured over the React component/page modules reachable from `src/App.jsx`
+(12,211 lines; `src/lib/**` is excluded because both builds share it):
+
+| Measure | Done |
+|---|---|
+| Routes rendering | 7 / 7 |
+| Source volume | ~81% |
+| Source volume, counting `DocsEditor`'s shortfall | ~75% |
+| Module count | 51 / 81 |
+
+Module count trails source volume because what remains is a long tail of small
+files — the median unported component is under 50 lines. The two largest are
+`MabisAIAssistant` (324) and `FeedbackWidget` (171).
 
 Kobalte primitives are done (Select, Dialog, Tabs, Popover, DropdownMenu). Note
 the Radix→Kobalte data-attribute swap: `data-[state=open|closed]` becomes
