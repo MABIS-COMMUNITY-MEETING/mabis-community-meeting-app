@@ -25,6 +25,7 @@ different reasons:
 |---|---|
 | `build:solid` | anything in the module graph that does not compile |
 | `check:solid` | the same for **orphan** files nothing imports yet — Vite tree-shakes those out of the build, so a broken one stays invisible |
+| `check:notes` | lossy `parseBlocks`→`serializeBlocks` round-trips. Notes are *stored* as HTML and re-parsed on every open, so anything the parser drops is deleted from the user's saved document on the next autosave. `block_html.js` is shared, so this guards **both** builds |
 | `check:solid:parity` | components that compile but throw, drop content, or render wrong, asserted against the React source |
 
 Parity runs one route per process (`/`, `/login`, `/nowhere`, `/home`, plus `/`
@@ -58,6 +59,7 @@ page instead. There is an explicit assertion guarding exactly that.
 | 404 | `solid/pages/NotFound.jsx` on `path="*"` (React keeps it at `src/lib/PageNotFound.jsx`) |
 | Japanese | `JapaneseUiCompanion` auto-scanner + `CjkFontLoader`, mounted in the shell and verified annotating the DOM |
 | Assistant | `MabisAIAssistant` (+ `IdleMount`), mounted in Home and meeting mode; parity opens the panel and asserts the empty state, suggestions and composer |
+| Notes | `MeetingNotesEditor` + `notes/{BlockNotesEditor,NoteBlock,BlockToolbar}`, wired into meeting mode. `block_html.js` is **shared** with React, not forked — it is a zero-import leaf, so there is nothing for vite-plugin-solid to mis-compile and the storage format cannot drift |
 | Widgets | LunchMenu, Schedule |
 | UI primitives | Button, Input, Textarea, Badge, spinner, empty state, Select |
 | Kobalte primitives | Dialog, Tabs, Popover, DropdownMenu — ported 2026-08-15, verified against `vite.solid.config.js` |
@@ -90,7 +92,7 @@ to the login redirect instead of the explanatory screen. Port this with the
 shell.
 
 **3. Feature components not yet ported** (verified absent from `solid/`):
-`ProfileEditor`, `BlockNotesEditor` + `BlockToolbar` + `NoteBlock`,
+`ProfileEditor`,
 `HistoryWidget`, `QuickStartGuide`, `BirthdayBanner`, `JobReminder`,
 `MeetingSummary`, `RoleSwitcher`, `RolePreviewToggle`, `HighlightPicker`,
 `FamicomController`, `DoveAnimation`, `MemberAvatar`, `XpBadge`,
@@ -138,7 +140,6 @@ Remaining work, largest first:
 
 | Lines | Item |
 |---|---|
-| 278 | notes cluster: `BlockNotesEditor` + `NoteBlock` + `BlockToolbar` + `block_html` |
 | 171 | `FeedbackWidget` |
 | 155 | `ProfileEditor` |
 | 149 | `LoadingScreen` |
@@ -193,6 +194,16 @@ trigger. Popover's Content takes `gutter`, not `sideOffset`.
   deferred. In Solid that read returns the updated array. `MabisAIAssistant`
   captures `priorHistory` before appending; without that it would send the
   user's own message as prior chat history and duplicate it against `prompt`.
+- **Never bind `innerHTML` on a contentEditable.** Solid would rewrite the DOM
+  under the caret on every keystroke. Write the content imperatively once, in
+  an effect gated on "became editable" — see `NoteBlock`.
+- **`on([deps], fn)` is React's dependency array.** Reads inside `fn` are not
+  tracked, which is how `NoteBlock` re-focuses on `editing`/`type` changes
+  without also re-running whenever `block.html` changes. React needed an
+  `eslint-disable` to express the same thing.
+- **`<Show when={x} keyed>` reproduces React's `key={x}` remount.** Needed
+  wherever a child snapshots a prop at creation — `BlockNotesEditor` parses
+  `initialHtml` once, so changing week must build a fresh one.
 - **Clear your own timers.** React tolerates `setState` after unmount as a
   no-op; a Solid signal write after disposal is a real leak. `Login` tracks its
   15s retry timer and clears it in `onCleanup`.
