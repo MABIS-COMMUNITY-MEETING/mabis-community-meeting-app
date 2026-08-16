@@ -136,7 +136,7 @@ export async function warmHomeRoute(onProgress) {
    * Skipped entirely on a constrained link, where speculative reads cost the
    * user more than the wait they save.
    */
-  const deferredData = constrained ? [] : deferredDataTasks();
+  const deferredData = constrained ? [] : [...deferredDataTasks(), ...deferredModuleTasks()];
   const tasks = [...modules, ...data];
 
   let complete = 0;
@@ -182,6 +182,26 @@ export async function warmHomeRoute(onProgress) {
 
 /* Everything below the first viewport. Same prefetch contract as dataTasks():
    the keys must match the widgets exactly or the read is wasted. */
+/*
+ * Chunks that sit BELOW a warmed section and so are never reached by warming
+ * that section.
+ *
+ * DocsEditor is the case that matters: section 03 is warmed, but the editor is
+ * lazy inside MeetingMinutes inside DiscussionWidget, so warming the section
+ * stops one level short. It is ~236 KB with Quill, and IdleMount only starts
+ * fetching it once the page is interactive — which is exactly when the user is
+ * most likely to look at the minutes.
+ *
+ * Background, never blocking: it must not delay first paint, it just needs to
+ * be in cache before IdleMount asks for it.
+ */
+function deferredModuleTasks() {
+  return [
+    { label: "EDITOR / MINUTES", run: () => import("~/components/MeetingMinutes") },
+    { label: "EDITOR / DOCUMENT", run: () => import("~/components/DocsEditor") },
+  ];
+}
+
 function deferredDataTasks() {
   const weekLabel = getWeekLabel(new Date());
   const prefetch = (queryKey, queryFn) => () =>
