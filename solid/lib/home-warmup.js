@@ -2,7 +2,6 @@ import { base44 } from "@/api/base44Client";
 import { isConstrainedNetwork } from "@/lib/performance-tier";
 import { queryClientInstance } from "~/lib/query-client";
 import { getWeekLabel } from "~/lib/weeks";
-import { runBurstOrdered, loadPenalties, savePenalties } from "~/lib/burst-scheduler";
 
 /*
  * What the "CACHING STUFF" screen is actually for.
@@ -193,22 +192,22 @@ export async function warmHomeRoute(onProgress) {
    * become a single long task while the user is trying to interact.
    */
   /*
-   * Background work runs through the burst-oriented scheduler.
+   * Bursty: every background request is issued at once, then the thread is
+   * handed back once.
    *
-   * These thirteen tasks have wildly different costs — importing DocsEditor
-   * evaluates ~236 KB of Quill, while prefetching the lunch menu is a small
-   * JSON read. Firing them in declaration order means the expensive one can
-   * land in front of the user at random.
-   *
-   * The scheduler measures each task's synchronous burn, penalises the greedy
-   * ones on a log2 curve, and orders the next run shortest-first. Penalties
-   * persist in localStorage, so by the second visit the cheap warms are
-   * already known to go first and the heavy ones trail behind a yield.
+   * A burst-ordered variant (lib/burst-scheduler.js, BORE-inspired) was tried
+   * here and reverted: it yields after any task measuring over ~1ms, and with
+   * thirteen tasks that inserted enough scheduler round-trips to delay the
+   * whole batch — the background warm-up stopped completing before the widgets
+   * needed it. Ordering work by cost only pays when the tasks are CPU-bound;
+   * these are I/O-bound, so the ordering bought nothing and the yields cost
+   * real time. The module is kept for the reactive/CPU-bound case.
    */
   void (async () => {
-    const penalties = loadPenalties();
-    await runBurstOrdered(background, penalties);
-    savePenalties(penalties);
+    for (const { run } of background) {
+      try { void Promise.resolve(run()).catch(() => {}); } catch { /* best effort */ }
+    }
+    await yieldToBrowser();
   })();
 
   await Promise.allSettled(blocking.map(async ({ label, run }) => {
