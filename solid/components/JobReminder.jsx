@@ -53,8 +53,6 @@ export default function JobReminder() {
 
   const assignmentsQuery = useQuery(() => ({
     queryKey: ["assignments"],
-    /* A revalidation must not empty the list underneath a visible overlay. */
-    keepPreviousData: true,
     queryFn: () => base44.entities.JobAssignment.list("-created_date", 300),
   }));
 
