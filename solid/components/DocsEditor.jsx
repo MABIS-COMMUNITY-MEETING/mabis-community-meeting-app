@@ -11,6 +11,7 @@ import {
   THEME_TEXT_COLORS, THEME_HIGHLIGHTS, EDITOR_MODULES, EMPTY_FORMATS,
   resolveThemeColor, stripHtml, safeFilename,
 } from "~/lib/quill-setup";
+import { downloadOdt } from "@/lib/odt-export";
 import "quill/dist/quill.snow.css";
 
 /*
