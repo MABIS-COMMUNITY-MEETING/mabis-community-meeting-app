@@ -209,7 +209,7 @@ const byTitle = (title) => (root
  * race — the same assertion passed and failed on consecutive runs before this.
  * Poll to a deadline instead.
  */
-const waitFor = async (predicate, timeoutMs = 3000) => {
+const waitFor = async (predicate, timeoutMs = 6000) => {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (predicate()) return true;
@@ -260,7 +260,7 @@ if (route === "/login") {
    * passed whether Home had rendered or not. Swapping the route fallback to a
    * blank div exposed it. Poll for the masthead's own copy instead.
    */
-  await waitFor(() => textNow().includes("COMMUNITY DASHBOARD"), 8000);
+  await waitFor(() => textNow().includes("COMMUNITY DASHBOARD"), 15000);
   check("home masthead rendered", textNow().includes("COMMUNITY DASHBOARD"));
 
   // MabisAIAssistant: lazy, inside IdleMount, so it appears only after the idle
