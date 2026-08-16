@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import DocsEditor from "@/components/DocsEditor";
-import { topicsToMinutesHtml, isBlankDocument } from "@/lib/minutes-format";
+import { resolveMinutesDocument } from "@/lib/minutes-format";
 
 /*
  * The week's minutes document.
@@ -74,25 +74,18 @@ export default function MeetingMinutes({ weekLabel, weekTitle, canEdit = true })
 
   const initialHtml = useMemo(() => {
     if (isLoading) return "";
-
-    const stored = notesRecord?.description;
-    if (!isBlankDocument(stored)) {
-      // A real document exists — never seed over it.
-      seededForWeekRef.current = weekLabel;
-      latestRef.current = { week: weekLabel, html: stored };
-      return stored;
-    }
-
-    // Already resolved for THIS week: reuse what we have rather than
-    // re-deriving mid-edit when the topics query refetches.
-    if (seededForWeekRef.current === weekLabel && latestRef.current.week === weekLabel) {
-      return latestRef.current.html;
-    }
-
-    const seed = topicsToMinutesHtml(allTopics, weekLabel, { heading: weekTitle });
-    seededForWeekRef.current = weekLabel;
-    latestRef.current = { week: weekLabel, html: seed };
-    return seed;
+    const { html, memo } = resolveMinutesDocument({
+      week: weekLabel,
+      storedHtml: notesRecord?.description,
+      topics: allTopics,
+      heading: weekTitle,
+      memo: latestRef.current.week === seededForWeekRef.current
+        ? { seededWeek: seededForWeekRef.current, ...latestRef.current }
+        : null,
+    });
+    seededForWeekRef.current = memo.seededWeek;
+    latestRef.current = { week: memo.week, html: memo.html };
+    return html;
     // allTopics is intentionally absent: a refetch must not re-seed a week that
     // has already been resolved, or it would fight the user's typing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
