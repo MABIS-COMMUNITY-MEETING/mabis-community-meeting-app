@@ -2,6 +2,7 @@ import { base44 } from "@/api/base44Client";
 import { isConstrainedNetwork } from "@/lib/performance-tier";
 import { queryClientInstance } from "~/lib/query-client";
 import { getWeekLabel } from "~/lib/weeks";
+import { runBurstOrdered } from "~/lib/burst-scheduler";
 
 /*
  * What the "CACHING STUFF" screen is actually for.
@@ -160,7 +161,9 @@ export async function warmHomeRoute(onProgress) {
    * Skipped entirely on a constrained link, where speculative reads cost the
    * user more than the wait they save.
    */
-  const deferredData = constrained ? [] : [...deferredDataTasks(), ...deferredModuleTasks()];
+  const deferredData = constrained
+    ? []
+    : [...asIo(deferredDataTasks()), ...deferredModuleTasks()];
   const tasks = [...modules, ...data];
 
   let complete = 0;
@@ -184,31 +187,32 @@ export async function warmHomeRoute(onProgress) {
   ]);
 
   const blocking = tasks.filter((t) => FIRST_VIEW.has(t.label));
-  const background = [...tasks.filter((t) => !FIRST_VIEW.has(t.label)), ...deferredData];
 
   /*
-   * Fired, never awaited: these continue past the loading screen. Kicked off
-   * one at a time with a yield between, so starting thirteen of them cannot
-   * become a single long task while the user is trying to interact.
-   */
-  /*
-   * Bursty: every background request is issued at once, then the thread is
-   * handed back once.
+   * Everything below the first viewport, split by what its cost actually is.
    *
-   * A burst-ordered variant (lib/burst-scheduler.js, BORE-inspired) was tried
-   * here and reverted: it yields after any task measuring over ~1ms, and with
-   * thirteen tasks that inserted enough scheduler round-trips to delay the
-   * whole batch — the background warm-up stopped completing before the widgets
-   * needed it. Ordering work by cost only pays when the tasks are CPU-bound;
-   * these are I/O-bound, so the ordering bought nothing and the yields cost
-   * real time. The module is kept for the reactive/CPU-bound case.
+   * The reads are marked `io`: calling prefetchQuery is a few microseconds and
+   * the wait belongs to the network, so the scheduler fires them all at once
+   * and never sequences them. An earlier attempt to burst-order these made
+   * things worse for exactly that reason — spacing a fetch only delays its
+   * response, and the yields cost more than the ordering saved.
+   *
+   * The chunk imports are left unmarked, so they are sequenced. Their real
+   * cost is parse and evaluate, which lands on the main thread; firing all of
+   * them together means those evaluations arrive back-to-back as one
+   * unbroken block, which is the pile-up the slice budget exists to break up.
    */
-  void (async () => {
-    for (const { run } of background) {
-      try { void Promise.resolve(run()).catch(() => {}); } catch { /* best effort */ }
-    }
-    await yieldToBrowser();
-  })();
+  const background = [
+    ...modules.filter((t) => !FIRST_VIEW.has(t.label)),
+    ...asIo(data.filter((t) => !FIRST_VIEW.has(t.label))),
+    ...deferredData,
+  ];
+
+  /*
+   * Fired, never awaited: these continue past the loading screen, ordered
+   * cheapest-first from what previous visits measured (lib/burst-scheduler.js).
+   */
+  void runBurstOrdered(background);
 
   await Promise.allSettled(blocking.map(async ({ label, run }) => {
     try {
