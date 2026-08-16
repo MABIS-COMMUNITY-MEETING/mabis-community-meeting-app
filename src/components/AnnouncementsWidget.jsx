@@ -24,6 +24,9 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
   const [videoFile, setVideoFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  // Holds the announcement awaiting confirmation. Deleting is permanent and
+  // there is no undo, so it no longer happens on a single stray tap.
+  const [pendingDelete, setPendingDelete] = useState(null);
   const imgRef = useRef(null);
   const vidRef = useRef(null);
   const queryClient = useQueryClient();
@@ -280,6 +283,46 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
           </AnimatePresence>
         </div>
       </div>
+
+      {pendingDelete &&
+      <div
+        className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4"
+        role="presentation"
+        onMouseDown={() => setPendingDelete(null)}>
+
+          <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="remove-announcement-title"
+          className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-2xl"
+          onMouseDown={(e) => e.stopPropagation()}>
+
+            <h3 id="remove-announcement-title" className="font-display text-lg font-bold text-foreground">
+              Remove this announcement?
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              “{pendingDelete.title}” will be deleted for everyone. This cannot be undone.
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button
+              type="button"
+              onClick={() => setPendingDelete(null)}
+              className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
+                Keep it
+              </button>
+              <button
+              type="button"
+              onClick={() => {
+                deleteMutation.mutate(pendingDelete.id);
+                setPendingDelete(null);
+              }}
+              className="flex-1 rounded-lg bg-destructive px-4 py-2.5 text-sm font-bold text-destructive-foreground hover:opacity-90 transition-opacity">
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>);
 
 }
