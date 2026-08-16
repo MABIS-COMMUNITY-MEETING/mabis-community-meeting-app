@@ -43,27 +43,24 @@ function addManifestEntry(key, visited = new Set()) {
 // `dynamicImports` instead. Left alone, that means a first-time visitor's
 // widgets are only cache-first from their *second* load: the very thing the
 // query client already does for widget *data* (staleTime, no refetch-on-mount)
-// was not true yet for the widget *code*. Precaching the Home route's dynamic
-// import graph closes that gap, so the JS for every widget is already in the
-// shell cache before a visitor ever opens the app — same cache-first
-// treatment the shell itself gets, not just a passive runtime-cache-on-demand.
-function addDynamicImportGraph(key, visited = new Set()) {
-  if (visited.has(key)) return;
-  visited.add(key);
+// was not true yet for the widget *code*. Precaching each widget's own chunk
+// (plus whatever it statically imports) closes that gap.
+//
+// Deliberately ONE level deep: a widget's *own* further lazy imports (Settings
+// modal, the AI assistant, DocsEditor/Quill inside Discussion) stay out of the
+// precache. Those are lazy specifically to keep heavy, occasionally-used
+// features off the critical path (see check-bundle-budget.mjs) — pulling them
+// in here would undo that.
+function addDirectDynamicImports(key) {
   const item = manifest[key];
-  if (!item) return;
-  for (const importedKey of item.dynamicImports || []) {
-    addManifestEntry(importedKey);
-    addDynamicImportGraph(importedKey, visited);
-  }
-  for (const importedKey of item.imports || []) addDynamicImportGraph(importedKey, visited);
+  for (const importedKey of item?.dynamicImports || []) addManifestEntry(importedKey);
 }
 
 addManifestEntry(entryKey);
 const homeKey = Object.keys(manifest).find((key) => manifest[key].name === "Home");
 if (!homeKey) throw new Error("Home route missing from the Vite manifest.");
 addManifestEntry(homeKey);
-addDynamicImportGraph(homeKey);
+addDirectDynamicImports(homeKey);
 
 /* The Solid build roots Vite at solid/, so shared modules under src/ appear in
    the manifest as "../src/...". Accept either spelling — the module is the
