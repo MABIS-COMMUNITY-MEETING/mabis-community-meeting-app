@@ -495,16 +495,6 @@ export default function DiscussionWidget(props) {
                 <History class="w-3.5 h-3.5" /> History
               </Button>
             </A>
-            <Show when={isCurrentWeek()}>
-              <Button
-                size="sm"
-                variant="outline"
-                class="w-full border-primary-foreground/40 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
-                onClick={toggleAddTopicForm}
-              >
-                <Plus class="w-3.5 h-3.5" /> Add Topic
-              </Button>
-            </Show>
             <Button
               size="sm"
               variant="outline"
@@ -566,7 +556,7 @@ export default function DiscussionWidget(props) {
 
           {/* Any topics this week already had are formatted into the document
               the first time it opens; the topic records are left untouched. */}
-          <Suspense fallback={<PendingWidget name="Minutes" height={420} />}>
+          <Suspense fallback={<div class="min-h-[420px]" aria-label="Minutes loading" />}>
             <MeetingMinutes
               weekLabel={viewedWeek()}
               weekTitle={`Minutes — ${formatWeekFull(viewedWeek())}`}
