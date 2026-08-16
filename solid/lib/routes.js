@@ -24,6 +24,17 @@ import { setLoadingState } from "@/lib/loading-state";
  * slower than it is. React drove this from routeLoaders.js; this is the same
  * contract, without the speculative data warm-up.
  */
+/* Resolve when `promise` settles, or when the budget expires — whichever comes
+   first. A warm-up is an optimisation; it must never strand anyone on the
+   loading screen because one endpoint is slow or dead. */
+function waitWithinBudget(promise, ms) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((resolve) => { timer = setTimeout(resolve, ms); }),
+  ]).finally(() => clearTimeout(timer));
+}
+
 let homeRoutePromise;
 function loadHomeRoute() {
   if (homeRoutePromise) return homeRoutePromise;
@@ -66,11 +77,7 @@ function loadHomeRoute() {
       .catch(() => undefined);
 
     const mod = await chunk;
-    let timer;
-    await Promise.race([
-      warm,
-      new Promise((resolve) => { timer = setTimeout(resolve, budget); }),
-    ]).finally(() => clearTimeout(timer));
+    await waitWithinBudget(warm, HOME_WARMUP_BUDGET_MS);
 
     setLoadingState({ progress: 100, label: "CACHING STUFF", detail: "SECTIONS READY" });
     return mod;
