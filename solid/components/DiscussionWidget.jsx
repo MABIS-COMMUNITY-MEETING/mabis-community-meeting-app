@@ -391,6 +391,7 @@ export default function DiscussionWidget(props) {
   );
 
   // ── MEETING MODE ─────────────────────────────────────────────────────────
+  console.log("[DEBUG] DiscussionWidget reached main return, meetingMode=", meetingMode());
   return (
     <Show when={!meetingMode()} fallback={
       <Portal>
