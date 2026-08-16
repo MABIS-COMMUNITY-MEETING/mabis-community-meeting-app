@@ -1,1 +1,0 @@
-import{I as e}from"./Icon-QC8NBHTe.js";import{c as m,m as t}from"./index-DBijjy6X.js";var r=[["path",{d:"M15 3h6v6",key:"1q9fwt"}],["path",{d:"m21 3-7 7",key:"1l2asr"}],["path",{d:"m3 21 7-7",key:"tjx5ai"}],["path",{d:"M9 21H3v-6",key:"wtvkvv"}]],o=a=>m(e,t(a,{iconNode:r,name:"maximize-2"})),v=o;export{v as m};
