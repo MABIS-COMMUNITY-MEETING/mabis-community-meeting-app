@@ -879,6 +879,103 @@ body .text-accent { color: hsl(var(--editor-ink-accent)) !important; }
   color: hsl(var(--editor-highlight-accent-foreground));
 }
 
+/* ── Docs-style toolbar chrome (DocsEditor) ──────────────────────────
+   ToolButton/Dropdown/MenuItem/ToolbarDivider render these classes with no
+   base rule behind them anywhere in the app — only a frutigeraero-only radius
+   override existed for two of them — so every other theme drew raw unstyled
+   <button>/<span> elements: no padding, no border, no consistent icon box,
+   packed edge-to-edge across a toolbar of ~30 controls. This is the base
+   every theme was missing, kept to the same restrained, thin-rule,
+   compact-control language as the rest of the app (existing --border/--muted/
+   --radius tokens, no new visual language introduced). */
+.docs-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius) + 2px);
+  background: transparent;
+  color: hsl(var(--foreground));
+}
+.docs-tool-btn:hover:not(:disabled) { background: hsl(var(--muted)); }
+.docs-tool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.docs-tool-btn.is-active {
+  background: hsl(var(--primary) / 0.14);
+  border-color: hsl(var(--primary) / 0.35);
+  color: hsl(var(--primary));
+}
+
+.docs-toolbar-divider {
+  display: inline-block;
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: hsl(var(--border));
+  flex-shrink: 0;
+}
+
+.docs-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius) + 2px);
+  background: transparent;
+  color: hsl(var(--foreground));
+}
+.docs-dropdown-trigger:hover { background: hsl(var(--muted)); }
+.docs-dropdown-trigger[aria-expanded="true"] {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--border));
+}
+
+.docs-menu-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  color: hsl(var(--popover-foreground));
+  text-align: left;
+}
+.docs-menu-item:hover:not(:disabled) { background: hsl(var(--muted)); }
+.docs-menu-item:disabled { opacity: 0.4; cursor: not-allowed; }
+.docs-menu-item.is-active { background: hsl(var(--primary) / 0.12); color: hsl(var(--primary)); }
+.docs-menu-item.is-danger { color: hsl(var(--destructive)); }
+.docs-menu-item.is-danger:hover { background: hsl(var(--destructive) / 0.1); }
+
+.docs-color-line {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Live Quill editor surface (DocsEditor) never carried the theme-rich-text
+   treatment applied everywhere rich text is rendered read-only (Announcements,
+   News, Discussion topics, Meeting Minutes) — so those stayed correctly
+   themed while the live editor fell back to Quill's own stock snow-theme
+   paint: default ink colour, its own hairline border duplicating the shell's
+   border, and a font stack that ignores --font-body. Scoped to
+   .docs-editor-content so it touches only DocsEditor's own surface. */
+.docs-editor-content.theme-rich-text { background: hsl(var(--card)); }
+.docs-editor-content .ql-container.ql-snow { border: 0; font-family: var(--font-body); font-size: inherit; }
+.docs-editor-content .ql-editor { min-height: inherit; color: hsl(var(--card-foreground)); }
+.docs-editor-content .ql-editor.ql-blank::before {
+  left: 15px;
+  right: 15px;
+  color: hsl(var(--muted-foreground));
+  font-style: normal;
+}
+
 /* ── FRUTIGER AERO ────────────────────────────────────────────────────
    The 2004-2013 "Web 2.0 Gloss" era: clear sky above, bright grass below,
    and a wet sheen on anything that floats. Skeuomorphic by nature, which is
