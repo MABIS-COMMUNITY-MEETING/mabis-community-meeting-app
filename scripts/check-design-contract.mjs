@@ -28,19 +28,47 @@ function resolveSourcePath(relativePath) {
         : relativePath;
 }
 
-function read(requestedPath) {
-    const relativePath = resolveSourcePath(requestedPath);
-    const absolutePath = path.join(root, relativePath);
-    if (!fs.existsSync(absolutePath)) {
-        failures.push(`Missing mandatory file: ${relativePath}`);
-        return "";
-    }
-    return fs.readFileSync(absolutePath, "utf8");
+/*
+ * Where a rule lives once the UI is Solid. See the note in
+ * check-performance-contract.mjs — the rules are about the product, not about
+ * which framework renders it, so a React UI path that no longer exists
+ * resolves to its Solid counterpart. Solid exports JapaneseText and OpenMoji
+ * from shared primitive modules rather than as standalone files.
+ */
+const SOLID_EQUIVALENTS = {
+    "src/components/JapaneseText.jsx": ["solid/components/primitives.jsx"],
+    "src/components/OpenMoji.jsx": ["solid/components/page-chrome.jsx"],
+    "src/components/home/HomeSectionIndex.jsx": ["solid/components/home/shell.jsx"],
+    "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
+    "src/components/JobsWidget.jsx": ["solid/components/JobsWidget.jsx", "solid/components/jobs/SpinWheel.jsx"],
+};
+
+function resolveSourceFiles(requestedPath) {
+    if (fs.existsSync(path.join(root, requestedPath))) return [requestedPath];
+    const mapped = (SOLID_EQUIVALENTS[requestedPath] || []).filter((f) => fs.existsSync(path.join(root, f)));
+    if (mapped.length) return mapped;
+    const guess = requestedPath
+        .replace(/^src\/components\//, "solid/components/")
+        .replace(/^src\/pages\//, "solid/pages/")
+        .replace(/^src\/(App|main)\.jsx$/, "solid/$1.jsx");
+    return [fs.existsSync(path.join(root, guess)) ? guess : requestedPath];
 }
 
+function read(requestedPath) {
+    const files = resolveSourceFiles(requestedPath);
+    const missing = files.filter((f) => !fs.existsSync(path.join(root, f)));
+    if (missing.length) {
+        failures.push(`Missing mandatory file: ${missing.join(", ")}`);
+        return "";
+    }
+    return files.map((f) => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
+}
+
+/* An array means "any of these spellings satisfies the rule". */
 function requireText(relativePath, content, requiredText) {
-    if (!content.includes(requiredText)) {
-        failures.push(`${relativePath} must contain: ${requiredText}`);
+    const wanted = Array.isArray(requiredText) ? requiredText : [requiredText];
+    if (!wanted.some((t) => content.includes(t))) {
+        failures.push(`${relativePath} must contain: ${wanted.join(" OR ")}`);
     }
 }
 
