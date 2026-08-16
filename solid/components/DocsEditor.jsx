@@ -407,6 +407,16 @@ export default function DocsEditor(props) {
 
   const activeFont = () => getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "'GNUFreeMonoUI'";
 
+  /*
+   * ODT rather than HTML — see the note in the React editor. Minutes get opened
+   * in a word processor, and .odt keeps headings, lists and emphasis editable.
+   */
+  const downloadOdtFile = () => {
+    if (!quill) return;
+    const title = props.title || "document";
+    downloadOdt(quill.root.innerHTML, { title, filename: safeFilename(props.title) });
+  };
+
   const downloadHtml = () => {
     if (!quill) return;
     const title = props.title || "document";
@@ -620,7 +630,7 @@ export default function DocsEditor(props) {
               <MenuItem label="Current date" onClick={() => { insertText(new Date().toLocaleDateString()); close(); }} />
               <MenuItem label="Current time" onClick={() => { insertText(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })); close(); }} />
               <MenuDivider />
-              <MenuItem label="Download as HTML" icon={<Download class="h-3.5 w-3.5" />} onClick={() => { downloadHtml(); close(); }} />
+              <MenuItem label="Download as ODT" icon={<Download class="h-3.5 w-3.5" />} onClick={() => { downloadOdtFile(); close(); }} />
               <MenuItem label="Print" icon={<Printer class="h-3.5 w-3.5" />} onClick={() => { printDocument(); close(); }} />
             </>
           )}
