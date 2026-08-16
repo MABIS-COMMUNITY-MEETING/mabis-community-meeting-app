@@ -52,7 +52,6 @@ export default function MeetingMinutes(props) {
     queryKey: ["topics"],
     queryFn: () => base44.entities.DiscussionTopic.list("-created_date", 500),
   }));
-  createEffect(() => console.log("[DEBUG MeetingMinutes]", { isLoading: topicsQuery.isLoading, status: topicsQuery.status, error: topicsQuery.error?.message, weekLabel: props.weekLabel }));
   const allTopics = () => topicsQuery.data || [];
   const notesRecord = () => allTopics().find(
     (t) => t.week_label === props.weekLabel && t.title === "__meeting_notes__",
