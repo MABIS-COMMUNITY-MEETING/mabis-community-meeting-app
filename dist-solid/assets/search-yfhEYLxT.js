@@ -1,1 +1,0 @@
-import{I as r}from"./Icon-BBgIpbh8.js";import{c as a,m as c}from"./index-Dl62MDar.js";var o=[["path",{d:"m21 21-4.34-4.34",key:"14j7rj"}],["circle",{cx:"11",cy:"11",r:"8",key:"4ej97u"}]],m=e=>a(r,c(e,{iconNode:o,name:"search"})),p=m;export{p as s};
