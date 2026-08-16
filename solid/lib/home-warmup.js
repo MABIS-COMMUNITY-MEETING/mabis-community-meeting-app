@@ -111,20 +111,24 @@ function dataTasks() {
  * user more than the wait it saves.
  */
 /*
- * Hand the main thread back between background kickoffs.
+ * Bursty, not fair.
  *
- * The fetches themselves are async and cheap to start, but each resolved chunk
- * has to be EVALUATED and each response parsed — and firing thirteen of those
- * in one synchronous burst builds a long task that blocks input. The user is
- * reading Home while this runs; a tap landing during that burst waits for it.
+ * Every request is issued in one go, then the main thread is handed back once.
  *
- * scheduler.yield() resumes at the FRONT of the queue, so unlike
- * setTimeout(0) the warm-up does not lose its place behind unrelated work —
- * it just stops hogging. Chrome 129+; the timeout path is the fallback and is
- * merely adequate.
+ * The earlier version yielded between each kickoff, which was the wrong shape:
+ * STARTING a fetch is microseconds — the expensive work is evaluating the
+ * resolved chunk and parsing the response, and that happens later regardless of
+ * how the kickoffs were spaced. So fair scheduling paid a real cost (thirteen
+ * trips through the task queue, delaying the last request by that much) to
+ * avoid a long task that was never in the kickoff loop to begin with.
  *
- * Blocking tasks deliberately do NOT yield: they gate the loading screen, so
- * spreading them out would delay the very paint they exist to bring forward.
+ * Bursting also gets every request onto the wire immediately, so they queue
+ * against the browser's connection limit instead of against each other — the
+ * whole batch finishes sooner and the widgets are warm earlier.
+ *
+ * The single yield afterwards is what keeps this from being rude: it releases
+ * the thread before responses start landing, so the first tap after Home paints
+ * is not waiting behind the burst.
  */
 const yieldToBrowser = typeof scheduler !== "undefined" && typeof scheduler.yield === "function"
   ? () => scheduler.yield()
@@ -190,8 +194,8 @@ export async function warmHomeRoute(onProgress) {
   void (async () => {
     for (const { run } of background) {
       try { void Promise.resolve(run()).catch(() => {}); } catch { /* best effort */ }
-      await yieldToBrowser();
     }
+    await yieldToBrowser();
   })();
 
   await Promise.allSettled(blocking.map(async ({ label, run }) => {
