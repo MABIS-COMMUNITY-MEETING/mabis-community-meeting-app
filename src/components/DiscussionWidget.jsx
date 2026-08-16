@@ -20,6 +20,7 @@ const DocsEditor = lazy(() => import("@/components/DocsEditor"));
 const AnnouncementsWidget = lazy(() => import("@/components/AnnouncementsWidget"));
 const CalendarWidget = lazy(() => import("@/components/CalendarWidget"));
 const MabisAIAssistant = lazy(() => import("@/components/MabisAIAssistant"));
+const MeetingMinutes = lazy(() => import("@/components/MeetingMinutes"));
 
 function ChunkFallback({ height = 160 }) {
   return <div className="widget-loading-shell" style={{ "--widget-fallback-height": `${height}px` }} aria-hidden />;
@@ -1036,13 +1037,6 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
               <History className="w-3.5 h-3.5" /> History
             </Button>
           </Link>
-          {isCurrentWeek && (
-            <Button size="sm" variant="outline"
-              className="w-full border-primary-foreground/40 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
-              onClick={toggleAddTopicForm}>
-              <Plus className="w-3.5 h-3.5" /> Add Topic
-            </Button>
-          )}
           <Button size="sm" variant="outline"
             className="w-full border-primary-foreground/40 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 text-xs gap-1 px-2 sm:w-auto sm:px-3"
             onClick={() => setFullscreen(f => !f)}>
@@ -1155,24 +1149,24 @@ export default function DiscussionWidget({ members, isAdmin, canEditTopics }) {
         </div>
 
         {/* Looking at an older week is read only. Say so, rather than letting
-            the Add Topic button quietly disappear with no explanation. */}
+            the controls quietly disappear with no explanation. */}
         {!isCurrentWeek && (
           <p className="text-xs leading-[1.6] tracking-[0.02em] text-muted-foreground">
-            You are looking at an earlier week, so it cannot be changed. Go back to this week to add a topic.
+            You are looking at an earlier week. Its minutes are shown as they were written and are not saved while you scroll through them.
           </p>
         )}
 
-        <div className="space-y-2">
-          {viewedTopics.length === 0 && (
-            <p className="text-center text-muted-foreground text-sm py-8">No topics yet. Add the first one with the Add Topic button.</p>
-          )}
-          {viewedTopics.map((topic, topicIndex) => (
-            <TopicItem key={topic.id} topic={topic} index={topicIndex} compact={false} isAdmin={topicAdmin}
-              onToggle={(id, completed) => toggleMutation.mutate({ id, completed })}
-              onDelete={(id) => deleteMutation.mutate(id)} onEdit={handleEditTopic}
-              {...inlineEditProps(topic)} />
-          ))}
-        </div>
+        {/* The week's minutes. This replaced the topic list: any topics that
+            already existed for the week are formatted into the document the
+            first time it is opened, and the topic records themselves are left
+            untouched in the database (History still reads them). */}
+        <Suspense fallback={<ChunkFallback height={420} />}>
+          <MeetingMinutes
+            weekLabel={viewedWeek}
+            weekTitle={`Minutes — ${formatWeekFull(viewedWeek)}`}
+            canEdit={isCurrentWeek}
+          />
+        </Suspense>
 
         <div className="border-t border-border pt-4">
           <Suspense fallback={<ChunkFallback height={240} />}>
