@@ -66,12 +66,14 @@ function loadHomeRoute() {
       .catch(() => undefined);
 
     const mod = await chunk;
+    mark("home: chunk ready");
     let timer;
     await Promise.race([
       warm,
       new Promise((resolve) => { timer = setTimeout(resolve, budget); }),
     ]).finally(() => clearTimeout(timer));
 
+    mark("home: warm-up settled (or budget hit)");
     setLoadingState({ progress: 100, label: "CACHING STUFF", detail: "SECTIONS READY" });
     return mod;
   })()

@@ -56,7 +56,14 @@ export function AuthProvider(props) {
   const checkUserAuth = async ({ silentUnauthenticated = false } = {}) => {
     try {
       setIsLoadingAuth(true);
+      const authStarted = performance.now();
       const currentUser = await base44.auth.me();
+      if (new URLSearchParams(window.location.search).get("perf") === "1") {
+        // The one number that decides whether the warm-up is racing auth
+        // usefully or just firing unauthenticated requests.
+        console.log(`[auth] me() resolved in ${Math.round(performance.now() - authStarted)}ms `
+          + `@${Math.round(performance.now())}ms`);
+      }
       disableHackerMode();
       setUser(currentUser);
       setIsAuthenticated(true);
