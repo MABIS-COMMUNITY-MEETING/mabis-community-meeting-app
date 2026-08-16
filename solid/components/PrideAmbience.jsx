@@ -62,7 +62,6 @@ export default function PrideAmbience() {
     <Show when={theme()}>
       {(active) => {
         const spec = () => active().pride;
-        const prideTokensFor = spec;
         return (
           <div ref={layerEl} class="pride-ambience fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden>
             <Index each={spec().field}>
