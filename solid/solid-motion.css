@@ -118,6 +118,21 @@ html.animations-disabled .fade-in { animation: none; }
  * whileTap={{ scale: n }} — one class per value framer was actually given,
  * rather than a JS gesture recogniser per button.
  */
+/* initial {opacity:0, y:-8, scale:0.95} — anchored popovers drop DOWN into
+ * place, so they need their own keyframe rather than panel-pop's upward rise. */
+@keyframes dropdown-pop {
+  from { transform: translateY(-8px) scale(0.95); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.dropdown-pop { animation: dropdown-pop 0.2s ease-out both; }
+
+/* whileHover + whileTap pairs. */
+.press-sm, .press-lg { transition: transform 120ms ease; }
+.press-sm:hover { transform: scale(1.02); }
+.press-sm:active { transform: scale(0.98); }
+.press-lg:hover { transform: scale(1.1); }
+.press-lg:active { transform: scale(0.95); }
+
 .tap-97, .tap-95, .tap-85 { transition: transform 90ms ease; }
 .tap-97:active { transform: scale(0.97); }
 .tap-95:active { transform: scale(0.95); }
@@ -135,9 +150,12 @@ html.animations-disabled .fade-in { animation: none; }
 
 html.animations-disabled .assistant-pop,
 html.animations-disabled .feedback-pop,
+html.animations-disabled .dropdown-pop,
 html.animations-disabled .success-pop { animation: none; }
 html.animations-disabled .assistant-fab,
 html.animations-disabled .feedback-fab,
+html.animations-disabled .press-sm,
+html.animations-disabled .press-lg,
 html.animations-disabled .tap-97,
 html.animations-disabled .tap-95,
 html.animations-disabled .tap-85 { transition: none; }
@@ -145,6 +163,10 @@ html.animations-disabled .assistant-fab:hover,
 html.animations-disabled .assistant-fab:active,
 html.animations-disabled .feedback-fab:hover,
 html.animations-disabled .feedback-fab:active,
+html.animations-disabled .press-sm:hover,
+html.animations-disabled .press-sm:active,
+html.animations-disabled .press-lg:hover,
+html.animations-disabled .press-lg:active,
 html.animations-disabled .tap-97:active,
 html.animations-disabled .tap-95:active,
 html.animations-disabled .tap-85:active { transform: none; }
