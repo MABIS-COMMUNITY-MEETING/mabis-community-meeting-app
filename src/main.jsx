@@ -6,6 +6,7 @@ import '@/styles/editorial-home.css'
 import { applyTheme, getStoredTheme, getStoredCustomColors, applyCustomColors, applyFont, getStoredFont } from '@/lib/themes';
 import { applyAnimationPreference } from '@/lib/motion-preference';
 import { applyJapaneseTextPreference } from '@/lib/japanese-text-preference';
+import { applySectionDescriptionsPreference } from '@/lib/section-descriptions-preference';
 
 async function bootstrap() {
   // Every visual preference is resolved before React paints the loading screen.
@@ -14,6 +15,7 @@ async function bootstrap() {
   // typeface flash.
   applyAnimationPreference();
   applyJapaneseTextPreference();
+  applySectionDescriptionsPreference();
 
   const storedTheme = getStoredTheme();
   applyTheme(storedTheme);
