@@ -96,8 +96,14 @@ const MAX_TRACKED = 64;
  * because the kernel cannot use floats — Math.log2 is the same curve.
  */
 export function burstPenalty(burstMs) {
-  if (!Number.isFinite(burstMs) || burstMs <= 0) return 0;
-  const greed = Math.log2(burstMs + 1);
+  /* NaN means "not measured" and scores zero, but Infinity means "unbounded"
+   * and must clamp to the WORST rank. Treating the two alike would sort an
+   * infinitely expensive task to the front, which is the one outcome an
+   * ordering scheduler must never produce. Coerced first so a non-number can
+   * never reach the log and poison the result. */
+  const burst = Number(burstMs);
+  if (Number.isNaN(burst) || burst <= 0) return 0;
+  const greed = Math.log2(burst + 1);
   const tolerance = Math.log2(PENALTY_OFFSET_MS + 1);
   const raw = greed - tolerance;
   if (raw <= 0) return 0;
