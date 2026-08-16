@@ -459,7 +459,9 @@ export default function DiscussionWidget(props) {
             </section>
 
             {/* Ports pending — reserved at the height each widget will occupy. */}
-            <PendingWidget name="Jobs" height={320} />
+            <Suspense fallback={<PendingWidget name="Jobs" height={320} />}>
+              <JobsWidget members={members()} isAdmin={props.isAdmin} />
+            </Suspense>
             <PendingWidget name="Announcements" height={280} />
             <PendingWidget name="Calendar" height={360} />
           </div>
