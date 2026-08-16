@@ -38,10 +38,32 @@ function addManifestEntry(key, visited = new Set()) {
   for (const importedKey of item.imports || []) addManifestEntry(importedKey, visited);
 }
 
+// Widgets on Home are all `lazy(() => import(...))`, so they never show up in
+// `imports` (Vite only puts *static* imports there) — they land in
+// `dynamicImports` instead. Left alone, that means a first-time visitor's
+// widgets are only cache-first from their *second* load: the very thing the
+// query client already does for widget *data* (staleTime, no refetch-on-mount)
+// was not true yet for the widget *code*. Precaching the Home route's dynamic
+// import graph closes that gap, so the JS for every widget is already in the
+// shell cache before a visitor ever opens the app — same cache-first
+// treatment the shell itself gets, not just a passive runtime-cache-on-demand.
+function addDynamicImportGraph(key, visited = new Set()) {
+  if (visited.has(key)) return;
+  visited.add(key);
+  const item = manifest[key];
+  if (!item) return;
+  for (const importedKey of item.dynamicImports || []) {
+    addManifestEntry(importedKey);
+    addDynamicImportGraph(importedKey, visited);
+  }
+  for (const importedKey of item.imports || []) addDynamicImportGraph(importedKey, visited);
+}
+
 addManifestEntry(entryKey);
 const homeKey = Object.keys(manifest).find((key) => manifest[key].name === "Home");
 if (!homeKey) throw new Error("Home route missing from the Vite manifest.");
 addManifestEntry(homeKey);
+addDynamicImportGraph(homeKey);
 
 /* The Solid build roots Vite at solid/, so shared modules under src/ appear in
    the manifest as "../src/...". Accept either spelling — the module is the
