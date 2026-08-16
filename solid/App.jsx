@@ -1,10 +1,10 @@
-import { lazy, Suspense, Show } from "solid-js";
+import { lazy, Suspense, Show, onMount } from "solid-js";
 import { Router, Route, Navigate } from "@solidjs/router";
 import { QueryClientProvider } from "@tanstack/solid-query";
 import { queryClientInstance } from "~/lib/query-client";
 import { AuthProvider, useAuth } from "~/lib/AuthContext";
 import { Toaster } from "~/lib/toast";
-import { loadHomeRoute } from "~/lib/routes";
+import { loadHomeRoute, startHomeModuleWarmup } from "~/lib/routes";
 import OptionalCustomCursor from "~/components/OptionalCustomCursor";
 import CjkFontLoader from "~/components/CjkFontLoader";
 import LoadingScreen from "~/components/LoadingScreen";
@@ -93,6 +93,17 @@ function Protected(props) {
 }
 
 function ProtectedHome() {
+  /*
+   * Home's chunks need no token, so they start downloading now rather than
+   * after auth resolves — <Home> is behind two Show gates that auth controls,
+   * and lazy() would otherwise not even begin fetching until both had passed.
+   *
+   * onMount, not the component body: the body runs during render, which is
+   * BEFORE AuthProvider's own onMount fires, so calling it there would put a
+   * dozen chunk requests on the wire ahead of the auth calls they are meant to
+   * overlap. Effects run in creation order, and the provider is created first.
+   */
+  onMount(() => { void startHomeModuleWarmup(); });
   return <Protected><Home /></Protected>;
 }
 
