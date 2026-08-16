@@ -110,50 +110,6 @@ function dataTasks() {
  * visible first — speculatively pulling ten datasets over 2G would cost the
  * user more than the wait it saves.
  */
-/*
- * Opt-in timing for the "CACHING STUFF" phase (?perf=1 only).
- *
- * Answers three things that cannot be inferred from source: how long each warm
- * task takes, whether it SUCCEEDS or fails, and — the open question — whether
- * prefetches fired before auth resolved come back 401. If they do, the warm-up
- * is issuing throwaway requests and then the widgets refetch, making a first
- * visit slower rather than faster.
- */
-const TRACE = typeof window !== "undefined"
-  && new URLSearchParams(window.location.search).get("perf") === "1";
-
-const traceRows = [];
-
-function traceTask(label, startedAt, error) {
-  if (!TRACE) return;
-  traceRows.push({
-    task: label,
-    ms: Math.round(performance.now() - startedAt),
-    at: Math.round(startedAt),
-    status: error ? (error.status ?? error?.response?.status ?? "FAILED") : "ok",
-    reason: error ? String(error.message || error).slice(0, 60) : "",
-  });
-}
-
-function traceReport(blockingCount) {
-  if (!TRACE) return;
-  const failed = traceRows.filter((r) => r.status !== "ok");
-  const unauthorized = traceRows.filter((r) => r.status === 401 || r.status === 403);
-  /* eslint-disable no-console */
-  console.log("%c[warmup] CACHING STUFF breakdown", "font-weight:bold");
-  console.table(traceRows.slice().sort((a, b) => b.ms - a.ms));
-  console.log("[warmup] blocking tasks:", blockingCount,
-    "| total tasks:", traceRows.length,
-    "| failed:", failed.length,
-    "| 401/403 (fired before auth?):", unauthorized.length);
-  console.log("[warmup] slowest:", traceRows.slice().sort((a, b) => b.ms - a.ms)[0]);
-  if (unauthorized.length) {
-    console.warn("[warmup] prefetches were rejected as unauthenticated — these are "
-      + "wasted requests and the widgets will refetch. The warm-up must wait for auth.");
-  }
-  /* eslint-enable no-console */
-}
-
 export async function warmHomeRoute(onProgress) {
   const constrained = isConstrainedNetwork();
 
