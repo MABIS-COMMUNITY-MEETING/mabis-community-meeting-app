@@ -42,7 +42,21 @@ function loadHomeRoute() {
    */
   // React used 2800ms and waited for ALL warm-up tasks. This waits only for
   // the first viewport, so the budget is a backstop rather than the norm.
-  const budget = 1500;
+  //
+  // 1500 → 900: isConstrainedNetwork() (saveData / effectiveType) already
+  // gives slow-2g/2g connections a lighter warm-up (3 sections + 4 data calls
+  // instead of 21 tasks), so the budget's real job is bounding the tail case
+  // it does NOT catch — a connection with normal effectiveType but high
+  // latency or a slow endpoint. On a fast connection this changes nothing:
+  // 21 concurrent small JSON calls plus already-compiled JS chunks routinely
+  // finish well under 900ms, so `warm` wins the Promise.race either way and
+  // the budget never fires. On a slow-but-not-detected-as-constrained
+  // connection, this shaves 600ms off the worst case before falling back to
+  // the already-designed degradation path: the route resolves, Home mounts,
+  // and any widget that missed its prefetch just fetches for itself. Pairs
+  // with LoadingScreen's trickle animation — the wait that remains no longer
+  // reads as frozen either way.
+  const budget = 900;
   homeRoutePromise = (async () => {
     const chunk = import("~/pages/Home");
     const warm = import("~/lib/home-warmup")
