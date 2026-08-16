@@ -213,6 +213,41 @@ if (route === "/login") {
       !!root.querySelector("textarea")
       && [...root.querySelectorAll("button")].some((b) => b.disabled));
   }
+
+  // Header controls: React renders the avatar, first name and sign-out beside
+  // the theme/settings buttons. Solid was missing the whole block.
+  check("sign-out control rendered", text.includes("SIGN OUT"));
+  check("signed-in user's first name shown", text.includes("PARITY"),
+    "expected the seeded user's first name, upper-cased");
+  const avatarBtn = root && root.querySelector('button[title="Customize Profile Picture"]');
+  check("profile-picture button rendered", !!avatarBtn);
+
+  if (avatarBtn) {
+    avatarBtn.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 150));
+    const t3 = root.textContent.replace(/\s+/g, " ");
+    check("ProfileEditor opens on click", t3.includes("Customize Profile Picture"));
+    check("ProfileEditor upload control rendered", t3.includes("Upload Photo"));
+    check("ProfileEditor reset control rendered", t3.includes("Reset to default"));
+    check("ProfileEditor uses the CSS entrance, not framer",
+      root.innerHTML.includes("dropdown-pop"));
+  }
+
+  // FeedbackWidget: the other half of Home's IdleMount block.
+  const feedbackFab = root && root.querySelector('button[title="Feedback & Bug Reports"]');
+  check("feedback FAB mounted after idle", !!feedbackFab);
+
+  if (feedbackFab) {
+    feedbackFab.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 150));
+    const t4 = root.textContent.replace(/\s+/g, " ");
+    check("feedback panel opens on click", t4.includes("Report Issue or Bug"));
+    check("satisfaction scale rendered", t4.includes("Satisfaction:"));
+    check("rating defaults to 8/10", t4.includes("8/10"));
+    check("attach-image control rendered", t4.includes("Attach image"));
+    check("submit is disabled until a message is typed",
+      [...root.querySelectorAll("button")].some((b) => b.disabled && /Submit/.test(b.textContent)));
+  }
 } else if (route === "/") {
   // ── content parity with src/pages/Splash.jsx ──────────────────────────────
   check('hero headline "COMMUNITY" present', text.includes("COMMUNITY"));
