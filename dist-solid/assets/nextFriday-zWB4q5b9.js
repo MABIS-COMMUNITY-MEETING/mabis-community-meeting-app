@@ -1,1 +1,0 @@
-import{t as a,c as n}from"./format-Coe-LFgJ.js";import{g as i}from"./isFriday-DMLwqQw2.js";function o(t,e){const r=a(t);return isNaN(e)?n(t,NaN):(e&&r.setDate(r.getDate()+e),r)}function c(t){return a(t).getFullYear()}function s(t,e){let r=e-i(t);return r<=0&&(r+=7),o(t,r)}function g(t){return s(t,5)}export{o as a,c as g,g as n};

@@ -1,0 +1,1 @@
+import{c as r,m as e,I as o}from"./index-ZCbwsc5i.js";var t=[["path",{d:"M7 7h10v10",key:"1tivn9"}],["path",{d:"M7 17 17 7",key:"1vkiza"}]],p=a=>r(o,e(a,{iconNode:t,name:"arrow-up-right"})),h=p;export{h as a};

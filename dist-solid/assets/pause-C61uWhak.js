@@ -1,0 +1,1 @@
+import{c as a,m as r,I as t}from"./index-ZCbwsc5i.js";var o=[["rect",{x:"14",y:"3",width:"5",height:"18",rx:"1",key:"kaeet6"}],["rect",{x:"5",y:"3",width:"5",height:"18",rx:"1",key:"1wsw3u"}]],s=e=>a(t,r(e,{iconNode:o,name:"pause"})),c=s;export{c as p};
