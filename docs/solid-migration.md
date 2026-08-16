@@ -238,10 +238,43 @@ trigger. Popover's Content takes `gutter`, not `sideOffset`.
 
 ## Known gaps
 
-- `visualEditAgent` in `@base44/vite-plugin` instruments React JSX and is
-  deliberately absent from the Solid config. Base44's visual editor will not
-  work against `dist-solid/` — unresolved, and the reason the swap should not
-  happen until parity is reached.
+### `visualEditAgent` — earlier note was wrong, here is what it actually does
+
+Previous revisions said "the visual editor will not work against `dist-solid/`"
+and treated it as the blocker on swapping over. That was wrong about the
+mechanism. Reading `@base44/vite-plugin` source:
+
+- **The visual-edit machinery is dev-only.** `visualEditPlugin` is gated on
+  `apply: config => config.mode === "development"`, is only added at all when
+  `MODAL_SANDBOX_ID` is set, and the agent `<script>` is injected only when
+  `currentMode === "dev"` *and* the page is in an iframe. **A production build
+  never contains any of it**, so `dist-solid/` was never affected. Deploying
+  the Solid build does not change anything about the editor's runtime output.
+- **What the plugin does in production is inject `analyticsTracker`** — and the
+  Solid config was omitting the plugin entirely, so `dist-solid/` silently
+  shipped without the page-view tracking `dist/` has. That is now fixed (see
+  `base44ForSolid` in `vite.solid.config.js`) and asserted by parity.
+- **The genuine incompatibility is narrow**, and it is not about React at all.
+  `visualEditPlugin` transforms JSX generically — it walks the AST with Babel
+  and stamps source locations onto opening elements, which Solid's compiler
+  would carry through fine. What breaks is `extractFilename()`: it derives the
+  path with `parts.lastIndexOf("src")`. These files live under `solid/`, so
+  every one would report a bare `"Home.jsx"` instead of `solid/pages/Home.jsx`,
+  and the editor could not map an edit back to a file. Fixing it means teaching
+  the plugin about a second source root — an upstream change, not a port task.
+
+**So: `visualEditAgent` stays off, and the swap is not blocked on it.** What is
+lost is the ability to visually edit *Solid* files from the Base44 UI while
+running the Solid dev server. The React app remains fully editable.
+
+### Other
+
+- Adding `@base44/vite-plugin` to the Solid config requires stripping its
+  `resolve.alias = { "@/": "/src/" }` contribution. That path is
+  filesystem-root-relative and Vite gives it precedence over the config's own
+  `@` alias, so every `@/lib/*` import resolved to `/src/lib/*` and the build
+  failed on `Could not load /src/index.css`. `base44ForSolid()` deletes that one
+  key and keeps the rest.
 - `font-display: block` (chosen to stop the font flash) is scored lower than
   `swap` by Lighthouse's font-display audit. Deliberate trade-off.
 - The theme catalogue (~71 KB of source) is in the boot chunk while only one
