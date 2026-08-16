@@ -27,12 +27,38 @@ import { setLoadingState } from "@/lib/loading-state";
 let homeRoutePromise;
 function loadHomeRoute() {
   if (homeRoutePromise) return homeRoutePromise;
-  setLoadingState({ progress: 12, label: "CACHING STUFF", detail: "HOME / SECTIONS 01\u201310" });
-  homeRoutePromise = import("~/pages/Home")
-    .then((mod) => {
-      setLoadingState({ progress: 100, label: "CACHING STUFF", detail: "SECTIONS READY" });
-      return mod;
-    })
+  setLoadingState({ progress: 8, label: "CACHING STUFF", detail: "HOME / SECTIONS 01\u201310" });
+
+  /*
+   * Home's own chunk and the section warm-up run together, and the route waits
+   * for BOTH — that is the point. Resolving as soon as Home's chunk lands would
+   * put the user in front of ten empty widgets that then each start fetching;
+   * spending those same seconds on the loading screen means the widgets have
+   * their data the moment they mount.
+   *
+   * The warm-up is bounded so a slow or dead endpoint cannot strand anyone on
+   * the loading screen: past the budget the route resolves anyway and the
+   * widgets fall back to fetching for themselves.
+   */
+  const budget = 4000;
+  homeRoutePromise = (async () => {
+    const chunk = import("~/pages/Home");
+    const warm = import("~/lib/home-warmup")
+      .then(({ warmHomeRoute }) => warmHomeRoute((p) => setLoadingState({
+        progress: p.progress, label: "CACHING STUFF", detail: p.detail,
+      })))
+      .catch(() => undefined);
+
+    const mod = await chunk;
+    let timer;
+    await Promise.race([
+      warm,
+      new Promise((resolve) => { timer = setTimeout(resolve, budget); }),
+    ]).finally(() => clearTimeout(timer));
+
+    setLoadingState({ progress: 100, label: "CACHING STUFF", detail: "SECTIONS READY" });
+    return mod;
+  })()
     .catch((error) => {
       // A failed chunk must not leave the counter parked mid-way forever.
       setLoadingState({ progress: 100, label: "CACHING STUFF", detail: "RETRYING" });
