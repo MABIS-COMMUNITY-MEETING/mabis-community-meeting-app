@@ -2,7 +2,7 @@ import { createSignal, onMount, onCleanup, lazy, Suspense, For, Show } from "sol
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection, EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
 import { useQuery } from "@tanstack/solid-query";
-import { Settings } from "lucide-solid";
+import { Settings, Palette } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
@@ -14,6 +14,18 @@ import IdleMount from "~/components/IdleMount";
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
 const FeedbackWidget = lazy(() => import("~/components/FeedbackWidget"));
+const ProfileEditor = lazy(() => import("~/components/ProfileEditor"));
+
+const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
+
+const ROLE_COLOR_VARS = {
+  student: "hsl(var(--role-student))",
+  teacher: "hsl(var(--role-teacher))",
+  chair: "hsl(var(--role-chair))",
+  minutes: "hsl(var(--role-minutes))",
+  admin: "hsl(var(--role-admin))",
+  editor: "hsl(var(--role-editor))",
+};
 
 // Widgets are code-split individually, so a section that never scrolls into
 // view never downloads its chunk. Combined with LazySection's shared observer
@@ -130,6 +142,10 @@ export default function Home() {
   const members = () => membersQuery.data || [];
 
   const [showSettings, setShowSettings] = createSignal(false);
+  const [editingProfile, setEditingProfile] = createSignal(false);
+
+  const effectiveRole = () => auth.user()?.role_override || auth.user()?.role;
+  const roleColor = () => ROLE_COLOR_VARS[effectiveRole()] || "hsl(var(--primary))";
   usePresenceHeartbeat();
 
   // Warm the Settings chunk on hover/focus so the first click is not spent
@@ -153,6 +169,39 @@ export default function Home() {
       >
         <Settings class="w-4 h-4" />
       </button>
+
+      <div class="flex items-center gap-2.5 pl-1">
+        <div class="relative shrink-0">
+          <div
+            class="h-9 w-9 overflow-hidden flex items-center justify-center bg-card"
+            style={{ border: `2px solid ${roleColor()}`, "box-sizing": "border-box" }}
+          >
+            <Show
+              when={auth.user()?.avatar_url}
+              fallback={<img src={MABIS_LOGO} alt="avatar" class="w-full h-full object-contain p-0.5" />}
+            >
+              <img src={auth.user().avatar_url} alt="avatar" class="w-full h-full object-cover" />
+            </Show>
+          </div>
+          <button
+            onClick={() => setEditingProfile(!editingProfile())}
+            title="Customize Profile Picture"
+            class="absolute -bottom-1 -right-1 h-5 w-5 flex items-center justify-center bg-card border border-foreground/30 text-primary"
+          >
+            <Palette class="w-3 h-3" />
+          </button>
+        </div>
+        <span class="text-xs tech-label text-foreground hidden lg:inline">
+          {auth.user()?.full_name?.split(" ")[0]?.toUpperCase() || "USER"}
+        </span>
+        <button
+          onClick={() => auth.logout()}
+          data-cursor="EXIT"
+          class="liquid-btn tech-label px-3.5 py-2 border border-foreground/30 bg-background text-foreground"
+        >
+          SIGN OUT
+        </button>
+      </div>
     </>
   );
 
@@ -170,6 +219,12 @@ export default function Home() {
   return (
     <div class="editorial-home min-h-screen bg-background overflow-x-hidden">
       <SiteHeader rightSlot={controls} />
+
+      <Show when={editingProfile()}>
+        <Suspense fallback={null}>
+          <ProfileEditor open onClose={() => setEditingProfile(false)} />
+        </Suspense>
+      </Show>
 
       <Show when={showSettings()}>
         <Suspense fallback={null}>
