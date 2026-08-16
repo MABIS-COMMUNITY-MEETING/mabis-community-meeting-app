@@ -1,5 +1,3 @@
-import { useSyncExternalStore } from "react";
-
 export const JAPANESE_TEXT_STORAGE_KEY = "mabis-japanese-text-enabled";
 export const JAPANESE_TEXT_UPDATED_AT_KEY = "mabis-japanese-text-updated-at";
 export const JAPANESE_TEXT_EVENT = "japaneseTextChanged";
@@ -44,6 +42,13 @@ function subscribe(listener) {
   };
 }
 
-export function useJapaneseText() {
-  return useSyncExternalStore(subscribe, japaneseTextEnabled, () => false);
-}
+/*
+ * The React hook that used to live here is gone with the React UI. Solid reads
+ * this preference through useJapaneseText() in solid/lib/motion.js, which wraps
+ * the same subscribe/japaneseTextEnabled pair in a signal.
+ *
+ * Removing it matters beyond tidiness: this module is imported at boot, so its
+ * `import { useSyncExternalStore } from "react"` was pulling React itself into
+ * the shipped entry chunk of an app that no longer uses React.
+ */
+
