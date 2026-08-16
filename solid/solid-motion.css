@@ -97,22 +97,57 @@ html.animations-disabled .fade-in { animation: none; }
  * same job on the compositor with no runtime at all. The panel's *exit*
  * animation is gone — Solid has no AnimatePresence, so it unmounts at once.
  */
-@keyframes assistant-pop {
+@keyframes panel-pop {
   from { transform: translateY(20px) scale(0.95); opacity: 0; }
   to   { transform: none; opacity: 1; }
 }
-.assistant-pop {
-  animation: assistant-pop 0.2s ease both;
-}
-.assistant-fab {
+/* Same keyframe, the two easings framer was given. */
+.assistant-pop { animation: panel-pop 0.2s ease both; }
+.feedback-pop  { animation: panel-pop 0.2s ease-out both; }
+
+.assistant-fab,
+.feedback-fab {
   transition: transform 120ms ease;
 }
-.assistant-fab:hover { transform: scale(1.1); }
+.assistant-fab:hover,
+.feedback-fab:hover { transform: scale(1.1); }
 .assistant-fab:active { transform: scale(0.95); }
-html.animations-disabled .assistant-pop { animation: none; }
-html.animations-disabled .assistant-fab { transition: none; }
+.feedback-fab:active { transform: scale(0.9); }
+
+/*
+ * whileTap={{ scale: n }} — one class per value framer was actually given,
+ * rather than a JS gesture recogniser per button.
+ */
+.tap-97, .tap-95, .tap-85 { transition: transform 90ms ease; }
+.tap-97:active { transform: scale(0.97); }
+.tap-95:active { transform: scale(0.95); }
+.tap-85:active { transform: scale(0.85); }
+
+/* framer spring {stiffness:200, damping:12, delay:0.1} — underdamped, so the
+ * curve overshoots and settles. A back-out bezier is the closest CSS analogue. */
+@keyframes success-pop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+.success-pop {
+  animation: success-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+html.animations-disabled .assistant-pop,
+html.animations-disabled .feedback-pop,
+html.animations-disabled .success-pop { animation: none; }
+html.animations-disabled .assistant-fab,
+html.animations-disabled .feedback-fab,
+html.animations-disabled .tap-97,
+html.animations-disabled .tap-95,
+html.animations-disabled .tap-85 { transition: none; }
 html.animations-disabled .assistant-fab:hover,
-html.animations-disabled .assistant-fab:active { transform: none; }
+html.animations-disabled .assistant-fab:active,
+html.animations-disabled .feedback-fab:hover,
+html.animations-disabled .feedback-fab:active,
+html.animations-disabled .tap-97:active,
+html.animations-disabled .tap-95:active,
+html.animations-disabled .tap-85:active { transform: none; }
 
 /* ── Off-screen sections cost nothing ──────────────────────────────────────
  * content-visibility: auto lets the browser skip layout AND paint for any
