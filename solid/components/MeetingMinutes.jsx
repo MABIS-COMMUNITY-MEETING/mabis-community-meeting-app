@@ -180,6 +180,25 @@ export default function MeetingMinutes(props) {
   createEffect(on(() => props.weekLabel, () => { onCleanup(flushPending); }));
   onCleanup(() => { clearTimeout(flashTimer); flushPending(); });
 
+  /*
+   * onCleanup only covers in-app teardown (switching weeks, navigating to
+   * another section). It never runs on an actual tab close, refresh, or the
+   * OS backgrounding the browser mid-edit — so a keystroke sitting in the
+   * 800ms debounce window, or a save already in flight, was silently lost on
+   * exactly those. visibilitychange fires reliably (including on mobile,
+   * unlike beforeunload) the moment the tab is hidden, so flushing there
+   * gives the request a real chance to leave before the page actually goes
+   * away. pagehide is a second chance for the cases visibilitychange misses
+   * (e.g. some in-app browser webviews).
+   */
+  const flushOnExit = () => { if (document.visibilityState === "hidden") flushPending(); };
+  document.addEventListener("visibilitychange", flushOnExit);
+  window.addEventListener("pagehide", flushPending);
+  onCleanup(() => {
+    document.removeEventListener("visibilitychange", flushOnExit);
+    window.removeEventListener("pagehide", flushPending);
+  });
+
   /* One component identity per week — changing week swaps the identity, which
      is what forces DocsEditor to remount with that week's initialHtml. */
   const editors = new Map();
