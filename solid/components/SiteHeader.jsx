@@ -2,7 +2,7 @@ import { createSignal, createEffect, onMount, onCleanup, Show, Index } from "sol
 import { A, useNavigate, useLocation } from "@solidjs/router";
 import { ArrowUpRight } from "lucide-solid";
 import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
-import { preloadRoute } from "@/lib/routeLoaders";
+import { preloadRoute } from "~/lib/routes";
 import Glass from "~/components/Glass";
 import SoundToggle from "~/components/SoundToggle";
 import { JapaneseText } from "~/components/primitives";
@@ -40,6 +40,13 @@ const NAV = [
  * marker is a plain positioned bar here: it appears on the active item rather
  * than sliding between items. This is the one visible motion difference in the
  * whole port so far, and it is noted in docs/solid-migration.md.
+ *
+ * NOTE ON rightSlot: it is a FUNCTION, not an element. The header renders the
+ * control slot twice — once in the desktop bar, once in the mobile "quick
+ * controls" drawer. In React that is two element trees; in Solid a JSX
+ * expression is real DOM, so rendering the same value twice MOVES the nodes
+ * out of the first location instead of duplicating them. Calling a function
+ * per location builds two independent subtrees, the same fix used in Marquee.
  */
 export default function SiteHeader(props) {
   const navigate = useNavigate();
@@ -102,7 +109,7 @@ export default function SiteHeader(props) {
             <div class="hidden items-center gap-3 sm:flex sm:gap-5">
               <span ref={clockEl} class="hidden md:inline tech-label text-muted-foreground tabular-nums" />
               <SoundToggle />
-              {props.rightSlot}
+              {props.rightSlot?.()}
             </div>
 
             <button
@@ -198,7 +205,7 @@ export default function SiteHeader(props) {
               <p class="tech-label text-bone/45">QUICK CONTROLS</p>
               <div class="mobile-nav-controls mt-3 flex flex-wrap items-center gap-2">
                 <SoundToggle />
-                {props.rightSlot}
+                {props.rightSlot?.()}
               </div>
             </div>
 
