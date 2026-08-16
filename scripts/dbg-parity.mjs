@@ -146,7 +146,7 @@ window.document.createElement = function (tagName, ...rest) {
   const el = realCreateElement(tagName, ...rest);
   if (String(tagName).toLowerCase() === "link") {
     linkCount++;
-    if (linkCount < 50) console.error("LINKCREATE", linkCount, el.rel, el.href);
+    if (linkCount < 2000) console.error("LINKCREATE", linkCount, el.rel, el.href);
     setTimeout(() => { if (el.rel === "stylesheet") el.dispatchEvent(new window.Event("load")); }, 0);
   }
   return el;
