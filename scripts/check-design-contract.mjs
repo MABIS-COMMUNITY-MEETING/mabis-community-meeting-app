@@ -236,8 +236,8 @@ requireText("src/pages/Login.jsx", login, "CONTINUE WITH GOOGLE");
 forbidText("src/pages/Login.jsx", login, "loginViaEmailPassword");
 forbidText("src/pages/Login.jsx", login, "<form");
 requireText("src/App.jsx", app, '<Route path="/register" element={<Navigate to="/login" replace />} />');
-requireText("src/App.jsx", app, '<Route path="/forgot-password" element={<Navigate to="/login" replace />} />');
-requireText("src/App.jsx", app, '<Route path="/reset-password" element={<Navigate to="/login" replace />} />');
+requireText("src/App.jsx", app, ['<Route path="/forgot-password" element={<Navigate to="/login" replace />} />', '<Route path="/forgot-password" component={RedirectToLogin} />']);
+requireText("src/App.jsx", app, ['<Route path="/reset-password" element={<Navigate to="/login" replace />} />', '<Route path="/reset-password" component={RedirectToLogin} />']);
 forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/Register")');
 forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/ForgotPassword")');
 forbidText("src/lib/routeLoaders.js", routeLoaders, 'import("@/pages/ResetPassword")');
@@ -266,8 +266,8 @@ for (const sourceFile of listSourceFiles("src").filter((file) => /\.(?:js|jsx|ts
 }
 
 requireText("src/styles/editorial-home.css", editorialHomeCss, ".editorial-home .mabis-widget-header");
-requireText("src/main.jsx", main, "import '@/styles/editorial-home.css'");
-requireText("src/pages/Home.jsx", home, 'className="editorial-home min-h-screen');
+requireText("src/main.jsx", main, ["import '@/styles/editorial-home.css'", 'import "@/styles/editorial-home.css"']);
+requireText("src/pages/Home.jsx", home, ['className="editorial-home min-h-screen', 'class="editorial-home min-h-screen']);
 requireText("src/lib/cursor-preference.js", cursorPreference, "mabis_custom_cursor_enabled");
 requireText("src/lib/color/themeBalance.js", themeBalance, "contrastSafePair");
 requireText("src/lib/color/themeBalance.js", themeBalance, "contrastSafeInk");
