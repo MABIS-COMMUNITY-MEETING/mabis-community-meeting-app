@@ -30,6 +30,22 @@ import { preloadRoute } from "~/lib/routes";
  * boot path.
  */
 async function bootstrap() {
+  // Fire this before anything else, unawaited: it is the fix for the
+  // "loading screen splashes a couple of times" bug on the current route
+  // (most visibly /home right after the Google OAuth redirect lands on a
+  // brand-new page load). Without it, the current route's lazy chunk only
+  // starts loading once AuthProvider resolves and <Protected> switches to
+  // its true branch — too late to beat the outer <Suspense>, which then
+  // remounts LoadingScreen a second time (a real, visible flash) before
+  // PageTransition's own curtain plays on top of that. Starting the chunk
+  // fetch here lets it race the auth check instead of queueing behind it, so
+  // by the time auth resolves the chunk is normally already cached and
+  // <Home/> (or whichever route this is) renders synchronously — no second
+  // Suspense fallback, no extra flash. idlePreloadRemainingRoutes() below
+  // still warms every OTHER route, just later, since only this one is on the
+  // critical path for first paint.
+  preloadRoute(window.location.pathname);
+
   applyAnimationPreference();
   applyJapaneseTextPreference();
   applySectionDescriptionsPreference();
