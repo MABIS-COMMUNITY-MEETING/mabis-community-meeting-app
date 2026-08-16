@@ -567,7 +567,9 @@ export default function DiscussionWidget(props) {
           </Suspense>
 
           <div class="border-t border-border pt-4">
-            <PendingWidget name="Jobs" height={240} />
+            <Suspense fallback={<PendingWidget name="Jobs" height={240} />}>
+              <JobsWidget members={members()} isAdmin={props.isAdmin} compact />
+            </Suspense>
           </div>
         </div>
       </div>
