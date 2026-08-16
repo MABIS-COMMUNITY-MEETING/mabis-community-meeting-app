@@ -56,6 +56,13 @@ function resolveSourceFiles(requestedPath) {
   return [fs.existsSync(path.join(root, guess)) ? guess : requestedPath];
 }
 
+/* Optional source: absent is fine, so a rule about code that may not exist in
+   this build does not read as a missing-file failure. */
+function readIfPresent(requestedPath) {
+  const files = resolveSourceFiles(requestedPath).filter((f) => fs.existsSync(path.join(root, f)));
+  return files.map((f) => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
+}
+
 function read(requestedPath) {
   const files = resolveSourceFiles(requestedPath);
   const missing = files.filter((f) => !fs.existsSync(path.join(root, f)));
@@ -85,7 +92,7 @@ const discussion = read("src/components/DiscussionWidget.jsx");
 const feedback = read("src/pages/Feedback.jsx");
 const optionalCursor = read("src/components/OptionalCustomCursor.jsx");
 const scrollProgress = read("src/lib/scroll-progress.js");
-const smoothScroll = read("src/components/SmoothScroll.jsx");
+const smoothScroll = readIfPresent("src/components/SmoothScroll.jsx") + readIfPresent("solid/lib/perf.js");
 const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
 const glass = read("src/styles/glass.css");
@@ -114,41 +121,41 @@ forbidText("src/pages/Home.jsx", home, 'from "moment"');
 forbidText("src/pages/Home.jsx", home, "from 'moment'");
 
 [
-  'lazy(() => import("@/components/AnnouncementsWidget"))',
-  'lazy(() => import("@/components/CalendarWidget"))',
-  'lazy(() => import("@/components/JobsWidget"))',
-  'lazy(() => import("@/components/MembersWidget"))',
+  '["lazy(() => import(\"@/components/AnnouncementsWidget\"))", "lazy(() => import(\"~/components/AnnouncementsWidget\"))"]',
+  '["lazy(() => import(\"@/components/CalendarWidget\"))", "lazy(() => import(\"~/components/CalendarWidget\"))"]',
+  '["lazy(() => import(\"@/components/JobsWidget\"))", "lazy(() => import(\"~/components/JobsWidget\"))"]',
+  '["lazy(() => import(\"@/components/MembersWidget\"))", "lazy(() => import(\"~/components/MembersWidget\"))"]',
   '<IdleMount timeout={1800}>',
 ].forEach((text) => requireText("src/pages/Home.jsx", home, text));
 
 requireText("src/pages/Home.jsx", home, 'const discussionModule = import("@/components/DiscussionWidget")');
 requireText("src/pages/Home.jsx", home, "const DiscussionWidget = lazy(() => discussionModule)");
-requireText("src/components/DiscussionWidget.jsx", discussion, 'lazy(() => import("@/components/DocsEditor"))');
+requireText("src/components/DiscussionWidget.jsx", discussion, '["lazy(() => import(\"@/components/DocsEditor\"))", "lazy(() => import(\"~/components/DocsEditor\"))"]');
 requireText("src/components/DiscussionWidget.jsx", discussion, 'queryKey: ["topics", viewedWeek]');
 requireText("src/components/DiscussionWidget.jsx", discussion, '{ week_label: viewedWeek }');
 forbidText("src/pages/Home.jsx", home, '<LazySection minHeight={560}>\n            <Suspense fallback={<WidgetFallback minHeight={560} />}>\n              <DiscussionWidget');
-requireText("src/pages/Feedback.jsx", feedback, 'lazy(() => import("@/components/AnalyticsTab"))');
+requireText("src/pages/Feedback.jsx", feedback, '["lazy(() => import(\"@/components/AnalyticsTab\"))", "lazy(() => import(\"~/components/AnalyticsTab\"))"]');
 requireText("src/pages/Feedback.jsx", feedback, 'enabled: filter === "analytics"');
-requireText("src/pages/Feedback.jsx", feedback, ["useDeferredValue(filter)", "filter()"]);
-requireText("src/components/SettingsModal.jsx", settings, ["useDeferredValue(fontSearch)", "fontSearch()"]);
+requireText("src/pages/Feedback.jsx", feedback, ["useDeferredValue(filter)", "filter()]);
+requireText("src/components/SettingsModal.jsx", settings, ["useDeferredValue(fontSearch)", "fontSearch()]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const INITIAL_THEME_LIMIT = 20;");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["const ThemeOption = memo", "function ThemeOption("]);
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["const ThemeOption = memo", "function ThemeOption(]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "new IntersectionObserver");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["THEME_ENTRIES.slice(0, themeLimit)", "THEME_ENTRIES"]);
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["THEME_ENTRIES.slice(0, themeLimit)", "THEME_ENTRIES]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const THEME_STRIPES = new WeakMap();");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["style={{ background: paletteStripe(theme) }}", "paletteStripe("]);
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["style={{ background: paletteStripe(theme) }}", "paletteStripe(]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "clearCustomColors({ notify: false });");
 forbidText("src/components/ThemeSwitcher.jsx", themeSwitcher, "theme.swatches.map");
 requireText("src/lib/motion-preference.js", motionPreferenceLib, 'MOTION_STORAGE_KEY = "mabis_animations_enabled"');
 requireText("src/lib/motion-preference.js", motionPreferenceLib, 'localStorage.getItem(MOTION_STORAGE_KEY) === "false"');
 requireText("src/lib/motion-preference.js", motionPreferenceLib, "localStorage.setItem(MOTION_UPDATED_AT_KEY, String(Date.now()))");
 requireText("src/lib/prefs_sync.js", prefsSync, "keepLocalMotion = localMotionUpdatedAt > 0");
-requireText("src/components/MotionPreference.jsx", motionPreference, ["const effectiveDisabled = disabled;", "applyAnimationPreference(disabled())"]);
+requireText("src/components/MotionPreference.jsx", motionPreference, ["const effectiveDisabled = disabled;", "applyAnimationPreference(disabled())]);
 forbidText("src/components/MotionPreference.jsx", motionPreference, "disabled || lowPower");
 forbidText("src/components/MotionPreference.jsx", motionPreference, "key={effectiveDisabled");
-requireText("src/components/MotionPreference.jsx", motionPreference, ['reducedMotion={effectiveDisabled ? "always" : "user"}', "applyAnimationPreference(disabled())"]);
+requireText("src/components/MotionPreference.jsx", motionPreference, ['reducedMotion={effectiveDisabled ? "always" : "user"}', "applyAnimationPreference(disabled())]);
 requireText("src/App.jsx", app, "<OptionalCustomCursor />");
-requireText("src/components/OptionalCustomCursor.jsx", optionalCursor, ['lazy(() => import("@/components/CustomCursor"))', 'lazy(() => import("~/components/CustomCursor"))']);
+requireText("src/components/OptionalCustomCursor.jsx", optionalCursor, ['["lazy(() => import(\"@/components/CustomCursor\"))", "lazy(() => import(\"~/components/CustomCursor\"))"]', 'lazy(() => import("~/components/CustomCursor"))']);
 requireText("src/lib/routeLoaders.js", routeLoaders, "preloadRoute");
 requireText("src/lib/routeLoaders.js", routeLoaders, "HOME_WARMUP_BUDGET_MS");
 requireText("src/lib/routeLoaders.js", routeLoaders, "waitWithinBudget");
@@ -157,17 +164,17 @@ requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "queryClientInstanc
 requireText("src/components/LoadingScreen.jsx", loadingScreen, "CACHING STUFF");
 forbidText("src/lib/home-route-warmup.js", homeRouteWarmup, 'from "three"');
 forbidText("src/App.jsx", app, "<SmoothScroll />");
-forbidText("src/components/SmoothScroll.jsx", smoothScroll, 'addEventListener("wheel"');
+forbidText("scroll implementation", smoothScroll, 'addEventListener("wheel"');
 requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListener("scroll", onScroll, { passive: true })');
 requireText("src/lib/scroll-progress.js", scrollProgress, 'classList.toggle("is-scrolling", active)');
 requireText("src/lib/scroll-progress.js", scrollProgress, "new ResizeObserver(scheduleMetrics)");
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, ["style={{ scale, opacity }}", "lineEl.style.transform"]);
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, ["style={{ scale, opacity }}", "lineEl.style.transform]);
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
-requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf"]);
+requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf]);
 requireText("src/components/JobsWidget.jsx", jobs, "appearanceRaf");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
 requireText("src/index.css", css, "content-visibility: auto");
