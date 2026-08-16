@@ -40,8 +40,10 @@ const SECTION_MODULES = [
   { label: "SECTION 10 / 10", load: () => import("~/components/MembersWidget") },
 ];
 
-/* ScheduleWidget reads its timetable from a single AppSetting row. */
-const SCHEDULE_SETTING_KEY = "weekly_schedule";
+/* Must equal SETTING_KEY in ScheduleWidget.jsx. Verified against it, not
+   guessed: a mismatch here caches under a key nothing reads, which costs a
+   request and saves nothing. */
+const SCHEDULE_SETTING_KEY = "schedule_url";
 
 function dataTasks() {
   const weekLabel = getWeekLabel(new Date());
