@@ -1,6 +1,5 @@
 import { createSignal, createEffect, onMount, onCleanup, Index, Show } from "solid-js";
-import { PRIDE_THEMES } from "@/lib/pride";
-import { getStoredTheme } from "@/lib/themes";
+import { getStoredThemeKey } from "@/lib/theme-boot";
 
 /**
  * The Pride collection's lighting layer — 1:1 port of
@@ -13,11 +12,36 @@ import { getStoredTheme } from "@/lib/themes";
  * restraint so the page is never permanently oversaturated.
  */
 export default function PrideAmbience() {
-  const [theme, setTheme] = createSignal(PRIDE_THEMES[getStoredTheme()] || null);
+  const [theme, setTheme] = createSignal(null);
   let layerEl;
 
+  /*
+   * The pride palettes load dynamically, not as a static import.
+   *
+   * This component is mounted by App.jsx on every route, so a static import of
+   * @/lib/pride — and, worse, of @/lib/themes for one key lookup — anchored the
+   * whole theme catalogue in the boot chunk. Roughly 117 KB of source parsed
+   * before first paint, to render a background glow that most themes do not
+   * even use.
+   *
+   * Nothing renders until a pride theme is active, so arriving a moment late is
+   * invisible: there is no layout to shift and no text to reflow.
+   */
+  let palettes = null;
+  const sync = async () => {
+    const key = getStoredThemeKey();
+    if (!palettes) {
+      try {
+        ({ PRIDE_THEMES: palettes } = await import("@/lib/pride"));
+      } catch {
+        return;   // offline: the ambience layer simply stays off
+      }
+    }
+    setTheme(palettes[key] || null);
+  };
+
   onMount(() => {
-    const sync = () => setTheme(PRIDE_THEMES[getStoredTheme()] || null);
+    void sync();
     window.addEventListener("themeChanged", sync);
     onCleanup(() => window.removeEventListener("themeChanged", sync));
   });
@@ -38,6 +62,7 @@ export default function PrideAmbience() {
     <Show when={theme()}>
       {(active) => {
         const spec = () => active().pride;
+        const prideTokensFor = spec;
         return (
           <div ref={layerEl} class="pride-ambience fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden>
             <Index each={spec().field}>
