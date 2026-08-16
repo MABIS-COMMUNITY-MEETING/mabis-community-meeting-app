@@ -7,6 +7,7 @@ import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
 import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
 import { japaneseTextEnabled, setJapaneseTextEnabled } from "@/lib/japanese-text-preference";
+import { sectionDescriptionsEnabled, setSectionDescriptionsEnabled } from "@/lib/section-descriptions-preference";
 import { CORE_FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
 import { FONT_CATALOG, ensureFontCatalogStyles } from "@/lib/font-catalog";
 import JapaneseText from "@/components/JapaneseText";
@@ -84,6 +85,7 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
   const [animationsOn, setAnimationsOn] = useState(() => !animationsDisabled());
   const [customCursorOn, setCustomCursorOn] = useState(customCursorEnabled());
   const [japaneseTextOn, setJapaneseTextOn] = useState(japaneseTextEnabled());
+  const [sectionDescriptionsOn, setSectionDescriptionsOn] = useState(sectionDescriptionsEnabled());
   const [currentFont, setCurrentFont] = useState(getStoredFont());
   const [fontAvailability, setFontAvailability] = useState({});
   const [fontSearch, setFontSearch] = useState("");
@@ -462,6 +464,36 @@ export default function SettingsModal({ open, onClose, isAdmin }) {
                   </span>
                   <span className={`relative w-10 h-6 shrink-0 rounded-full transition-colors ${japaneseTextOn ? "bg-primary" : "bg-muted"}`}>
                     <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-background shadow transition-all ${japaneseTextOn ? "left-[18px]" : "left-0.5"}`} />
+                  </span>
+                </button>
+              </div>
+
+              {/* Section descriptions */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Text className={`w-4 h-4 ${sectionDescriptionsOn ? "text-primary" : "text-muted-foreground"}`} />
+                  <JapaneseText ja="見出しの説明文" as="h3" className="font-display font-bold text-foreground text-sm uppercase tracking-wide" japaneseClassName="text-[0.78em] normal-case tracking-normal">Section Descriptions</JapaneseText>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  The explanatory line under each section heading on the Home page. Off by default — turn it on if you are new here or showing someone around.
+                </p>
+                <button
+                  onClick={() => {
+                    const value = !sectionDescriptionsOn;
+                    setSectionDescriptionsOn(value);
+                    setSectionDescriptionsEnabled(value);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-colors ${sectionDescriptionsOn ? "border-primary/40 bg-primary/5" : "border-border"}`}
+                  aria-pressed={sectionDescriptionsOn}
+                >
+                  <span className="text-left text-sm font-semibold text-foreground">
+                    {sectionDescriptionsOn ? "On · Show the description under each heading" : "Off · Headings only"}
+                    <span lang="ja" className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                      {sectionDescriptionsOn ? "オン・見出しの下に説明を表示" : "オフ・見出しのみ"}
+                    </span>
+                  </span>
+                  <span className={`relative w-10 h-6 shrink-0 rounded-full transition-colors ${sectionDescriptionsOn ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-background shadow transition-all ${sectionDescriptionsOn ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                 </button>
               </div>
