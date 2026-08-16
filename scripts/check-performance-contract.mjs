@@ -124,7 +124,18 @@ requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, 'cons
 requireText("src/lib/AuthContext.jsx", auth, "recoverOfflineState");
 requireText("src/lib/AuthContext.jsx", auth, "clearOfflineData");
 requireText("src/lib/offline-cache.js", offlineCache, "PERSISTED_QUERY_ROOTS");
-requireText("src/lib/offline-cache.js", offlineCache, "MAX_AGE = 7 * 24 * 60 * 60 * 1000");
+/*
+ * Raised from 7 to 30 days on request — anyone returning after a school
+ * holiday was getting a blank first paint and a full round-trip before seeing
+ * anything, because their snapshot had aged out.
+ *
+ * The "bounded offline shell" guarantee this contract exists to protect is
+ * unaffected: the bound that actually caps disk use is MAX_BYTES below, which
+ * is unchanged. MAX_AGE only decides whether an existing snapshot is still
+ * worth painting while the network is unavailable or in flight; a successful
+ * request always supersedes it.
+ */
+requireText("src/lib/offline-cache.js", offlineCache, "MAX_AGE = 30 * 24 * 60 * 60 * 1000");
 requireText("src/lib/offline-cache.js", offlineCache, "MAX_BYTES = 2 * 1024 * 1024");
 forbidText("src/lib/offline-cache.js", offlineCache, '  "feedback",');
 requireText("src/lib/themes.js", themes, 'import("@/lib/font-catalog")');
