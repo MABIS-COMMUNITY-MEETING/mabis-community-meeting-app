@@ -60,6 +60,9 @@ page instead. There is an explicit assertion guarding exactly that.
 | Japanese | `JapaneseUiCompanion` auto-scanner + `CjkFontLoader`, mounted in the shell and verified annotating the DOM |
 | Assistant | `MabisAIAssistant` (+ `IdleMount`), mounted in Home and meeting mode; parity opens the panel and asserts the empty state, suggestions and composer |
 | Home chrome | Avatar + role ring, first name and SIGN OUT in the header (Solid had none of it), plus `ProfileEditor`, `FeedbackWidget` and `JobReminder` — Home's `IdleMount` block now matches React's three children |
+| App shell | `MotionPreference`, `PrefsSync`, `ScrollToTop`, `SoundEffects`, `PrideAmbience`, `PageTransition`, and `chrome.jsx` (`GrainOverlay`, `PaletteStripe`, `ScrollProgress`, `ScrollSectionIndicator`) |
+| Auth errors | `Protected` now branches on `authError()`, so an unregistered account gets `UserNotRegisteredError` instead of a silent bounce to login |
+| Home interludes | `ScrollVelocity`, `ScrollScaleRitual`, `BirthdayBanner`, `QuickStartGuide` (hover-warmed), and the `PageFooter` Solid was missing |
 | Loading | `LoadingScreen` replaces the blank route fallback, and is deliberately **not** lazy — it is what shows while chunks load |
 | Notes | `MeetingNotesEditor` + `notes/{BlockNotesEditor,NoteBlock,BlockToolbar}`, wired into meeting mode. `block_html.js` is **shared** with React, not forked — it is a zero-import leaf, so there is nothing for vite-plugin-solid to mis-compile and the storage format cannot drift |
 | Widgets | LunchMenu, Schedule |
@@ -72,35 +75,20 @@ page instead. There is an explicit assertion guarding exactly that.
 Every route now renders, so what is left is shell polish and the long tail of
 feature components — not structural work.
 
-**1. App-shell components React mounts and Solid does not.** This list is
-exact: it is the diff between the two `App.jsx` trees.
+**1. Nothing reachable is missing.** Walking the import graph from
+`src/App.jsx` reaches 81 component/page modules (12,211 lines). All of them now
+have a Solid counterpart except `src/components/ui/use-toast.jsx`, the Radix
+toast hook — replaced wholesale by `solid/lib/toast.jsx` (a signal plus a
+portal), so it is not a gap.
 
-| Component | Effect of its absence |
-|---|---|
-| `MotionPreference` | reduced-motion preference not applied app-wide |
-| `PrefsSync` | preferences not synced back to the account |
-| `ScrollToTop` | scroll position persists across navigation |
-| `SoundEffects` | UI sounds silent |
-| `GrainOverlay`, `PaletteStripe`, `PrideAmbience` | decorative layers missing |
-| `ScrollProgress` | no scroll progress indicator |
-| `LoadingScreen` | Suspense falls back to a blank height-reserving div |
-| `UserNotRegisteredError` | see below |
-
-**2. Auth error states.** React's `AuthenticatedApp` branches on
-`authError.type`: `user_not_registered` renders `UserNotRegisteredError`, and
-`auth_required` calls `navigateToLogin()`. Solid's `Protected` only checks
-`isAuthenticated()`, so an unregistered Google account currently falls through
-to the login redirect instead of the explanatory screen. Port this with the
-shell.
-
-**3. Feature components not yet ported** (verified absent from `solid/`):
-`HistoryWidget`, `QuickStartGuide`, `BirthdayBanner`,
-`MeetingSummary`, `RoleSwitcher`, `RolePreviewToggle`, `HighlightPicker`,
-`FamicomController`, `DoveAnimation`, `MemberAvatar`, `XpBadge`,
-`SmoothScroll`, `Tilt3D`, `SectionReveal`.
-
-Solid `Home` is also missing `PageFooter` and `ScrollSectionIndicator`, which
-React renders.
+**2. Fourteen React files are dead code.** Nothing imports them, in either
+build, so they were deliberately not ported: `OAuthConsent` (239),
+`FamicomController` (145), `layout/AppLayout` (120), `HistoryWidget` (114),
+`MeetingSummary` (81), `SectionReveal` (66), `Tilt3D` (57), `RevealText` (46),
+`HighlightPicker` (39), `KineticHeading` (26), `shared/MemberAvatar` (23),
+`shared/XpBadge` (16), `SmoothScroll` (10), `DoveAnimation` (6). Deleting them
+from `src/` is a separate cleanup — verify with a fresh reachability walk first,
+since `OAuthConsent` in particular looks like a real page.
 
 **⚠ Open product question — `JobReminder` never fires for configurable jobs.**
 The component carries its own private `scheduledDaysFor`, which disagrees with
@@ -140,24 +128,26 @@ noticeably shorter one is worth auditing — but audit the feature surface, not
 ## Progress
 
 Measured over the React component/page modules reachable from `src/App.jsx`
-(12,211 lines; `src/lib/**` is excluded because both builds share it):
+(`src/lib/**` excluded because both builds share it):
 
 | Measure | Done |
 |---|---|
 | Routes rendering | 7 / 7 |
-| Source volume | ~91% |
-| Module count | 62 / 81 |
+| Source volume | 98.7% (100% excluding the replaced toast hook) |
+| Module count | 80 / 81 |
+| Solid modules | 83 |
 
-Module count trails source volume because what remains is a long tail of small
-files — the median unported component is under 50 lines.
+The feature port is complete. What remains is not porting work:
 
-Remaining work, largest first:
-
-| Lines | Item |
-|---|---|
-| 95 | `QuickStartGuide` |
-| 80 | `RoleSwitcher` |
-| ≤ 73 | shell tail: `SoundEffects`, `RolePreviewToggle`, `PrideAmbience`, `BirthdayBanner`, `PageTransition`, `ScrollSectionIndicator`, `ScrollVelocity`, `MotionPreference`, `PrefsSync`, `JapaneseDate`, `ScrollToTop`, `UserNotRegisteredError`, `ScrollScaleRitual` |
+1. **Audit the widgets nobody has driven yet.** Parity exercises Splash, Login,
+   404 and Home (including the assistant, feedback, profile and help dialogs).
+   The ten Home widgets render, but their *interactions* — spinning the job
+   wheel, editing a topic, adding a calendar event — are only covered by the
+   compile check.
+2. **`visualEditAgent`** (see Known gaps) — still the blocker on actually
+   swapping `dist-solid/` in.
+3. **The `JobReminder` product question** below.
+4. Optional: delete the fourteen dead React files.
 
 Kobalte primitives are done (Select, Dialog, Tabs, Popover, DropdownMenu). Note
 the Radix→Kobalte data-attribute swap: `data-[state=open|closed]` becomes
@@ -220,6 +210,17 @@ trigger. Popover's Content takes `gutter`, not `sideOffset`.
   its JSX references — an abandoned colour picker no user can reach. The port
   leaves it out. Check whether a symbol is actually rendered before
   transcribing it.
+- **CSS `animation-fill-mode` is a correctness concern, not a detail.** A
+  finished animation with `both`/`forwards` leaves the element holding its
+  animated `transform`, and any non-`none` transform makes that element the
+  containing block for its `position: fixed` descendants. React hit exactly
+  this with framer and had to null the inline transform in
+  `onAnimationComplete`. `page-content-lift` uses `backwards` so it covers the
+  delay and then leaves no transform at all.
+- **There is no framer, so there is no `MotionConfig`.** The whole port
+  animates via CSS, and `solid-motion.css` switches every keyframe and
+  transition off under `html.animations-disabled`. `MotionPreference` just
+  writes that class — the preference is enforced one layer lower than in React.
 - **Clear your own timers.** React tolerates `setState` after unmount as a
   no-op; a Solid signal write after disposal is a real leak. `Login` tracks its
   15s retry timer and clears it in `onCleanup`.
