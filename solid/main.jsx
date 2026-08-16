@@ -3,42 +3,79 @@ import App from "~/App.jsx";
 import "@/index.css";
 import "@/styles/editorial-home.css";
 import "~/solid-motion.css";
-import { applyTheme, getStoredTheme, getStoredCustomColors, applyCustomColors, applyFont, getStoredFont } from "@/lib/themes";
+import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
 import { startPerfMonitor } from "~/lib/perf-monitor";
 
 /*
- * Identical bootstrap order to src/main.jsx.
+ * Same visual result as src/main.jsx, reached with less work before first paint.
  *
- * This sequence is load-bearing for the look, not incidental: every visual
- * preference is resolved BEFORE the first paint, otherwise the app paints in
- * the CSS default font/theme and visibly swaps a moment later. The theme and
- * font modules are the React app's own — they touch documentElement directly
- * and contain no React, so both builds share one source of truth.
+ * The ordering is load-bearing: every visual preference resolves BEFORE the
+ * first paint, or the app paints in the CSS default font/theme and visibly
+ * swaps a moment later.
+ *
+ * What changed from the React bootstrap is where the theme comes from.
+ * Importing @/lib/themes statically pulled the whole catalogue — themes, pride,
+ * GMK and BFDI palettes, contrast maths, the font tables, ~117 KB of source —
+ * into the boot chunk, to apply the one theme the user already had. Now a
+ * snapshot of the previous paint is replayed (lib/theme-boot.js), and the real
+ * modules load AFTER the app is on screen to re-apply authoritatively.
+ *
+ * The catalogue is still statically imported by ThemeSwitcher and
+ * SettingsModal, which are lazy — so it lands in their chunk instead of the
+ * boot path.
  */
 async function bootstrap() {
   applyAnimationPreference();
   applyJapaneseTextPreference();
   applySectionDescriptionsPreference();
 
-  applyTheme(getStoredTheme());
-  const customColors = getStoredCustomColors();
-  if (customColors) applyCustomColors(customColors.primary, customColors.secondary);
+  const replayed = applyThemeSnapshot();
 
-  const fontLoad = applyFont(getStoredFont());
-  await Promise.race([
-    fontLoad,
-    new Promise((resolve) => window.setTimeout(resolve, 800)),
-  ]);
+  if (!replayed) {
+    // First visit, cleared storage, or a changed preference: no usable
+    // snapshot, so pay the original cost. Same code path as before.
+    const themes = await import("@/lib/themes");
+    themes.applyTheme(themes.getStoredTheme());
+    const customColors = themes.getStoredCustomColors();
+    if (customColors) themes.applyCustomColors(customColors.primary, customColors.secondary);
+    await Promise.race([
+      themes.applyFont(themes.getStoredFont()),
+      new Promise((resolve) => window.setTimeout(resolve, 800)),
+    ]);
+  }
+
   document.documentElement.classList.add("ui-font-ready");
-
   render(() => <App />, document.getElementById("root"));
 
   // Opt-in only (?perf=1). Costs nothing otherwise — a monitor that slows the
   // page down would defeat its own purpose.
   startPerfMonitor();
+
+  if (replayed) reconcileThemeAfterPaint();
+}
+
+/*
+ * The snapshot is a cache, not the source of truth. Once the page is up, load
+ * the real modules and re-apply: idempotent when the snapshot was right, and
+ * self-repairing when it was written by an older build with different theme
+ * definitions. Deferred to idle so it cannot compete with first paint.
+ */
+function reconcileThemeAfterPaint() {
+  const run = () => {
+    import("@/lib/themes").then((themes) => {
+      themes.applyTheme(themes.getStoredTheme());
+      const customColors = themes.getStoredCustomColors();
+      if (customColors) themes.applyCustomColors(customColors.primary, customColors.secondary);
+      themes.applyFont(themes.getStoredFont());
+    }).catch(() => {
+      /* offline: the replayed snapshot is already correct on screen */
+    });
+  };
+  if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 3000 });
+  else window.setTimeout(run, 1200);
 }
 
 bootstrap();
