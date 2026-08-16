@@ -21,6 +21,7 @@ const Home = lazy(() => import("~/pages/Home"));
 const History = lazy(() => import("~/pages/History"));
 const AnnouncementsHistory = lazy(() => import("~/pages/AnnouncementsHistory"));
 const NewsHistory = lazy(() => import("~/pages/NewsHistory"));
+const Feedback = lazy(() => import("~/pages/Feedback"));
 
 function RouteFallback() {
   return <div style={{ "min-height": "100vh" }} aria-hidden />;
@@ -54,6 +55,10 @@ function ProtectedNewsHistory() {
   return <Protected><NewsHistory /></Protected>;
 }
 
+function ProtectedFeedback() {
+  return <Protected><Feedback /></Protected>;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClientInstance}>
@@ -65,6 +70,7 @@ export default function App() {
             <Route path="/history" component={ProtectedHistory} />
             <Route path="/history/announcements" component={ProtectedAnnouncementsHistory} />
             <Route path="/history/news" component={ProtectedNewsHistory} />
+            <Route path="/feedback" component={ProtectedFeedback} />
           </Router>
         </Suspense>
         <OptionalCustomCursor />
