@@ -15,6 +15,7 @@ const SettingsModal = lazy(() => import("~/components/SettingsModal"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
 const FeedbackWidget = lazy(() => import("~/components/FeedbackWidget"));
 const ProfileEditor = lazy(() => import("~/components/ProfileEditor"));
+const JobReminder = lazy(() => import("~/components/JobReminder"));
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 
@@ -298,10 +299,10 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Deferred until the browser is idle, as in React. JobReminder belongs
-          in here too once it is ported. */}
+      {/* Deferred until the browser is idle, as in React — same three, same order. */}
       <IdleMount timeout={1800}>
         <Suspense fallback={null}>
+          <JobReminder />
           <MabisAIAssistant />
           <FeedbackWidget />
         </Suspense>
