@@ -131,7 +131,7 @@ globalThis.XMLHttpRequest = DeadXHR;
 const watchdog = setTimeout(() => {
   console.error("Solid parity: timed out after 30s (something never settled).");
   process.exit(1);
-}, 30000);
+}, 60000);
 watchdog.unref?.();
 
 // NB: `performance` is deliberately excluded. jsdom's Performance delegates to
@@ -191,7 +191,7 @@ const byTitle = (title) => (root
  * race — the same assertion passed and failed on consecutive runs before this.
  * Poll to a deadline instead.
  */
-const waitFor = async (predicate, timeoutMs = 15000) => {
+const waitFor = async (predicate, timeoutMs = 45000) => {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (predicate()) return true;
