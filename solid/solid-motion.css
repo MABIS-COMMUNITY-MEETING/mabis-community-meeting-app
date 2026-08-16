@@ -22,6 +22,19 @@
 }
 html.animations-disabled .splash-bob { animation: none; }
 
+/* Start-meeting arrow nudge.
+   framer:  animate={{ x: [0, 6, 0] }} duration 1.4s, repeat Infinity */
+@keyframes meeting-nudge {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(6px); }
+  100% { transform: translateX(0); }
+}
+.meeting-nudge {
+  animation: meeting-nudge 1.4s ease-in-out infinite;
+  will-change: transform;
+}
+html.animations-disabled .meeting-nudge { animation: none; }
+
 /* ── Off-screen sections cost nothing ──────────────────────────────────────
  * content-visibility: auto lets the browser skip layout AND paint for any
  * section outside the viewport. On this ten-section page that is the single
@@ -84,6 +97,7 @@ html.is-scrolling .grain-layer { opacity: 0 !important; }
    work on layers the user is not looking at during the gesture. */
 html.is-scrolling .marquee-track,
 html.is-scrolling .splash-bob,
+html.is-scrolling .meeting-nudge,
 html.is-scrolling .blob-drift,
 html.is-scrolling .blob-drift-2,
 html.is-scrolling .spin-slow {
