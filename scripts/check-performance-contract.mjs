@@ -41,6 +41,9 @@ function resolveSourcePath(relativePath) {
  * entry may list several files whose contents are concatenated.
  */
 const SOLID_EQUIVALENTS = {
+  "src/lib/routeLoaders.js": ["solid/lib/routes.js"],
+  "src/lib/home-route-warmup.js": ["solid/lib/home-warmup.js"],
+  "src/lib/query-client.js": ["solid/lib/query-client.js"],
   "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
   // The React AuthContext went with the React UI; Solid has its own carrying
   // the same offline-recovery guarantees this rule protects.

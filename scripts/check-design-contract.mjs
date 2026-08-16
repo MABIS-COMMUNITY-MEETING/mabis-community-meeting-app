@@ -36,6 +36,8 @@ function resolveSourcePath(relativePath) {
  * from shared primitive modules rather than as standalone files.
  */
 const SOLID_EQUIVALENTS = {
+    "src/lib/home-route-warmup.js": ["solid/lib/home-warmup.js"],
+    "src/lib/query-client.js": ["solid/lib/query-client.js"],
     // Solid's route table lives in solid/lib/routes.js and deliberately does
     // not reuse the React loaders — see the note in that file.
     "src/lib/routeLoaders.js": ["solid/lib/routes.js"],
