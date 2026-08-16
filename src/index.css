@@ -623,6 +623,13 @@ html:not(.japanese-text-enabled) [lang="ja"]:not([data-ja-always]) {
   display: none;
 }
 
+/* ── section descriptions ─────────────────────────────────────────────
+   Off by default — the heading already names the section. Hidden by the base
+   rule rather than shown by it, so the lines never paint for a frame before
+   the preference is read. Settings › Interface turns them back on. */
+[data-section-description] { display: none; }
+html.section-descriptions-shown [data-section-description] { display: block; }
+
 /* ── vertical text ── */
 .vert-text { writing-mode: vertical-rl; text-orientation: mixed; }
 
