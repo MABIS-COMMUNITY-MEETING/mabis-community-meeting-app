@@ -9,6 +9,7 @@ import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
 import { startPerfMonitor } from "~/lib/perf-monitor";
+import { preloadRoute } from "~/lib/routes";
 
 /*
  * Same visual result as src/main.jsx, reached with less work before first paint.
