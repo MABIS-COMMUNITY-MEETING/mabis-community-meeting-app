@@ -1,10 +1,16 @@
-import { onMount, onCleanup, lazy, Suspense, For, Show } from "solid-js";
+import { createSignal, onMount, onCleanup, lazy, Suspense, For, Show } from "solid-js";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection, EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
 import { useQuery } from "@tanstack/solid-query";
+import { CircleHelp, Settings } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
+import { usePresenceHeartbeat } from "~/lib/usePresence";
+import SiteHeader from "~/components/SiteHeader";
+import ThemeSwitcher from "~/components/ThemeSwitcher";
+
+const SettingsModal = lazy(() => import("~/components/SettingsModal"));
 
 // Widgets are code-split individually, so a section that never scrolls into
 // view never downloads its chunk. Combined with LazySection's shared observer
@@ -120,6 +126,30 @@ export default function Home() {
   }));
   const members = () => membersQuery.data || [];
 
+  const [showSettings, setShowSettings] = createSignal(false);
+  usePresenceHeartbeat();
+
+  // Warm the Settings chunk on hover/focus so the first click is not spent
+  // waiting on a network fetch — same fix applied to the React build.
+  const preloadSettings = () => { void import("~/components/SettingsModal"); };
+
+  const controls = (
+    <>
+      <ThemeSwitcher />
+      <button
+        onMouseEnter={preloadSettings}
+        onFocus={preloadSettings}
+        onPointerDown={preloadSettings}
+        onClick={() => setShowSettings(true)}
+        data-cursor="SET"
+        title="Settings"
+        class="h-9 w-9 flex items-center justify-center border border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors"
+      >
+        <Settings class="w-4 h-4" />
+      </button>
+    </>
+  );
+
   onMount(() => {
     const stop = installScrollStateClass();
     onCleanup(stop);
@@ -133,6 +163,14 @@ export default function Home() {
 
   return (
     <div class="editorial-home min-h-screen bg-background overflow-x-hidden">
+      <SiteHeader rightSlot={controls} />
+
+      <Show when={showSettings()}>
+        <Suspense fallback={null}>
+          <SettingsModal open onClose={() => setShowSettings(false)} isAdmin={isAdmin()} />
+        </Suspense>
+      </Show>
+
       <main class="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
         <HomeMasthead weekLabel={weekLabel} dateLabel={dateLabel} date={now} />
 
