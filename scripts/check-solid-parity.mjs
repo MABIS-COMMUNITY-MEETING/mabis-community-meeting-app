@@ -252,7 +252,16 @@ if (route === "/login") {
   check("signed-in session recovered (not bounced to login)",
     !text.includes("CONTINUE WITH GOOGLE"),
     "landed on /login — the seeded offline session was rejected");
-  check("home masthead rendered", text.includes("MABIS"));
+  /*
+   * Wait for the masthead, and assert on text only Home renders.
+   *
+   * This used to assert `text.includes("MABIS")` against a single early
+   * sample — which the LOADING SCREEN also contains ("MABIS 2026"), so it
+   * passed whether Home had rendered or not. Swapping the route fallback to a
+   * blank div exposed it. Poll for the masthead's own copy instead.
+   */
+  await waitFor(() => textNow().includes("COMMUNITY DASHBOARD"), 8000);
+  check("home masthead rendered", textNow().includes("COMMUNITY DASHBOARD"));
 
   // MabisAIAssistant: lazy, inside IdleMount, so it appears only after the idle
   // callback fires and its chunk resolves.
