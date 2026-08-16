@@ -267,6 +267,41 @@ if (route === "/login") {
   check("job reminder stays closed with no pending jobs",
     !textNow().includes("Job Reminder"));
 
+  // Editorial interludes and footer — all were missing from Solid's Home.
+  check("scroll-velocity band rendered",
+    (textNow().match(/BANGKOK/g) || []).length >= 2,
+    "the band renders its sequence twice for the seamless loop");
+  check("scroll-scale ritual rendered", textNow().includes("VOICE YOUR WORDS"));
+  check("page footer rendered", textNow().includes("COLOPHON"));
+  check("scroll section indicator rendered", textNow().includes("SCROLL"));
+  check("birthday banner stays closed with no birthdays today",
+    !textNow().includes("Happy birthday"));
+
+  // QuickStartGuide: lazy, warmed on hover, opened by the Help button.
+  const helpBtn = byTitle("How to use this site");
+  check("help button rendered", !!helpBtn);
+  if (helpBtn) {
+    helpBtn.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    await waitFor(() => textNow().includes("How to use this site"));
+    const t5 = textNow();
+    check("quick-start guide opens on click", t5.includes("How to use this site"));
+    check("all five guide sections rendered",
+      t5.includes("Start a meeting")
+      && t5.includes("Add a discussion topic")
+      && t5.includes("Assign a job")
+      && t5.includes("Find dates and daily information")
+      && t5.includes("Change how the site looks"));
+    check("guide dismiss control rendered", t5.includes("I’m ready"));
+    // Escape must close it AND restore body scroll.
+    window.document.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    window.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape" }));
+    await waitFor(() => !textNow().includes("Start a meeting"));
+    check("Escape closes the guide", !textNow().includes("Start a meeting"));
+    check("body scroll restored after closing",
+      window.document.body.style.overflow !== "hidden",
+      `body overflow left as "${window.document.body.style.overflow}"`);
+  }
+
   // FeedbackWidget: the other half of Home's IdleMount block.
   await waitFor(() => byTitle("Feedback & Bug Reports"));
   const feedbackFab = byTitle("Feedback & Bug Reports");
@@ -329,6 +364,22 @@ if (route === "/login") {
   check("return-home CTA present", text.includes("RETURN HOME"));
   check("fade keyframe applied (not framer)", html2.includes("fade-in"));
   check("admin note hidden for signed-out visitor", !text.includes("ADMIN NOTE"));
+}
+
+// ── always-on shell ───────────────────────────────────────────────────────
+// These mount in App.jsx for every route, so they are asserted for every route.
+const shellHtml = () => (root ? root.innerHTML : "");
+check("grain overlay mounted", shellHtml().includes("grain-layer"));
+check("palette stripe mounted", shellHtml().includes("--palette-stripes"));
+check("scroll progress bar mounted", shellHtml().includes("--palette-gradient"));
+
+// React wraps every route EXCEPT Splash in PageTransition.
+if (route === "/") {
+  check("landing route has no page-transition curtain", !shellHtml().includes("page-curtain"));
+} else {
+  check("page-transition curtain rendered", shellHtml().includes("page-curtain"));
+  check("content lift uses backwards fill, not both",
+    shellHtml().includes("page-content-lift"));
 }
 
 // ── Japanese companion layer ──────────────────────────────────────────────
