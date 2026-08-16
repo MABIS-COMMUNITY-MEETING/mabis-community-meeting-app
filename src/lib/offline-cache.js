@@ -8,7 +8,19 @@ const DB_NAME = "mabis-offline-cache";
 const DB_VERSION = 1;
 const STORE_NAME = "snapshots";
 const SESSION_KEY = "mabis-offline-user-v1";
-const MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+/*
+ * How long a snapshot on this machine stays usable: 30 days.
+ *
+ * This is the offline/cold-start cache, not freshness — a live session still
+ * refetches on its own schedule, and anything newer from the server wins the
+ * moment a request succeeds. All this age governs is whether an old snapshot
+ * is worth showing while the network is unavailable or still in flight.
+ *
+ * It was 7 days, which meant anyone returning after a school holiday got a
+ * blank first paint and a full round-trip before seeing anything. A month
+ * spans any normal break.
+ */
+const MAX_AGE = 30 * 24 * 60 * 60 * 1000;
 const MAX_BYTES = 2 * 1024 * 1024;
 
 const PERSISTED_QUERY_ROOTS = new Set([
