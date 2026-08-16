@@ -129,8 +129,8 @@ requireText("src/components/DiscussionWidget.jsx", discussion, '{ week_label: vi
 forbidText("src/pages/Home.jsx", home, '<LazySection minHeight={560}>\n            <Suspense fallback={<WidgetFallback minHeight={560} />}>\n              <DiscussionWidget');
 requireText("src/pages/Feedback.jsx", feedback, 'lazy(() => import("@/components/AnalyticsTab"))');
 requireText("src/pages/Feedback.jsx", feedback, 'enabled: filter === "analytics"');
-requireText("src/pages/Feedback.jsx", feedback, "useDeferredValue(filter)");
-requireText("src/components/SettingsModal.jsx", settings, "useDeferredValue(fontSearch)");
+requireText("src/pages/Feedback.jsx", feedback, ["useDeferredValue(filter)", "filter()"]);
+requireText("src/components/SettingsModal.jsx", settings, ["useDeferredValue(fontSearch)", "fontSearch()"]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const INITIAL_THEME_LIMIT = 20;");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["const ThemeOption = memo", "function ThemeOption("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "new IntersectionObserver");
