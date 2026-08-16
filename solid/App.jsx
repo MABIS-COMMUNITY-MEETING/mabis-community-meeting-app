@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/solid-query";
 import { queryClientInstance } from "~/lib/query-client";
 import { AuthProvider, useAuth } from "~/lib/AuthContext";
 import { Toaster } from "~/lib/toast";
+import { routeLoaders } from "~/lib/routes";
 import OptionalCustomCursor from "~/components/OptionalCustomCursor";
 import CjkFontLoader from "~/components/CjkFontLoader";
 import LoadingScreen from "~/components/LoadingScreen";
@@ -29,7 +30,9 @@ import { GrainOverlay, PaletteStripe, ScrollProgress } from "~/components/chrome
  */
 const Splash = lazy(() => import("~/pages/Splash"));
 const Login = lazy(() => import("~/pages/Login"));
-const Home = lazy(() => import("~/pages/Home"));
+/* Routed through the reporting loader so the loading screen's counter reflects
+   real progress instead of sitting at its initial value. */
+const Home = lazy(() => routeLoaders["/home"]());
 const History = lazy(() => import("~/pages/History"));
 const AnnouncementsHistory = lazy(() => import("~/pages/AnnouncementsHistory"));
 const NewsHistory = lazy(() => import("~/pages/NewsHistory"));

@@ -1,4 +1,5 @@
 import { saveDataEnabled } from "@/lib/performance-tier";
+import { setLoadingState } from "@/lib/loading-state";
 
 /*
  * Solid route loaders.
@@ -14,10 +15,37 @@ import { saveDataEnabled } from "@/lib/performance-tier";
  * two builds keep separate route tables. Any Solid component that wants to
  * warm a route must import from this file, never from @/lib/routeLoaders.
  */
+/*
+ * Home reports its progress while it loads.
+ *
+ * LoadingScreen renders whatever setLoadingState() last published. Nothing in
+ * this build ever called it, so the counter sat frozen at its initial value for
+ * the whole load — the app looked stuck rather than busy, which reads as far
+ * slower than it is. React drove this from routeLoaders.js; this is the same
+ * contract, without the speculative data warm-up.
+ */
+let homeRoutePromise;
+function loadHomeRoute() {
+  if (homeRoutePromise) return homeRoutePromise;
+  setLoadingState({ progress: 12, label: "CACHING STUFF", detail: "HOME / SECTIONS 01\u201310" });
+  homeRoutePromise = import("~/pages/Home")
+    .then((mod) => {
+      setLoadingState({ progress: 100, label: "CACHING STUFF", detail: "SECTIONS READY" });
+      return mod;
+    })
+    .catch((error) => {
+      // A failed chunk must not leave the counter parked mid-way forever.
+      setLoadingState({ progress: 100, label: "CACHING STUFF", detail: "RETRYING" });
+      homeRoutePromise = undefined;
+      throw error;
+    });
+  return homeRoutePromise;
+}
+
 const loaders = {
   "/": () => import("~/pages/Splash"),
   "/login": () => import("~/pages/Login"),
-  "/home": () => import("~/pages/Home"),
+  "/home": loadHomeRoute,
   "/history": () => import("~/pages/History"),
   "/history/announcements": () => import("~/pages/AnnouncementsHistory"),
   "/history/news": () => import("~/pages/NewsHistory"),
