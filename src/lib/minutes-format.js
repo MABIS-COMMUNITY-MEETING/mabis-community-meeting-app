@@ -71,8 +71,10 @@ export function topicsToMinutesHtml(topics, weekLabel, { heading } = {}) {
     // so no field is lost in the conversion.
     const meta = [];
     if (topic.submitted_by) meta.push(`Raised by ${escapeHtml(topic.submitted_by)}`);
-    const priority = PRIORITY_LABELS[Number(topic.priority) || 3];
-    if (priority) meta.push(`${priority} priority`);
+    // Anything outside 1-5 (including a value the schema never produced but a
+    // stray import might) reads as Medium rather than dropping the field.
+    const priority = PRIORITY_LABELS[Number(topic.priority)] || PRIORITY_LABELS[3];
+    meta.push(`${priority} priority`);
     meta.push(topic.completed ? "Done" : "Not yet discussed");
     parts.push(`<p><em>${meta.join(" · ")}</em></p>`);
 
