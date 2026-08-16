@@ -16,6 +16,9 @@ const DiscussionWidget = lazy(() => import("~/components/DiscussionWidget"));
 const CalendarWidget = lazy(() => import("~/components/CalendarWidget"));
 const AnnouncementsWidget = lazy(() => import("~/components/AnnouncementsWidget"));
 const NewsWidget = lazy(() => import("~/components/NewsWidget"));
+const MeetingModeWidget = lazy(() => import("~/components/MeetingModeWidget"));
+const MissingItemsWidget = lazy(() => import("~/components/MissingItemsWidget"));
+const MembersWidget = lazy(() => import("~/components/MembersWidget"));
 
 /**
  * Home — SolidJS port of src/pages/Home.jsx (shell).
@@ -89,13 +92,16 @@ const SECTIONS = [
 ];
 
 const WIDGETS = {
+  "01": MeetingModeWidget,
   "02": AnnouncementsWidget,
   "03": DiscussionWidget,
   "04": JobsWidget,
   "05": CalendarWidget,
   "06": ScheduleWidget,
   "08": LunchMenuWidget,
+  "07": MissingItemsWidget,
   "09": NewsWidget,
+  "10": MembersWidget,
 };
 
 export default function Home() {
@@ -173,7 +179,15 @@ export default function Home() {
                       >
                         {(() => {
                           const W = Widget();
-                          return <W isAdmin={isAdmin()} members={members()} />;
+                          return (
+                            <W
+                              isAdmin={isAdmin()}
+                              members={members()}
+                              canChangeRoles={isAdmin()}
+                              canStart={isAdmin()}
+                              onStartMeeting={() => window.dispatchEvent(new CustomEvent("startMeetingMode"))}
+                            />
+                          );
                         })()}
                       </Suspense>
                     )}
