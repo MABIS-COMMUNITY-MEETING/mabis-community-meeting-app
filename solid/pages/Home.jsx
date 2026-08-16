@@ -133,7 +133,10 @@ export default function Home() {
   // waiting on a network fetch — same fix applied to the React build.
   const preloadSettings = () => { void import("~/components/SettingsModal"); };
 
-  const controls = (
+  // A function, not an element: SiteHeader renders this in two places
+  // (desktop bar + mobile drawer), and in Solid the same nodes cannot occupy
+  // both — they would move rather than duplicate.
+  const controls = () => (
     <>
       <ThemeSwitcher />
       <button
