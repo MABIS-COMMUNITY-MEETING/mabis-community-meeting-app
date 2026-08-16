@@ -5,14 +5,29 @@ import { getLoadingState, subscribeToLoadingState } from "@/lib/loading-state";
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 const clampProgress = (value) => Math.max(0, Math.min(100, Number(value) || 0));
 
+// How long a real target can sit still before the counter starts trickling
+// forward on its own, and how far it's allowed to creep ahead of the last
+// real update while it waits for the next one.
+const STALL_MS = 260;
+const TRICKLE_CAP = 9;
+const TRICKLE_RATE = 0.01;
+
 /**
- * Numeric loader — 1:1 port of src/components/LoadingScreen.jsx.
+ * Numeric loader — 1:1 port of src/components/LoadingScreen.jsx, plus one
+ * fix on top of the React version: real progress arrives in uneven bursts
+ * (home-warmup.js resolves ~21 concurrent tasks in whatever order they
+ * finish over the network), so the target can go several hundred ms — long
+ * enough to read as "stuck" — between updates. 14 + round((11/21)*80) lands
+ * on exactly 56, so "stuck at 56" is not a one-off, it's the 11th of 21 tasks
+ * landing and the 12th being a slow one.
  *
- * The selected UI font is captured for its full lifetime. Progress comes from
- * real route/module/data preparation; the visual counter follows those
- * milestones on one requestAnimationFrame loop that writes textContent and
- * transform directly, so no framework reconciles an intermediate frame. That
- * design carries over unchanged — it was already doing what Solid would want.
+ * The number itself already animated smoothly toward each new target; what
+ * it never did was move BETWEEN targets. This adds a small decelerating
+ * trickle that only kicks in once a target has been still for STALL_MS, caps
+ * itself TRICKLE_CAP points ahead and never crosses 97 — so it stays honest
+ * (100 only ever comes from a real completion event) while never visibly
+ * freezing. The moment a real update arrives the trickle resets and the
+ * counter is pulled straight to the new, higher-priority target.
  */
 export default function LoadingScreen() {
   // useSyncExternalStore → signal + subscription. equals:false because the
@@ -46,36 +61,58 @@ export default function LoadingScreen() {
     }
   };
 
-  createEffect(on(progress, (target) => {
-    const root = document.documentElement;
-    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
-      || root.classList.contains("animations-disabled")
-      || root.classList.contains("performance-lite");
-
-    if (reduceMotion) {
-      visualProgress = target;
-      paint(target);
-      return;
-    }
-
-    let frame = 0;
+  onMount(() => {
+    let raf;
     let previousTime = performance.now();
+    let lastTarget = progress();
+    let lastRealChangeAt = previousTime;
+    let trickle = 0;
     paint(visualProgress);
 
     const step = (now) => {
       const elapsed = Math.min(48, Math.max(0, now - previousTime));
       previousTime = now;
+
+      const target = progress();
+      if (target !== lastTarget) {
+        lastTarget = target;
+        lastRealChangeAt = now;
+        trickle = 0;
+      }
+
+      const root = document.documentElement;
+      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+        || root.classList.contains("animations-disabled")
+        || root.classList.contains("performance-lite");
+
+      if (reduceMotion) {
+        // No trickle without motion — jump straight to the real value, same
+        // as the previous behaviour.
+        visualProgress = target;
+        paint(target);
+        raf = window.requestAnimationFrame(step);
+        return;
+      }
+
+      const stalledFor = now - lastRealChangeAt;
+      if (target < 97 && stalledFor > STALL_MS) {
+        // Decelerating creep toward the cap — fast at first, asymptotically
+        // slower, so it reads as "still working" rather than as fake progress.
+        trickle = Math.min(trickle + elapsed * TRICKLE_RATE * (1 - trickle / TRICKLE_CAP), TRICKLE_CAP);
+      }
+      const displayTarget = Math.min(target + trickle, 97);
+
       const blend = 1 - Math.exp(-elapsed / 72);
-      let next = visualProgress + (target - visualProgress) * blend;
-      if (Math.abs(target - next) < 0.025) next = target;
+      let next = visualProgress + (displayTarget - visualProgress) * blend;
+      if (Math.abs(displayTarget - next) < 0.025) next = displayTarget;
       visualProgress = next;
       paint(next);
-      if (next !== target) frame = window.requestAnimationFrame(step);
+      raf = window.requestAnimationFrame(step);
     };
 
-    if (visualProgress !== target) frame = window.requestAnimationFrame(step);
-    onCleanup(() => window.cancelAnimationFrame(frame));
-  }));
+    raf = window.requestAnimationFrame(step);
+    onCleanup(() => window.cancelAnimationFrame(raf));
+  });
 
   const initialNumber = String(Math.round(visualProgress)).padStart(3, "0");
   const initialScale = Math.max(0.0001, visualProgress / 100);
