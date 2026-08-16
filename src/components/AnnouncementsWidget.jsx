@@ -253,12 +253,22 @@ export default function AnnouncementsWidget({ members, isAdmin }) {
                   </div>
 
                   {isAdmin &&
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                /* Was opacity-0 group-hover:opacity-100, which meant these
+                   controls did not exist on any touch device — there is no
+                   hover, so nobody on a phone or tablet could pin or remove an
+                   announcement. Now always visible on coarse pointers, and
+                   still hover-revealed on mouse (plus focus-within, so keyboard
+                   users can reach them). */
+                <div className="flex items-center gap-1 shrink-0 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
                       <button onClick={() => pinMutation.mutate({ id: ann.id, pinned: !ann.pinned })}
+                  aria-label={ann.pinned ? `Unpin ${ann.title}` : `Pin ${ann.title}`}
+                  title={ann.pinned ? "Unpin" : "Pin to top"}
                   className={`p-1.5 rounded-lg transition-colors ${ann.pinned ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-primary/10"}`}>
                         <Pin className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => deleteMutation.mutate(ann.id)}
+                      <button onClick={() => setPendingDelete(ann)}
+                  aria-label={`Remove ${ann.title}`}
+                  title="Remove announcement"
                   className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-50 transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
