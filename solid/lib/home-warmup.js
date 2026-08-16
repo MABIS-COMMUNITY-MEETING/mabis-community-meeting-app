@@ -126,6 +126,17 @@ export async function warmHomeRoute(onProgress) {
    * bandwidth cost lives, and that's still trimmed on constrained networks.
    */
   const data = dataTasks();
+
+  /*
+   * The remaining widget reads. These are NOT awaited — see below — so they
+   * cost nothing up front, but they mean Jobs, Lunch, News, Lost and Found and
+   * Calendar are warm by the time anyone scrolls to them instead of each
+   * paying a cold fetch on mount.
+   *
+   * Skipped entirely on a constrained link, where speculative reads cost the
+   * user more than the wait they save.
+   */
+  const deferredData = constrained ? [] : deferredDataTasks();
   const tasks = [...modules, ...data];
 
   let complete = 0;
@@ -134,15 +145,54 @@ export async function warmHomeRoute(onProgress) {
     detail: constrained ? "ADAPTIVE / FIRST VIEW" : "SECTIONS 01–10",
   });
 
-  await Promise.allSettled(tasks.map(async ({ label, run }) => {
+  /*
+   * Only the first viewport is worth WAITING for.
+   *
+   * Awaiting every task meant the loading screen stayed up while section 10's
+   * member list downloaded, despite section 10 being nine screens away. These
+   * three sections and their reads are what is actually on screen when Home
+   * paints; the rest keep warming behind it.
+   */
+  const FIRST_VIEW = new Set([
+    "SECTION 01 / 10", "SECTION 02 / 10", "SECTION 03 / 10",
+    "DATA / MEMBERS", "DATA / ANNOUNCEMENTS", "DATA / DISCUSSION",
+    "DATA / BIRTHDAYS", "DATA / ATTENDANCE",
+  ]);
+
+  const blocking = tasks.filter((t) => FIRST_VIEW.has(t.label));
+  const background = [...tasks.filter((t) => !FIRST_VIEW.has(t.label)), ...deferredData];
+
+  // Fired, never awaited: these continue past the loading screen.
+  for (const { run } of background) {
+    try { void Promise.resolve(run()).catch(() => {}); } catch { /* best effort */ }
+  }
+
+  await Promise.allSettled(blocking.map(async ({ label, run }) => {
     try {
       await run();
     } finally {
       complete += 1;
       onProgress?.({
-        progress: 14 + Math.round((complete / tasks.length) * 80),
+        progress: 14 + Math.round((complete / blocking.length) * 80),
         detail: label,
       });
     }
   }));
+}
+
+/* Everything below the first viewport. Same prefetch contract as dataTasks():
+   the keys must match the widgets exactly or the read is wasted. */
+function deferredDataTasks() {
+  const weekLabel = getWeekLabel(new Date());
+  const prefetch = (queryKey, queryFn) => () =>
+    queryClientInstance.prefetchQuery({ queryKey, queryFn });
+
+  return [
+    { label: "DATA / JOBS", run: prefetch(["assignments"], () => base44.entities.JobAssignment.list("-created_date", 500)) },
+    { label: "DATA / ROTATION", run: prefetch(["job-definitions"], () => base44.entities.JobDefinition.list("title", 100)) },
+    { label: "DATA / LOST AND FOUND", run: prefetch(["missing-items"], () => base44.entities.MissingItem.list("-created_date", 200)) },
+    { label: "DATA / LUNCH MENU", run: prefetch(["lunchmenu", weekLabel], () => base44.entities.LunchMenu.filter({ week_label: weekLabel })) },
+    { label: "DATA / NEWS", run: prefetch(["news"], () => base44.entities.NewsItem.list("-created_date", 100)) },
+    { label: "DATA / CALENDAR", run: prefetch(["calendarevents"], () => base44.entities.CalendarEvent.list("-created_date", 500)) },
+  ];
 }
