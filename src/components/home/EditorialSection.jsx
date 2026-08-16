@@ -51,6 +51,7 @@ export default function EditorialSection({ index = "00", label = "", jaLabel = "
               <JapaneseText
                 as="p"
                 ja={jaDescription}
+                data-section-description
                 className="mt-2 max-w-[54ch] text-[0.8125rem] leading-[1.6] tracking-[0.02em] text-muted-foreground sm:text-sm"
                 japaneseClassName="mt-1 block text-[0.9em]"
               >
