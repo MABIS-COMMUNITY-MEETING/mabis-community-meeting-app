@@ -7,7 +7,10 @@
  * that throws on mount, children rendered once instead of twice, a Tailwind
  * transform silently cancelled by an inline style, or a dropped class.
  *
- * Run: node scripts/check-solid-parity.mjs [route]   (default "/")
+ * Run: node scripts/check-solid-parity.mjs [route] [ja]   (default "/")
+ *
+ * Passing `ja` as the second argument flips the Japanese-companion preference
+ * on before the bundle boots, which exercises the auto-translation scanner.
  *
  * One route per process on purpose. The bundle is a singleton — ESM caches it
  * and the theme engine writes to documentElement once — so checking a second
@@ -21,6 +24,7 @@ import { JSDOM } from "jsdom";
 
 const dist = path.join(process.cwd(), "dist-solid");
 const route = process.argv[2] || "/";
+const japaneseMode = process.argv[3] === "ja";
 const failures = [];
 const checks = [];
 
@@ -46,6 +50,11 @@ window.matchMedia = (q) => ({
   media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {},
 });
 if (!window.requestIdleCallback) window.requestIdleCallback = (fn) => setTimeout(fn, 0);
+
+// Written before the bundle boots so the preference is already true the first
+// time useJapaneseText() reads it — setting it afterwards would only prove the
+// change event works, not the initial-mount path.
+if (japaneseMode) window.localStorage.setItem("mabis-japanese-text-enabled", "true");
 
 // Vite's modulepreload polyfill fetches each chunk to warm the cache. There is
 // no server here and it is only a prefetch, so make it a no-op rather than let
@@ -191,6 +200,27 @@ if (route === "/login") {
   check("admin note hidden for signed-out visitor", !text.includes("ADMIN NOTE"));
 }
 
+// ── Japanese companion layer ──────────────────────────────────────────────
+if (japaneseMode) {
+  const annotated = root ? root.querySelectorAll("[data-ja-companion]") : [];
+  check("auto-companion annotated the tree", annotated.length > 0,
+    "no [data-ja-companion] attributes — the MutationObserver scan never ran");
+  check("annotations carry a layout hint",
+    [...annotated].every((el) => el.hasAttribute("data-ja-layout")));
+  check("annotations are non-empty Japanese",
+    [...annotated].every((el) => /[぀-ヿ一-龯]/.test(el.getAttribute("data-ja-companion"))));
+  check("screen-reader marker present", html2.includes("日本語"));
+  check("CJK stylesheet requested once CJK text exists",
+    !!window.document.getElementById("maple-mono-cjk-styles"));
+  // Manual <JapaneseText> output must not be re-translated by the scanner.
+  const skipped = root ? root.querySelectorAll("[data-ja-skip][data-ja-companion]") : [];
+  check("scanner did not double-translate manual JapaneseText spans", skipped.length === 0,
+    `${skipped.length} element(s) carry both data-ja-skip and a companion`);
+} else {
+  check("no Japanese annotations when the preference is off",
+    !root || root.querySelectorAll("[data-ja-companion]").length === 0);
+}
+
 // ── theme engine parity ────────────────────────────────────────────────────
 const rootStyle = window.document.documentElement.getAttribute("style") || "";
 check("theme engine wrote CSS custom properties", /--primary/.test(rootStyle), rootStyle.slice(0, 120));
@@ -198,14 +228,15 @@ check("font stack applied by shared themes.js", /--font-body/.test(rootStyle));
 check("ui-font-ready set (first-paint font bootstrap ran)",
   window.document.documentElement.classList.contains("ui-font-ready"));
 
-console.log(`\nSolid parity [${route}]: ${checks.length - failures.length}/${checks.length} checks passed\n`);
+const label = `${route}${japaneseMode ? " +ja" : ""}`;
+console.log(`\nSolid parity [${label}]: ${checks.length - failures.length}/${checks.length} checks passed\n`);
 if (failures.length) {
-  console.error(`FAILED (${route}):`);
+  console.error(`FAILED (${label}):`);
   failures.forEach((f) => console.error(`  - ${f}`));
   process.exit(1);
 }
 clearTimeout(watchdog);
-console.log(`Route ${route} renders at parity with the React source.\n`);
+console.log(`Route ${label} renders at parity with the React source.\n`);
 // jsdom keeps timers and observers alive, so exit explicitly rather than
 // waiting for the event loop to drain (it never will).
 process.exit(0);
