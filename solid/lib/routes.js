@@ -18,6 +18,8 @@ const loaders = {
   "/": () => import("~/pages/Splash"),
   "/home": () => import("~/pages/Home"),
   "/history": () => import("~/pages/History"),
+  "/history/announcements": () => import("~/pages/AnnouncementsHistory"),
+  "/history/news": () => import("~/pages/NewsHistory"),
 };
 
 const started = new Map();
