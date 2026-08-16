@@ -120,19 +120,20 @@ const html = read("index.html");
 forbidText("src/pages/Home.jsx", home, 'from "moment"');
 forbidText("src/pages/Home.jsx", home, "from 'moment'");
 
-[
-  'lazy(() => import("@/components/AnnouncementsWidget"))',
-  'lazy(() => import("@/components/CalendarWidget"))',
-  'lazy(() => import("@/components/JobsWidget"))',
-  'lazy(() => import("@/components/MembersWidget"))',
-  '<IdleMount timeout={1800}>',
-].forEach((text) => requireText("src/pages/Home.jsx", home, text));
+/* Each widget stays in its own chunk. React aliases src as "@", Solid as "~";
+   the rule is the code split, not the alias. */
+["AnnouncementsWidget", "CalendarWidget", "JobsWidget", "MembersWidget"].forEach((name) =>
+  requireText("src/pages/Home.jsx", home, [
+    `lazy(() => import("@/components/${name}"))`,
+    `lazy(() => import("~/components/${name}"))`,
+  ]));
+requireText("src/pages/Home.jsx", home, "<IdleMount timeout={1800}>");
 
 requireText("src/pages/Home.jsx", home, ['const discussionModule = import("@/components/DiscussionWidget")', 'lazy(() => import("~/components/DiscussionWidget"))']);
 requireText("src/pages/Home.jsx", home, ["const DiscussionWidget = lazy(() => discussionModule)", 'const DiscussionWidget = lazy(() => import("~/components/DiscussionWidget"))']);
 requireText("src/components/DiscussionWidget.jsx", discussion, ['lazy(() => import("@/components/DocsEditor"))', 'lazy(() => import("~/components/DocsEditor"))']);
 requireText("src/components/DiscussionWidget.jsx", discussion, ['queryKey: ["topics", viewedWeek]', 'queryKey: ["topics", viewedWeek()]']);
-requireText("src/components/DiscussionWidget.jsx", discussion, '{ week_label: viewedWeek }');
+requireText("src/components/DiscussionWidget.jsx", discussion, ['{ week_label: viewedWeek }', '{ week_label: viewedWeek() }']);
 forbidText("src/pages/Home.jsx", home, '<LazySection minHeight={560}>\n            <Suspense fallback={<WidgetFallback minHeight={560} />}>\n              <DiscussionWidget');
 requireText("src/pages/Feedback.jsx", feedback, ['lazy(() => import("@/components/AnalyticsTab"))', 'lazy(() => import("~/components/AnalyticsTab"))']);
 requireText("src/pages/Feedback.jsx", feedback, ['enabled: filter === "analytics"', 'enabled: filter() === "analytics"']);
