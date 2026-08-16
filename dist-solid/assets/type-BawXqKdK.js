@@ -1,1 +1,0 @@
-import{I as a}from"./Icon-SgHdHYR8.js";import{c as p,m as t}from"./index-CAC_heoG.js";var r=[["path",{d:"M12 4v16",key:"1654pz"}],["path",{d:"M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2",key:"e0r10z"}],["path",{d:"M9 20h6",key:"s66wpe"}]],o=e=>p(a,t(e,{iconNode:r,name:"type"})),s=o;export{s as t};
