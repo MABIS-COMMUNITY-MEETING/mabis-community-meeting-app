@@ -1,8 +1,17 @@
-import { createSignal, createMemo, createEffect, on, onCleanup, Show } from "solid-js";
+import { createSignal, createMemo, createEffect, on, onCleanup, lazy, Suspense, Show } from "solid-js";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
-import DocsEditor from "~/components/DocsEditor";
 import { resolveMinutesDocument } from "@/lib/minutes-format";
+
+// Lazy, like every other DocsEditor usage in the app (TopicItem,
+// AnnouncementsWidget, NewsWidget, DiscussionWidget's TopicForm). MeetingMinutes
+// is itself lazy-loaded from DiscussionWidget; a *static* import here used to
+// pull DocsEditor's whole subgraph (Quill, its own CSS chunk, icons) into
+// MeetingMinutes' own preload manifest as a hard dependency instead of an
+// independent async boundary — a real nested-lazy tangle that kept the outer
+// lazy() promise from ever settling once other widgets were loading
+// concurrently. Giving it its own Suspense boundary fixes that.
+const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 
 /*
  * The week's minutes document — Solid port of src/components/MeetingMinutes.jsx.
