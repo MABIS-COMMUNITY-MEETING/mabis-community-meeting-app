@@ -137,17 +137,23 @@ Measured over the React component/page modules reachable from `src/App.jsx`
 | Module count | 80 / 81 |
 | Solid modules | 83 |
 
-The feature port is complete. What remains is not porting work:
+The feature port is complete, and `dist-solid/` is production-equivalent to
+`dist/` (same injections, same structured data, same manifest).
 
-1. **Audit the widgets nobody has driven yet.** Parity exercises Splash, Login,
-   404 and Home (including the assistant, feedback, profile and help dialogs).
-   The ten Home widgets render, but their *interactions* — spinning the job
-   wheel, editing a topic, adding a calendar event — are only covered by the
-   compile check.
-2. **`visualEditAgent`** (see Known gaps) — still the blocker on actually
-   swapping `dist-solid/` in.
-3. **The `JobReminder` product question** below.
-4. Optional: delete the fourteen dead React files.
+Parity covers 218 assertions across six route/mode combinations, including all
+ten Home sections rendering with their empty states and the Discussion composer
+opening. What is left:
+
+1. **Deeper widget interaction coverage.** All ten widgets render and reach
+   their empty states, and Discussion's composer is driven. Their heavier
+   flows — spinning the job wheel, saving a topic, adding a calendar event —
+   still are not exercised, mostly because the harness has no backend to write
+   to. Doing this properly means a stub Base44 client, not more DOM poking.
+2. **The `JobReminder` product question** below — needs a decision, not code.
+3. Optional: delete the fourteen dead React files.
+
+`visualEditAgent` is **no longer** on this list — see Known gaps for why it was
+never the blocker it was recorded as.
 
 Kobalte primitives are done (Select, Dialog, Tabs, Popover, DropdownMenu). Note
 the Radix→Kobalte data-attribute swap: `data-[state=open|closed]` becomes
