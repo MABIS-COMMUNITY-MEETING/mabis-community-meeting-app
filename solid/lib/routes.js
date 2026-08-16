@@ -16,6 +16,7 @@ import { saveDataEnabled } from "@/lib/performance-tier";
  */
 const loaders = {
   "/": () => import("~/pages/Splash"),
+  "/login": () => import("~/pages/Login"),
   "/home": () => import("~/pages/Home"),
   "/history": () => import("~/pages/History"),
   "/history/announcements": () => import("~/pages/AnnouncementsHistory"),
