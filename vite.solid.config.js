@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
+import base44 from "@base44/vite-plugin";
 import path from "node:path";
 
 /*
@@ -24,7 +25,7 @@ export default defineConfig({
   root: path.resolve(process.cwd(), "solid"),
   // Fonts, logo and manifest are shared with the React build rather than copied.
   publicDir: path.resolve(process.cwd(), "public"),
-  plugins: [solid()],
+  plugins: [base44({ analyticsTracker: true }), solid()],
   resolve: {
     alias: {
       "@": path.resolve(process.cwd(), "src"),
