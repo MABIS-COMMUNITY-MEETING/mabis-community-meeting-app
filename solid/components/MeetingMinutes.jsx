@@ -177,7 +177,7 @@ export default function MeetingMinutes(props) {
 
   // Changing week flushes rather than cancels — the payload already names its
   // own week, so sending it is correct and dropping it would lose typing.
-  createEffect(on(() => props.weekLabel, () => { setEditing(false); onCleanup(flushPending); }));
+  createEffect(on(() => props.weekLabel, () => { onCleanup(flushPending); }));
   onCleanup(() => { clearTimeout(flashTimer); flushPending(); });
 
   /* One component identity per week — changing week swaps the identity, which
