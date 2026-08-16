@@ -59,6 +59,8 @@ page instead. There is an explicit assertion guarding exactly that.
 | 404 | `solid/pages/NotFound.jsx` on `path="*"` (React keeps it at `src/lib/PageNotFound.jsx`) |
 | Japanese | `JapaneseUiCompanion` auto-scanner + `CjkFontLoader`, mounted in the shell and verified annotating the DOM |
 | Assistant | `MabisAIAssistant` (+ `IdleMount`), mounted in Home and meeting mode; parity opens the panel and asserts the empty state, suggestions and composer |
+| Home chrome | Avatar + role ring, first name and SIGN OUT in the header (Solid had none of it), plus `ProfileEditor` and `FeedbackWidget` |
+| Loading | `LoadingScreen` replaces the blank route fallback, and is deliberately **not** lazy — it is what shows while chunks load |
 | Notes | `MeetingNotesEditor` + `notes/{BlockNotesEditor,NoteBlock,BlockToolbar}`, wired into meeting mode. `block_html.js` is **shared** with React, not forked — it is a zero-import leaf, so there is nothing for vite-plugin-solid to mis-compile and the storage format cannot drift |
 | Widgets | LunchMenu, Schedule |
 | UI primitives | Button, Input, Textarea, Badge, spinner, empty state, Select |
@@ -92,17 +94,16 @@ to the login redirect instead of the explanatory screen. Port this with the
 shell.
 
 **3. Feature components not yet ported** (verified absent from `solid/`):
-`ProfileEditor`,
 `HistoryWidget`, `QuickStartGuide`, `BirthdayBanner`, `JobReminder`,
 `MeetingSummary`, `RoleSwitcher`, `RolePreviewToggle`, `HighlightPicker`,
 `FamicomController`, `DoveAnimation`, `MemberAvatar`, `XpBadge`,
-`FeedbackWidget`, `SmoothScroll`, `Tilt3D`, `SectionReveal`.
+`SmoothScroll`, `Tilt3D`, `SectionReveal`.
 
-`JobReminder` and `FeedbackWidget` belong inside Home's `IdleMount` block
-alongside the assistant — there is a comment marking the spot.
+`JobReminder` belongs inside Home's `IdleMount` block alongside the assistant
+and feedback widget — there is a comment marking the spot.
 
-Solid `Home` is also missing `PageFooter`, which React renders at the end of
-`<main>`.
+Solid `Home` is also missing `PageFooter` and `ScrollSectionIndicator`, which
+React renders.
 
 **4. Do not judge a port by line count.** Two claims in earlier revisions of
 this document were both wrong, in the same way:
@@ -130,8 +131,8 @@ Measured over the React component/page modules reachable from `src/App.jsx`
 | Measure | Done |
 |---|---|
 | Routes rendering | 7 / 7 |
-| Source volume | ~81% |
-| Module count | 51 / 81 |
+| Source volume | ~90% |
+| Module count | 61 / 81 |
 
 Module count trails source volume because what remains is a long tail of small
 files — the median unported component is under 50 lines.
@@ -140,9 +141,6 @@ Remaining work, largest first:
 
 | Lines | Item |
 |---|---|
-| 171 | `FeedbackWidget` |
-| 155 | `ProfileEditor` |
-| 149 | `LoadingScreen` |
 | 102 | `JobReminder` |
 | 95 | `QuickStartGuide` |
 | 80 | `RoleSwitcher` |
@@ -204,6 +202,11 @@ trigger. Popover's Content takes `gutter`, not `sideOffset`.
 - **`<Show when={x} keyed>` reproduces React's `key={x}` remount.** Needed
   wherever a child snapshots a prop at creation — `BlockNotesEditor` parses
   `initialHtml` once, so changing week must build a fresh one.
+- **Dead code does not get a free ride across.** React's `ProfileEditor`
+  declares `AVATAR_COLORS`, `profileColor` and `handleColorSave`, none of which
+  its JSX references — an abandoned colour picker no user can reach. The port
+  leaves it out. Check whether a symbol is actually rendered before
+  transcribing it.
 - **Clear your own timers.** React tolerates `setState` after unmount as a
   no-op; a Solid signal write after disposal is a real leak. `Login` tracks its
   15s retry timer and clears it in `onCleanup`.
