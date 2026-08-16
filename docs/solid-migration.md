@@ -87,17 +87,23 @@ shell.
 `FamicomController`, `DoveAnimation`, `MemberAvatar`, `XpBadge`,
 `FeedbackWidget`, `SmoothScroll`, `Tilt3D`, `SectionReveal`, `IdleMount`.
 
-**4. `DocsEditor` is a partial port** — 669 Solid lines against 1397 React
-lines (~47%). It is the one widget with a real shortfall, and the reason is
-known: `react-quill` has no Solid equivalent, so it is a rewrite against Quill
-core rather than a transcription. Audit it against the React source before
-treating it as done.
+**4. Do not judge a port by line count.** Two claims in earlier revisions of
+this document were both wrong, in the same way:
 
-Every other ported widget is at or above its React line count (Solid runs
-slightly longer — `Show`/`For` are more verbose than `&&` and `.map`).
-`DiscussionWidget` is at 95%, not the 40% an earlier revision of this document
-claimed; that figure compared the Solid file against the React file *plus* its
-sub-components, and was wrong.
+- `DiscussionWidget` "40%" — actually 95%. The figure compared the Solid file
+  against the React file *plus* its sub-components.
+- `DocsEditor` "47%" — actually complete. Audited control-by-control: every
+  toolbar button, dropdown and menu item in the React source is present
+  (undo/redo, format painter, font, size stepper, B/I/U/S, theme ink, theme
+  highlight, super/subscript, three list kinds, indent, quote, code block,
+  link, image, clear formatting, find, zoom, the Document-formatting menu with
+  headings/align/line-spacing, and the File menu). The 728-line difference is
+  120 lines extracted to `solid/lib/quill-setup.js` plus the react-quill
+  wrapper and `useState`/`useCallback` boilerplate that Solid does not need.
+
+Solid files are usually *longer* than their React counterparts here, so a
+noticeably shorter one is worth auditing — but audit the feature surface, not
+`wc -l`.
 
 ## Progress
 
@@ -108,12 +114,24 @@ Measured over the React component/page modules reachable from `src/App.jsx`
 |---|---|
 | Routes rendering | 7 / 7 |
 | Source volume | ~81% |
-| Source volume, counting `DocsEditor`'s shortfall | ~75% |
 | Module count | 51 / 81 |
 
 Module count trails source volume because what remains is a long tail of small
-files — the median unported component is under 50 lines. The two largest are
-`MabisAIAssistant` (324) and `FeedbackWidget` (171).
+files — the median unported component is under 50 lines.
+
+Remaining work, largest first:
+
+| Lines | Item |
+|---|---|
+| 324 | `MabisAIAssistant` |
+| 278 | notes cluster: `BlockNotesEditor` + `NoteBlock` + `BlockToolbar` + `block_html` |
+| 171 | `FeedbackWidget` |
+| 155 | `ProfileEditor` |
+| 149 | `LoadingScreen` |
+| 102 | `JobReminder` |
+| 95 | `QuickStartGuide` |
+| 80 | `RoleSwitcher` |
+| ≤ 73 | shell tail: `SoundEffects`, `RolePreviewToggle`, `PrideAmbience`, `BirthdayBanner`, `PageTransition`, `ScrollSectionIndicator`, `ScrollVelocity`, `MotionPreference`, `IdleMount`, `PrefsSync`, `JapaneseDate`, `ScrollToTop`, `UserNotRegisteredError`, `ScrollScaleRitual` |
 
 Kobalte primitives are done (Select, Dialog, Tabs, Popover, DropdownMenu). Note
 the Radix→Kobalte data-attribute swap: `data-[state=open|closed]` becomes
