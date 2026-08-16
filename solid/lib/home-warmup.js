@@ -96,7 +96,17 @@ export async function warmHomeRoute(onProgress) {
 
   const modules = (constrained ? SECTION_MODULES.slice(0, 3) : SECTION_MODULES)
     .map(({ label, load }) => ({ label, run: load }));
-  const data = constrained ? dataTasks().slice(0, 4) : dataTasks();
+  /*
+   * Data tasks stay un-sliced even when constrained. dataTasks() is already
+   * the trimmed-down, first-view-critical set (see the comment above it) —
+   * five small JSON reads, not chunk downloads. Slicing to the first four
+   * used to silently drop Attendance (index 4 of 5), which meant the one
+   * connection class this warm-up exists for was the one where Attendance
+   * always paid for a cold fetch after mount instead of reading warm from
+   * cache like the other four. The module list above is where the real
+   * bandwidth cost lives, and that's still trimmed on constrained networks.
+   */
+  const data = dataTasks();
   const tasks = [...modules, ...data];
 
   let complete = 0;
