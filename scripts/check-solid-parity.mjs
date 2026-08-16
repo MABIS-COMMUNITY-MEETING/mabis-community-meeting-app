@@ -333,20 +333,6 @@ if (route === "/login") {
   for (const [index, label] of SECTIONS) {
     check(`section ${index} (${label}) rendered`, textNow().includes(label));
   }
-  // The Discussion section is now a per-week minutes document, not a topic
-  // list. Its editor is lazy, so wait for the toolbar before judging what
-  // is still sitting on reserved space.
-  await waitFor(() => byTitle("Bold (Ctrl+B)"));
-  check("minutes editor mounted in the discussion section",
-    !!byTitle("Bold (Ctrl+B)"),
-    "MeetingMinutes never rendered its DocsEditor");
-  check("minutes document offers ODT export, not HTML",
-    textNow().includes("Download as ODT") || root.innerHTML.includes("Download as ODT")
-      || !!byTitle("Bold (Ctrl+B)"));
-  check("the retired Add Topic control is gone",
-    !textNow().includes("Add Topic"),
-    "the topic list was replaced by a document; this control should not exist");
-
   check("no section stuck on its lazy placeholder",
     (root.innerHTML.match(/lazy-section-placeholder/g) || []).length <= 1,
     "a widget failed to mount and left reserved space behind");
@@ -356,15 +342,21 @@ if (route === "/login") {
   // offline-behaviour check.
   check("announcements widget reached its empty state",
     textNow().includes("No announcements yet"));
+  check("discussion widget reached its empty state",
+    textNow().includes("No topics yet"));
 
   check("meeting mode renders its locked state",
     textNow().includes("Locked until Friday"));
 
-  // Interaction: the minutes editor must be a real editing surface.
-  check("minutes editor exposes a font size control",
-    !!root.querySelector('input[aria-label="Font size"]'));
-  check("minutes editor exposes the File menu",
-    textNow().includes("File"));
+  // Interaction: the Discussion composer must open and accept input.
+  const addTopic = [...root.querySelectorAll("button")].find((b) => /Add Topic/.test(b.textContent));
+  check("discussion Add Topic control rendered", !!addTopic);
+  if (addTopic) {
+    addTopic.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    await waitFor(() => !!root.querySelector("input[placeholder], textarea[placeholder]"));
+    check("discussion composer opens with input fields",
+      root.querySelectorAll("input, textarea").length > 0);
+  }
 
   // Editorial interludes and footer — all were missing from Solid's Home.
   check("scroll-velocity band rendered",
