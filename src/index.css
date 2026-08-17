@@ -246,7 +246,7 @@
   font-display: block;
   font-weight: 400;
   src: url('/fonts/gnu-freefont/FreeMono-subset.woff2?v=3') format('woff2');
-  unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-36F, U+2000-206F, U+2070-209F, U+2190-21FF, U+FEFF, U+FFFD;
+  unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-36F, U+2000-206F, U+2070-209F, U+2190-21FF, U+2212, U+25BC, U+2610-2611, U+FEFF, U+FFFD;
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
@@ -254,7 +254,7 @@
   font-display: block;
   font-weight: 400;
   src: url('/fonts/gnu-freefont/FreeMono-rest.woff2?v=3') format('woff2');
-  unicode-range: U+100-130, U+132-151, U+154-2BA, U+2BD-2C5, U+2C7-2D9, U+2DB, U+2DD-2FF, U+370-1FFF, U+20A0-218F, U+2200-FEFE, U+FF00-FFFC, U+FFFE-10FFFF;
+  unicode-range: U+100-130, U+132-151, U+154-2BA, U+2BD-2C5, U+2C7-2D9, U+2DB, U+2DD-2FF, U+370-1FFF, U+20A0-218F, U+2200-2211, U+2213-25BB, U+25BD-260F, U+2612-FEFE, U+FF00-FFFC, U+FFFE-10FFFF;
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
@@ -262,7 +262,7 @@
   font-display: block;
   font-weight: 700;
   src: url('/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3') format('woff2');
-  unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-36F, U+2000-206F, U+2070-209F, U+2190-21FF, U+FEFF, U+FFFD;
+  unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-36F, U+2000-206F, U+2070-209F, U+2190-21FF, U+2212, U+25BC, U+2610-2611, U+FEFF, U+FFFD;
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
@@ -270,7 +270,7 @@
   font-display: block;
   font-weight: 700;
   src: url('/fonts/gnu-freefont/FreeMonoBold-rest.woff2?v=3') format('woff2');
-  unicode-range: U+100-130, U+132-151, U+154-2BA, U+2BD-2C5, U+2C7-2D9, U+2DB, U+2DD-2FF, U+370-1FFF, U+20A0-218F, U+2200-FEFE, U+FF00-FFFC, U+FFFE-10FFFF;
+  unicode-range: U+100-130, U+132-151, U+154-2BA, U+2BD-2C5, U+2C7-2D9, U+2DB, U+2DD-2FF, U+370-1FFF, U+20A0-218F, U+2200-2211, U+2213-25BB, U+25BD-260F, U+2612-FEFE, U+FF00-FFFC, U+FFFE-10FFFF;
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
