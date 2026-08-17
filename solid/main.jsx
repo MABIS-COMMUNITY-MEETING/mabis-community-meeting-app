@@ -8,7 +8,7 @@ import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
-import { applyHomeLayoutPreference } from "@/lib/layout-preference";
+import { applyHomeLayoutPreference, syncHomeLayoutCache } from "@/lib/layout-preference";
 import { startPerfMonitor } from "~/lib/perf-monitor";
 import { preloadRoute } from "~/lib/routes";
 
@@ -86,6 +86,10 @@ async function bootstrap() {
     const register = () => {
       const run = () => navigator.serviceWorker
         .register("/sw.js", { scope: "/", updateViaCache: "none" })
+        // Only the layout in use belongs in the offline shell. Told once here
+        // so a reader who never opens Settings still gets the right one, and
+        // again from setHomeLayout() on every change.
+        .then(() => syncHomeLayoutCache())
         .catch(() => {});
       if ("requestIdleCallback" in window) {
         window.requestIdleCallback(run, { timeout: 3000 });
