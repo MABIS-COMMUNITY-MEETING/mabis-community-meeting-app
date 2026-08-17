@@ -43,6 +43,43 @@
   --radius-sm: calc(var(--radius) + 4px);
 }
 
+/*
+ * OpenMoji, as THE emoji font.
+ *
+ * The contract requires OpenMoji glyphs and forbids relying on platform-native
+ * emoji. OpenMoji.jsx already covers app-authored emoji with pinned SVGs, but
+ * it cannot reach emoji TYPED BY PEOPLE: announcement bodies, news, meeting
+ * minutes and topic titles are user HTML rendered through `innerHTML`, and any
+ * emoji inside them fell through to Apple Color Emoji / Segoe / Noto — which
+ * differs per OS and per version, ignores the palette, and cannot be pinned.
+ *
+ * A font fixes every surface at once, the Quill editor included, with no text
+ * parsing and no JavaScript on the render path.
+ *
+ * COST: 2.63 MiB, and none of it on the critical path. `unicode-range` means a
+ * browser fetches this only when it actually has a glyph from these blocks to
+ * paint — the same mechanism the FreeMono remainder uses. A page with no emoji
+ * never requests a byte of it.
+ *
+ * RANGE: the SMP pictograph planes and the emoji joiners, plus the BMP symbol
+ * blocks MINUS U+2610 and U+2611. Those two are the ballot boxes the app
+ * renders as TEXT in FreeMono (see scripts/build-font-subsets.py). Claiming
+ * them here would restyle them and — worse — pull 2.63 MiB down on any page
+ * that merely contains a checkbox.
+ */
+@font-face {
+  font-family: 'OpenMojiColor';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/openmoji/OpenMoji-color.woff2') format('woff2');
+  unicode-range:
+    U+200D, U+20E3, U+FE0F,
+    U+2600-260F, U+2612-27BF,
+    U+2B00-2BFF,
+    U+1F000-1FAFF;
+}
+
 @font-face {
   font-family: 'torrefarfan';
   font-style: normal;
@@ -331,13 +368,17 @@
     --ink: 222 22% 8%;
     --bone: 42 34% 96%;
 
-    --font-heading: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
-    --font-body: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
-    --font-display: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
-    --font-mono: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
-    --font-cjk: 'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', monospace;
+    /* 'OpenMojiColor' leads every stack. Its unicode-range covers emoji
+       codepoints only, so it can never affect a letter — but it does mean the
+       platform emoji font is never reached. themes.js prepends the same family
+       when a user picks a different face; see withGnuFallbacks(). */
+    --font-heading: 'OpenMojiColor', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-body: 'OpenMojiColor', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-display: 'OpenMojiColor', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-mono: 'OpenMojiColor', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-cjk: 'OpenMojiColor', 'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', monospace;
     --font-multilingual: var(--font-cjk);
-    --font-thai: 'GNUFreeSerifThai', 'GNUFreeSerifUI', serif;
+    --font-thai: 'OpenMojiColor', 'GNUFreeSerifThai', 'GNUFreeSerifUI', serif;
     --role-student: 348 74% 30%;
     --role-teacher: 165 55% 32%;
     --role-chair: 38 78% 48%;
