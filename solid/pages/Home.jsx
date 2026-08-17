@@ -144,6 +144,10 @@ const WIDGETS = {
 
 export default function Home() {
   const auth = useAuth();
+  // "simple" by default; "boss" is the art-directed editorial front page,
+  // opt-in from Settings. See src/lib/layout-preference.js.
+  const layout = useHomeLayout();
+  const isBoss = () => layout() === "boss";
   const isAdmin = () => {
     const role = auth.user()?.role_override || auth.user()?.role;
     return role === "admin" || role === "editor";
@@ -249,7 +253,9 @@ export default function Home() {
   return (
     <div class="editorial-home min-h-screen bg-background overflow-x-hidden">
       <SiteHeader rightSlot={controls} />
-      <ScrollSectionIndicator total={10} />
+      <Show when={isBoss()}>
+        <ScrollSectionIndicator total={10} />
+      </Show>
 
       <Show when={showHelp()}>
         <Suspense fallback={null}>
@@ -269,31 +275,43 @@ export default function Home() {
         </Suspense>
       </Show>
 
-      <main class="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
-        <HomeMasthead weekLabel={weekLabel} dateLabel={dateLabel} date={now} />
+      <main
+        class="mx-auto px-4 pb-8 pt-20 sm:px-10"
+        classList={{
+          "max-w-[1600px] sm:pt-32": isBoss(),
+          "max-w-4xl sm:pt-28": !isBoss(),
+        }}
+      >
+        <Show when={isBoss()} fallback={<SimpleMasthead weekLabel={weekLabel} dateLabel={dateLabel} date={now} />}>
+          <HomeMasthead weekLabel={weekLabel} dateLabel={dateLabel} date={now} />
+        </Show>
 
         <div class="pb-6 pt-5 sm:pb-10 sm:pt-8">
           <HomeSectionIndex />
         </div>
 
-        {/* restrained editorial interlude */}
-        <div class="-mx-4 overflow-hidden border-b py-3 jp-rule sm:-mx-10 sm:py-5">
-          <ScrollVelocity
-            items={["MABIS", "COMMUNITY", "FRIDAY", "BANGKOK"]}
-            class="font-display font-light tracking-[-0.035em] text-foreground/16 text-[clamp(1.35rem,7vw,2.15rem)] sm:text-[4.2vw]"
-          />
-        </div>
-
-        <ScrollScaleRitual />
+        {/* Editorial interludes — the scaffolding the simple layout drops. */}
+        <Show when={isBoss()}>
+          <Suspense fallback={null}>
+            <div class="-mx-4 overflow-hidden border-b py-3 jp-rule sm:-mx-10 sm:py-5">
+              <ScrollVelocity
+                items={["MABIS", "COMMUNITY", "FRIDAY", "BANGKOK"]}
+                class="font-display font-light tracking-[-0.035em] text-foreground/16 text-[clamp(1.35rem,7vw,2.15rem)] sm:text-[4.2vw]"
+              />
+            </div>
+            <ScrollScaleRitual />
+          </Suspense>
+        </Show>
 
         <div class="pb-8 pt-4 sm:pb-14 sm:pt-6">
           <BirthdayBanner />
         </div>
 
-        <div class="space-y-12 sm:space-y-24">
+        <div classList={{ "space-y-12 sm:space-y-24": isBoss(), "space-y-10": !isBoss() }}>
           <For each={SECTIONS}>
             {(s) => (
-              <EditorialSection
+              <Dynamic
+                component={isBoss() ? EditorialSection : SimpleSection}
                 index={s.index}
                 label={s.label}
                 jaLabel={s.jaLabel}
@@ -343,7 +361,7 @@ export default function Home() {
                     )}
                   </Show>
                 </LazySection>
-              </EditorialSection>
+              </Dynamic>
             )}
           </For>
         </div>
