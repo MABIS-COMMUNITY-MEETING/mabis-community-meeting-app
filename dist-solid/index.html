@@ -3,55 +3,63 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
-    <!--
-      Lighthouse notes:
-      · theme-color + manifest are what move the PWA/installability audits.
-      · The icon is served through the CDN resize transform; the source asset
-        is an 800x800 PNG (326 KB) and this renders at 32px.
-      · description/og/twitter satisfy the SEO and social-preview audits.
-    -->
     <title>Home | MABIS Community Meeting App</title>
     <meta name="description" content="A shared working space for MABIS community meetings, announcements, schedules, jobs, notes and community records." />
     <meta name="theme-color" content="#951E3A" />
     <meta name="color-scheme" content="light dark" />
     <link rel="manifest" href="/manifest.json" />
-
-    <!-- Organization structured data, matching the React entry. Lighthouse's
-         SEO audit and search previews both read this; it was missing here. -->
     <script type="application/ld+json">{"name":"MABIS Community Meeting App","logo":"https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png","@context":"https://schema.org","@type":"Organization"}</script>
     <link rel="icon" type="image/png" href="https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png/v1/fill/w_96,h_96/icon.png" />
     <link rel="apple-touch-icon" href="https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png/v1/fill/w_180,h_180/icon.png" />
-
     <meta property="og:title" content="MABIS Community Meeting App" />
     <meta property="og:description" content="A shared working space for MABIS community meetings, announcements, schedules, jobs, notes and community records." />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="MABIS Community Meeting App" />
     <meta property="og:image" content="https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/673e0301b_MabisLogo-800x800.png/v1/fill/w_1200,h_630/preview.png" />
     <meta name="twitter:card" content="summary_large_image" />
-
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="MABIS Community Meeting App" />
-
-    <!-- preconnect before preload: the connection must exist before the font
-         request can use it, and these are same-origin-critical for first paint -->
     <link rel="preconnect" href="https://media.base44.com" crossorigin />
-    <!-- The first-paint subsets, not the whole pan-Unicode faces: 287 KiB of
-         font-display:block became 58 KiB. index.css declares the rest of the
-         coverage on a second, non-preloaded unicode-range, which a browser
-         fetches only if a character outside the subset is on screen. -->
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMono-subset.woff2?v=3" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3" />
-
-    <!-- Inlined so the first paint has a background and correct box sizing
-         without waiting for the stylesheet; prevents a white flash on slow
-         connections, which Lighthouse scores as a poor FCP experience. -->
     <style>
       html, body, #root { min-height: 100%; margin: 0; background: #11131a; }
       #root:empty { min-height: 100vh; }
+      #boot-splash {
+        position: fixed; inset: 0; z-index: 1;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 1.5rem;
+        background: #11131a; color: #f7f3ea;
+        font-family: "GNUFreeMonoUI", "FreeMono", ui-monospace, monospace;
+        font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+      }
+      #boot-splash > span:first-child { opacity: 0.5; }
+      #boot-splash-track {
+        position: relative; overflow: hidden;
+        width: min(220px, 44vw); height: 1px;
+        background: rgba(247, 243, 234, 0.15);
+      }
+      #boot-splash-track::after {
+        content: ""; position: absolute; inset: 0 auto 0 0;
+        width: 40%; background: #951E3A;
+        animation: boot-splash-sweep 1.15s ease-in-out infinite;
+      }
+      @keyframes boot-splash-sweep {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(250%); }
+      }
+      /* The app is up: stand down. */
+      #root:not(:empty) + #boot-splash {
+        opacity: 0; visibility: hidden;
+        transition: opacity 0.18s linear, visibility 0s linear 0.18s;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash-track::after { animation: none; width: 100%; opacity: 0.55; }
+        #root:not(:empty) + #boot-splash { transition: none; }
+      }
     </style>
-    <script type="module" crossorigin src="/assets/index-YMTkCRE1.js"></script>
+    <script type="module" crossorigin src="/assets/index-BpvF3rb2.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-hePW80VL.js">
     <link rel="modulepreload" crossorigin href="/assets/web-CRd2b-C6.js">
     <link rel="modulepreload" crossorigin href="/assets/routing-DMQjvnPS.js">
@@ -67,7 +75,7 @@
     <link rel="modulepreload" crossorigin href="/assets/japanese-text-preference-wUbVEDmC.js">
     <link rel="modulepreload" crossorigin href="/assets/tokens-Bsoxdnlc.js">
     <link rel="modulepreload" crossorigin href="/assets/scroll-progress-BJCDJTnX.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-vGl6sGHQ.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-CgcSt9xO.css">
     <script type="module">
 if (window.self === window.top) {
   let lastPath = "";
@@ -103,6 +111,10 @@ if (window.self === window.top) {
   </head>
   <body>
     <div id="root"></div>
+    <div id="boot-splash" role="status" aria-label="Loading">
+      <span>Initialising</span>
+      <span id="boot-splash-track"></span>
+    </div>
     <noscript>
       <p style="color:#e8e3d8;font-family:monospace;padding:2rem">
         This app needs JavaScript enabled.
