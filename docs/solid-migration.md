@@ -1,21 +1,32 @@
 # SolidJS migration — status
 
-The React app in `src/` is **live and untouched**. The Solid app is built in
-parallel under `solid/` and swaps in only when it reaches parity.
+**The cutover is complete. The Solid app is the live site.** `vite.config.js`
+now builds `solid/` to `dist/` directly (`root: path.resolve(cwd, "solid")`) —
+see that file's own header comment for how and why. `src/main.jsx`, `src/App.jsx`
+and `src/pages/` no longer exist; `src/` now holds only the framework-agnostic
+foundation (`lib/`, `api/`, `styles/`) that Solid imports from directly, plus
+whatever of the old `src/components/` tree hasn't been cleaned up yet (dead —
+nothing imports it into a live build; see "Remaining" below).
 
 ```
-vite.config.js        React  → dist/          (live site)
-vite.solid.config.js  Solid  → dist-solid/    (in progress)
+vite.config.js         Solid → dist/            (live site)
+vite.solid.config.js   Solid → dist-solid/      (parity-check harness only)
 ```
 
-Both builds share `src/lib/**` and `src/styles/**` from their original
-location. There is no fork, so the design system cannot drift between them.
+Both configs build the same `solid/` source; `vite.solid.config.js` exists
+solely so `check-solid-parity.mjs` has a stable, separate output to assert
+against without racing the real build. There is no second framework anymore —
+references below to "the React source" describe history (what was ported
+from, and why a line is shaped the way it is), not a currently-live build.
+
+Both configs share `src/lib/**` and `src/styles/**` from their original
+location. There is no fork, so the design system cannot drift.
 
 Verify with:
 
 ```bash
-npm run build            # React, must stay green (runs all four contracts)
-npm run verify:solid     # Solid: build + compile-check + parity across routes
+npm run build             # the real build — solid/ → dist/, must stay green
+npm run verify:solid      # parity harness: build + compile-check + route assertions
 ```
 
 `verify:solid` is the one to run. It chains three things that fail for
