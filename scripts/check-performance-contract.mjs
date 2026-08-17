@@ -178,6 +178,14 @@ requireText("src/lib/scroll-progress.js", scrollProgress, "new ResizeObserver(sc
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, ["style={{ scale, opacity }}", "lineEl.style.transform"]);
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
+/* A cache-first worker that never skips waiting serves the previous build to
+   every open tab until all of them close. That turned into shipped fixes that
+   users could not see, so both halves of the handover are pinned: the worker
+   takes over, and the page reloads once when it does. */
+requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "self.skipWaiting();");
+requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "await self.clients.claim();");
+requireText("src/main.jsx", main, 'navigator.serviceWorker.addEventListener("controllerchange"');
+
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
