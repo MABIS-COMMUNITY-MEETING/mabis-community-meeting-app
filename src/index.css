@@ -2196,11 +2196,10 @@ html.performance-lite .cursor-trail,
 html.performance-lite .cursor-label { display: none !important; }
 html.performance-lite .pride-field-x:nth-child(n+3) { display: none !important; }
 html.performance-lite .pride-field-light { filter: blur(14px); }
-html.performance-lite .lg-surface {
-  background: hsl(var(--background) / 0.96) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
+/* The lite tier's treatment of glass lives in styles/glass.css, with the
+   material it modifies. It used to be here, and it replaced the glass with an
+   opaque fill — which the design contract forbids outright. See the note
+   there. */
 
 /* ── active-scroll compositor fast path ────────────────────────────
    Native scrolling stays in charge. While content is moving, pause only
