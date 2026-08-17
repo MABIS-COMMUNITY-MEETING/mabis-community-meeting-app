@@ -176,6 +176,40 @@ for (const k of Object.getOwnPropertyNames(window)) {
 Object.defineProperty(window, "performance", { value: globalThis.performance, configurable: true });
 globalThis.self = window;
 
+/*
+ * Let chunk stylesheets resolve.
+ *
+ * jsdom does not fetch <link rel="stylesheet">, so it never fires their load
+ * event. Vite's __vitePreload awaits exactly that event before resolving a
+ * dynamic import whose chunk carries CSS — so any lazily-loaded component
+ * with its own stylesheet hangs forever here and its whole route reads as
+ * "never mounted", which is indistinguishable from a genuinely broken port.
+ *
+ * That stopped being a theoretical gap when glass.css moved into the boss
+ * chunk: the entire boss layout became unverifiable, 62 assertions of
+ * coverage lost to a harness limitation rather than to anything wrong.
+ *
+ * Firing the event is safe because nothing here reads the stylesheet's
+ * CONTENT through the DOM — the rules are asserted against `builtCss`, read
+ * off disk. It only unblocks the import.
+ *
+ * Quill is the documented exception. DocsEditor pulls quill.snow.css, and
+ * when that import resolves Quill mounts and never settles (see the KNOWN GAP
+ * note above); the run then dies on the watchdog instead of reporting. So
+ * that one sheet stays unresolved, which leaves DocsEditor exactly as pending
+ * as it has always been — no coverage lost relative to before.
+ */
+const stylesheetLoadFixup = new window.MutationObserver((records) => {
+  for (const record of records) {
+    for (const node of record.addedNodes) {
+      if (node.tagName !== "LINK" || node.rel !== "stylesheet") continue;
+      if (/quill/i.test(node.href || "")) continue;
+      setTimeout(() => node.dispatchEvent(new window.Event("load")), 0);
+    }
+  }
+});
+stylesheetLoadFixup.observe(window.document.head, { childList: true, subtree: true });
+
 // Imported by real path, not a data: URL — the entry code-splits Splash and
 // Home into sibling chunks, and relative specifiers only resolve against a
 // real file URL.
