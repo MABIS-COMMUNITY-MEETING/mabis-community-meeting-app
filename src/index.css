@@ -5,6 +5,44 @@
    licensed local copies. Every UI stack falls through GNU FreeFont. Maple Mono is
    loaded only for explicitly marked Chinese, Japanese, and Korean text.
    ────────────────────────────────────────────────────────────── */
+/*
+ * MUST STAY AHEAD OF EVERY RULE IN THIS FILE.
+ *
+ * A CSS @import is only honoured when it precedes every rule other than
+ * @charset and @layer statements. This sat 267 lines down, below the
+ * @font-face block that opens the type system, so the browser and the bundler
+ * both discarded it and Tailwind injected nothing at all: the shipped
+ * stylesheet contained not one utility — no .flex, no .grid, no .p-4, no
+ * .bg-card. Every element styled by a utility class lost its background,
+ * spacing and layout, which is what "things are transparent and it is not
+ * rendering correctly" looked like. Nothing errored: the build stayed green
+ * and the stylesheet was simply half the size it should have been.
+ *
+ * check-tailwind-layer.mjs fails the build if the utility layer goes missing
+ * again, whatever the cause.
+ *
+ * Tailwind v4 still reads the v3 JS config through @config, which is what
+ * holds the custom tokens (colours, role hues, fonts) and the
+ * tailwindcss-animate plugin without a rewrite to @theme.
+ *
+ * The borderRadius tokens are the one exception. v4's theme resolver
+ * statically bakes `theme.extend.borderRadius.lg: 'var(--radius)'` from
+ * @config into a fixed px value at build time (e.g. `border-radius:16px`)
+ * instead of leaving it as a live `var(--radius)` reference — it can't tell
+ * that value is meant to stay dynamic. That silently breaks every layout
+ * that changes --radius per theme (see "the default layout redefines
+ * --radius" below and check-solid-parity.mjs's radius-token check, which
+ * exists specifically to catch this class of bug). Re-declaring just these
+ * three as native v4 theme keys keeps them as real custom properties.
+ */
+@import "tailwindcss";
+@config "../tailwind.config.js";
+@theme {
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) + 2px);
+  --radius-sm: calc(var(--radius) + 4px);
+}
+
 @font-face {
   font-family: 'torrefarfan';
   font-style: normal;
@@ -255,29 +293,6 @@
   font-display: swap;
   font-weight: 400;
   src: url('/fonts/UnifontExMono.woff2?v=3') format('woff2');
-}
-
-/*
- * Tailwind v4: JS config (tailwind.config.js) still works via @config,
- * which keeps every custom token (colors, radius, etc.) and the
- * tailwindcss-animate plugin intact without a rewrite to @theme.
- *
- * The borderRadius tokens are the one exception. v4's theme resolver
- * statically bakes `theme.extend.borderRadius.lg: 'var(--radius)'` from
- * @config into a fixed px value at build time (e.g. `border-radius:16px`)
- * instead of leaving it as a live `var(--radius)` reference — it can't tell
- * that value is meant to stay dynamic. That silently breaks every layout
- * that changes --radius per theme (see "the default layout redefines
- * --radius" below and check-solid-parity.mjs's radius-token check, which
- * exists specifically to catch this class of bug). Re-declaring just these
- * three as native v4 theme keys keeps them as real custom properties.
- */
-@import "tailwindcss";
-@config "../tailwind.config.js";
-@theme {
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) + 2px);
-  --radius-sm: calc(var(--radius) + 4px);
 }
 
 @layer base {
