@@ -207,10 +207,15 @@ export default function History() {
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <span class={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                        done() === weekTopics().length ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                        {done()}/{weekTopics().length} <span lang="ja">完了</span>
-                      </span>
+                      {/* A document-only week has no topics to be done — "0/0
+                          complete" reads as a failure rather than as nothing to
+                          report. */}
+                      <Show when={weekTopics().length > 0}>
+                        <span class={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                          done() === weekTopics().length ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                          {done()}/{weekTopics().length} <span lang="ja">完了</span>
+                        </span>
+                      </Show>
 
                       <Show when={att()?.meeting_date && !isFriday(new Date(att().meeting_date))}>
                         <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-primary-foreground">
@@ -227,11 +232,19 @@ export default function History() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm(`Delete all topics from ${formatWeekFull(week)}?`)) deleteWeek.mutate(week);
+                          /* This deletes every DiscussionTopic row for the week,
+                             and the minutes live in one of those rows
+                             (__meeting_notes__). The old wording said "all
+                             topics", which did not warn anyone that the written
+                             minutes go with them. */
+                          const warning = minutes()
+                            ? `Delete the minutes AND all topics from ${formatWeekFull(week)}? This cannot be undone.`
+                            : `Delete all topics from ${formatWeekFull(week)}? This cannot be undone.`;
+                          if (window.confirm(warning)) deleteWeek.mutate(week);
                         }}
                         class="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        title="Delete this week"
-                        aria-label={`Delete all topics from ${formatWeekFull(week)}`}
+                        title={minutes() ? "Delete this week's minutes and topics" : "Delete this week"}
+                        aria-label={`Delete the record of ${formatWeekFull(week)}`}
                       >
                         <Trash2 class="w-3.5 h-3.5" />
                       </button>
