@@ -249,7 +249,7 @@ export default function Home() {
    */
   const summerControls = () => (
     <>
-      <ThemeSwitcher />
+      <ThemeSwitcher triggerClass="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted" />
       <button
         onClick={() => setShowHelp(true)}
         onMouseEnter={preloadQuickStartGuide}
