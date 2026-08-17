@@ -121,7 +121,15 @@ const lazySection = read("src/components/home/LazySection.jsx");
 const idleMount = read("src/components/IdleMount.jsx");
 const serviceWorkerGenerator = read("scripts/generate-service-worker.mjs");
 const packageJson = read("package.json");
-const html = read("index.html");
+/*
+ * The SHIPPED entry, not the root one.
+ *
+ * vite.config.js sets `root: solid/`, so solid/index.html is what Vite builds
+ * and what dist/index.html is generated from. The root index.html is a React
+ * leftover — it still points at /src/main.jsx, which no longer exists — and
+ * this rule had been validating that dead file rather than the served one.
+ */
+const html = read("solid/index.html");
 
 forbidText("src/pages/Home.jsx", home, 'from "moment"');
 forbidText("src/pages/Home.jsx", home, "from 'moment'");
@@ -264,7 +272,12 @@ forbidText("src/lib/themes.js", themes, 'import { BY_WOMXN_FONTS }');
 requireText("src/index.css", css, "html.theme-committing *::before");
 forbidText("src/index.css", css, "body.theme-shifting");
 forbidText("src/index.css", css, "@import url('/fonts/by-womxn/fonts.css')");
-requireText("index.html", html, "/fonts/gnu-freefont/FreeMono.woff2?v=2");
+/* Preload the first-paint subsets. Preloading the full pan-Unicode faces put
+   287 KiB of font-display:block ahead of first paint; see the header of
+   scripts/build-font-subsets.py. check-font-subset.mjs guards the rest. */
+requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono-subset.woff2?v=3");
+requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3");
+forbidText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono.woff2");
 requireText("src/lib/routeLoaders.js", routeLoaders, "saveDataEnabled()");
 requireText("src/lib/query-client.js", queryClient, "CACHE_LIFETIME");
 requireText("src/components/home/LazySection.jsx", lazySection, "isConstrainedNetwork()");
