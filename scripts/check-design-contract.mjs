@@ -192,6 +192,7 @@ for (const [relativePath, content] of editorialContractFiles) {
  * to the editorial layout would undo an explicit request from Novesce, and
  * nothing else in the build would notice.
  */
+const bossHome = read("solid/components/home/boss.jsx");
 const layoutPreference = read("src/lib/layout-preference.js");
 requireText("src/lib/layout-preference.js", layoutPreference, 'DEFAULT_HOME_LAYOUT = "simple"');
 requireText("src/lib/layout-preference.js", layoutPreference, 'HOME_LAYOUTS = ["simple", "boss"]');
@@ -319,7 +320,10 @@ requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "SIMPLE_THEME_KEY
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "Browse all themes");
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "VOICE YOUR WORDS");
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "A WEEKLY RITUAL");
-requireText("src/pages/Home.jsx", home, "<HomeSectionIndex />");
+/* The page guide is the boss layout's navigation aid and moved into its chunk
+   with the rest of the editorial furniture. The default layout deliberately
+   has none — it is a single stack of cards, with nothing to jump between. */
+requireText("solid/components/home/boss.jsx", bossHome, "<HomeSectionIndex />");
 requireText("src/pages/Home.jsx", home, "<QuickStartGuide open");
 requireText("scripts/check-theme-balance.mjs", themeBalanceCheck, "Theme balance:");
 requireText("package.json", packageJson, "npm run check:design && npm run check:themes && npm run check:performance");
