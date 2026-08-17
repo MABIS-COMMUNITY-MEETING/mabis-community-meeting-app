@@ -44,7 +44,7 @@ const SOLID_EQUIVALENTS = {
     "src/components/JapaneseText.jsx": ["solid/components/primitives.jsx"],
     "src/components/OpenMoji.jsx": ["solid/components/page-chrome.jsx"],
     "src/components/home/HomeSectionIndex.jsx": ["solid/components/home/shell.jsx"],
-    "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
+    "src/components/home/LazySection.jsx": ["solid/components/home/LazySection.jsx", "solid/lib/perf.js"],
     "src/components/JobsWidget.jsx": ["solid/components/JobsWidget.jsx", "solid/components/jobs/SpinWheel.jsx"],
 };
 
