@@ -270,6 +270,27 @@ export default function History() {
                         </div>
                       </Show>
 
+                      {/*
+                        Minutes first: since Discussion became a document they
+                        ARE the meeting record. The topic list below is what fed
+                        into them, and for older weeks it is all there is.
+                        Rendered on the same .docs-editor-content /
+                        .theme-rich-text surface the editor uses, so a week
+                        reads here exactly as it was written.
+                      */}
+                      <Show when={minutes()}>
+                        <div class="border-b border-border px-4 py-4 sm:px-6">
+                          <p class="text-xs font-bold text-primary uppercase mb-3">
+                            Minutes <span lang="ja" class="normal-case text-[0.85em] font-normal">議事録</span>
+                          </p>
+                          <div
+                            class="docs-editor-content theme-rich-text rounded-lg border border-border px-4 py-3 text-sm leading-relaxed [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                            innerHTML={minutes()}
+                          />
+                        </div>
+                      </Show>
+
+                      <Show when={weekTopics().length > 0}>
                       <div class="border-b border-border px-4 py-4 sm:px-6">
                         <p class="text-xs font-bold text-primary uppercase mb-3">
                           Discussion Topics <span lang="ja" class="normal-case text-[0.85em] font-normal">議題</span>
@@ -302,6 +323,20 @@ export default function History() {
                           </For>
                         </div>
                       </div>
+                      </Show>
+
+                      <Show when={!minutes() && weekTopics().length === 0}>
+                        <div class="px-4 py-6 sm:px-6">
+                          <JapaneseText
+                            as="p"
+                            ja="この週の議事録もトビックも残っていません。"
+                            class="block text-sm text-muted-foreground"
+                            japaneseClass="mt-1 block text-[0.9em]"
+                          >
+                            Nothing was written for this week.
+                          </JapaneseText>
+                        </div>
+                      </Show>
                     </div>
                   </Show>
                 </div>
