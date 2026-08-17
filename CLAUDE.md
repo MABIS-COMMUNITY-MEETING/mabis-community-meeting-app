@@ -22,6 +22,7 @@ Keep Home easy to navigate with its numbered editorial sections, plain-language 
 - **Removed pages (Aug 2026).** `Team`, `Dashboard`, `Meetings`, `Topics`, `JobWheel`, `Register`, `ForgotPassword` and `ResetPassword` were deleted at Novesce's request — none were routed, none emitted a chunk, none were reachable. The two OpenMoji assertions that pointed at `Team.jsx` were removed from `check-design-contract.mjs` with it; the OpenMoji rule itself is unchanged and still enforced elsewhere. Do not re-create these pages.
 - **When adding or changing any UI copy**, add its Japanese companion in the same change. Short static strings go in `EXACT_TRANSLATIONS` in `src/lib/japanese-ui-translations.js`; dynamic text (dates, counts, composed sentences) gets an explicit `ja` prop via `JapaneseText`/`JapaneseDate`. Do not ship new user-facing English text without its Japanese counterpart.
 - Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.
+- Home has two layouts: the simple stacked layout is the default, and the art-directed editorial layout is opt-in as `Boss layout` in Settings. Anything added, changed or fixed in the default layout must exist in the Boss layout too — they are two arrangements of one page, not two products.
 
 Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.
 
