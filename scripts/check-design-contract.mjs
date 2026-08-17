@@ -270,10 +270,31 @@ requireText(".github/copilot-instructions.md", copilot, "The Novesce UI mandate 
 requireText("src/lib/themes.js", themes, "key: \"gnu-free-mono\"");
 requireText("src/lib/themes.js", themes, "gnu-free-mono-v2");
 requireText("src/lib/themes.js", themes, "function withGnuFallbacks");
-requireText("src/lib/themes.js", themes, "const cjkFallback = \"'Maple Mono NF CN'");
+requireText("src/lib/themes.js", themes, "'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono'");
+
+/*
+ * OpenMoji is the emoji font, and nothing else may render an emoji.
+ *
+ * Pinned SVGs via OpenMoji.jsx cover app-authored glyphs, but emoji people
+ * TYPE — announcements, news, minutes, topic titles, all rendered as user HTML
+ * through innerHTML — have no component to route through. Without a font
+ * leading the stack they fall to Apple Color Emoji / Segoe / Noto, which is
+ * exactly what the contract forbids and is invisible to every other check
+ * here: no build failure, no markup change, just different glyphs per device.
+ *
+ * Both halves are pinned because either alone is useless. The @font-face
+ * without the stack prefix is a font nothing selects; the prefix without the
+ * @font-face is a family that does not resolve. The unicode-range is pinned
+ * too — dropping it would let a 2.63 MiB emoji font try to render ordinary
+ * text and pull itself onto the critical path.
+ */
+requireText("src/index.css", css, "font-family: 'OpenMojiColor'");
+requireText("src/index.css", css, "unicode-range:");
+requireText("src/lib/themes.js", themes, "const EMOJI_FAMILY = \"'OpenMojiColor'\"");
+requireText("src/lib/themes.js", themes, "[EMOJI_FAMILY, ...selectedFamilies");
 requireText("src/lib/themes.js", themes, "root.style.setProperty(\"--font-cjk\", cjkFallback)");
-requireText("src/index.css", css, "--font-body: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI'");
-requireText("src/index.css", css, "--font-cjk: 'Maple Mono NF CN'");
+requireText("src/index.css", css, "--font-body: 'OpenMojiColor', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI'");
+requireText("src/index.css", css, "--font-cjk: 'OpenMojiColor', 'Maple Mono NF CN'");
 requireText("src/index.css", css, ":lang(ko)");
 requireText("src/index.css", css, "unicode-range: U+0E00-0E7F");
 requireText("src/components/CjkFontLoader.jsx", cjkFontLoader, "https://fontsapi.zeoseven.com/442/main/result.css");
