@@ -84,6 +84,25 @@ async function bootstrap() {
   // Installing after load keeps precache traffic out of the critical path.
   // The worker is a progressive enhancement and never intercepts Base44 APIs.
   if (import.meta.env.PROD && "serviceWorker" in navigator) {
+    /*
+     * The worker calls skipWaiting(), so a new build can take control of this
+     * page while it is open. This page's own lazy chunks belong to the build
+     * it loaded, and the new worker has just evicted them from the cache, so
+     * the next route or widget import could 404. One reload lands cleanly on
+     * the new build.
+     *
+     * Only when there WAS a controller: on a first visit controllerchange
+     * fires because the very first worker took over, and reloading there
+     * would be a pointless flash on every new device.
+     */
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadController || reloading) return;
+      reloading = true;
+      window.location.reload();
+    });
+
     const register = () => {
       const run = () => navigator.serviceWorker
         .register("/sw.js", { scope: "/", updateViaCache: "none" })
