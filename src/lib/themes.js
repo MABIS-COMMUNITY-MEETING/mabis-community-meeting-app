@@ -459,6 +459,24 @@ export const THEMES = {
   gmk_wob:         gmkTheme("wob"),
   gmk_monochrome:  gmkTheme("monochrome"),
   gmk_prussian:    gmkTheme("prussian_alert"),
+
+  // ── Catppuccin (canonical hexes, see lib/catppuccin_palettes.js) ──
+  catppuccin_latte:     catppuccinTheme("latte"),
+  catppuccin_frappe:    catppuccinTheme("frappe"),
+  catppuccin_macchiato: catppuccinTheme("macchiato"),
+  catppuccin_mocha:     catppuccinTheme("mocha"),
+
+  /* Bridget — Guilty Gear.
+     Her habit blue and cream with the gold trim, plus the pale blue and pink
+     she is inseparable from. The pink is a deliberate accent rather than a
+     pastel wash, which is what the design contract asks for on transfeminine
+     treatments. */
+  bridget: paletteTheme("bridget", "Bridget", "222 58% 40%", "340 82% 72%",
+    ["#2B4FA2", "#5BCEFA", "#F5A9B8", "#E8C15A", "#F4F1E8"]),
+
+  /* Mew Mew Kissy Cutie — Deltarune. Pink and purple, as requested. */
+  mewmew: paletteTheme("mewmew", "Mew Mew", "330 76% 55%", "280 48% 44%",
+    ["#E5399A", "#7B3FA0", "#C58BE0", "#F9B6DA", "#FFF0F7"]),
 };
 
 /* The Pride palettes are the app's flagship collection: they are art-directed in
