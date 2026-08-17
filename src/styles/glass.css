@@ -58,26 +58,27 @@
   -webkit-backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
 
   /*
-   * Bound the blur to this element's own box.
+   * DO NOT put `contain: paint` on this element.
    *
-   * backdrop-filter cost scales with the area the compositor has to sample and
-   * re-raster. Without containment the browser has no promise that this layer's
-   * paint stays inside its bounds, so invalidation upstream can drag the blur
-   * into a wider raster than the surface actually occupies — the expensive case
-   * on integrated graphics, where fill rate is the limit.
+   * It was here, with a comment claiming it was safe "because this is the blur
+   * pseudo-element: absolutely positioned, no children, nothing to clip". That
+   * described an architecture this file does not have — the backdrop-filter is
+   * on the surface itself, and the surface is the wrapper every glass panel
+   * renders its CONTENT into. The same comment even warned that putting it on
+   * the surface "would clip dropdowns and shadows", which is exactly what it
+   * then did.
    *
-   * `contain: paint` is safe HERE specifically because this is the blur
-   * pseudo-element: absolutely positioned, no children, nothing to clip. The
-   * same declaration on the surface itself would clip dropdowns and shadows,
-   * which is why it is not applied there.
+   * Paint containment clips descendants to the padding box and makes the
+   * element a containing block for `position: fixed` descendants. The site
+   * header is a glass surface, so every menu opened from it — the theme
+   * picker most visibly — was clipped out of existence: present in the DOM,
+   * correct in every computed style, and impossible to see.
    *
-   * `contain: size` is deliberately NOT included — the layer must keep
-   * inheriting the surface's dimensions.
-   *
-   * Appearance is unchanged: containment restricts where painting may happen,
-   * not what is painted.
+   * The raster-bounding it was added for is recovered on ::before and ::after
+   * below, which genuinely are childless and absolutely positioned. The blur
+   * itself needs no help: backdrop-filter already samples only this element's
+   * own backdrop.
    */
-  contain: paint;
 
   border: 1px solid hsl(var(--bone) / 0.20);
   /* inner top edge lit, inner bottom edge shaded → thickness */
@@ -99,6 +100,10 @@
   opacity: var(--glass-scroll-spec-opacity, 0.82);
   transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
   will-change: transform, opacity;
+  /* Safe here in the way the surface never was: a pseudo-element cannot have
+     children, and this one is inset:0, so clipping to its own box is a no-op
+     visually while still bounding the raster of a will-change layer. */
+  contain: paint;
   background:
     radial-gradient(
       120px 90px at var(--glass_pointer_x) var(--glass_pointer_y),
@@ -125,6 +130,7 @@
   /* The primary surface already captures the backdrop. A second masked
      backdrop-filter here doubled raster work on wide navigation glass; the
      same rim is retained as a cached texture/highlight layer instead. */
+  contain: paint; /* childless and inset:0 — see ::before above */
   -webkit-mask-image: radial-gradient(120% 160% at 50% 50%, transparent 34%, rgba(0,0,0,0.35) 62%, #000 100%);
   mask-image: radial-gradient(120% 160% at 50% 50%, transparent 34%, rgba(0,0,0,0.35) 62%, #000 100%);
   /* restrained material noise kills gradient banding without graining the UI */
