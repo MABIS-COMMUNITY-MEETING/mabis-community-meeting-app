@@ -224,9 +224,13 @@
   src: url('/fonts/UnifontExMono.woff2?v=3') format('woff2');
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/*
+ * Tailwind v4: JS config (tailwind.config.js) still works via @config,
+ * which keeps every custom token (colors, radius, etc.) and the
+ * tailwindcss-animate plugin intact without a rewrite to @theme.
+ */
+@config "../tailwind.config.js";
+@import "tailwindcss";
 
 @layer base {
   :root {
