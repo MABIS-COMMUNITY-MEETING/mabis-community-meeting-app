@@ -321,6 +321,31 @@ for (const sourceFile of listSourceFiles("src").filter((file) => /\.(?:js|jsx|ts
     }
 }
 
+/*
+ * The site header must not form a backdrop root.
+ *
+ * The contract requires live glass backdrop blur on the floating control
+ * plane. `isolation: isolate`, `filter`, `opacity` below 1 or a `mask` on the
+ * header shell each form a backdrop root (Filter Effects), and a backdrop
+ * filter samples nothing outside its own root — so the header renders its tint
+ * and border with no blur at all.
+ *
+ * That failure is invisible to everything else here: the build passes, the
+ * markup is unchanged, the computed styles all look right, and the bar just
+ * quietly stops being glass. It shipped that way once already.
+ *
+ * The header's stacking context comes from `position: fixed` + `z-50`, which
+ * is not a backdrop root, so nothing needs this to lay out correctly.
+ */
+{
+  const shellRule = glassCss.match(/\.site-header-shell\s*\{[^}]*\}/g)?.join("\n") || "";
+  if (/isolation\s*:\s*isolate|(^|;|\{)\s*filter\s*:|mix-blend-mode\s*:/.test(shellRule)) {
+    failures.push(
+      "src/styles/glass.css: .site-header-shell forms a backdrop root — the top bar's glass will render transparent instead of blurred. See the note above that rule."
+    );
+  }
+}
+
 requireText("src/styles/editorial-home.css", editorialHomeCss, ".editorial-home .mabis-widget-header");
 /*
  * The editorial layer must be imported by the app — but not from any
