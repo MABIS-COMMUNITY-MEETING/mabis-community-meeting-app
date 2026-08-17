@@ -10,7 +10,6 @@ import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
 import { applyHomeLayoutPreference, syncHomeLayoutCache } from "@/lib/layout-preference";
-import { startPerfMonitor } from "~/lib/perf-monitor";
 import { preloadRoute } from "~/lib/routes";
 
 /*
@@ -83,7 +82,7 @@ async function bootstrap() {
 
   // Opt-in only (?perf=1). Costs nothing otherwise — a monitor that slows the
   // page down would defeat its own purpose.
-  startPerfMonitor();
+  startPerfMonitorIfRequested();
 
   if (replayed) reconcileThemeAfterPaint();
   idlePreloadRemainingRoutes();
@@ -180,6 +179,32 @@ function reconcileThemeAfterPaint() {
   };
   if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 3000 });
   else window.setTimeout(run, 1200);
+}
+
+/*
+ * startPerfMonitor() returns immediately when the monitor is off, so importing
+ * it looked free — but the import is not the call. The whole module (five
+ * PerformanceObservers, the rAF frame sampler and the console report) was
+ * compiled into the boot chunk on every visit: 3.6 KiB of parse work to decide
+ * to do nothing. Reading the flag is a two-line localStorage lookup, so it
+ * happens here and the module is fetched only when it is going to run.
+ *
+ * This is a read only. Persisting ?perf=1 stays in perf-monitor's own
+ * perfEnabled(), which runs again inside startPerfMonitor() — one writer, and
+ * this gate cannot drift into disagreeing with it about what to store.
+ */
+const PERF_FLAG = "mabis-perf";
+
+function startPerfMonitorIfRequested() {
+  let requested = false;
+  try {
+    requested = new URLSearchParams(location.search).has("perf")
+      || localStorage.getItem(PERF_FLAG) === "1";
+  } catch {
+    return;
+  }
+  if (!requested) return;
+  import("~/lib/perf-monitor").then(({ startPerfMonitor }) => startPerfMonitor()).catch(() => {});
 }
 
 bootstrap();
