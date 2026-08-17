@@ -198,6 +198,14 @@ requireText("src/lib/layout-preference.js", layoutPreference, 'HOME_LAYOUTS = ["
 requireText("src/pages/Home.jsx", home, ["const isBoss = () => layout() === \"boss\""]);
 requireText("src/components/SettingsModal.jsx", settingsModal, "Boss layout");
 
+/* The editorial layer must stay gated, or the default layout silently becomes
+   the editorial one again — flat cards, 2px radii, no elevation. */
+requireText("src/styles/editorial-home.css", editorialHomeCss, "html.home-layout-boss .editorial-home .mabis-widget");
+forbidText("src/styles/editorial-home.css", editorialHomeCss, "\n.editorial-home ");
+
+/* One widget render path for both layouts. Two would drift. */
+requireText("src/pages/Home.jsx", home, "const renderWidget = (s) =>");
+
 const cursorTrackingRule = "The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement.";
 const cursorContractFiles = [
     ["README.md", readme],
