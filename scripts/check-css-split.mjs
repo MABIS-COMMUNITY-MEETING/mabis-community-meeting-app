@@ -53,20 +53,56 @@ const chunkCss = cssFiles
   .map((f) => fs.readFileSync(path.join(assets, f), "utf8"))
   .join("\n");
 
-/* Selectors unique to the glass system. `.lg-surface` is the plane itself and
-   the variants are the thickness scale — if any of these are in the blocking
-   sheet the import has drifted back to an eager module. */
-const GLASS_SELECTORS = [".lg-surface", ".lg-navigation", ".lg-thick", ".lg-scroll-edge"];
-
-for (const selector of GLASS_SELECTORS) {
-  check(`${selector} is absent from the render-blocking stylesheet`,
-    !blockingCss.includes(selector),
-    "glass.css is being imported from a module the entry reaches eagerly");
+/*
+ * What counts as "glass CSS on the critical path".
+ *
+ * Not merely a selector mentioning `.lg-`. index.css legitimately carries a
+ * handful of cross-cutting overrides that reach into glass from outside it —
+ * `body.theme-frutigeraero .lg-surface`, `html.performance-lite .lg-surface`,
+ * and an `html.is-scrolling` rule that also targets `.mabis-widget`, which the
+ * DEFAULT layout uses. Those belong to the theme, the performance tier and the
+ * scroll state, not to the glass component, and they are ~1.1 KiB in total.
+ * Demanding their removal would either break the shared scroll rule or force
+ * an artificial split of three unrelated systems.
+ *
+ * What must not be here is the component's own definitions: a rule whose
+ * LEFTMOST compound selector is a glass class. That is the 8 KiB that only the
+ * boss layout can ever match, and the leftmost test separates it cleanly from
+ * a descendant override without needing a real CSS parser.
+ */
+function ownDefinitions(css) {
+  const found = [];
+  let i = 0;
+  while (i < css.length) {
+    const open = css.indexOf("{", i);
+    if (open === -1) break;
+    let depth = 1;
+    let j = open + 1;
+    while (j < css.length && depth > 0) {
+      if (css[j] === "{") depth++;
+      else if (css[j] === "}") depth--;
+      j++;
+    }
+    const prelude = css.slice(i, open).trim();
+    if (!prelude.startsWith("@")) {
+      for (const alt of prelude.split(",")) {
+        if (/^\.lg-[\w-]+/.test(alt.trim())) { found.push(alt.trim().slice(0, 80)); break; }
+      }
+    }
+    i = j;
+  }
+  return found;
 }
 
+const blockingOwn = ownDefinitions(blockingCss);
+check("the glass component's own rules are absent from the render-blocking stylesheet",
+  blockingOwn.length === 0,
+  blockingOwn.length ? `${blockingOwn.length} found, e.g. ${blockingOwn.slice(0, 3).join(" / ")}` : "");
+
+const chunkOwn = ownDefinitions(chunkCss);
 check("the glass rules still ship in a chunk stylesheet",
-  GLASS_SELECTORS.every((s) => chunkCss.includes(s)),
-  "glass.css is in no stylesheet at all — the boss layout would render unstyled");
+  chunkOwn.length > 20,
+  `only ${chunkOwn.length} found — glass.css may be in no stylesheet at all, which would render the boss layout unstyled`);
 
 /* The import belongs with the component that owns the classes, not scattered.
    Checking the source too means a future refactor that keeps the bytes off the
