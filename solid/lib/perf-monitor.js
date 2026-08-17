@@ -200,16 +200,48 @@ function deviceProfile() {
     network: c.effectiveType ?? "unknown",
     saveData: !!c.saveData,
     dpr: window.devicePixelRatio,
+    refreshHz: Math.round(refreshHz()),
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   };
 }
 
-function report(state) {
+const at = (sorted, p) =>
+  sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * p))] : 0;
+
+/**
+ * Frame pacing, expressed in refreshes rather than milliseconds.
+ *
+ * A p99 of 8 ms is excellent on a 120 Hz panel and a missed frame on a 360 Hz
+ * one. Quoting the same delta as a multiple of this display's own refresh is
+ * the only form of the number that means the same thing on every machine, and
+ * the only form that stays meaningful when panels get faster than any constant
+ * written here today.
+ */
+function pacingStats(sorted) {
+  if (!sorted.length) return null;
+  const budget = refreshIntervalMs();
+  const mean = sorted.reduce((a, b) => a + b, 0) / sorted.length;
+  /* Mean absolute deviation, not standard deviation: it is in milliseconds,
+   * it is not dominated by the single worst frame, and "the average frame
+   * lands 3 ms from where it should" is a sentence about smoothness. */
+  const jitter = sorted.reduce((a, b) => a + Math.abs(b - mean), 0) / sorted.length;
+  return {
+    budgetMs: +budget.toFixed(2),
+    p50Ms: +at(sorted, 0.5).toFixed(1),
+    p95Ms: +at(sorted, 0.95).toFixed(1),
+    p99Ms: +at(sorted, 0.99).toFixed(1),
+    p99Refreshes: +(at(sorted, 0.99) / budget).toFixed(2),
+    jitterMs: +jitter.toFixed(2),
+  };
+}
+
+function report(state, sorted = []) {
   const f = state.frames;
   const dropPct = f.sampled ? ((f.dropped / f.sampled) * 100).toFixed(1) : "0.0";
+  const pacing = pacingStats(sorted);
 
   console.groupCollapsed(
-    `%cMABIS perf%c  INP ${state.inp}ms · dropped ${dropPct}% · worst frame ${f.worstMs}ms`,
+    `%cMABIS perf%c  INP ${state.inp}ms · dropped ${dropPct}% · worst frame ${f.worstMs}ms · ${Math.round(refreshHz())}Hz`,
     "background:#951E3A;color:#fff;padding:2px 6px;border-radius:3px",
     "color:inherit"
   );
@@ -217,6 +249,16 @@ function report(state) {
   console.table(state.device);
   console.log(`LCP ${state.lcp}ms · CLS ${state.cls.toFixed(3)} · INP ${state.inp}ms (${state.inpTarget || "n/a"})`);
   console.log(`Frames sampled during scroll: ${f.sampled}, dropped: ${f.dropped} (${dropPct}%), worst: ${f.worstMs}ms`);
+
+  if (pacing) {
+    console.log("%cFrame pacing during scroll", "font-weight:bold");
+    console.table(pacing);
+    console.log(
+      "Read it this way: p99Refreshes near 1.0 is smooth on ANY display. Above 2.0 means the" +
+      " worst 1% of frames missed a whole vsync. Low jitterMs matters more than a low p50 —" +
+      " evenly spaced slow frames look better than an unpredictable fast average."
+    );
+  }
 
   if (state.loaf.length) {
     const worst = [...state.loaf].sort((a, b) => b.durationMs - a.durationMs).slice(0, 8);
