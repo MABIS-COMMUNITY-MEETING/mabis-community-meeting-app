@@ -24,8 +24,13 @@ if (!entryKey) throw new Error("Unable to find the Vite HTML entry in the build 
 const precache = new Set([
   "/index.html",
   "/manifest.json",
-  "/fonts/gnu-freefont/FreeMono.woff2?v=2",
-  "/fonts/gnu-freefont/FreeMonoBold.woff2?v=2",
+  /* The first-paint subsets only. The matching *-rest.woff2 files carry the
+     other 3600 codepoints and are deliberately left out: precaching 265 KiB of
+     Georgian and Arabic coverage for an offline shell that renders English
+     would cost more than the shell itself. A page that needs them fetches them
+     when online, and the runtime font handler below caches them then. */
+  "/fonts/gnu-freefont/FreeMono-subset.woff2?v=3",
+  "/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3",
 ]);
 
 function addManifestEntry(key, visited = new Set()) {
