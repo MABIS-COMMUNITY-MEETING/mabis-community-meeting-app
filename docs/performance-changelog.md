@@ -193,6 +193,71 @@ Cost: **+0.1 KiB gzip** on the eager bundle (17.0 → 17.1 KiB).
   behavioural test alone would still pass if someone reintroduced a 60 Hz
   constant beside the measurement.
 
+### Boss-layout CSS off the critical path
+
+Bottleneck 2 below said both Home layouts' stylesheets ship eagerly. True, and
+now measured: `npm run measure:css` (`measure-css-coverage.mjs`) boots the real
+built bundle in jsdom on the parity harness, reads the classes that actually
+reach the DOM, and sorts every rule in the built sheet into needed / themed /
+deferrable / eager / orphan. At `/home` on the default layout:
+
+| bucket | raw | rules | |
+|---|---:|---:|---|
+| NEEDED | 54.9 KiB | 658 | matches the rendered DOM, or is structural |
+| THEMED | 19.3 KiB | 98 | `.theme-*`, critical for whoever picked that theme |
+| **LAZY** | **56.0 KiB** | **833** | only reachable from chunks first paint never loads |
+| EAGER | 27.2 KiB | 230 | unmatched, but its chunk is already loaded |
+| ORPHAN | 11.0 KiB | 127 | in no chunk — dead, or composed at runtime |
+
+Attributing the deferrable bucket to the chunk that would carry it put
+`boss-*.js` far in front at 14.4 KiB. The dependency chain is clean:
+`Glass.jsx` is imported only by `SiteHeader.jsx`, which is imported only by
+`boss.jsx`, which has been a lazy chunk since the port. The default layout
+touches none of it — and `glass.css` was still linked from the entry HTML,
+blocking first paint for every visitor with 16.5 KiB of source that could not
+match one element on their page.
+
+Moved the import into `Glass.jsx`, so it travels with the chunk that renders
+the markup. Vite's preload helper waits for a chunk stylesheet's load event
+before resolving the dynamic import, so the boss layout still paints fully
+styled on its first frame — no flash, by construction.
+
+| | before | after | change |
+|---|---|---|---|
+| Render-blocking CSS, raw | 175.4 KiB | 167.3 KiB | **−8.1 KiB** |
+| Render-blocking CSS, gzip | 30.5 KiB | 28.9 KiB | **−1.6 KiB (−5%)** |
+| Wire bytes before first paint | 105.4 KiB | 103.8 KiB | **−1.6 KiB** |
+
+Smaller than the 14.4 KiB attribution, and the gap is worth stating: most of
+that figure is Tailwind utilities used by boss markup, and Tailwind v4 emits
+one utility layer for the whole app regardless of which file imports what. Only
+the hand-written 8.3 KiB actually moved. Per-chunk utility generation is not
+something Tailwind does, so the rest of that bucket is not addressable this way.
+
+**A harness gap had to be closed first.** Adding CSS to the boss chunk made its
+dynamic import hang in jsdom — `__vitePreload` awaits the stylesheet's load
+event and jsdom never fires it, the same limitation already documented for
+Quill. The boss parity run fell from 71/71 to 39/62: an entire layout became
+unverifiable through a harness artefact rather than any real fault. Trading
+2 KiB for 62 assertions would have been a bad deal, so `check-solid-parity.mjs`
+now fires a synthetic load on chunk stylesheets (Quill still excluded, since
+resolving that one makes the run never settle). Boss is back to 71/71, and any
+future lazy component with its own stylesheet is now verifiable too.
+
+- `check:csssplit` (`check-css-split.mjs`) — asserts the glass component's own
+  rules are absent from the render-blocking sheet and present in a chunk sheet,
+  both halves, plus the import's location in source. It tests the LEFTMOST
+  compound selector rather than any mention of `.lg-`: index.css legitimately
+  keeps ~1.1 KiB of cross-cutting overrides that reach into glass from the
+  theme, the performance tier and the scroll state, and one of those also
+  targets `.mabis-widget`, which the default layout uses. The first draft of
+  this guard failed on exactly that and was wrong to.
+
+`editorial-home.css` is the same shape of win — 8.9 KiB, every rule gated on
+`html.home-layout-boss` — and was **not** moved. `check-design-contract.mjs`
+requires the app entry to import it, and that guard's own failure message says
+it may only change at Novesce's explicit request.
+
 ### Remaining bottlenecks, ranked by measured cost
 
 1. **axios, 43.7 KiB raw, eager.** The single largest dependency left on the
@@ -201,13 +266,21 @@ Cost: **+0.1 KiB gzip** on the eager bundle (17.0 → 17.1 KiB).
    XHR and fetch adapters. Removing it means patching the SDK's
    `utils/axios-client.js`, whose interceptor and error-shape behaviour the SDK
    depends on — a much riskier alias than the socket shims. Not attempted.
-2. **Render-blocking CSS, 175.4 KiB raw / 30.5 KiB gzip.** Now the largest text
-   asset on the critical path. Both Home layouts' stylesheets ship eagerly
-   although only one is active at a time, and the file carries 140 themes'
-   worth of palette rules. Splitting the inactive layout and the non-default
-   themes into a deferred sheet is the obvious next move; it was not attempted
-   because the layout preference is read before first paint and getting this
-   wrong causes a flash of unstyled content.
+2. **Render-blocking CSS, 167.3 KiB raw / 28.9 KiB gzip.** Still the largest
+   text asset on the critical path, now measured rather than guessed — see the
+   coverage table above. The glass half of the layout split is done.
+
+   One claim in the original version of this entry was **wrong**: the file does
+   not carry "140 themes' worth of palette rules". Themes are applied by
+   `themes.js` writing custom properties onto the root element at runtime, so
+   only four themes have bespoke CSS at all, and all `.theme-*` rules together
+   are 19.3 KiB raw. There is no 140-theme palette block to split out.
+
+   What is left is the 27.2 KiB EAGER bucket (unmatched at first paint but
+   owned by chunks already loaded) and the long tail of component sections in
+   `index.css` — the docs toolbar, the spin wheel, start-meeting, the settings
+   panel. Each would have to move to the component that owns it, the way glass
+   just did. None is individually large; together they are the remaining win.
 3. **@tanstack/query-core, 34.6 KiB raw, eager.** `QueryClientProvider` sits at
    the app root, so it loads even on `/` and `/login`, which run no queries.
    Deferring it would help only those two routes and complicates the shell;
