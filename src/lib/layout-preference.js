@@ -1,5 +1,6 @@
 export const HOME_LAYOUT_STORAGE_KEY = "mabis-home-layout";
 export const HOME_LAYOUT_EVENT = "mabis-home-layout-change";
+export const HOME_LAYOUT_MESSAGE = "mabis-home-layout";
 
 /*
  * Which arrangement the Home page uses.
@@ -40,6 +41,25 @@ export function applyHomeLayoutPreference(layout = homeLayout()) {
   document.documentElement.classList.toggle("home-layout-simple", !boss);
 }
 
+/**
+ * Tell the service worker which layout to keep in the offline shell.
+ *
+ * Only one layout is ever rendered, so only one belongs in storage. The
+ * worker precaches the shared shell plus the simple layout; on "boss" it
+ * fetches the two interlude chunks, and on "simple" it deletes them again.
+ *
+ * Best-effort by design: no worker, no support, or an offline switch all end
+ * with the chunks being fetched on demand instead, which still works.
+ */
+export function syncHomeLayoutCache(layout = homeLayout()) {
+  if (typeof navigator === "undefined" || !navigator.serviceWorker) return;
+  navigator.serviceWorker.ready
+    .then((registration) => {
+      registration.active?.postMessage({ type: HOME_LAYOUT_MESSAGE, layout });
+    })
+    .catch(() => {});
+}
+
 export function setHomeLayout(layout) {
   const normalized = HOME_LAYOUTS.includes(layout) ? layout : DEFAULT_HOME_LAYOUT;
   try {
@@ -48,5 +68,6 @@ export function setHomeLayout(layout) {
     /* storage blocked: keep the choice for this session */
   }
   applyHomeLayoutPreference(normalized);
+  syncHomeLayoutCache(normalized);
   window.dispatchEvent(new CustomEvent(HOME_LAYOUT_EVENT, { detail: normalized }));
 }
