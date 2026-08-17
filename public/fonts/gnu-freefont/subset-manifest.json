@@ -33,10 +33,6 @@
       "0x36f"
     ],
     [
-      "0x370",
-      "0x3ff"
-    ],
-    [
       "0x2000",
       "0x206f"
     ],
@@ -45,32 +41,8 @@
       "0x209f"
     ],
     [
-      "0x20a0",
-      "0x20cf"
-    ],
-    [
-      "0x2100",
-      "0x214f"
-    ],
-    [
       "0x2190",
       "0x21ff"
-    ],
-    [
-      "0x2200",
-      "0x22ff"
-    ],
-    [
-      "0x2500",
-      "0x257f"
-    ],
-    [
-      "0x25a0",
-      "0x25ff"
-    ],
-    [
-      "0x2700",
-      "0x27bf"
     ],
     [
       "0xfeff",
@@ -84,17 +56,17 @@
   "faces": {
     "FreeMono": {
       "source_bytes": 189644,
-      "subset_bytes": 67472,
-      "rest_bytes": 142292,
-      "subset_codepoints": 1157,
-      "rest_codepoints": 3003
+      "subset_bytes": 30976,
+      "rest_bytes": 174612,
+      "subset_codepoints": 525,
+      "rest_codepoints": 3635
     },
     "FreeMonoBold": {
       "source_bytes": 104668,
-      "subset_bytes": 50584,
-      "rest_bytes": 69620,
-      "subset_codepoints": 892,
-      "rest_codepoints": 1139
+      "subset_bytes": 27968,
+      "rest_bytes": 90760,
+      "subset_codepoints": 485,
+      "rest_codepoints": 1546
     }
   }
 }
