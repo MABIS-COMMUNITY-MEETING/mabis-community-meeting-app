@@ -340,12 +340,31 @@ if (route === "/login") {
   check("sign-in headline present", text.includes("Sign in"));
   check("Japanese title present", text.includes("サインイン"));
   check("subtitle present", text.includes("Continue with your MABIS Google account"));
-  check("Google CTA present", text.includes("CONTINUE WITH GOOGLE"));
-  check("AuthLayout IDENTITY label present", text.includes("IDENTITY"));
-  check("AuthLayout AUTH label present", text.includes("AUTH"));
-  check("AuthLayout N° 00 present", text.includes("N° 00"));
-  check("AuthLayout background word present", text.includes("MABIS"));
-  check("auth entrance keyframe applied (not framer)", html2.includes("auth-rise"));
+  /*
+   * The CTA's casing is style-dependent — editorial sets it in tech-label
+   * caps, Summer in sentence case — so match case-insensitively. What must
+   * never vary is that the button exists: the contract is that /login exposes
+   * exactly one Continue with Google control.
+   */
+  check("Google CTA present", /continue with google/i.test(text));
+
+  if (bossLayout) {
+    check("AuthLayout IDENTITY label present", text.includes("IDENTITY"));
+    check("AuthLayout AUTH label present", text.includes("AUTH"));
+    check("AuthLayout N° 00 present", text.includes("N° 00"));
+    check("AuthLayout background word present", text.includes("MABIS"));
+    check("auth entrance keyframe applied (not framer)", html2.includes("auth-rise"));
+  } else {
+    /*
+     * Summer style drops the editorial furniture entirely (Novesce, Aug 2026).
+     * Asserting its ABSENCE is the point: a regression that reinstated the
+     * masthead here would otherwise pass every remaining check on this page.
+     */
+    check("Summer auth shell rendered", !!(root && root.querySelector(".summer-page")));
+    check("editorial N° 00 meta absent in Summer style", !text.includes("N° 00"));
+    check("editorial IDENTITY caption absent in Summer style", !text.includes("IDENTITY"));
+    check("editorial auth entrance not used in Summer style", !html2.includes("auth-rise"));
+  }
   check("logo slot rendered, not the icon fallback",
     !!(root && root.querySelector('img[alt="MABIS"]')),
     "AuthLayout should take the logo branch, so <Dynamic component={icon}> must not render");
@@ -361,7 +380,7 @@ if (route === "/login") {
   // would be looking at the login redirect instead, and every check below would
   // be vacuously true, so assert we are NOT on login first.
   check("signed-in session recovered (not bounced to login)",
-    !text.includes("CONTINUE WITH GOOGLE"),
+    !/continue with google/i.test(text),
     "landed on /login — the seeded offline session was rejected");
   /*
    * Wait for the masthead, and assert on something only Home renders.
