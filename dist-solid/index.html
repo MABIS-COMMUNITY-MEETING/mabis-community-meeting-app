@@ -37,8 +37,12 @@
     <!-- preconnect before preload: the connection must exist before the font
          request can use it, and these are same-origin-critical for first paint -->
     <link rel="preconnect" href="https://media.base44.com" crossorigin />
-    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMono.woff2?v=2" />
-    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMonoBold.woff2?v=2" />
+    <!-- The first-paint subsets, not the whole pan-Unicode faces: 287 KiB of
+         font-display:block became 58 KiB. index.css declares the rest of the
+         coverage on a second, non-preloaded unicode-range, which a browser
+         fetches only if a character outside the subset is on screen. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMono-subset.woff2?v=3" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3" />
 
     <!-- Inlined so the first paint has a background and correct box sizing
          without waiting for the stylesheet; prevents a white flash on slow
@@ -47,7 +51,7 @@
       html, body, #root { min-height: 100%; margin: 0; background: #11131a; }
       #root:empty { min-height: 100vh; }
     </style>
-    <script type="module" crossorigin src="/assets/index-CtfBjP7z.js"></script>
+    <script type="module" crossorigin src="/assets/index-BVWcdkZ7.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-hePW80VL.js">
     <link rel="modulepreload" crossorigin href="/assets/web-CRd2b-C6.js">
     <link rel="modulepreload" crossorigin href="/assets/routing-DMQjvnPS.js">
@@ -62,7 +66,7 @@
     <link rel="modulepreload" crossorigin href="/assets/japanese-text-preference-wUbVEDmC.js">
     <link rel="modulepreload" crossorigin href="/assets/tokens-Bsoxdnlc.js">
     <link rel="modulepreload" crossorigin href="/assets/scroll-progress-BkipLniv.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-Dtb5H7Cb.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-nkMFDj5X.css">
     <script type="module">
 if (window.self === window.top) {
   let lastPath = "";
