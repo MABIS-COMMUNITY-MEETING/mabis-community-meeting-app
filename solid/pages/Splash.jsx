@@ -3,6 +3,7 @@ import { ArrowUpRight, Plus, ArrowDown } from "lucide-solid";
 import { subscribe } from "@/lib/physics/scheduler";
 import { integrateSpring } from "@/lib/physics/math";
 import { springFromFramer, finePointer } from "~/lib/motion";
+import { useAuth } from "~/lib/AuthContext";
 import {
   JapaneseText,
   KineticBackground,
