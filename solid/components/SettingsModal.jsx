@@ -28,17 +28,17 @@ const FONTS = [...CORE_FONTS, ...FONT_CATALOG];
 const LAYOUT_CHOICES = [
   {
     key: "simple",
-    label: "Simple",
-    ja: "シンプル",
-    detail: "Default · heading, then the section. Straight to what you came for.",
-    jaDetail: "標準・見出しのすぐ下に内容が並ぶ、一列の表示です。",
+    label: "Original",
+    ja: "もとのデザイン",
+    detail: "Default · the interface the school has always used. White cards, one after another.",
+    jaDetail: "標準・これまで使ってきた画面です。白いカードが上から順に並びます。",
   },
   {
     key: "boss",
     label: "Boss layout",
     ja: "ボスレイアウト",
-    detail: "The full front page · large masthead, index rail and scrolling type.",
-    jaDetail: "大きな見出しや番号の列がある、雑誌のような表示です。",
+    detail: "The editorial front page · large masthead, numbered sections and scrolling type.",
+    jaDetail: "大きな見出しや番号付きの区切りがある、雑誌のような表示です。",
   },
 ];
 
@@ -272,7 +272,7 @@ export default function SettingsModal(props) {
                   <a href="#setting-layout" class="min-h-20 bg-background p-3 text-left hover:bg-muted">
                     <span class="text-[10px] font-bold text-muted-foreground">04</span>
                     <JapaneseText ja="レイアウト" class="mt-1 block text-sm font-bold text-foreground">Layout</JapaneseText>
-                    <span class="mt-0.5 block text-xs text-muted-foreground">Simple or boss</span>
+                    <span class="mt-0.5 block text-xs text-muted-foreground">Original or boss</span>
                   </a>
                 </div>
               </section>
@@ -291,7 +291,7 @@ export default function SettingsModal(props) {
                   </JapaneseText>
                 </div>
                 <p class="mb-3 text-xs text-muted-foreground">
-                  How the Home page is arranged. Both choices have the same sections, in the same order, with the same features — only the amount of page around them changes.
+                  How the Home page looks. Both choices have exactly the same sections, in the same order, with the same features — only the presentation changes.
                 </p>
                 <div class="grid gap-px bg-border sm:grid-cols-2">
                   <For each={LAYOUT_CHOICES}>
