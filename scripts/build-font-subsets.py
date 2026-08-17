@@ -86,6 +86,13 @@ CRITICAL_RANGES = [
     (0x2000, 0x206F),
     (0x2070, 0x209F),  # superscripts and subscripts                        1.2K
     (0x2190, 0x21FF),  # rendered: → in jobs/tables.jsx, ⇄ in the notes editor  4.6K
+    # Individual characters that check-font-subset.mjs found in the built
+    # bundle. Listed one by one rather than by block: the blocks they sit in
+    # cost 13.9K (math), 4.0K (shapes) and 4.6K (misc symbols) for glyphs
+    # nothing renders, and adding one character costs about eighty bytes.
+    (0x2212, 0x2212),  # minus sign − — DocsEditor
+    (0x25BC, 0x25BC),  # ▼ — the select control's caret, on screen constantly
+    (0x2610, 0x2611),  # ☐ ☑ — DocsEditor's checkbox list markers
     (0xFEFF, 0xFEFF),
     (0xFFFD, 0xFFFD),
 ]
