@@ -1957,7 +1957,15 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12p
 input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 0; background: hsl(var(--primary)); border: none; cursor: pointer; }
 
 @layer components {
-  /* editorial card polish — applies to all widget cards automatically */
+  /* editorial card polish — applies to all widget cards automatically.
+
+     NOTE: this matches the widget card's exact utility signature at
+     specificity (0,3,0), so it beats the element's own .rounded-2xl (0,1,0)
+     with no !important — which is why gating editorial-home.css alone did not
+     make the default layout's cards round again. It is also used by History
+     and ArchivePage, which are editorial and want it, so it cannot be gated on
+     the layout class. summer-home.css restores the original card there
+     instead; keep the two in step. */
   .bg-white.rounded-2xl.shadow-sm,
   .bg-card.rounded-2xl.shadow-sm {
     border: 1px solid hsl(var(--border) / 0.7);
