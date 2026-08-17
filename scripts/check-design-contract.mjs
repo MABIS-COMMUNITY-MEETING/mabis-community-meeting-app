@@ -188,11 +188,11 @@ for (const [relativePath, content] of editorialContractFiles) {
 }
 
 const richTextThemeRule = "Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.";
-const easyLayoutRule = "Keep Home easy to navigate: the default layout stacks the widgets as the original MABIS interface did, and the Boss layout adds numbered editorial sections with a plain-language page guide; usability aids must clarify whichever layout is in use rather than bolt a generic dashboard onto either one.";
+const easyLayoutRule = "Keep Home easy to navigate: the default layout stacks the widgets as the original MABIS interface did, and the Boss style adds numbered editorial sections with a plain-language page guide; usability aids must clarify whichever layout is in use rather than bolt a generic dashboard onto either one.";
 const japaneseTextRule = "Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang=\"ja\"` so Maple Mono CJK fallback applies; the default remains off.";
 const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.";
 const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
-const homeLayoutRule = "Home has two layouts: the default reproduces the original MABIS interface — the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding — and the art-directed editorial layout is opt-in as `Boss layout` in Settings. Anything added, changed or fixed in one layout must exist in the other; they are two presentations of one page, not two products.";
+const homeLayoutRule = "Home has two layouts: the default reproduces the original MABIS interface — the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding — and the art-directed editorial layout is opt-in as `Boss style` in Settings. Anything added, changed or fixed in one layout must exist in the other; they are two presentations of one page, not two products.";
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, richTextThemeRule);
     requireText(relativePath, content, easyLayoutRule);
@@ -214,7 +214,7 @@ const layoutPreference = read("src/lib/layout-preference.js");
 requireText("src/lib/layout-preference.js", layoutPreference, 'DEFAULT_HOME_LAYOUT = "simple"');
 requireText("src/lib/layout-preference.js", layoutPreference, 'HOME_LAYOUTS = ["simple", "boss"]');
 requireText("src/pages/Home.jsx", home, ["const isBoss = () => layout() === \"boss\""]);
-requireText("src/components/SettingsModal.jsx", settingsModal, "Boss layout");
+requireText("src/components/SettingsModal.jsx", settingsModal, "Boss style");
 
 /* The editorial layer must stay gated, or the default layout silently becomes
    the editorial one again — flat cards, 2px radii, no elevation. */
