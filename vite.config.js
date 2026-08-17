@@ -47,6 +47,36 @@ function base44ForSolid(options) {
   });
 }
 
+/*
+ * Keep the entry HTML's comments in the source and out of the response.
+ *
+ * HTML comments ship. Vite minifies JS and CSS comments away as a matter of
+ * course, but nothing touches these — and index.html is on the critical path
+ * of every visit and is the one asset that can never be cached forever, since
+ * mutable HTML must revalidate or users get stranded on an old deployment.
+ *
+ * Measured: 2.5 KiB of comments in a 9.0 KiB document, 28% of the entry, sent
+ * to every visitor on every cold load to explain decisions to engineers — who
+ * are reading solid/index.html, not the response body. The comments are worth
+ * keeping; sending them is not.
+ *
+ * Conditional comments are left alone. There are none today, but stripping an
+ * `<!--[if ...]>` would change behaviour rather than just size, and the guard
+ * against that costs one negative lookahead.
+ */
+function stripHtmlComments() {
+  return {
+    name: "strip-html-comments",
+    apply: "build",
+    transformIndexHtml: {
+      order: "post",
+      handler: (html) => html
+        .replace(/<!--(?!\[if)[\s\S]*?-->/g, "")
+        .replace(/\n\s*\n+/g, "\n"),
+    },
+  };
+}
+
 export default defineConfig({
   logLevel: "error",
   root: path.resolve(process.cwd(), "solid"),
@@ -60,6 +90,7 @@ export default defineConfig({
       visualEditAgent: false,
     }),
     solid(),
+    stripHtmlComments(),
   ],
   resolve: {
     alias: {
