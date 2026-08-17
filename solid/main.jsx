@@ -47,9 +47,16 @@ async function bootstrap() {
   // still warms every OTHER route, just later, since only this one is on the
   // critical path for first paint.
   preloadRoute(window.location.pathname);
-  // The splash has exactly one destination. Warming it here means the button
-  // press is a render, not a download.
-  if (window.location.pathname === "/") preloadRoute("/login");
+  // The splash has exactly two possible destinations, and until auth
+  // resolves there is no way to know which — so warm both. loaders["/home"]
+  // is deliberately chunk-only (see routes.js), no entity reads, so this
+  // cannot fire an unauthenticated data request; it only means Splash's
+  // now-client-side Enter navigation (see pages/Splash.jsx) has Home's JS
+  // already in cache instead of fetching it after the click.
+  if (window.location.pathname === "/") {
+    preloadRoute("/login");
+    preloadRoute("/home");
+  }
 
   applyAnimationPreference();
   applyJapaneseTextPreference();
