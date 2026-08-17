@@ -18,13 +18,16 @@ Emits, per face, two woff2 files whose glyph sets partition the original:
   *-subset.woff2  the codepoints first paint can need (CRITICAL_RANGES below)
   *-rest.woff2    everything else in the font
 
-index.css declares both against the same family. The rest face is declared
-FIRST with a broad U+0100-10FFFF range and the subset SECOND with its exact
-ranges; CSS font matching takes the LAST matching @font-face, so a character in
-both ranges resolves to the small file, and the big one is fetched only when a
-character that only it covers actually appears on the page. Coverage is
-therefore unchanged — no glyph is lost, nothing falls back to a different
-typeface — while the preload shrinks to the subset.
+index.css declares both against the same family with STRICTLY NON-OVERLAPPING
+unicode-range descriptors, printed by this script so the CSS cannot drift from
+the glyph sets. Non-overlapping rather than relying on the later declaration
+winning: that ordering rule is real but subtle, and getting it wrong would show
+up as a 170 KiB font fetch on every page rather than as an obvious break.
+
+A browser downloads a face only when the page contains a character its range
+covers, so an all-Latin page fetches only the subset. Coverage is unchanged —
+no glyph is lost and nothing falls back to a different typeface — while the
+preload shrinks to the subset.
 
 Codepoints outside both (Thai, CJK) were already handled by other families in
 the stack and still are.
@@ -88,11 +91,40 @@ CRITICAL_RANGES = [
 ]
 
 
+UNICODE_MAX = 0x10FFFF
+
+
 def critical_codepoints():
     out = set()
     for start, end in CRITICAL_RANGES:
         out.update(range(start, end + 1))
     return out
+
+
+def complement_ranges():
+    """Everything from U+0100 up that CRITICAL_RANGES does not claim.
+
+    Starts at 0x100 because Latin-1 is wholly critical, so the rest face can
+    never contain anything below it.
+    """
+    out = []
+    cursor = 0x100
+    for start, end in sorted(CRITICAL_RANGES):
+        if end < cursor:
+            continue
+        if start > cursor:
+            out.append((cursor, start - 1))
+        cursor = end + 1
+    if cursor <= UNICODE_MAX:
+        out.append((cursor, UNICODE_MAX))
+    return out
+
+
+def css_range(ranges):
+    parts = []
+    for start, end in ranges:
+        parts.append("U+%X" % start if start == end else "U+%X-%X" % (start, end))
+    return ", ".join(parts)
 
 
 def write_subset(source, codepoints, destination):
@@ -144,12 +176,21 @@ def main():
         print("%-14s %7d -> subset %6d (%d cps) + rest %6d (%d cps)"
               % (face, before, subset_size, len(in_subset), rest_size, len(in_rest)))
 
+    manifest["css"] = {
+        "subset_unicode_range": css_range(CRITICAL_RANGES),
+        "rest_unicode_range": css_range(complement_ranges()),
+    }
+
     with open(MANIFEST, "w", encoding="utf-8") as handle:
         json.dump(manifest, handle, indent=2)
         handle.write("\n")
 
     print("\npreloaded on the critical path: %d -> %d bytes (%.1f%% smaller)"
           % (total_before, total_subset, 100 * (1 - total_subset / total_before)))
+    print("\nunicode-range for the *-subset.woff2 faces:\n  %s"
+          % manifest["css"]["subset_unicode_range"])
+    print("\nunicode-range for the *-rest.woff2 faces:\n  %s"
+          % manifest["css"]["rest_unicode_range"])
 
 
 if __name__ == "__main__":
