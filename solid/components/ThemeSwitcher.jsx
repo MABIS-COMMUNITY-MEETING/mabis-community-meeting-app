@@ -1,5 +1,5 @@
 import { createSignal, createMemo, onMount, onCleanup, createEffect, Show, For } from "solid-js";
-import { Palette, Check, RotateCcw, Save, Trash2, Star } from "lucide-solid";
+import { Palette, Check, RotateCcw, Save, Trash2, Star, Search } from "lucide-solid";
 import {
   THEMES, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
@@ -218,6 +218,20 @@ export default function ThemeSwitcher(props) {
               Pick one of the easy choices. Your current choice is {THEMES[currentTheme()]?.name || "Custom"}.
             </p>
           </div>
+
+          <Show when={showAllThemes()}>
+            <div class="relative mb-3">
+              <Search class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                value={themeSearch()}
+                onInput={(e) => { setThemeSearch(e.currentTarget.value); setThemeLimit(INITIAL_THEME_LIMIT); }}
+                placeholder="Search themes…"
+                aria-label="Search themes"
+                class="h-9 w-full rounded-lg border border-border bg-background pl-8 pr-2.5 text-xs text-foreground outline-none focus:border-primary"
+              />
+            </div>
+          </Show>
 
           <div class="grid grid-cols-2 gap-2 mb-4">
             <For each={visibleThemes()}>
