@@ -83,16 +83,17 @@ function parseRanges(spec) {
 const ranges = parseRanges(subsetRange);
 const covered = (cp) => ranges.some(([from, to]) => cp >= from && cp <= to);
 
-/* The CJK families carry these, on their own @font-face with their own range,
-   so a Japanese character in the bundle is not a subset escape. Same for Thai,
-   which GNUFreeSerifThai claims at U+0E00-0E7F. */
-function servedByAnotherFamily(cp) {
-  return (cp >= 0x0e00 && cp <= 0x0e7f)      // Thai
-    || (cp >= 0x2e80 && cp <= 0x9fff)        // CJK radicals through unified ideographs
-    || (cp >= 0x3000 && cp <= 0x30ff)        // CJK punctuation, kana
-    || (cp >= 0xff00 && cp <= 0xffef)        // halfwidth/fullwidth forms
-    || cp > 0xffff;                          // astral: emoji, served by the system
-}
+/*
+ * The only characters that matter are the ones the rest files actually carry.
+ *
+ * A character GNU FreeMono never had — ✓, ☐, ▼, and everything CJK or Thai —
+ * already resolves to a later family in the stack and cannot pull the big file
+ * down no matter where it appears. Checking against the subset range alone
+ * flagged all of those, which would have pushed someone into adding whole
+ * blocks of glyphs that do not exist.
+ */
+const restCoverage = manifest.rest_coverage;
+const inRestFile = (cp) => restCoverage.some(([from, to]) => cp >= from && cp <= to);
 
 const assetsDir = path.join(distDir, "assets");
 const escapes = new Map();
@@ -101,7 +102,7 @@ for (const name of fs.readdirSync(assetsDir)) {
   const text = fs.readFileSync(path.join(assetsDir, name), "utf8");
   for (const ch of text) {
     const cp = ch.codePointAt(0);
-    if (cp < 0x100 || covered(cp) || servedByAnotherFamily(cp)) continue;
+    if (cp < 0x100 || covered(cp) || !inRestFile(cp)) continue;
     if (!escapes.has(cp)) escapes.set(cp, name);
   }
 }
