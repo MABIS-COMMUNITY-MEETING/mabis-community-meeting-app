@@ -20,9 +20,9 @@ Always preserve unless explicitly instructed otherwise:
 - contemporary Japanese editorial composition
 - visible outlines, thin rules, crisp edges, compact controls, and restrained radii
 - Preserve the Home editorial normalization in `src/styles/editorial-home.css`: neutral ruled content planes, restrained radii, no widget elevation, and edge-to-edge mobile modules.
-- GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.
+- GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack; the pinned OpenMoji emoji font leads every stack but is scoped by `unicode-range` to emoji codepoints alone, so it never renders text.
 - GNU FreeSerif as the Thai-only fallback
-- Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.
+- Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono ahead of every other text face; only the emoji-scoped OpenMoji family may precede it in a stack, and that family covers no CJK codepoint.
 - All app-authored emoji must use pinned, production-ready OpenMoji color SVGs; do not rely on platform-native emoji glyphs.
 - The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.
 - semantic color and font variables

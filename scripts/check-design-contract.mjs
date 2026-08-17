@@ -248,8 +248,8 @@ for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, scrollGlassRule);
 }
 
-const fontStackRule = "GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.";
-const mapleCjkRule = "Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.";
+const fontStackRule = "GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack; the pinned OpenMoji emoji font leads every stack but is scoped by `unicode-range` to emoji codepoints alone, so it never renders text.";
+const mapleCjkRule = "Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono ahead of every other text face; only the emoji-scoped OpenMoji family may precede it in a stack, and that family covers no CJK codepoint.";
 const googleAuthRule = "The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.";
 const openMojiRule = "All app-authored emoji must use pinned, production-ready OpenMoji color SVGs; do not rely on platform-native emoji glyphs.";
 for (const [relativePath, content] of editorialContractFiles) {

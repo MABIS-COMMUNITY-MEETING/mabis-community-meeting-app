@@ -120,7 +120,7 @@ The base design uses ink, bone, MABIS maroon, and gold, while the theme system m
 
 Typography is part of the interface architecture, not a decorative afterthought.
 
-**GNU FreeMono is the default UI font.** It must remain the default until Novesce explicitly asks to change it. GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.
+**GNU FreeMono is the default UI font.** It must remain the default until Novesce explicitly asks to change it. GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack; the pinned OpenMoji emoji font leads every stack but is scoped by `unicode-range` to emoji codepoints alone, so it never renders text.
 
 The current script rules are mandatory:
 
@@ -484,7 +484,7 @@ Commercial fonts such as Atlas Mono must not be bundled without the correct web 
 
 - English and ordinary interface text use the selected UI font.
 - Thai falls back to the Thai-only GNU FreeSerif face.
-- Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.
+- Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono ahead of every other text face; only the emoji-scoped OpenMoji family may precede it in a stack, and that family covers no CJK codepoint.
 - Thai elements should use `lang="th"`, `data-script="th"`, or `.font-thai` where possible.
 - Chinese, Japanese, and Korean elements should use the relevant `lang`, `data-script`, `.font-cjk`, or `.font-multilingual` marker.
 - Do not let multilingual fallbacks replace ordinary English text.
