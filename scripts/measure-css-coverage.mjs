@@ -199,10 +199,19 @@ function chunksMentioning(cls) {
   return hits;
 }
 
-const bucket = { NEEDED: [], LAZY: [], EAGER: [], ORPHAN: [] };
+const bucket = { NEEDED: [], THEMED: [], LAZY: [], EAGER: [], ORPHAN: [] };
 
 for (const rule of parsed) {
   if (rule.atRule) { bucket.NEEDED.push(rule); continue; }
+
+  /* Theme-conditional rules are their own problem and must not be counted as
+   * deferrable. The class lands on <body> from the entry JS, so for a visitor
+   * whose stored theme is this one the rule IS first-paint critical even
+   * though it matches nothing in a default render. Deferring it would flash
+   * that visitor's whole page. Splitting per theme is possible but needs the
+   * choice known before the sheet is requested, which is another round trip —
+   * bad on 2G, which is a hard requirement here. */
+  if (/\.theme-/.test(rule.selector)) { bucket.THEMED.push(rule); continue; }
 
   const alternatives = rule.selector.split(",").map((s) => s.trim()).filter(Boolean);
   let matches = false;
@@ -235,14 +244,27 @@ const kib = (n) => (n / 1024).toFixed(1).padStart(7);
 console.log(`\nCSS coverage — ${target} at ${route}${flags.length ? ` +${flags.join(" ")}` : ""}`);
 console.log(`Rendered ${window.document.querySelectorAll("*").length} elements carrying ${domClasses.size} distinct classes.\n`);
 console.log("      raw   ~gzip    rules  bucket");
-for (const name of ["NEEDED", "LAZY", "EAGER", "ORPHAN"]) {
+for (const name of ["NEEDED", "THEMED", "LAZY", "EAGER", "ORPHAN"]) {
   const b = sum(bucket[name]);
   console.log(`${kib(b)}K ${gz(b).toFixed(1).padStart(6)}K ${String(bucket[name].length).padStart(8)}  ${name}`);
 }
 console.log(`${kib(total)}K ${gz(total).toFixed(1).padStart(6)}K ${String(parsed.length).padStart(8)}  TOTAL`);
 
+/* Which chunks the deferrable rules belong to. This is the actionable output:
+   a chunk with a large share here is one whose CSS should travel with it. */
+const byChunk = new Map();
+for (const r of bucket.LAZY) {
+  const cls = new Set(r.selector.split(",").flatMap((alt) => classesIn(alt)));
+  const owners = new Set([...cls].flatMap(chunksMentioning));
+  for (const o of owners) byChunk.set(o, (byChunk.get(o) || 0) + r.bytes / owners.size);
+}
+console.log(`\nDeferrable CSS attributed to the chunk that would carry it:`);
+for (const [name, bytes] of [...byChunk].sort((a, b) => b[1] - a[1]).slice(0, 18)) {
+  console.log(`  ${(bytes / 1024).toFixed(1).padStart(6)}K  ${name}`);
+}
+
 console.log(`\nLargest deferrable rules (LAZY — CSS that can travel with its chunk):`);
-for (const r of [...bucket.LAZY].sort((a, b) => b.bytes - a.bytes).slice(0, 25)) {
+for (const r of [...bucket.LAZY].sort((a, b) => b.bytes - a.bytes).slice(0, 20)) {
   console.log(`  ${String(r.bytes).padStart(6)}  ${r.selector.replace(/\s+/g, " ").slice(0, 100)}`);
 }
 
