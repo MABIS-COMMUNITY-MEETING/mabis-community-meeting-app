@@ -239,13 +239,13 @@
  * exists specifically to catch this class of bug). Re-declaring just these
  * three as native v4 theme keys keeps them as real custom properties.
  */
+@import "tailwindcss";
+@config "../tailwind.config.js";
 @theme inline {
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) + 2px);
   --radius-sm: calc(var(--radius) + 4px);
 }
-@config "../tailwind.config.js";
-@import "tailwindcss";
 
 @layer base {
   :root {
