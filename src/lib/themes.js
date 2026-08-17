@@ -634,6 +634,18 @@ export function applyCustomColors(primaryHex, secondaryHex) {
   root.style.setProperty("--primary-foreground-muted", mutedForeground(primaryPair.foreground, primaryPair.fill));
   applyPalette([primaryHex, secondaryHex]);
   localStorage.setItem("mabis-custom-colors", JSON.stringify({ primary: primaryHex, secondary: secondaryHex }));
+  // Without this, the boot snapshot (theme-boot.js) never learns custom
+  // colors happened: applyTheme()/applyResolvedFont() both snapshot their
+  // own result, but this function painted straight to the DOM and stopped.
+  // Next boot then replays the LAST snapshot on record — the plain base
+  // theme from before these colors were set, since themeKey/fontKey still
+  // match and the replay has no way to know a custom-color layer sits on
+  // top of them — so the custom colors are invisible on first paint and
+  // only reappear once reconcileThemeAfterPaint()'s idle callback fires
+  // (up to 3s later). Passing null/null keeps the recorded theme/font keys
+  // as they were; only the painted `style` string (this function's own
+  // output) needs to be current.
+  saveThemeSnapshot(null, null);
   window.dispatchEvent(new Event("themeChanged"));
 }
 
