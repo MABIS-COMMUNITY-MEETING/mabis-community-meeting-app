@@ -2200,7 +2200,9 @@ html.is-scrolling .widget-loading-shell {
   html { scroll-padding-top: calc(4.5rem + env(safe-area-inset-top)); }
   body { overflow-x: clip; }
 
-  .editorial-home > main {
+  /* Clears the boss layout's FIXED header. The default layout's bar is sticky
+     and in normal flow, so the same padding there would just be a gap. */
+  html.home-layout-boss .editorial-home > main {
     padding-top: calc(5rem + env(safe-area-inset-top)) !important;
   }
   .site-nav-panel {
