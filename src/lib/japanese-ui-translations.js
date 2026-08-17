@@ -283,6 +283,8 @@ const EXACT_TRANSLATIONS = {
   "student": "生徒",
   "students": "生徒",
   "submit": "送信",
+  "summer layout": "サマーレイアウト",
+  "summer or boss": "サマーかボス",
   "submitting...": "送信中...",
   "subscript": "下付き文字",
   "superscript": "上付き文字",
