@@ -304,6 +304,29 @@ Reference components:
 - `src/components/SectionReveal.jsx`
 - `src/components/SiteHeader.jsx`
 
+## The two Home layouts
+
+Home renders in one of two arrangements, chosen per user under **Settings → Page Layout** and stored in `src/lib/layout-preference.js`.
+
+**Simple — the default.** A short masthead, the page guide, then each numbered section: rule, index, heading, widget. Nothing between the reader and the content. This is what a signed-in member sees unless they choose otherwise.
+
+**Boss layout — opt-in.** The full editorial front page: the tall masthead, the index rail beside each section, the scrolling type band, the scale ritual and the scroll section indicator.
+
+What the two share is not negotiable:
+
+- the same ten sections, in the same order, with the same numbering;
+- the same tokens, display face, thin rules, tabular figures and Japanese companion text;
+- the same widgets, the same features, the same behaviour.
+
+**Anything added, changed or fixed in the default layout must be added, changed or fixed in the Boss layout too.** They are two arrangements of one page, not two products. A feature that exists in only one of them is a bug, and so is a fix applied to only one of them. In practice this means new work goes into the shared section list and the widgets — `solid/pages/Home.jsx` picks the section component with `<Dynamic>`, so a change made there lands in both by construction. Reach for a layout-specific branch only for decoration that genuinely belongs to one of them, and say so in a comment.
+
+The simple layout is a simplification of the editorial system, not a second design language. Removing the scaffolding must not turn into removing outlines, flattening the type hierarchy, or drifting toward a generic rounded-card dashboard.
+
+Only the layout in use is cached. The service worker precaches the shared shell and the simple layout; `syncHomeLayoutCache()` tells it when the boss layout is selected so it fetches those chunks, and deletes them again on the way back. Layout components:
+
+- `solid/components/home/simple.jsx` (default)
+- `solid/components/home/shell.jsx` (boss)
+
 ## Spacing
 
 Use spacing to explain relationships:
