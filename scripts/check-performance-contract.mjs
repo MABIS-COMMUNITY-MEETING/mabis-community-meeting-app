@@ -148,7 +148,15 @@ requireText("src/components/SettingsModal.jsx", settings, ["useDeferredValue(fon
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const INITIAL_THEME_LIMIT = 20;");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["const ThemeOption = memo", "function ThemeOption("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "new IntersectionObserver");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["THEME_ENTRIES.slice(0, themeLimit)", "THEME_ENTRIES.slice(0, themeLimit())"]);
+/* The catalogue must stay progressively mounted — 20 at a time, never the
+   whole set at once. The list being sliced gained a search filter in front of
+   it (140 themes made the tail unreachable without one); what matters is that
+   a slice still bounds what is mounted, not which array it slices. */
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, [
+  "THEME_ENTRIES.slice(0, themeLimit)",
+  "THEME_ENTRIES.slice(0, themeLimit())",
+  "matchingThemes().slice(0, themeLimit())",
+]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const THEME_STRIPES = new WeakMap();");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["style={{ background: paletteStripe(theme) }}", "paletteStripe("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "clearCustomColors({ notify: false });");
