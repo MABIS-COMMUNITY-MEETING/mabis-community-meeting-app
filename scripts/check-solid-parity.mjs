@@ -312,11 +312,14 @@ if (route === "/login") {
       && [...root.querySelectorAll("button")].some((b) => b.disabled));
   }
 
-  // Header controls: React renders the avatar, first name and sign-out beside
-  // the theme/settings buttons. Solid was missing the whole block.
-  check("sign-out control rendered", textNow().includes("SIGN OUT"));
-  check("signed-in user's first name shown", textNow().includes("PARITY"),
-    "expected the seeded user's first name, upper-cased");
+  // Header controls: the avatar, first name and sign-out sit beside the
+  // theme/settings buttons in both layouts. The boss bar upper-cases them as
+  // technical labels; the default bar uses the original site's sentence case.
+  const signOut = bossLayout ? "SIGN OUT" : "Sign Out";
+  const firstName = bossLayout ? "PARITY" : "Parity";
+  check("sign-out control rendered", textNow().includes(signOut));
+  check("signed-in user's first name shown", textNow().includes(firstName),
+    `expected the seeded user's first name as "${firstName}"`);
   const avatarBtn = byTitle("Customize Profile Picture");
   check("profile-picture button rendered", !!avatarBtn);
 
