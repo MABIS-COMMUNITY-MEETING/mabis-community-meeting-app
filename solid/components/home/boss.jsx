@@ -4,6 +4,13 @@ import SiteHeader from "~/components/SiteHeader";
 import BirthdayBanner from "~/components/BirthdayBanner";
 import { ScrollSectionIndicator } from "~/components/chrome";
 import { PageFooter } from "~/components/page-chrome";
+/*
+ * Every rule in here is gated on `html.home-layout-boss`, so the default
+ * layout matched none of it while still paying to download and parse it.
+ * Imported from the chunk it belongs to, it ships only to the visitors who
+ * chose this layout — and arrives with the chunk, so nothing flashes.
+ */
+import "@/styles/editorial-home.css";
 
 /*
  * The boss layout, whole, in one lazily-loaded chunk.
