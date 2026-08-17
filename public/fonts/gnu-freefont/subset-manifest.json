@@ -1,0 +1,100 @@
+{
+  "ranges": [
+    [
+      "0x0",
+      "0xff"
+    ],
+    [
+      "0x131",
+      "0x131"
+    ],
+    [
+      "0x152",
+      "0x153"
+    ],
+    [
+      "0x2bb",
+      "0x2bc"
+    ],
+    [
+      "0x2c6",
+      "0x2c6"
+    ],
+    [
+      "0x2da",
+      "0x2da"
+    ],
+    [
+      "0x2dc",
+      "0x2dc"
+    ],
+    [
+      "0x300",
+      "0x36f"
+    ],
+    [
+      "0x370",
+      "0x3ff"
+    ],
+    [
+      "0x2000",
+      "0x206f"
+    ],
+    [
+      "0x2070",
+      "0x209f"
+    ],
+    [
+      "0x20a0",
+      "0x20cf"
+    ],
+    [
+      "0x2100",
+      "0x214f"
+    ],
+    [
+      "0x2190",
+      "0x21ff"
+    ],
+    [
+      "0x2200",
+      "0x22ff"
+    ],
+    [
+      "0x2500",
+      "0x257f"
+    ],
+    [
+      "0x25a0",
+      "0x25ff"
+    ],
+    [
+      "0x2700",
+      "0x27bf"
+    ],
+    [
+      "0xfeff",
+      "0xfeff"
+    ],
+    [
+      "0xfffd",
+      "0xfffd"
+    ]
+  ],
+  "faces": {
+    "FreeMono": {
+      "source_bytes": 189644,
+      "subset_bytes": 67472,
+      "rest_bytes": 142292,
+      "subset_codepoints": 1157,
+      "rest_codepoints": 3003
+    },
+    "FreeMonoBold": {
+      "source_bytes": 104668,
+      "subset_bytes": 50584,
+      "rest_bytes": 69620,
+      "subset_codepoints": 892,
+      "rest_codepoints": 1139
+    }
+  }
+}
