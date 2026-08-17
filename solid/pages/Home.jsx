@@ -1,6 +1,6 @@
-import { createSignal, onMount, onCleanup, lazy, Suspense, For, Show } from "solid-js";
+import { createSignal, onMount, onCleanup, lazy, Suspense, Show } from "solid-js";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
-import { LazySection, EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
+import { LazySection } from "~/components/home/LazySection";
 import { SummerHome } from "~/components/home/summer";
 import SummerHeader from "~/components/home/SummerHeader";
 import { useQuery } from "@tanstack/solid-query";
@@ -10,16 +10,16 @@ import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
 import { useHomeLayout } from "~/lib/prefs";
 import { usePresenceHeartbeat } from "~/lib/usePresence";
-import SiteHeader from "~/components/SiteHeader";
 import ThemeSwitcher from "~/components/ThemeSwitcher";
 import IdleMount from "~/components/IdleMount";
-import BirthdayBanner from "~/components/BirthdayBanner";
-import { ScrollSectionIndicator } from "~/components/chrome";
-import { PageFooter } from "~/components/page-chrome";
 
-// Boss-layout decoration. Lazy, so the default layout never downloads it.
-const ScrollVelocity = lazy(() => import("~/components/ScrollVelocity"));
-const ScrollScaleRitual = lazy(() => import("~/components/home/ScrollScaleRitual"));
+/*
+ * The whole boss layout, in one chunk the default layout never fetches: the
+ * glass header and its index overlay, the masthead, the section index, the
+ * editorial section frame and the scroll interludes. Statically imported it
+ * was downloaded, parsed and evaluated on every visit to reach a false branch.
+ */
+const BossHome = lazy(() => import("~/components/home/boss"));
 
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
