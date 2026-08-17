@@ -48,34 +48,20 @@ function base44ForSolid(options) {
 }
 
 /*
- * Keep the entry HTML's comments in the source and out of the response.
+ * NOT DOING: stripping HTML comments from the built entry.
  *
- * HTML comments ship. Vite minifies JS and CSS comments away as a matter of
- * course, but nothing touches these — and index.html is on the critical path
- * of every visit and is the one asset that can never be cached forever, since
- * mutable HTML must revalidate or users get stranded on an old deployment.
+ * They do ship — 2.5 KiB of a 9.0 KiB document, measured, on the critical path
+ * of every visit and on the one asset that can never be cached forever. A
+ * `transformIndexHtml` post hook removed them cleanly and the build was green
+ * here and in a fresh checkout.
  *
- * Measured: 2.5 KiB of comments in a 9.0 KiB document, 28% of the entry, sent
- * to every visitor on every cold load to explain decisions to engineers — who
- * are reading solid/index.html, not the response body. The comments are worth
- * keeping; sending them is not.
- *
- * Conditional comments are left alone. There are none today, but stripping an
- * `<!--[if ...]>` would change behaviour rather than just size, and the guard
- * against that costs one negative lookahead.
+ * It came out again because it rewrites the exact artifact Base44's publish
+ * pipeline consumes, and publishing started failing with "build errors" that
+ * are not reproducible in this sandbox. Injection anchors expressed as HTML
+ * comments are a common pattern, and ~600 bytes of gzip is not worth a
+ * deployment that will not go out. If the publish failure is ever traced to
+ * something else, this is safe to restore.
  */
-function stripHtmlComments() {
-  return {
-    name: "strip-html-comments",
-    apply: "build",
-    transformIndexHtml: {
-      order: "post",
-      handler: (html) => html
-        .replace(/<!--(?!\[if)[\s\S]*?-->/g, "")
-        .replace(/\n\s*\n+/g, "\n"),
-    },
-  };
-}
 
 export default defineConfig({
   logLevel: "error",
@@ -90,7 +76,6 @@ export default defineConfig({
       visualEditAgent: false,
     }),
     solid(),
-    stripHtmlComments(),
   ],
   resolve: {
     alias: {
