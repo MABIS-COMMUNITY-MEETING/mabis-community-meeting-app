@@ -161,12 +161,21 @@ export default function MeetingMinutes(props) {
     saveMutation.mutate(payload);
   };
 
-  const handleChange = (html) => {
-    latest = { week: props.weekLabel, html };
+  /*
+   * `week` is the week the EDITOR was built for, passed down by the keyed
+   * <Show> below — not props.weekLabel read at call time.
+   *
+   * The difference matters during a week switch, when the prop has already
+   * moved but the editor emitting the change has not been torn down yet.
+   * Reading the prop there is what let one week's text land in another's
+   * record. It defaults to the prop so a caller that does not care is unaffected.
+   */
+  const handleChange = (html, week = props.weekLabel) => {
+    latest = { week, html };
     if (props.canEdit === false) return;
 
     // Target captured now, while we are definitely still on this week.
-    const payload = { html, week: props.weekLabel, recordId: recordIdFor(props.weekLabel) };
+    const payload = { html, week, recordId: recordIdFor(week) };
     if (pending) clearTimeout(pending.timer);
     const timer = setTimeout(() => {
       pending = null;
@@ -199,12 +208,12 @@ export default function MeetingMinutes(props) {
     window.removeEventListener("pagehide", flushPending);
   });
 
-  const handleSave = () => {
+  const handleSave = (week = props.weekLabel) => {
     if (pending) return flushPending();
     saveMutation.mutate({
-      html: latest.week === props.weekLabel ? latest.html : initialHtml(),
-      week: props.weekLabel,
-      recordId: recordIdFor(props.weekLabel),
+      html: latest.week === week ? latest.html : initialHtml(),
+      week,
+      recordId: recordIdFor(week),
     });
   };
 
@@ -244,12 +253,12 @@ export default function MeetingMinutes(props) {
             called it; the render below used <DocsEditor> directly. Removed.
           */}
           <Show when={props.weekLabel} keyed>
-            {() => (
+            {(week) => (
               <DocsEditor
                 title={props.weekTitle || "Meeting minutes"}
                 initialHtml={initialHtml()}
-                onChange={handleChange}
-                onSave={props.canEdit === false ? undefined : handleSave}
+                onChange={(html) => handleChange(html, week)}
+                onSave={props.canEdit === false ? undefined : () => handleSave(week)}
                 saving={saveMutation.isPending}
                 saved={savedFlash()}
                 minHeight="420px"
