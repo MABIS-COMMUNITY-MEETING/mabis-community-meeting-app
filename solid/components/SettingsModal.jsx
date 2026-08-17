@@ -28,8 +28,8 @@ const FONTS = [...CORE_FONTS, ...FONT_CATALOG];
 const LAYOUT_CHOICES = [
   {
     key: "simple",
-    label: "Original",
-    ja: "もとのデザイン",
+    label: "Summer layout",
+    ja: "サマーレイアウト",
     detail: "Default · the interface the school has always used. White cards, one after another.",
     jaDetail: "標準・これまで使ってきた画面です。白いカードが上から順に並びます。",
   },
@@ -272,7 +272,7 @@ export default function SettingsModal(props) {
                   <a href="#setting-layout" class="min-h-20 bg-background p-3 text-left hover:bg-muted">
                     <span class="text-[10px] font-bold text-muted-foreground">04</span>
                     <JapaneseText ja="レイアウト" class="mt-1 block text-sm font-bold text-foreground">Layout</JapaneseText>
-                    <span class="mt-0.5 block text-xs text-muted-foreground">Original or boss</span>
+                    <span class="mt-0.5 block text-xs text-muted-foreground">Summer or boss</span>
                   </a>
                 </div>
               </section>
