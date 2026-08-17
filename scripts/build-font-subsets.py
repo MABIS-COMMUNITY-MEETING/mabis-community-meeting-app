@@ -52,30 +52,37 @@ MANIFEST = os.path.join(SOURCE_DIR, "subset-manifest.json")
 
 FACES = ["FreeMono", "FreeMonoBold"]
 
-# Every range first paint can need. Derived from a scan of the app source
-# (.perfprobe/scan-chars.py), then widened to whole blocks so that adding one
-# more arrow or check mark to the UI does not silently pull the 185 KiB file
-# onto the critical path. check-font-subset.mjs fails the build if a codepoint
-# in the source escapes this set.
+# Every range first paint can need.
+#
+# Chosen from what the BUILT bundle contains, not the source. The source is
+# full of Greek (spring-physics comments in lib/physics), box drawing (the ──
+# section rules in comments) and math operators (∇ √ ∝), none of which survive
+# minification and none of which are ever rendered. Including those blocks
+# measured at +5.7K, +3.4K and +13.9K respectively on FreeMono alone, to ship
+# glyphs for characters that do not exist in the shipped app.
+#
+# Whole blocks are still used where the block is cheap and its members are
+# genuinely reachable, so adding one more dash or arrow to the UI does not
+# silently pull the 139 KiB rest file onto the critical path.
+# check-font-subset.mjs fails the build if a codepoint in dist/ escapes this
+# set while being covered by the source font.
 CRITICAL_RANGES = [
-    (0x0000, 0x00FF),  # Latin-1: the entire UI, and accented names
+    (0x0000, 0x00FF),  # Latin-1: the entire UI, and accented names.       16.5K
     (0x0131, 0x0131),  # dotless i
     (0x0152, 0x0153),  # OE ligatures
     (0x02BB, 0x02BC),
     (0x02C6, 0x02C6),
     (0x02DA, 0x02DA),
     (0x02DC, 0x02DC),
-    (0x0300, 0x036F),  # combining marks, so accents cannot break
-    (0x0370, 0x03FF),  # Greek: physics labels (zeta, omega, tau, sigma, pi)
-    (0x2000, 0x206F),  # general punctuation: en/em dash, curly quotes, bullet, ellipsis
-    (0x2070, 0x209F),  # superscripts and subscripts
-    (0x20A0, 0x20CF),  # currency
-    (0x2100, 0x214F),  # letterlike symbols
-    (0x2190, 0x21FF),  # arrows
-    (0x2200, 0x22FF),  # mathematical operators
-    (0x2500, 0x257F),  # box drawing: the terminal-style rules
-    (0x25A0, 0x25FF),  # geometric shapes
-    (0x2700, 0x27BF),  # dingbats: check and ballot marks
+    # Decomposed accents: macOS and some IMEs produce e + U+0301 rather than
+    # the precomposed character, and a member's name is exactly where that
+    # shows up. 5.1K to insure against a 139 KiB fetch on their profile.
+    (0x0300, 0x036F),
+    # Rendered: em dash (Splash "01 —", empty-value placeholders), en dash,
+    # curly quotes, bullet, ellipsis, angle quote.                          3.0K
+    (0x2000, 0x206F),
+    (0x2070, 0x209F),  # superscripts and subscripts                        1.2K
+    (0x2190, 0x21FF),  # rendered: → in jobs/tables.jsx, ⇄ in the notes editor  4.6K
     (0xFEFF, 0xFEFF),
     (0xFFFD, 0xFFFD),
 ]
