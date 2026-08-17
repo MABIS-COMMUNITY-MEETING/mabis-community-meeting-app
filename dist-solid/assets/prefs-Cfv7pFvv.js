@@ -1,0 +1,1 @@
+import{b as s,aA as t,aa as n,k as r}from"./index-BF-CCvRw.js";function u(){const[o,a]=s(t()),e=()=>a(t());return window.addEventListener(n,e),window.addEventListener("storage",e),r(()=>{window.removeEventListener(n,e),window.removeEventListener("storage",e)}),o}export{u};
