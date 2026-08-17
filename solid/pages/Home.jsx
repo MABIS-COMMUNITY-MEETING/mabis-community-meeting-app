@@ -1,20 +1,25 @@
 import { createSignal, onMount, onCleanup, lazy, Suspense, For, Show } from "solid-js";
+import { Dynamic } from "solid-js/web";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection, EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
+import { SimpleSection, SimpleMasthead } from "~/components/home/simple";
 import { useQuery } from "@tanstack/solid-query";
 import { Settings, Palette, CircleHelp } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
+import { useHomeLayout } from "~/lib/prefs";
 import { usePresenceHeartbeat } from "~/lib/usePresence";
 import SiteHeader from "~/components/SiteHeader";
 import ThemeSwitcher from "~/components/ThemeSwitcher";
 import IdleMount from "~/components/IdleMount";
-import ScrollVelocity from "~/components/ScrollVelocity";
-import ScrollScaleRitual from "~/components/home/ScrollScaleRitual";
 import BirthdayBanner from "~/components/BirthdayBanner";
 import { ScrollSectionIndicator } from "~/components/chrome";
 import { PageFooter } from "~/components/page-chrome";
+
+// Boss-layout decoration. Lazy, so the default layout never downloads it.
+const ScrollVelocity = lazy(() => import("~/components/ScrollVelocity"));
+const ScrollScaleRitual = lazy(() => import("~/components/home/ScrollScaleRitual"));
 
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
