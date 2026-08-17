@@ -12,8 +12,10 @@
  */
 import fs from "node:fs";
 
-const { topicsToMinutesHtml, topicsForWeek, isBlankDocument, resolveMinutesDocument, RESERVED_TITLES } =
-  await import("../src/lib/minutes-format.js");
+const {
+  topicsToMinutesHtml, topicsForWeek, isBlankDocument, resolveMinutesDocument, RESERVED_TITLES,
+  minutesByWeek, historyWeeks, compareWeeksDesc,
+} = await import("../src/lib/minutes-format.js");
 
 const failures = [];
 let count = 0;
@@ -140,6 +142,55 @@ check("an empty stored document still seeds from topics", r.html.includes("Week 
 
 // The returned memo must always name the week it describes.
 check("returned memo is tagged with its week", r.memo.week === W34 && r.memo.seededWeek === W34);
+
+/*
+ * ── what History lists, and in what order ────────────────────────────────
+ *
+ * History used to list a week only when it had an ARCHIVED topic. That rule
+ * predates Discussion becoming a document, so a week that was fully minuted but
+ * had nothing archived never appeared at all.
+ */
+const HISTORY_TOPICS = [
+  // Minuted, nothing archived — the case that used to vanish.
+  { id: "m1", title: "__meeting_notes__", description: "<p>Week 33 minutes</p>", week_label: "2026-W33" },
+  // Archived topic, no document — the legacy case, must still list.
+  { id: "t1", title: "Old business", description: "<p>x</p>", week_label: "2026-W30", archived: true },
+  // A blank document is not a written-up week.
+  { id: "m2", title: "__meeting_notes__", description: "<p><br></p>", week_label: "2026-W31" },
+  // Unarchived topic with no document: not history yet.
+  { id: "t2", title: "Pending", description: "", week_label: "2026-W32", archived: false },
+  // The week being written right now must not appear.
+  { id: "m3", title: "__meeting_notes__", description: "<p>this week</p>", week_label: "2026-W34" },
+  // Unpadded label — the ordering trap.
+  { id: "m4", title: "__meeting_notes__", description: "<p>March</p>", week_label: "2026-W9" },
+  // Previous year, must sort below everything in 2026.
+  { id: "m5", title: "__meeting_notes__", description: "<p>last year</p>", week_label: "2025-W51" },
+];
+
+const listed = historyWeeks(HISTORY_TOPICS, { currentWeek: "2026-W34" });
+
+check("a minuted week with nothing archived is history", listed.includes("2026-W33"));
+check("an archived week with no document is still history", listed.includes("2026-W30"));
+check("a blank document does not make a week history", !listed.includes("2026-W31"));
+check("an unarchived, unminuted week is not history", !listed.includes("2026-W32"));
+check("the current week is excluded", !listed.includes("2026-W34"));
+check("weeks are listed newest first",
+  JSON.stringify(listed) === JSON.stringify(["2026-W33", "2026-W30", "2026-W9", "2025-W51"]),
+  `got ${JSON.stringify(listed)}`);
+check("an unpadded label does not jump to the top",
+  listed.indexOf("2026-W9") > listed.indexOf("2026-W30"),
+  "a string sort put 2026-W9 above 2026-W33");
+check("a string sort really would get this wrong",
+  ["2026-W33", "2026-W9"].sort().reverse()[0] === "2026-W9",
+  "if this fails the regression above is no longer meaningful");
+check("no week is listed twice", new Set(listed).size === listed.length);
+check("historyWeeks tolerates missing input", historyWeeks(undefined).length === 0);
+
+const byWeek = minutesByWeek(HISTORY_TOPICS);
+check("minutes are keyed by week", byWeek.get("2026-W33") === "<p>Week 33 minutes</p>");
+check("blank documents are omitted from the map", !byWeek.has("2026-W31"));
+check("a real topic is never mistaken for the document", !byWeek.has("2026-W30"));
+check("compareWeeksDesc orders across years", compareWeeksDesc("2025-W51", "2026-W01") > 0);
 
 /*
  * ── one editor per week ─────────────────────────────────────────────────
