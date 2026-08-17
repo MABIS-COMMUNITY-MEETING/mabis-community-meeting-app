@@ -266,18 +266,22 @@ if (route === "/login") {
    * passed whether Home had rendered or not. Swapping the route fallback to a
    * blank div exposed it. Poll for the masthead itself instead.
    *
-   * The simple layout's masthead is matched by attribute, not copy: its title
-   * is COMMUNITY MEETING, which SiteHeader also renders, so the text would be
-   * true before Home mounted at all — the same trap as MABIS.
+   * The default layout has no masthead at all — it goes straight from the bar
+   * into the widgets, as the original site did — so it is matched by the
+   * container's attribute. Matching on its copy would be the same trap as
+   * MABIS: the header renders "MABIS Community Meeting" before Home mounts.
    */
   if (bossLayout) {
     await waitFor(() => textNow().includes("COMMUNITY DASHBOARD"), 15000);
     check("editorial masthead rendered", textNow().includes("COMMUNITY DASHBOARD"));
   } else {
-    await waitFor(() => !!root.querySelector("[data-home-masthead]"), 15000);
-    check("simple masthead rendered", !!root.querySelector("[data-home-masthead]"));
-    check("editorial masthead not rendered in the simple layout",
+    await waitFor(() => !!root.querySelector("[data-summer-home]"), 15000);
+    check("default (original MABIS) layout rendered", !!root.querySelector("[data-summer-home]"));
+    check("editorial masthead not rendered in the default layout",
       !textNow().includes("COMMUNITY DASHBOARD"));
+    check("original top bar rendered", textNow().includes("Secondary Community Meeting App"));
+    check("archive routes still reachable without the editorial menu",
+      textNow().includes("Pages"));
   }
 
   // MabisAIAssistant: lazy, inside IdleMount, so it appears only after the idle
@@ -344,6 +348,10 @@ if (route === "/login") {
   // Copied from the label column of src/pages/Home.jsx, in order. Note these
   // are the SECTION labels, which differ from the wording the nav index uses
   // for the same sections ("MEMBERS" vs "People").
+  //
+  // Boss-layout only: they are the editorial section HEADINGS. The default
+  // layout has no headings — the widget is the module — so it asserts the
+  // widgets themselves are all mounted instead, one section element each.
   const SECTIONS = [
     ["01", "MEETING MODE"],
     ["02", "ANNOUNCEMENTS"],
@@ -356,8 +364,14 @@ if (route === "/login") {
     ["09", "NEWS"],
     ["10", "MEMBERS"],
   ];
-  for (const [index, label] of SECTIONS) {
-    check(`section ${index} (${label}) rendered`, textNow().includes(label));
+  if (bossLayout) {
+    for (const [index, label] of SECTIONS) {
+      check(`section ${index} (${label}) rendered`, textNow().includes(label));
+    }
+  } else {
+    for (const [index] of SECTIONS) {
+      check(`section ${index} mounted`, !!root.querySelector(`#sec-${index}`));
+    }
   }
   /*
    * Wait for the lazy widget chunks to settle before counting placeholders.
@@ -427,12 +441,28 @@ if (route === "/login") {
       "the band renders its sequence twice for the seamless loop");
     check("scroll-scale ritual rendered", textNow().includes("VOICE YOUR WORDS"));
     check("scroll section indicator rendered", textNow().includes("SCROLL"));
+    check("page guide rendered", textNow().includes("Choose where to go"));
+    check("page footer rendered", textNow().includes("COLOPHON"));
   } else {
-    check("scroll interludes absent from the simple layout",
+    check("scroll interludes absent from the default layout",
       !textNow().includes("VOICE YOUR WORDS"));
+    check("editorial page guide absent from the default layout",
+      !textNow().includes("Choose where to go"));
+    check("original footer rendered", textNow().includes("Version: "));
+    /*
+     * Rounded cards.
+     *
+     * The widgets ship the original site's classes; what used to flatten them
+     * was editorial-home.css forcing a 2px radius. jsdom computes no styles,
+     * so assert both halves of the arrangement: the class is still on the
+     * widget, and the rule that would override it is gated on the boss class.
+     */
+    check("widget cards keep their rounded corners",
+      root.innerHTML.includes("mabis-widget bg-card rounded-2xl"));
+    check("the radius override is gated on the boss layout",
+      /html\.home-layout-boss[^{}]*\.mabis-widget[^{}]*rounded-2xl/.test(builtCss),
+      "editorial-home.css would flatten the default layout's cards");
   }
-  check("page guide rendered in both layouts", textNow().includes("Choose where to go"));
-  check("page footer rendered", textNow().includes("COLOPHON"));
   check("birthday banner stays closed with no birthdays today",
     !textNow().includes("Happy birthday"));
 
