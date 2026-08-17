@@ -1,5 +1,6 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
+import { catppuccin_flavours } from "@/lib/catppuccin_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
 import { balancedPalette, contrastSafeInk, contrastSafePair, mutedForeground, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
 import { saveThemeSnapshot } from "@/lib/theme-boot";
@@ -200,6 +201,73 @@ function gmkTheme(key) {
   const usable = balancedPalette(u.swatches).map(keepHueLegible);
   roles.forEach((r, i) => { t.vars[r] = usable[i % usable.length]; });
   // canonical keyset hexes go into --flag-* untouched (only near-greys darkened)
+  t.exact = true;
+  return t;
+}
+
+/*
+ * Catppuccin flavours.
+ *
+ * Built like gmkTheme rather than paletteTheme, because three of the four are
+ * dark and paletteTheme always paints a near-white page. The canonical hexes
+ * go in untouched; only the surface ladder is picked from them.
+ *
+ * The ladder differs by flavour polarity so a card always sits ABOVE its page:
+ * on the dark flavours base is the page and surface0..2 rise from it, while on
+ * Latte the page drops to mantle so base can be the raised card. Using the
+ * same order for both would recess every card into the background.
+ */
+function catppuccinTheme(key) {
+  const f = catppuccin_flavours[key];
+  const d = f.dark;
+
+  const page = d ? f.base : f.mantle;
+  const raised = d ? f.surface0 : f.base;
+  const sunken = d ? f.surface1 : f.surface0;
+  const edge = d ? f.surface2 : f.surface1;
+
+  const primaryPair = keyColorPair(hexToHsl(f.accents.mauve));
+  const secondaryPair = keyColorPair(hexToHsl(f.accents.blue));
+  const accentPair = keyColorPair(hexToHsl(f.accents.peach));
+
+  const t = {
+    name: f.name,
+    vars: {
+      "--primary": primaryPair.fill,
+      "--primary-foreground": primaryPair.foreground,
+      "--secondary": secondaryPair.fill,
+      "--secondary-foreground": secondaryPair.foreground,
+      "--accent": accentPair.fill,
+      "--accent-foreground": accentPair.foreground,
+      "--background": hexToHsl(page),
+      "--foreground": hexToHsl(f.text),
+      "--card": hexToHsl(raised),
+      "--card-foreground": hexToHsl(f.text),
+      "--popover": hexToHsl(raised),
+      "--popover-foreground": hexToHsl(f.text),
+      "--muted": hexToHsl(sunken),
+      "--muted-foreground": hexToHsl(f.subtext0),
+      "--border": hexToHsl(edge),
+      "--input": hexToHsl(edge),
+      "--ring": primaryPair.fill,
+    },
+    bodyClass: `theme-${key}`,
+    swatches: f.swatches,
+    flag: f.swatches,
+    dark: d,
+    character: {
+      character_primary: f.accents.mauve,
+      character_secondary: f.accents.blue,
+      character_highlight: f.accents.pink,
+    },
+  };
+
+  const roles = ["--role-student", "--role-teacher", "--role-chair", "--role-minutes", "--role-admin", "--role-editor"];
+  const usable = balancedPalette(f.swatches).map(keepHueLegible);
+  roles.forEach((r, i) => { t.vars[r] = usable[i % usable.length]; });
+  /* Catppuccin's accents are already tuned for their own backgrounds; leaving
+     them exact is the whole point of shipping the palette rather than an
+     approximation of it. */
   t.exact = true;
   return t;
 }
