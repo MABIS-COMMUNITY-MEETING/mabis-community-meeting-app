@@ -41,6 +41,39 @@ body.theme-is-dark .summer-home {
   background-image: none;
 }
 
+/*
+ * The card itself.
+ *
+ * There are TWO editorial layers over these widgets, not one. Gating
+ * editorial-home.css was necessary but not sufficient: index.css also carries
+ * an "editorial card polish" rule matching the card's exact utility signature
+ *
+ *     .bg-card.rounded-2xl.shadow-sm { border-radius: 2px; box-shadow: none }
+ *
+ * at specificity (0,3,0). That outranks the element's own .rounded-2xl (0,1,0)
+ * without needing !important, which is why the corners stayed square through
+ * fixes that all looked correct in the markup.
+ *
+ * It cannot be gated on the layout class, because History and ArchivePage use
+ * the same signature and are editorial. So it is out-specified here instead:
+ * (0,4,0), one class deeper, no !important. The values are Tailwind's own
+ * rounded-2xl and shadow-sm — exactly what the widget asked for before
+ * anything overrode it.
+ */
+.summer-home .bg-card.rounded-2xl.shadow-sm {
+  border: 1px solid hsl(var(--border));
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+/* The original cards did not lift on hover — that is the same editorial
+   block's micro-interaction. */
+.summer-home .bg-card.rounded-2xl.shadow-sm:hover {
+  transform: none;
+  border-color: hsl(var(--border));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
 /* Birthday notice — the original's gradient card. The markup is shared with
    the boss layout, which styles the same three class names as an editorial
    rule block; only the paint differs. */
