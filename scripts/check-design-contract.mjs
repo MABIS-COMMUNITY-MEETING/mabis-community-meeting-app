@@ -100,7 +100,6 @@ const copilot = read(".github/copilot-instructions.md");
 const themes = read("src/lib/themes.js");
 const css = read("src/index.css");
 const editorialHomeCss = read("src/styles/editorial-home.css");
-const main = read("src/main.jsx");
 const home = read("src/pages/Home.jsx");
 const cursorPreference = read("src/lib/cursor-preference.js");
 const themeBalance = read("src/lib/color/themeBalance.js");
@@ -323,7 +322,31 @@ for (const sourceFile of listSourceFiles("src").filter((file) => /\.(?:js|jsx|ts
 }
 
 requireText("src/styles/editorial-home.css", editorialHomeCss, ".editorial-home .mabis-widget-header");
-requireText("src/main.jsx", main, ["import '@/styles/editorial-home.css'", 'import "@/styles/editorial-home.css"']);
+/*
+ * The editorial layer must be imported by the app — but not from any
+ * particular file.
+ *
+ * This rule used to name the entry, which quietly forced a cost it was never
+ * meant to impose: every rule in editorial-home.css is gated on
+ * `html.home-layout-boss`, so importing it from the entry made the DEFAULT
+ * layout download and parse a stylesheet it cannot match a single selector
+ * of. Pinning the location is what made that unavoidable.
+ *
+ * What the contract actually protects is that the layer SHIPS — that nobody
+ * quietly deletes the editorial normalization by dropping its import — and
+ * that holds wherever the import lives. Scanning both trees keeps the rule
+ * true if the file moves again, and lets the import sit with the layout that
+ * needs it.
+ */
+const editorialImport = /import\s+["']@\/styles\/editorial-home\.css["']/;
+const editorialImporters = ["solid", "src"]
+    .filter((dir) => fs.existsSync(path.join(root, dir)))
+    .flatMap((dir) => listSourceFiles(dir))
+    .filter((file) => /\.(?:js|jsx|ts|tsx)$/.test(file))
+    .filter((file) => editorialImport.test(fs.readFileSync(path.join(root, file), "utf8")));
+if (editorialImporters.length === 0) {
+    failures.push("No module imports '@/styles/editorial-home.css' — the Home editorial normalization would not ship at all");
+}
 requireText("src/pages/Home.jsx", home, ['className="editorial-home min-h-screen', 'class="editorial-home min-h-screen']);
 requireText("src/lib/cursor-preference.js", cursorPreference, "mabis_custom_cursor_enabled");
 requireText("src/lib/color/themeBalance.js", themeBalance, "contrastSafePair");
