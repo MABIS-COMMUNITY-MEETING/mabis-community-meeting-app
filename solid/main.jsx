@@ -1,10 +1,24 @@
 import { render } from "solid-js/web";
 import App from "~/App.jsx";
 import "@/index.css";
-import "@/styles/glass.css";
-import "@/styles/editorial-home.css";
 import "@/styles/summer-home.css";
 import "~/solid-motion.css";
+/*
+ * glass.css and editorial-home.css are NOT here.
+ *
+ * Both style the boss layout only — glass.css owns the `.lg-*` surfaces used
+ * by Glass, which only SiteHeader renders, which only boss.jsx imports; and
+ * every rule in editorial-home.css is gated on `html.home-layout-boss`. The
+ * boss JS has been code-split since the port, but its CSS was still linked
+ * from the entry HTML, so every visitor on the default layout downloaded and
+ * parsed 25.4 KiB of stylesheet that could not match a single element.
+ *
+ * They now travel with the chunk that uses them: glass.css is imported by
+ * Glass.jsx and editorial-home.css by boss.jsx. Vite emits those as the boss
+ * chunk's stylesheet, and its preload helper waits for the sheet's load event
+ * before resolving the dynamic import — so the boss layout still paints fully
+ * styled on first frame, and nothing flashes. See check-css-split.mjs.
+ */
 import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
