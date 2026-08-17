@@ -9,6 +9,7 @@ const files = process.argv.slice(2);
 const totals = new Map();
 let grand = 0;
 for (const f of files) {
+  if(!fs.existsSync(f+".map")){console.error("skip (no map): "+f);continue;}
   const js = fs.readFileSync(f, "utf8");
   const map = JSON.parse(fs.readFileSync(f + ".map", "utf8"));
   const lines = js.split("\n");
