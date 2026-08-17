@@ -100,6 +100,7 @@ const copilot = read(".github/copilot-instructions.md");
 const themes = read("src/lib/themes.js");
 const css = read("src/index.css");
 const editorialHomeCss = read("src/styles/editorial-home.css");
+const glassCss = read("src/styles/glass.css");
 const home = read("src/pages/Home.jsx");
 const cursorPreference = read("src/lib/cursor-preference.js");
 const themeBalance = read("src/lib/color/themeBalance.js");
