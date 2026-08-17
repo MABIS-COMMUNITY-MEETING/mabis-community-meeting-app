@@ -79,10 +79,15 @@ export default function Splash() {
   let bgRef;
   let titleRef;
 
-  // The React page reads auth to pick the button label. AuthContext has not
-  // been ported yet — that is its own migration task — so this slice renders
-  // the signed-out label. Everything visual is unaffected.
-  const isAuthenticated = () => false;
+  // Real auth state now that AuthContext is ported. isAuthenticated() can
+  // read false for a moment on first paint if the cookie probe / offline
+  // recovery is still resolving (auth.isLoadingAuth() true) — that only
+  // matters if the user clicks Enter in that exact window, and even then
+  // TransitionedLogin (App.jsx) catches it: an already-authenticated user who
+  // lands on /login gets bounced straight to /home once auth resolves, so
+  // this can never strand someone on the login form.
+  const auth = useAuth();
+  const isAuthenticated = () => auth.isAuthenticated();
 
   onMount(() => {
     if (!finePointer()) return;
