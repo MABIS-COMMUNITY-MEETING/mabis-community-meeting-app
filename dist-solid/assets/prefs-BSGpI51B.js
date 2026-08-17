@@ -1,0 +1,1 @@
+import{e as s,aA as n,ab as t,n as r}from"./index-BWy78RkH.js";function u(){const[o,a]=s(n()),e=()=>a(n());return window.addEventListener(t,e),window.addEventListener("storage",e),r(()=>{window.removeEventListener(t,e),window.removeEventListener("storage",e)}),o}export{u};
