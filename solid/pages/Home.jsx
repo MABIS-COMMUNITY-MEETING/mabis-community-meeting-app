@@ -363,12 +363,8 @@ export default function Home() {
       class="editorial-home min-h-screen bg-background overflow-x-hidden"
       classList={{ "summer-home": !isBoss() }}
     >
-      <Show
-        when={isBoss()}
-        fallback={<SummerHeader canSeeInbox={isAdmin()} rightSlot={summerControls} />}
-      >
-        <SiteHeader rightSlot={editorialControls} />
-        <ScrollSectionIndicator total={10} />
+      <Show when={!isBoss()}>
+        <SummerHeader canSeeInbox={isAdmin()} rightSlot={summerControls} />
       </Show>
 
       <Show when={showHelp()}>
@@ -393,46 +389,17 @@ export default function Home() {
         when={isBoss()}
         fallback={<SummerHome sections={SECTIONS}>{renderWidget}</SummerHome>}
       >
-        <main class="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
-          <HomeMasthead weekLabel={weekLabel} dateLabel={dateLabel} date={now} />
-
-          <div class="pb-6 pt-5 sm:pb-10 sm:pt-8">
-            <HomeSectionIndex />
-          </div>
-
-          <Suspense fallback={null}>
-            <div class="-mx-4 overflow-hidden border-b py-3 jp-rule sm:-mx-10 sm:py-5">
-              <ScrollVelocity
-                items={["MABIS", "COMMUNITY", "FRIDAY", "BANGKOK"]}
-                class="font-display font-light tracking-[-0.035em] text-foreground/16 text-[clamp(1.35rem,7vw,2.15rem)] sm:text-[4.2vw]"
-              />
-            </div>
-            <ScrollScaleRitual />
-          </Suspense>
-
-          <div class="pb-8 pt-4 sm:pb-14 sm:pt-6">
-            <BirthdayBanner />
-          </div>
-
-          <div class="space-y-12 sm:space-y-24">
-            <For each={SECTIONS}>
-              {(s) => (
-                <EditorialSection
-                  index={s.index}
-                  label={s.label}
-                  jaLabel={s.jaLabel}
-                  description={s.description}
-                  jaDescription={s.jaDescription}
-                  intrinsicHeight={s.height + 160}
-                >
-                  {renderWidget(s)}
-                </EditorialSection>
-              )}
-            </For>
-          </div>
-
-          <PageFooter />
-        </main>
+        <Suspense fallback={null}>
+          <BossHome
+            sections={SECTIONS}
+            controls={editorialControls}
+            weekLabel={weekLabel}
+            dateLabel={dateLabel}
+            date={now}
+          >
+            {renderWidget}
+          </BossHome>
+        </Suspense>
       </Show>
 
       {/* Deferred until the browser is idle, as in React — same three, same order. */}
