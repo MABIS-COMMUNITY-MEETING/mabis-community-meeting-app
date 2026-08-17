@@ -8,6 +8,7 @@ import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
+import { applyHomeLayoutPreference } from "@/lib/layout-preference";
 import { startPerfMonitor } from "~/lib/perf-monitor";
 import { preloadRoute } from "~/lib/routes";
 
@@ -52,6 +53,7 @@ async function bootstrap() {
   applyAnimationPreference();
   applyJapaneseTextPreference();
   applySectionDescriptionsPreference();
+  applyHomeLayoutPreference();
 
   const replayed = applyThemeSnapshot();
 
