@@ -919,6 +919,22 @@ export const FONT_LIBRARIES = [
   { key: "flintype", name: "FLINT*ype", detail: "FLINTA* discovery archive. Its current site is moving, so indexed commercial fonts are not mirrored without their licences.", url: "https://flintype.com/" },
 ];
 
+/*
+ * OpenMoji leads every font stack the app writes.
+ *
+ * Its @font-face in index.css carries a `unicode-range` covering emoji
+ * codepoints and nothing else, so putting it first can never affect a letter,
+ * a digit or a CJK glyph — the browser skips it for anything outside that
+ * range. What it does do is get there before the platform emoji font, which is
+ * the whole point: the contract forbids relying on Apple Color Emoji / Segoe /
+ * Noto, and those otherwise win by default for any emoji a PERSON typed.
+ *
+ * It belongs here rather than only in the CSS defaults because applyFont()
+ * overwrites --font-* whenever a user picks a face. Prepending in the CSS
+ * alone would hold until someone opened Settings and then quietly stop.
+ */
+const EMOJI_FAMILY = "'OpenMojiColor'";
+
 function withGnuFallbacks(primary, generic = "monospace") {
   const selectedFamilies = primary.split(",").map((family) => family.trim()).filter(Boolean);
   const requiredFallbacks = [
@@ -928,13 +944,13 @@ function withGnuFallbacks(primary, generic = "monospace") {
     "'GNUFreeSerifThai'",
     generic,
   ];
-  return [...new Set([...selectedFamilies, ...requiredFallbacks])].join(", ");
+  return [...new Set([EMOJI_FAMILY, ...selectedFamilies, ...requiredFallbacks])].join(", ");
 }
 
 function applyResolvedFont(font) {
   const root = document.documentElement;
-  const thaiFallback = "'GNUFreeSerifThai', 'GNUFreeSerifUI', serif";
-  const cjkFallback = "'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', monospace";
+  const thaiFallback = `${EMOJI_FAMILY}, 'GNUFreeSerifThai', 'GNUFreeSerifUI', serif`;
+  const cjkFallback = `${EMOJI_FAMILY}, 'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', monospace`;
   const headingStack = withGnuFallbacks(font.heading);
   const bodyStack = withGnuFallbacks(font.body);
   const monoStack = withGnuFallbacks(font.mono);
