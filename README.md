@@ -304,13 +304,15 @@ Reference components:
 - `src/components/SectionReveal.jsx`
 - `src/components/SiteHeader.jsx`
 
-## The two Home layouts
+## The two styles
 
-Home renders in one of two presentations, chosen per user under **Settings → Page Layout** and stored in `src/lib/layout-preference.js`. This is a deliberate exception to the rest of this document, requested directly by Novesce: the default is **not** the editorial system.
+The app renders in one of two presentations, chosen per user under **Settings → Page Layout** and stored in `src/lib/layout-preference.js`. This is a deliberate exception to the rest of this document, requested directly by Novesce: the default is **not** the editorial system.
 
-**Default — the original MABIS interface.** What the community used before the editorial redesign. A sticky white top bar with the logo, the two-line title and the controls; then the widgets stacked one after another in a single column, each a rounded white card with a coloured header band, on the original page gradient. No masthead, no index rail, no section headings, no scrolling type, no page guide.
+The choice is **app-wide**, not a Home setting. It governs Home, the splash at `/`, the login screen and the archive pages (meeting history, announcements, news). `applyHomeLayoutPreference()` writes `home-layout-simple` / `home-layout-boss` onto `<html>` before first paint, so any surface can branch on it without a flash. The storage key is still `mabis-home-layout` and the stored values are still `simple` / `boss` — the names changed, the key did not, because renaming it would silently reset every existing preference.
 
-**Boss style — opt-in.** The art-directed editorial front page: the tall masthead, the numbered index rail beside each section, the page guide, the scrolling type band, the scale ritual and the scroll section indicator.
+**Summer style — the default.** The original MABIS interface, what the community used before the editorial redesign. A sticky white top bar with the logo, the title and the controls; the widgets stacked one after another in a single column, each a rounded white card with a coloured header band, on the original page gradient. The splash is the maroon field with drifting motes; login is a centred white card; the archive pages carry a plain bar with the page name and a count. No masthead, no index rail, no section headings, no scrolling type, no page guide, no N° captions.
+
+**Boss style — opt-in, and always the Japanese editorial system.** Not "editorial on Home and something else elsewhere": every surface it touches follows the same vocabulary — numbered sections, tracked-out display type, ruled neutral planes, N° captions, the glass control plane, and the Japanese companion set in Maple Mono. On Home that means the tall masthead, the numbered index rail, the page guide, the scrolling type band, the scale ritual and the scroll section indicator; on the archives the N° caption and oversized title; on login the framed two-column shell; on the splash the split-type hero and marquee. A new surface added under Boss style that is not editorial is a bug in the same way a missing feature is.
 
 What the two share is not negotiable:
 
@@ -319,7 +321,11 @@ What the two share is not negotiable:
 - every route still reachable (the default bar carries a small **Pages** menu in place of the editorial overlay);
 - the same preferences — themes, fonts, sound, motion, cursor, and the opt-in Japanese companion text.
 
-**Anything added, changed or fixed in one layout must exist in the other.** They are two presentations of one page, not two products. A feature in only one of them is a bug, and so is a fix applied to only one of them. In practice this is enforced by construction: `solid/pages/Home.jsx` holds one `SECTIONS` list and one `renderWidget()`, and hands the identical function to both layouts, so widget work lands in both without anyone remembering to copy it. Only page furniture — the bar, the masthead, the interludes — is written twice, and each copy says so in a comment.
+**Every feature, widget, page, control and fix must exist in BOTH styles.** They are two presentations of one product, not two products. A widget that appears in only one of them is a bug; so is a fix applied to only one of them; so is a new page that has a Boss presentation and no Summer one, or the reverse. Adding something to one style and not the other is never a variant — it is unfinished work.
+
+In practice the shared half is enforced by construction: `solid/pages/Home.jsx` holds one `SECTIONS` list and one `renderWidget()`, and hands the identical function to both styles, so widget work lands in both without anyone remembering to copy it. `ArchivePage` does the same — both styles share one week-accordion body and branch only on chrome. Only page furniture — the bar, the masthead, the splash, the auth shell, the interludes — is written twice, and each copy says so in a comment.
+
+When you add a surface, branch it the same way the existing ones do: read `useHomeLayout()` from `~/lib/prefs`, route the two presentations through `<Show>` (not an early `return`, which reads the preference once and never updates), and add a parity run for the new route in **both** styles to `check:solid:parity`.
 
 How the look is switched, and why it costs nothing:
 
