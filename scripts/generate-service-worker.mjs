@@ -60,21 +60,24 @@ function addDirectDynamicImports(key) {
 }
 
 /*
- * Home's decorative interludes belong to the boss layout only.
+ * The boss Home layout is one chunk, and it belongs to nobody by default.
  *
- * Home defaults to the simple layout, so precaching these would download and
- * store two chunks that the great majority of visits never execute. They are
- * emitted as a separate list instead, and the worker fetches them only once
- * the page tells it the boss layout is actually in use — and drops them again
- * when the reader switches back. See applyLayout() below.
+ * Home defaults to the original MABIS interface, so precaching the editorial
+ * layout would download and store code the great majority of visits never
+ * execute. It is emitted as a separate list instead, and the worker fetches it
+ * only once the page says the boss layout is in use — dropping it again when
+ * the reader switches back. See applyLayout() below.
  */
-const BOSS_ONLY_CHUNKS = new Set(["ScrollVelocity", "ScrollScaleRitual"]);
+const BOSS_ONLY_CHUNKS = new Set(["boss"]);
 const isBossOnly = (key) => BOSS_ONLY_CHUNKS.has(manifest[key]?.name);
 
 const bossPrecache = new Set();
 
-/* Boss-only chunks and their static dependencies, minus anything the shared
-   precache already holds — storing a file twice would be pure waste. */
+/* The boss chunk plus everything it pulls in, static and dynamic, minus
+   anything the shared precache already holds — storing a file twice would be
+   pure waste. Dynamic imports are followed here (unlike for the shared
+   precache, which stops at one level) because the interludes are small, and a
+   reader on this layout wants the whole thing offline, not most of it. */
 function addBossEntry(key, visited = new Set()) {
   if (visited.has(key)) return;
   visited.add(key);
@@ -84,7 +87,9 @@ function addBossEntry(key, visited = new Set()) {
   for (const file of item.css || []) {
     if (!precache.has(`/${file}`)) bossPrecache.add(`/${file}`);
   }
-  for (const importedKey of item.imports || []) addBossEntry(importedKey, visited);
+  for (const importedKey of [...(item.imports || []), ...(item.dynamicImports || [])]) {
+    addBossEntry(importedKey, visited);
+  }
 }
 
 addManifestEntry(entryKey);
@@ -96,8 +101,8 @@ addDirectDynamicImports(homeKey);
 const bossKeys = (manifest[homeKey].dynamicImports || []).filter(isBossOnly);
 if (bossKeys.length !== BOSS_ONLY_CHUNKS.size) {
   throw new Error(
-    `Expected ${BOSS_ONLY_CHUNKS.size} boss-layout chunks in Home's dynamic imports, found ${bossKeys.length}. `
-    + "Update BOSS_ONLY_CHUNKS when the boss layout gains or loses an interlude.",
+    `Expected ${BOSS_ONLY_CHUNKS.size} boss-layout chunk(s) in Home's dynamic imports, found ${bossKeys.length}. `
+    + "If the boss layout stopped being lazily imported, the default layout is paying for it again.",
   );
 }
 for (const key of bossKeys) addBossEntry(key);
