@@ -125,7 +125,22 @@ function ProtectedFeedback() {
 
 /* React wraps every route except Splash in PageTransition. */
 function TransitionedLogin() {
-  return <PageTransition><Login /></PageTransition>;
+  const auth = useAuth();
+  /*
+   * A signed-in user landing on /login — stale bookmark, browser back, or
+   * Splash's own "already authenticated" check racing auth on first paint
+   * (see Splash.jsx) — should never see the form at all, just bounce
+   * straight to /home. Gate on the same loading signals Protected uses so
+   * this does not fire on a false "not authenticated yet" read before the
+   * cookie probe / offline recovery has had a chance to resolve.
+   */
+  return (
+    <Show when={!auth.isLoadingAuth() && !auth.isLoadingPublicSettings()} fallback={<ChunkFallback />}>
+      <Show when={!auth.isAuthenticated()} fallback={<Navigate href="/home" />}>
+        <PageTransition><Login /></PageTransition>
+      </Show>
+    </Show>
+  );
 }
 
 function TransitionedNotFound() {
