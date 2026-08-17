@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import fs from "node:fs";
 import path from "node:path";
 
 /*
@@ -31,7 +32,26 @@ const require = createRequire(import.meta.url);
  * a CommonJS build.
  */
 function esmEntry(pkg) {
-  const manifestPath = require.resolve(`${pkg}/package.json`);
+  /*
+   * Walked up from the resolved main rather than asked for directly:
+   * require.resolve(`${pkg}/package.json`) fails with ERR_PACKAGE_PATH_NOT_EXPORTED
+   * on any package whose `exports` map omits "./package.json", which partysocket's
+   * does. The name check skips the `{"type":"commonjs"}` marker manifests that
+   * some packages drop inside their build directories.
+   */
+  let dir = path.dirname(require.resolve(pkg));
+  let manifestPath = null;
+  for (let parent = dir; ; parent = path.dirname(parent)) {
+    const candidate = path.join(parent, "package.json");
+    if (fs.existsSync(candidate) && require(candidate).name === pkg) {
+      manifestPath = candidate;
+      break;
+    }
+    if (path.dirname(parent) === parent) {
+      throw new Error(`lazy-realtime-aliases: could not locate the package root for ${pkg}`);
+    }
+  }
+
   const manifest = require(manifestPath);
   const entry = manifest.module
     ?? manifest.exports?.["."]?.import?.default
