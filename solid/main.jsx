@@ -3,6 +3,7 @@ import App from "~/App.jsx";
 import "@/index.css";
 import "@/styles/glass.css";
 import "@/styles/editorial-home.css";
+import "@/styles/summer-home.css";
 import "~/solid-motion.css";
 import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
