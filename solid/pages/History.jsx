@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
 import { ChevronDown, ChevronRight, Trash2, Users } from "lucide-solid";
 import { isFriday, format, parseISO } from "date-fns";
 import { base44 } from "@/api/base44Client";
-import { isBlankDocument } from "@/lib/minutes-format";
+import { historyWeeks, minutesByWeek } from "@/lib/minutes-format";
 import { weekLabelToDate, formatWeekFull, getWeekLabel } from "~/lib/weeks";
 import { PageNav, PageFooter, OpenMoji } from "~/components/page-chrome";
 import { JapaneseText } from "~/components/primitives";
@@ -46,57 +46,18 @@ export default function History() {
   const allAttendance = () => attendanceQuery.data || [];
   const allMembers = () => membersQuery.data || [];
 
-  /* The week's minutes, keyed by week. Discussion is a document now, so this —
-     not the topic list — is what a past meeting actually left behind. */
-  const minutesFor = createMemo(() => {
-    const byWeek = new Map();
-    for (const t of allTopics()) {
-      if (t.title === "__meeting_notes__" && t.week_label && !isBlankDocument(t.description)) {
-        byWeek.set(t.week_label, t.description);
-      }
-    }
-    return byWeek;
-  });
-
   /*
-   * What counts as history.
+   * Which weeks are history, and what each one left behind.
    *
-   * The old rule was "has an archived topic", which made sense when a meeting
-   * WAS its topic list. Since Discussion became a per-week document, a week
-   * can be fully minuted and still have no archived topic at all — those weeks
-   * were being dropped from History entirely. A week with written minutes is
-   * history whether or not anyone ticked a topic off.
-   *
-   * The current week is excluded: it is still being written, and it is already
-   * on Home. Everything else with either minutes or archived topics is listed.
+   * Both live in lib/minutes-format.js rather than here — same reason
+   * resolveMinutesDocument does. They are the rules that decide what a past
+   * meeting IS, they are pure, and check-minutes-format.mjs exercises them
+   * directly (including the week-ordering cases, which a component cannot be
+   * tested for). This page just renders the answer.
    */
   const currentWeek = getWeekLabel(new Date());
-
-  const pastWeeks = createMemo(() => {
-    const weeks = new Set();
-    for (const t of allTopics()) {
-      if (!t.week_label || t.week_label === currentWeek) continue;
-      if (t.archived && t.title !== "__meeting_notes__") weeks.add(t.week_label);
-    }
-    for (const week of minutesFor().keys()) {
-      if (week !== currentWeek) weeks.add(week);
-    }
-
-    /*
-     * Sorted newest first on the parsed year and week NUMBER.
-     *
-     * This was `.sort().reverse()` — a string sort, which is only correct while
-     * every label is zero-padded to "YYYY-Www". Any record written as
-     * "2026-W9" instead of "2026-W09" sorted after "2026-W33", putting an
-     * early-March meeting at the top of the page. Comparing numbers cannot
-     * drift that way, and it is no more code.
-     */
-    return [...weeks].sort((a, b) => {
-      const [ay, aw] = a.split("-W").map((n) => parseInt(n, 10) || 0);
-      const [by, bw] = b.split("-W").map((n) => parseInt(n, 10) || 0);
-      return by - ay || bw - aw;
-    });
-  });
+  const minutesFor = createMemo(() => minutesByWeek(allTopics()));
+  const pastWeeks = createMemo(() => historyWeeks(allTopics(), { currentWeek }));
 
   const deleteWeek = useMutation(() => ({
     mutationFn: async (weekLabel) => {
