@@ -19,15 +19,25 @@
  *   event / INP                  — worst interaction latency. This is what a
  *     user means by "it feels laggy".
  *   longtask                     — fallback attribution for non-Chromium.
- *   dropped frames               — rAF delta vs the display's frame budget,
- *     sampled only while scrolling, which is where smoothness is judged.
+ *   frame pacing                 — rAF deltas vs the display's MEASURED frame
+ *     budget, sampled only while scrolling, which is where smoothness is
+ *     judged. Reported as a distribution, not an average: a page can hold a
+ *     144 FPS mean and still feel terrible if the intervals are ragged, so
+ *     p95, p99 and jitter are the numbers that answer "is it smooth", and the
+ *     mean is the number that hides the answer.
  *   layout-shift                 — CLS, catches content jumping during lazy
  *     mount (the classic content-visibility regression).
  *
  * Read results at any time with:  __perf.report()
  */
 
+import { refreshHz, refreshIntervalMs, resetFrameChain, sampleFrame } from "@/lib/physics/refresh-rate";
+
 const FLAG = "mabis-perf";
+
+/* Two seconds of scroll at 240 Hz. Older samples have scrolled off screen and
+ * stopped being interesting. */
+const PACING_RING = 480;
 
 export function perfEnabled() {
   if (typeof window === "undefined") return false;
@@ -55,6 +65,13 @@ export function startPerfMonitor() {
     lcp: 0,
     frames: { sampled: 0, dropped: 0, worstMs: 0 },
   };
+
+  /* Deltas are kept raw so the report can quote the shape of the
+   * distribution. Writing one is a single store — nothing is allocated on a
+   * scroll frame. */
+  const pacing = new Float64Array(PACING_RING);
+  let pacingCount = 0;
+  let pacingHead = 0;
 
   const observers = [];
   const observe = (type, cb, extra = {}) => {
@@ -124,35 +141,48 @@ export function startPerfMonitor() {
   let rafId = 0;
   let last = 0;
   let idle = 0;
-  const budget = 1000 / 60;
 
   const tick = (now) => {
+    sampleFrame(now);
     if (last) {
       const delta = now - last;
+      /* The budget is whatever this display actually does. Hardcoding 60 Hz
+       * here reported 0% dropped on a 144 Hz session stuttering at 40 ms,
+       * because 40 ms is inside a 16.7 ms budget's 1.5x slack — the monitor
+       * said the page was fine while the user watched it stutter. */
+      const budget = refreshIntervalMs();
       state.frames.sampled++;
       if (delta > budget * 1.5) state.frames.dropped++;
       if (delta > state.frames.worstMs) state.frames.worstMs = Math.round(delta);
+      pacing[pacingHead] = delta;
+      pacingHead = (pacingHead + 1) % PACING_RING;
+      if (pacingCount < PACING_RING) pacingCount++;
     }
     last = now;
     rafId = requestAnimationFrame(tick);
   };
 
   const onScroll = () => {
-    if (!rafId) { last = 0; rafId = requestAnimationFrame(tick); }
+    /* Re-arming after a park: the previous timestamp is from before the
+     * gesture and is not a frame delta. */
+    if (!rafId) { last = 0; resetFrameChain(); rafId = requestAnimationFrame(tick); }
     clearTimeout(idle);
     idle = setTimeout(() => { cancelAnimationFrame(rafId); rafId = 0; }, 200);
   };
+
+  /* Sorted copy of the ring, built only when a report is asked for. */
+  const pacingSorted = () => Array.from(pacing.subarray(0, pacingCount)).sort((a, b) => a - b);
   window.addEventListener("scroll", onScroll, { passive: true });
 
   window.__perf = {
     raw: state,
-    report: () => report(state),
-    reset: () => { state.loaf.length = 0; state.longTasks.length = 0; state.inp = 0; state.frames = { sampled: 0, dropped: 0, worstMs: 0 }; },
+    report: () => report(state, pacingSorted()),
+    reset: () => { state.loaf.length = 0; state.longTasks.length = 0; state.inp = 0; state.frames = { sampled: 0, dropped: 0, worstMs: 0 }; pacingCount = 0; pacingHead = 0; },
     off: () => { try { localStorage.removeItem(FLAG); } catch {} },
   };
 
   // One automatic summary once the page has settled.
-  setTimeout(() => report(state), 6000);
+  setTimeout(() => report(state, pacingSorted()), 6000);
 
   return () => {
     observers.forEach((o) => o.disconnect());
