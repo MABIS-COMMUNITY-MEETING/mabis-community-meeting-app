@@ -196,9 +196,15 @@ forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
  * pseudo-elements cannot have children.
  */
 const surfaceStart = glass.indexOf(".lg-surface {");
+/* Comments are stripped first: the rule carries a prose warning that names the
+   very declaration being forbidden, and matching that would fail the build for
+   documenting the rule. */
+const surfaceBody = surfaceStart === -1
+  ? ""
+  : glass.slice(surfaceStart, glass.indexOf("}", surfaceStart)).replace(/\/\*[\s\S]*?\*\//g, "");
 if (surfaceStart === -1) {
   failures.push("src/styles/glass.css: .lg-surface rule not found — the containment guard below cannot run");
-} else if (/contain\s*:/.test(glass.slice(surfaceStart, glass.indexOf("}", surfaceStart)))) {
+} else if (/contain\s*:/.test(surfaceBody)) {
   failures.push("src/styles/glass.css: .lg-surface must not declare `contain` — it clips every dropdown rendered inside a glass panel (move it to ::before/::after)");
 }
 requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf"]);
