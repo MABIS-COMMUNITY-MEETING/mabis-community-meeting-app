@@ -16,6 +16,22 @@
 .summer-home {
   /* The literal gradient from the original site. */
   background-image: linear-gradient(180deg, #f7f5f6 0%, #f1eef0 100%);
+
+  /*
+   * The whole reason the corners were square.
+   *
+   * tailwind.config.js maps rounded-lg/md/sm onto `--radius`, and the
+   * editorial system sets it to 0.125rem — 2px, i.e. a sharp corner — so
+   * every button, input, chip and inner panel in a widget came out square
+   * even after the editorial override layer was gated off. The original site
+   * set 0.75rem. Restoring it here fixes all of them at once: one inherited
+   * custom property, no selectors, no overrides, nothing for the style
+   * engine to resolve per element.
+   *
+   * rounded-xl and rounded-2xl are Tailwind's own fixed values and were
+   * always correct; they are what the widget cards themselves use.
+   */
+  --radius: 0.75rem;
 }
 
 /* That gradient is a light sheet by definition, so a dark theme would put pale
