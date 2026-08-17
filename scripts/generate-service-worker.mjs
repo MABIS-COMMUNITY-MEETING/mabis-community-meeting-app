@@ -73,11 +73,14 @@ const isBossOnly = (key) => BOSS_ONLY_CHUNKS.has(manifest[key]?.name);
 
 const bossPrecache = new Set();
 
-/* The boss chunk plus everything it pulls in, static and dynamic, minus
-   anything the shared precache already holds — storing a file twice would be
-   pure waste. Dynamic imports are followed here (unlike for the shared
-   precache, which stops at one level) because the interludes are small, and a
-   reader on this layout wants the whole thing offline, not most of it. */
+/* The boss chunk and its STATIC dependencies, minus anything the shared
+   precache already holds — storing a file twice would be pure waste.
+
+   Static only, and its direct dynamic imports are added separately below, for
+   the same reason the shared precache stops at one level: walking dynamic
+   imports transitively reaches DocsEditor/Quill and the other deliberately
+   deferred features through shared modules, and pulls ~100 KiB of them into a
+   list that is supposed to hold two small interludes. */
 function addBossEntry(key, visited = new Set()) {
   if (visited.has(key)) return;
   visited.add(key);
@@ -87,9 +90,7 @@ function addBossEntry(key, visited = new Set()) {
   for (const file of item.css || []) {
     if (!precache.has(`/${file}`)) bossPrecache.add(`/${file}`);
   }
-  for (const importedKey of [...(item.imports || []), ...(item.dynamicImports || [])]) {
-    addBossEntry(importedKey, visited);
-  }
+  for (const importedKey of item.imports || []) addBossEntry(importedKey, visited);
 }
 
 addManifestEntry(entryKey);
@@ -105,7 +106,12 @@ if (bossKeys.length !== BOSS_ONLY_CHUNKS.size) {
     + "If the boss layout stopped being lazily imported, the default layout is paying for it again.",
   );
 }
-for (const key of bossKeys) addBossEntry(key);
+for (const key of bossKeys) {
+  addBossEntry(key);
+  /* The interludes: boss-layout only, and the reader who chose this layout
+     scrolls straight past them, so they belong in its offline set. */
+  for (const dynamicKey of manifest[key].dynamicImports || []) addBossEntry(dynamicKey);
+}
 
 /* The Solid build roots Vite at solid/, so shared modules under src/ appear in
    the manifest as "../src/...". Accept either spelling — the module is the
