@@ -127,6 +127,17 @@ def css_range(ranges):
     return ", ".join(parts)
 
 
+def coalesce(codepoints):
+    """Contiguous runs, as [start, end] pairs."""
+    runs = []
+    for cp in sorted(codepoints):
+        if runs and cp == runs[-1][1] + 1:
+            runs[-1][1] = cp
+        else:
+            runs.append([cp, cp])
+    return runs
+
+
 def write_subset(source, codepoints, destination):
     font = TTFont(source)
     options = subset.Options()
@@ -150,6 +161,7 @@ def main():
     manifest = {"ranges": [[hex(a), hex(b)] for a, b in CRITICAL_RANGES], "faces": {}}
     total_before = 0
     total_subset = 0
+    rest_coverage = set()
 
     for face in FACES:
         source = os.path.join(SOURCE_DIR, "%s.woff2" % face)
@@ -158,6 +170,7 @@ def main():
 
         in_subset = sorted(cmap & critical)
         in_rest = sorted(cmap - critical)
+        rest_coverage.update(in_rest)
 
         subset_path = os.path.join(SOURCE_DIR, "%s-subset.woff2" % face)
         rest_path = os.path.join(SOURCE_DIR, "%s-rest.woff2" % face)
@@ -180,6 +193,12 @@ def main():
         "subset_unicode_range": css_range(CRITICAL_RANGES),
         "rest_unicode_range": css_range(complement_ranges()),
     }
+    # What the rest files actually carry, so check-font-subset.mjs can tell a
+    # real escape (a character that WOULD pull the big file down) from a
+    # character this font never had, which already falls through to another
+    # family and costs nothing. Without this the check flags ✓ and ☐, which
+    # are not in GNU FreeMono at all.
+    manifest["rest_coverage"] = coalesce(rest_coverage)
 
     with open(MANIFEST, "w", encoding="utf-8") as handle:
         json.dump(manifest, handle, indent=2)
