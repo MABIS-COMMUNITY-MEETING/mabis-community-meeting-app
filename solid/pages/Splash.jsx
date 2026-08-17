@@ -1,4 +1,5 @@
 import { createSignal, onMount, onCleanup, For } from "solid-js";
+import { useNavigate } from "@solidjs/router";
 import { ArrowUpRight, Plus, ArrowDown } from "lucide-solid";
 import { subscribe } from "@/lib/physics/scheduler";
 import { integrateSpring } from "@/lib/physics/math";
