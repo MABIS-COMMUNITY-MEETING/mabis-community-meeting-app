@@ -72,10 +72,7 @@ function SummerAuthLayout(props) {
  *     because in Solid a prop holding a component must not be destructured or
  *     captured — reading it through Dynamic keeps it reactive.
  */
-export default function AuthLayout(props) {
-  const layout = useHomeLayout();
-  if (layout() !== "boss") return <SummerAuthLayout {...props} />;
-
+function EditorialAuthLayout(props) {
   return (
     <div class="relative min-h-screen w-full overflow-hidden bg-bone text-foreground">
       <div class="grid-bg absolute inset-0 opacity-60" />
@@ -140,5 +137,21 @@ export default function AuthLayout(props) {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * The auth shell for whichever style is selected.
+ *
+ * Routed through <Show> rather than an early return: an early return would
+ * read the preference once at construction and never again, so switching
+ * style in Settings would leave the old shell mounted until a reload.
+ */
+export default function AuthLayout(props) {
+  const layout = useHomeLayout();
+  return (
+    <Show when={layout() === "boss"} fallback={<SummerAuthLayout {...props} />}>
+      <EditorialAuthLayout {...props} />
+    </Show>
   );
 }
