@@ -80,6 +80,9 @@ const outDir = path.join(work, "out");
 await build({
   configFile: false,
   logLevel: "silent",
+  /* An app build would otherwise copy public/ into the temp dir, and this
+     harness has no use for 37 MB of fonts. */
+  publicDir: false,
   resolve: {
     alias: {
       "socket.io-client": path.resolve("src/lib/lazy-socket-io.js"),
@@ -95,6 +98,9 @@ await build({
     rollupOptions: {
       input: path.join(work, "entry.js"),
       output: { entryFileNames: "entry.js", chunkFileNames: "[name].js" },
+      /* Without this an app build assumes nothing imports the entry and
+         tree-shakes every export away, leaving an empty file. */
+      preserveEntrySignatures: "strict",
     },
   },
 });
