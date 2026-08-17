@@ -7,10 +7,13 @@
  * that throws on mount, children rendered once instead of twice, a Tailwind
  * transform silently cancelled by an inline style, or a dropped class.
  *
- * Run: node scripts/check-solid-parity.mjs [route] [ja]   (default "/")
+ * Run: node scripts/check-solid-parity.mjs [route] [flags...]   (default "/")
  *
- * Passing `ja` as the second argument flips the Japanese-companion preference
- * on before the bundle boots, which exercises the auto-translation scanner.
+ * Flags, in any order, are written to localStorage before the bundle boots:
+ *   ja    the Japanese-companion preference, exercising the auto-translation
+ *         scanner on the initial-mount path rather than only on change.
+ *   boss  the editorial Home layout. Home defaults to the simple layout, so
+ *         without this the boss-only masthead and interludes never render.
  *
  * One route per process on purpose. The bundle is a singleton — ESM caches it
  * and the theme engine writes to documentElement once — so checking a second
@@ -24,7 +27,9 @@ import { JSDOM } from "jsdom";
 
 const dist = path.join(process.cwd(), "dist-solid");
 const route = process.argv[2] || "/";
-const japaneseMode = process.argv[3] === "ja";
+const flags = process.argv.slice(3);
+const japaneseMode = flags.includes("ja");
+const bossLayout = flags.includes("boss");
 const failures = [];
 const checks = [];
 
@@ -76,6 +81,7 @@ if (!window.requestIdleCallback) window.requestIdleCallback = (fn) => setTimeout
 // time useJapaneseText() reads it — setting it afterwards would only prove the
 // change event works, not the initial-mount path.
 if (japaneseMode) window.localStorage.setItem("mabis-japanese-text-enabled", "true");
+if (bossLayout) window.localStorage.setItem("mabis-home-layout", "boss");
 
 /*
  * Signed-in routes need a session. Rather than stand up a fake Base44 backend,
@@ -253,15 +259,26 @@ if (route === "/login") {
     !text.includes("CONTINUE WITH GOOGLE"),
     "landed on /login — the seeded offline session was rejected");
   /*
-   * Wait for the masthead, and assert on text only Home renders.
+   * Wait for the masthead, and assert on something only Home renders.
    *
    * This used to assert `text.includes("MABIS")` against a single early
    * sample — which the LOADING SCREEN also contains ("MABIS 2026"), so it
    * passed whether Home had rendered or not. Swapping the route fallback to a
-   * blank div exposed it. Poll for the masthead's own copy instead.
+   * blank div exposed it. Poll for the masthead itself instead.
+   *
+   * The simple layout's masthead is matched by attribute, not copy: its title
+   * is COMMUNITY MEETING, which SiteHeader also renders, so the text would be
+   * true before Home mounted at all — the same trap as MABIS.
    */
-  await waitFor(() => textNow().includes("COMMUNITY DASHBOARD"), 15000);
-  check("home masthead rendered", textNow().includes("COMMUNITY DASHBOARD"));
+  if (bossLayout) {
+    await waitFor(() => textNow().includes("COMMUNITY DASHBOARD"), 15000);
+    check("editorial masthead rendered", textNow().includes("COMMUNITY DASHBOARD"));
+  } else {
+    await waitFor(() => !!root.querySelector("[data-home-masthead]"), 15000);
+    check("simple masthead rendered", !!root.querySelector("[data-home-masthead]"));
+    check("editorial masthead not rendered in the simple layout",
+      !textNow().includes("COMMUNITY DASHBOARD"));
+  }
 
   // MabisAIAssistant: lazy, inside IdleMount, so it appears only after the idle
   // callback fires and its chunk resolves.
@@ -402,13 +419,20 @@ if (route === "/login") {
   check("the retired Add Topic control is gone",
     !textNow().includes("Add Topic"));
 
-  // Editorial interludes and footer — all were missing from Solid's Home.
-  check("scroll-velocity band rendered",
-    (textNow().match(/BANGKOK/g) || []).length >= 2,
-    "the band renders its sequence twice for the seamless loop");
-  check("scroll-scale ritual rendered", textNow().includes("VOICE YOUR WORDS"));
+  // Editorial interludes are boss-layout only; the footer and the page guide
+  // belong to both.
+  if (bossLayout) {
+    check("scroll-velocity band rendered",
+      (textNow().match(/BANGKOK/g) || []).length >= 2,
+      "the band renders its sequence twice for the seamless loop");
+    check("scroll-scale ritual rendered", textNow().includes("VOICE YOUR WORDS"));
+    check("scroll section indicator rendered", textNow().includes("SCROLL"));
+  } else {
+    check("scroll interludes absent from the simple layout",
+      !textNow().includes("VOICE YOUR WORDS"));
+  }
+  check("page guide rendered in both layouts", textNow().includes("Choose where to go"));
   check("page footer rendered", textNow().includes("COLOPHON"));
-  check("scroll section indicator rendered", textNow().includes("SCROLL"));
   check("birthday banner stays closed with no birthdays today",
     !textNow().includes("Happy birthday"));
 
@@ -564,7 +588,7 @@ check("font stack applied by shared themes.js", /--font-body/.test(rootStyle));
 check("ui-font-ready set (first-paint font bootstrap ran)",
   window.document.documentElement.classList.contains("ui-font-ready"));
 
-const label = `${route}${japaneseMode ? " +ja" : ""}`;
+const label = `${route}${japaneseMode ? " +ja" : ""}${bossLayout ? " +boss" : ""}`;
 console.log(`\nSolid parity [${label}]: ${checks.length - failures.length}/${checks.length} checks passed\n`);
 if (failures.length) {
   console.error(`FAILED (${label}):`);
