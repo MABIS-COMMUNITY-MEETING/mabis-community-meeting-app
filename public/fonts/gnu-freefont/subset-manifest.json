@@ -45,6 +45,18 @@
       "0x21ff"
     ],
     [
+      "0x2212",
+      "0x2212"
+    ],
+    [
+      "0x25bc",
+      "0x25bc"
+    ],
+    [
+      "0x2610",
+      "0x2611"
+    ],
+    [
       "0xfeff",
       "0xfeff"
     ],
@@ -56,22 +68,22 @@
   "faces": {
     "FreeMono": {
       "source_bytes": 189644,
-      "subset_bytes": 30976,
-      "rest_bytes": 174612,
-      "subset_codepoints": 525,
-      "rest_codepoints": 3635
+      "subset_bytes": 31212,
+      "rest_bytes": 174696,
+      "subset_codepoints": 529,
+      "rest_codepoints": 3631
     },
     "FreeMonoBold": {
       "source_bytes": 104668,
-      "subset_bytes": 27968,
-      "rest_bytes": 90760,
-      "subset_codepoints": 485,
-      "rest_codepoints": 1546
+      "subset_bytes": 28056,
+      "rest_bytes": 90820,
+      "subset_codepoints": 487,
+      "rest_codepoints": 1544
     }
   },
   "css": {
-    "subset_unicode_range": "U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-36F, U+2000-206F, U+2070-209F, U+2190-21FF, U+FEFF, U+FFFD",
-    "rest_unicode_range": "U+100-130, U+132-151, U+154-2BA, U+2BD-2C5, U+2C7-2D9, U+2DB, U+2DD-2FF, U+370-1FFF, U+20A0-218F, U+2200-FEFE, U+FF00-FFFC, U+FFFE-10FFFF"
+    "subset_unicode_range": "U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-36F, U+2000-206F, U+2070-209F, U+2190-21FF, U+2212, U+25BC, U+2610-2611, U+FEFF, U+FFFD",
+    "rest_unicode_range": "U+100-130, U+132-151, U+154-2BA, U+2BD-2C5, U+2C7-2D9, U+2DB, U+2DD-2FF, U+370-1FFF, U+20A0-218F, U+2200-2211, U+2213-25BB, U+25BD-260F, U+2612-FEFE, U+FF00-FFFC, U+FFFE-10FFFF"
   },
   "rest_coverage": [
     [
@@ -416,6 +428,10 @@
     ],
     [
       8704,
+      8721
+    ],
+    [
+      8723,
       8945
     ],
     [
@@ -488,10 +504,14 @@
     ],
     [
       9472,
+      9659
+    ],
+    [
+      9661,
       9737
     ],
     [
-      9744,
+      9746,
       9748
     ],
     [
