@@ -1,0 +1,71 @@
+/* The default Home layout: the original MABIS card interface.
+ *
+ * Deliberately small. The widgets already carry the classes that produce this
+ * look — white rounded cards, a coloured header band, soft shadows — because
+ * that is what they were written with. The editorial layer in
+ * editorial-home.css exists to override them, and is gated on
+ * `html.home-layout-boss`, so here there is nothing to undo. What remains is
+ * the page surface and the one component (the birthday notice) whose only
+ * styling lived in that gated layer.
+ *
+ * Everything below is a single class match with no !important and no
+ * descendant chains deeper than two, so the default layout costs the style
+ * engine essentially nothing beyond the widgets' own utilities.
+ */
+
+.summer-home {
+  /* The literal gradient from the original site. */
+  background-image: linear-gradient(180deg, #f7f5f6 0%, #f1eef0 100%);
+}
+
+/* That gradient is a light sheet by definition, so a dark theme would put pale
+   text on it. Themes are a user preference the original site also shipped;
+   under a dark one, defer to the theme's own background. */
+body.theme-is-dark .summer-home {
+  background-image: none;
+}
+
+/* Birthday notice — the original's gradient card. The markup is shared with
+   the boss layout, which styles the same three class names as an editorial
+   rule block; only the paint differs. */
+.summer-home .birthday-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+  padding: 1rem;
+  color: #fff;
+  border-radius: 1rem;
+  background-image: linear-gradient(90deg, #ec4899, #d946ef, #a855f7);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.summer-home .birthday-notice__mark {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.2);
+}
+
+.summer-home .birthday-notice__close {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 0.5rem;
+  transition: background-color 0.15s;
+}
+
+.summer-home .birthday-notice__close:hover {
+  background: rgb(255 255 255 / 0.2);
+}
+
+/* The notice's own copy is muted against a white card in the boss layout; on
+   the gradient it has to be white to stay legible. */
+.summer-home .birthday-notice .text-muted-foreground {
+  color: rgb(255 255 255 / 0.9);
+}
