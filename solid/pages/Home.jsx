@@ -1,8 +1,8 @@
 import { createSignal, onMount, onCleanup, lazy, Suspense, For, Show } from "solid-js";
-import { Dynamic } from "solid-js/web";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection, EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
-import { SimpleSection, SimpleMasthead } from "~/components/home/simple";
+import { SummerHome } from "~/components/home/summer";
+import SummerHeader from "~/components/home/SummerHeader";
 import { useQuery } from "@tanstack/solid-query";
 import { Settings, Palette, CircleHelp } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
