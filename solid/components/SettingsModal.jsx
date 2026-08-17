@@ -22,21 +22,27 @@ const FONTS = [...CORE_FONTS, ...FONT_CATALOG];
  * The two Home arrangements, in the order they are offered.
  *
  * Described by what the reader will see rather than by the design vocabulary
- * behind it, as the plain-language customization rule requires. "Boss layout"
- * is Novesce's own name for the editorial front page.
+ * behind it, as the plain-language customization rule requires. "Boss style"
+ * is Novesce's own name for the editorial front page, and "Summer style" for
+ * the original MABIS interface the two are named after — they are two
+ * presentations of one page, which is why they are styles and not layouts.
+ *
+ * The stored value is still `simple` / `boss` under `mabis-home-layout`. The
+ * names changed; the key did not, because renaming it would silently reset
+ * the preference for everyone who has already chosen one.
  */
 const LAYOUT_CHOICES = [
   {
     key: "simple",
-    label: "Summer layout",
-    ja: "サマーレイアウト",
+    label: "Summer style",
+    ja: "サマースタイル",
     detail: "Default · the interface the school has always used. White cards, one after another.",
     jaDetail: "標準・これまで使ってきた画面です。白いカードが上から順に並びます。",
   },
   {
     key: "boss",
-    label: "Boss layout",
-    ja: "ボスレイアウト",
+    label: "Boss style",
+    ja: "ボススタイル",
     detail: "The editorial front page · large masthead, numbered sections and scrolling type.",
     jaDetail: "大きな見出しや番号付きの区切りがある、雑誌のような表示です。",
   },
