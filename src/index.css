@@ -90,6 +90,14 @@
 }
 
 @font-face {
+  font-family: 'SpaceGroteskUI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url('/fonts/space-grotesk/SpaceGrotesk-Variable.woff2?v=1') format('woff2');
+}
+
+@font-face {
   font-family: 'GoUI';
   font-style: normal;
   font-display: swap;
