@@ -97,6 +97,14 @@ async function bootstrap() {
   document.documentElement.classList.add("ui-font-ready");
   render(() => <App />, document.getElementById("root"));
 
+  /*
+   * The inlined boot splash has done its job. It already hid itself the
+   * moment #root stopped being empty (a sibling selector in index.html, so it
+   * works even if this line never runs), but leaving a hidden fixed-position
+   * element in the tree serves nothing — take it out.
+   */
+  document.getElementById("boot-splash")?.remove();
+
   // Opt-in only (?perf=1). Costs nothing otherwise — a monitor that slows the
   // page down would defeat its own purpose.
   startPerfMonitorIfRequested();
