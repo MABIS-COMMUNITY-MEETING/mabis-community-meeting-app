@@ -177,7 +177,7 @@ export default function Home() {
   // A function, not an element: SiteHeader renders this in two places
   // (desktop bar + mobile drawer), and in Solid the same nodes cannot occupy
   // both — they would move rather than duplicate.
-  const controls = () => (
+  const editorialControls = () => (
     <>
       <ThemeSwitcher />
       <button
@@ -234,6 +234,72 @@ export default function Home() {
           class="liquid-btn tech-label px-3.5 py-2 border border-foreground/30 bg-background text-foreground"
         >
           SIGN OUT
+        </button>
+      </div>
+    </>
+  );
+
+  /*
+   * The same controls in the original site's clothes.
+   *
+   * Same set, same order, same handlers — only the classes differ, because a
+   * bordered square tech-label button reads as a foreign object on a white
+   * bar with rounded controls. Anything added to one of these two must be
+   * added to the other.
+   */
+  const summerControls = () => (
+    <>
+      <ThemeSwitcher />
+      <button
+        onClick={() => setShowHelp(true)}
+        onMouseEnter={preloadQuickStartGuide}
+        onFocus={preloadQuickStartGuide}
+        onPointerDown={preloadQuickStartGuide}
+        title="How to use this site"
+        class="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted"
+      >
+        <CircleHelp class="h-4 w-4" />
+      </button>
+      <button
+        onMouseEnter={preloadSettings}
+        onFocus={preloadSettings}
+        onPointerDown={preloadSettings}
+        onClick={() => setShowSettings(true)}
+        title="Settings"
+        class="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted"
+      >
+        <Settings class="h-4 w-4" />
+      </button>
+
+      <div class="flex items-center gap-2.5">
+        <div class="relative shrink-0">
+          <div
+            class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-card shadow"
+            style={{ border: `4px solid ${roleColor()}`, "box-sizing": "border-box" }}
+          >
+            <Show
+              when={auth.user()?.avatar_url}
+              fallback={<img src={MABIS_LOGO} alt="avatar" class="h-full w-full object-contain p-0.5" />}
+            >
+              <img src={auth.user().avatar_url} alt="avatar" class="h-full w-full object-cover" />
+            </Show>
+          </div>
+          <button
+            onClick={() => setEditingProfile(!editingProfile())}
+            title="Customize Profile Picture"
+            class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-primary shadow-md"
+          >
+            <Palette class="h-3 w-3" />
+          </button>
+        </div>
+        <span class="hidden text-sm font-semibold text-foreground sm:block">
+          {auth.user()?.full_name?.split(" ")[0] || "User"}
+        </span>
+        <button
+          onClick={() => auth.logout()}
+          class="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+        >
+          Sign Out
         </button>
       </div>
     </>
