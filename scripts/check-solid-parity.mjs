@@ -667,7 +667,7 @@ if (route === "/login") {
     check("submit is disabled until a message is typed",
       [...root.querySelectorAll("button")].some((b) => b.disabled && /Submit/.test(b.textContent)));
   }
-} else if (route === "/") {
+} else if (route === "/" && bossLayout) {
   // ── content parity with src/pages/Splash.jsx ──────────────────────────────
   check('hero headline "COMMUNITY" present', text.includes("COMMUNITY"));
   check('hero headline "MEETING" present', text.includes("MEETING"));
@@ -704,6 +704,41 @@ if (route === "/login") {
   // Elements that DO animate a transform should have one inline.
   const vertLabels = root ? [...root.querySelectorAll(".vert-text")] : [];
   check("vertical side labels rendered", vertLabels.length >= 2);
+} else if (route === "/") {
+  /*
+   * Summer style's splash (the default). A port of the ORIGINAL MABIS landing
+   * — app 6a7f1d91128253fcdbf4f5a2 — not of the editorial one above.
+   *
+   * The performance assertions are the point of this block. The original drove
+   * 216 elements from framer-motion on repeat:Infinity, each carrying a
+   * blurred box-shadow, and that is what made it unusable on a phone. The port
+   * animates transform and opacity from one shared CSS keyframe instead. A
+   * regression back to per-element JS animation, or to box-shadow glows, would
+   * look identical in a screenshot and would be invisible to every other check
+   * in this file — so it is pinned directly.
+   */
+  check("title present", text.includes("SECONDARY COMMUNITY") && text.includes("MEETING APP"));
+  check("CTA present", /start|log in/i.test(text));
+  check("Summer splash field rendered", !!(root && root.querySelector(".summer-splash")));
+  check("centre glow rendered", !!(root && root.querySelector(".summer-splash-glow")));
+
+  const motes = root ? [...root.querySelectorAll(".summer-splash-dot")] : [];
+  check("motes rendered", motes.length > 0, `found ${motes.length}`);
+  check("mote count is bounded well under the original 216",
+    motes.length <= 120,
+    `found ${motes.length} — the original shipped 216 to every device`);
+
+  check("motes carry no box-shadow (glow is a gradient, not a blur pass)",
+    motes.every((m) => !/box-shadow/i.test(m.getAttribute("style") || "")));
+  check("motes drive motion through CSS custom properties, not inline transforms",
+    motes.every((m) => {
+      const s = m.getAttribute("style") || "";
+      return s.includes("--dx") && s.includes("--dy") && !/(^|;)\s*transform:/i.test(s);
+    }));
+
+  check("editorial splash furniture absent in Summer style",
+    !text.includes("N° 02") && !html2.includes("corner-bracket") && !html2.includes("huge-crop"));
+  check("no marquee on the Summer splash", !html2.includes("MABIS BANGKOK"));
 } else {
   // src/lib/PageNotFound.jsx — any unmatched path.
   check("404 numeral present", text.includes("404"));
