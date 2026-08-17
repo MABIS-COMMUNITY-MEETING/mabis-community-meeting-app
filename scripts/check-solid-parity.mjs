@@ -544,10 +544,28 @@ if (route === "/login") {
       card && /1rem/.test(winningDeclaration(card, "border-radius")),
       card ? `winner: ${winningDeclaration(card, "border-radius")}` : "no widget rendered");
 
+    /*
+     * The point of this rule is that the radius stays a LIVE custom-property
+     * reference. Tailwind v4 bakes `borderRadius.lg: 'var(--radius)'` from the
+     * JS config into a fixed px value, which freezes every theme that
+     * redefines --radius; index.css works around that by re-declaring the
+     * three radius keys in @theme.
+     *
+     * That workaround adds one hop — the utility now emits var(--radius-lg),
+     * which @theme defines as var(--radius) — so accept either spelling and
+     * verify the hop actually resolves. A baked "16px" still fails, which is
+     * the regression this exists to catch.
+     */
     const innerControl = root.querySelector(".mabis-widget .rounded-lg");
+    const innerRadius = innerControl ? winningDeclaration(innerControl, "border-radius") : "";
+    const radiusHopResolves = /--radius-lg: *var\(--radius\)/.test(builtCss);
     check("inner controls resolve to the original radius token",
-      innerControl && /var\(--radius\)/.test(winningDeclaration(innerControl, "border-radius")),
-      innerControl ? `winner: ${winningDeclaration(innerControl, "border-radius")}` : "none found");
+      innerControl
+      && (/var\(--radius\)/.test(innerRadius)
+        || (/var\(--radius-lg\)/.test(innerRadius) && radiusHopResolves)),
+      innerControl
+        ? `winner: ${innerRadius}${radiusHopResolves ? "" : " (and --radius-lg is not defined as var(--radius))"}`
+        : "none found");
     check("the default layout redefines --radius to the original 0.75rem",
       /\.summer-home\{[^}]*--radius: *\.75rem/.test(builtCss),
       "rounded-lg/md/sm map onto --radius, which the editorial system sets to 2px");
