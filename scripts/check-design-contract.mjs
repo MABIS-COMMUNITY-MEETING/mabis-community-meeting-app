@@ -175,13 +175,28 @@ const easyLayoutRule = "Keep Home easy to navigate with its numbered editorial s
 const japaneseTextRule = "Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang=\"ja\"` so Maple Mono CJK fallback applies; the default remains off.";
 const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.";
 const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
+const homeLayoutRule = "Home has two layouts: the simple stacked layout is the default, and the art-directed editorial layout is opt-in as `Boss layout` in Settings. Anything added, changed or fixed in the default layout must exist in the Boss layout too — they are two arrangements of one page, not two products.";
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, richTextThemeRule);
     requireText(relativePath, content, easyLayoutRule);
     requireText(relativePath, content, japaneseTextRule);
     requireText(relativePath, content, simpleCustomizationRule);
     requireText(relativePath, content, jobsPeriodRule);
+    requireText(relativePath, content, homeLayoutRule);
 }
+
+/*
+ * The layout choice itself, asserted in code as well as in prose.
+ *
+ * The default is the load-bearing half: an AI "tidying up" the preference back
+ * to the editorial layout would undo an explicit request from Novesce, and
+ * nothing else in the build would notice.
+ */
+const layoutPreference = read("src/lib/layout-preference.js");
+requireText("src/lib/layout-preference.js", layoutPreference, 'DEFAULT_HOME_LAYOUT = "simple"');
+requireText("src/lib/layout-preference.js", layoutPreference, 'HOME_LAYOUTS = ["simple", "boss"]');
+requireText("src/pages/Home.jsx", home, ["const isBoss = () => layout() === \"boss\""]);
+requireText("src/components/SettingsModal.jsx", settingsModal, "Boss layout");
 
 const cursorTrackingRule = "The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement.";
 const cursorContractFiles = [
