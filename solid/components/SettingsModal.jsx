@@ -130,6 +130,7 @@ export default function SettingsModal(props) {
   const [customCursorOn, setCustomCursorOn] = createSignal(customCursorEnabled());
   const [japaneseTextOn, setJapaneseTextOn] = createSignal(japaneseTextEnabled());
   const [sectionDescriptionsOn, setSectionDescriptionsOn] = createSignal(sectionDescriptionsEnabled());
+  const [layout, setLayout] = createSignal(homeLayout());
 
   const [currentFont, setCurrentFont] = createSignal(getStoredFont());
   const [fontAvailability, setFontAvailability] = createSignal({});
@@ -268,6 +269,61 @@ export default function SettingsModal(props) {
                     <JapaneseText ja="快適さ" class="mt-1 block text-sm font-bold text-foreground">Comfort</JapaneseText>
                     <span class="mt-0.5 block text-xs text-muted-foreground">Sound, motion, language</span>
                   </a>
+                  <a href="#setting-layout" class="min-h-20 bg-background p-3 text-left hover:bg-muted">
+                    <span class="text-[10px] font-bold text-muted-foreground">04</span>
+                    <JapaneseText ja="レイアウト" class="mt-1 block text-sm font-bold text-foreground">Layout</JapaneseText>
+                    <span class="mt-0.5 block text-xs text-muted-foreground">Simple or boss</span>
+                  </a>
+                </div>
+              </section>
+
+              {/* Layout */}
+              <section id="setting-layout" class="scroll-mt-20">
+                <div class="mb-2 flex items-center gap-2">
+                  <LayoutList class="w-4 h-4 text-primary" />
+                  <JapaneseText
+                    ja="ページの並べ方"
+                    as="h3"
+                    class="block font-display font-bold text-foreground text-sm uppercase tracking-wide"
+                    japaneseClass="text-[0.78em] normal-case tracking-normal"
+                  >
+                    Page Layout
+                  </JapaneseText>
+                </div>
+                <p class="mb-3 text-xs text-muted-foreground">
+                  How the Home page is arranged. Both choices have the same sections, in the same order, with the same features — only the amount of page around them changes.
+                </p>
+                <div class="grid gap-px bg-border sm:grid-cols-2">
+                  <For each={LAYOUT_CHOICES}>
+                    {(choice) => {
+                      const selected = () => layout() === choice.key;
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => { setLayout(choice.key); setHomeLayout(choice.key); }}
+                          aria-pressed={selected()}
+                          class="min-h-20 bg-background p-3 text-left hover:bg-muted"
+                          classList={{ "ring-2 ring-inset ring-primary": selected() }}
+                        >
+                          <span class="flex items-center gap-1.5">
+                            <JapaneseText ja={choice.ja} class="block text-sm font-bold text-foreground" japaneseClass="text-[0.78em]">
+                              {choice.label}
+                            </JapaneseText>
+                            <Show when={selected()}>
+                              <Check class="w-3.5 h-3.5 text-primary" />
+                            </Show>
+                          </span>
+                          <JapaneseText
+                            ja={choice.jaDetail}
+                            class="mt-1 block text-xs leading-relaxed text-muted-foreground"
+                            japaneseClass="mt-0.5 block text-[0.9em]"
+                          >
+                            {choice.detail}
+                          </JapaneseText>
+                        </button>
+                      );
+                    }}
+                  </For>
                 </div>
               </section>
 
