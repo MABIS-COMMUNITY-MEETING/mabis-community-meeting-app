@@ -306,25 +306,30 @@ Reference components:
 
 ## The two Home layouts
 
-Home renders in one of two arrangements, chosen per user under **Settings → Page Layout** and stored in `src/lib/layout-preference.js`.
+Home renders in one of two presentations, chosen per user under **Settings → Page Layout** and stored in `src/lib/layout-preference.js`. This is a deliberate exception to the rest of this document, requested directly by Novesce: the default is **not** the editorial system.
 
-**Simple — the default.** A short masthead, the page guide, then each numbered section: rule, index, heading, widget. Nothing between the reader and the content. This is what a signed-in member sees unless they choose otherwise.
+**Default — the original MABIS interface.** What the community used before the editorial redesign. A sticky white top bar with the logo, the two-line title and the controls; then the widgets stacked one after another in a single column, each a rounded white card with a coloured header band, on the original page gradient. No masthead, no index rail, no section headings, no scrolling type, no page guide.
 
-**Boss layout — opt-in.** The full editorial front page: the tall masthead, the index rail beside each section, the scrolling type band, the scale ritual and the scroll section indicator.
+**Boss layout — opt-in.** The art-directed editorial front page: the tall masthead, the numbered index rail beside each section, the page guide, the scrolling type band, the scale ritual and the scroll section indicator.
 
 What the two share is not negotiable:
 
-- the same ten sections, in the same order, with the same numbering;
-- the same tokens, display face, thin rules, tabular figures and Japanese companion text;
-- the same widgets, the same features, the same behaviour.
+- the same ten sections, in the same order;
+- the same widgets, the same features, the same behaviour, the same permissions;
+- every route still reachable (the default bar carries a small **Pages** menu in place of the editorial overlay);
+- the same preferences — themes, fonts, sound, motion, cursor, and the opt-in Japanese companion text.
 
-**Anything added, changed or fixed in the default layout must be added, changed or fixed in the Boss layout too.** They are two arrangements of one page, not two products. A feature that exists in only one of them is a bug, and so is a fix applied to only one of them. In practice this means new work goes into the shared section list and the widgets — `solid/pages/Home.jsx` picks the section component with `<Dynamic>`, so a change made there lands in both by construction. Reach for a layout-specific branch only for decoration that genuinely belongs to one of them, and say so in a comment.
+**Anything added, changed or fixed in one layout must exist in the other.** They are two presentations of one page, not two products. A feature in only one of them is a bug, and so is a fix applied to only one of them. In practice this is enforced by construction: `solid/pages/Home.jsx` holds one `SECTIONS` list and one `renderWidget()`, and hands the identical function to both layouts, so widget work lands in both without anyone remembering to copy it. Only page furniture — the bar, the masthead, the interludes — is written twice, and each copy says so in a comment.
 
-The simple layout is a simplification of the editorial system, not a second design language. Removing the scaffolding must not turn into removing outlines, flattening the type hierarchy, or drifting toward a generic rounded-card dashboard.
+How the look is switched, and why it costs nothing:
 
-Only the layout in use is cached. The service worker precaches the shared shell and the simple layout; `syncHomeLayoutCache()` tells it when the boss layout is selected so it fetches those chunks, and deletes them again on the way back. Layout components:
+- The widgets already carry the original card classes (`rounded-2xl`, `shadow-sm`, a `bg-primary` header). `src/styles/editorial-home.css` exists purely to override them into the editorial system, so it is gated on `html.home-layout-boss` — set on `<html>` before first paint. In the default layout none of those selectors match, so there is no `!important` cascade to resolve and no overridden declaration to compute.
+- `src/styles/summer-home.css` adds only what the widgets do not style themselves: the page gradient and the birthday notice. Single-class selectors, no `!important`.
+- The boss interludes (`ScrollVelocity`, `ScrollScaleRitual`) are lazy and excluded from the install precache. `syncHomeLayoutCache()` tells the service worker which layout is in use, so it fetches those chunks when the boss layout is selected and deletes them when it is not — one layout in storage, never both.
 
-- `solid/components/home/simple.jsx` (default)
+Layout sources:
+
+- `solid/components/home/summer.jsx` and `SummerHeader.jsx` (default)
 - `solid/components/home/shell.jsx` (boss)
 
 ## Spacing
