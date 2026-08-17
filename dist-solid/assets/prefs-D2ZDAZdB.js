@@ -1,1 +1,0 @@
-import{d as s,aA as t,aa as n,l as r}from"./index-CaoSgfEZ.js";function d(){const[o,a]=s(t()),e=()=>a(t());return window.addEventListener(n,e),window.addEventListener("storage",e),r(()=>{window.removeEventListener(n,e),window.removeEventListener("storage",e)}),o}export{d as u};
