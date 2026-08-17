@@ -37,6 +37,7 @@ const EDITORIAL_SKIN = {
   unlockButton: "min-h-11 flex items-center gap-2 px-4 bg-bone/10 text-bone border border-bone/30 tech-label touch-manipulation",
   lockBadge: "w-10 h-10 bg-bone/10 flex items-center justify-center shrink-0 border border-bone/30",
   arrowBadge: "meeting-nudge w-10 h-10 bg-bone flex items-center justify-center shrink-0",
+  badgeIcon: "w-4 h-4 text-ink",
   stripe: "linear-gradient(90deg, var(--flag-1, hsl(var(--primary))), var(--flag-3, hsl(var(--secondary))), var(--flag-5, hsl(var(--primary))))",
 };
 
@@ -59,6 +60,8 @@ const SUMMER_SKIN = {
   unlockButton: "min-h-11 flex items-center gap-2 rounded-xl border border-bone/30 bg-bone/15 px-4 text-sm font-bold text-bone touch-manipulation",
   lockBadge: "w-10 h-10 rounded-full bg-bone/15 flex items-center justify-center shrink-0 border border-bone/30",
   arrowBadge: "meeting-nudge w-10 h-10 rounded-full bg-bone flex items-center justify-center shrink-0 shadow-md",
+  /* The original put the maroon back on the pale badge, not ink. */
+  badgeIcon: "w-4 h-4 text-primary",
   stripe: "linear-gradient(90deg, hsl(var(--secondary)), hsl(var(--bone) / 0.3), hsl(var(--secondary) / 0.4))",
 };
 
@@ -235,7 +238,7 @@ export default function MeetingModeWidget(props) {
                 title="View History"
                 aria-label="View history"
               >
-                <Lock class="w-4 h-4 text-ink" />
+                <Lock class={skin().badgeIcon} />
               </button>
               <Show when={canStart()}>
                 <button
@@ -267,7 +270,7 @@ export default function MeetingModeWidget(props) {
 
             <Show when={!meetingEnded() && canStart() && !isLocked()}>
               <div class={skin().arrowBadge}>
-                <ArrowRight class="w-4 h-4 text-primary" />
+                <ArrowRight class={skin().badgeIcon} />
               </div>
             </Show>
           </div>
