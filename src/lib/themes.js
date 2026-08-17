@@ -472,7 +472,10 @@ export const THEMES = {
      pastel wash, which is what the design contract asks for on transfeminine
      treatments. */
   bridget: paletteTheme("bridget", "Bridget", "222 58% 40%", "340 82% 72%",
-    ["#2B4FA2", "#5BCEFA", "#F5A9B8", "#E8C15A", "#F4F1E8"]),
+    /* Order matters: the first two entries become primary and secondary, so
+       the pink sits beside the habit blue rather than being demoted to a
+       stripe behind the gold trim. */
+    ["#2B4FA2", "#F5A9B8", "#5BCEFA", "#E8C15A", "#F4F1E8"]),
 
   /* Mew Mew Kissy Cutie — Deltarune. Pink and purple, as requested. */
   mewmew: paletteTheme("mewmew", "Mew Mew", "330 76% 55%", "280 48% 44%",
