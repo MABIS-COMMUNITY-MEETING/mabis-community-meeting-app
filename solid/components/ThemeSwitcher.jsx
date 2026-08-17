@@ -164,6 +164,8 @@ export default function ThemeSwitcher() {
 
   return (
     <div class="relative">
+      {/* triggerClass: Home's default layout passes the original site's rounded
+          control. Everything else keeps the editorial square, label and all. */}
       <button
         type="button"
         onClick={() => {
@@ -172,8 +174,6 @@ export default function ThemeSwitcher() {
         }}
         aria-expanded={open()}
         aria-haspopup="dialog"
-        /* Home's default layout passes the original site's rounded control;
-           everything else keeps the editorial square. */
         class={props.triggerClass
           || "flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"}
         title="Change colors"
