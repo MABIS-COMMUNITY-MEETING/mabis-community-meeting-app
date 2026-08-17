@@ -1,26 +1,26 @@
 import { render } from "solid-js/web";
 import App from "~/App.jsx";
 import "@/index.css";
-import "@/styles/editorial-home.css";
 import "@/styles/summer-home.css";
 import "~/solid-motion.css";
 /*
- * glass.css is NOT here — it is imported by Glass.jsx.
+ * Only the stylesheets the DEFAULT layout actually paints with are here.
  *
- * It owns the `.lg-*` surfaces, and Glass is rendered only by SiteHeader,
- * which only boss.jsx imports. The boss JS has been code-split since the
- * port, but this stylesheet was still linked from the entry HTML, so every
- * visitor on the default layout downloaded and parsed 16.5 KiB that could not
- * match a single element on their page.
+ * glass.css and editorial-home.css are both boss-only — glass.css owns the
+ * `.lg-*` surfaces, and Glass is rendered only by SiteHeader, which only
+ * boss.jsx imports; every rule in editorial-home.css is gated on
+ * `html.home-layout-boss`. The boss JS has been code-split since the port,
+ * but both stylesheets were still linked from the entry HTML, so every
+ * visitor on the default layout downloaded and parsed 25.4 KiB of source that
+ * could not match a single element on their page.
  *
- * It now travels with the chunk that uses it. Vite's preload helper waits for
- * a chunk stylesheet's load event before resolving the dynamic import, so the
- * boss layout still paints fully styled on its first frame and nothing
- * flashes.
+ * They now travel with the chunk that uses them: glass.css from Glass.jsx,
+ * editorial-home.css from boss.jsx. Vite's preload helper waits for a chunk
+ * stylesheet's load event before resolving the dynamic import, so the boss
+ * layout still paints fully styled on its first frame and nothing flashes.
  *
- * editorial-home.css is the same shape of win (8.9 KiB, every rule gated on
- * `html.home-layout-boss`) but it stays here: check-design-contract.mjs
- * requires the entry to import it, and that guard is not mine to change.
+ * Do not move these back here to "keep the imports together". check-css-split.mjs
+ * fails the build if the glass rules reappear in the render-blocking sheet.
  */
 import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
