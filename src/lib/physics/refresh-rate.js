@@ -49,11 +49,20 @@ const MIN_SAMPLES = 12;
 const MIN_INTERVAL_MS = 1;
 const MAX_INTERVAL_MS = 50;
 
+/* A panel's refresh rate does not change between one frame and the next, so
+ * re-sorting the ring on every callback would be work done to learn something
+ * already known. Recomputing every 16th sample keeps the estimate current
+ * within a few frames of a real change (an external monitor being plugged in,
+ * a VRR panel shifting range) for a sixteenth of the cost. */
+const RECOMPUTE_EVERY = 16;
+
 const deltas = new Float64Array(RING);
 const scratch = new Float64Array(RING);
 let count = 0;
 let head = 0;
 let previous = 0;
+let cached = 0;
+let sinceCompute = Infinity;
 
 /**
  * Record one presented frame. Call from any rAF callback that is already
@@ -69,6 +78,7 @@ export function sampleFrame(now) {
     deltas[head] = dt;
     head = (head + 1) % RING;
     if (count < RING) count++;
+    sinceCompute++;
   }
   previous = now;
 }
@@ -94,13 +104,16 @@ export function refreshMeasured() {
  */
 export function refreshIntervalMs(fallback = 1000 / 60) {
   if (count < MIN_SAMPLES) return fallback;
+  if (sinceCompute < RECOMPUTE_EVERY) return cached;
 
-  /* Ring order is irrelevant to a percentile, so this copies and sorts a
-   * scratch view rather than allocating. Called once a second at most. */
+  /* Ring order is irrelevant to a percentile, so this copies into a scratch
+   * view and sorts in place rather than allocating. */
   const view = scratch.subarray(0, count);
   view.set(deltas.subarray(0, count));
   view.sort();
-  return view[Math.floor((count - 1) * PERCENTILE)];
+  cached = view[Math.floor((count - 1) * PERCENTILE)];
+  sinceCompute = 0;
+  return cached;
 }
 
 /** The same figure as a rate, for reporting. */
@@ -123,4 +136,6 @@ export function resetForTest() {
   count = 0;
   head = 0;
   previous = 0;
+  cached = 0;
+  sinceCompute = Infinity;
 }
