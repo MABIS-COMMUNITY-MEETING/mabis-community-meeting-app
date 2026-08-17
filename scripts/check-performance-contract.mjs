@@ -181,6 +181,26 @@ forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "lett
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
+
+/*
+ * .lg-surface must never declare containment.
+ *
+ * It is the wrapper every glass panel renders its content into, including the
+ * site header. `contain: paint` clips descendants to the padding box and makes
+ * the element a containing block for fixed descendants, so any menu opened
+ * from a glass panel silently vanishes — present in the DOM, correct in every
+ * computed style, invisible on screen. That shipped once; the file carried a
+ * comment warning against it at the time, so a comment is not enough.
+ *
+ * Containment on ::before / ::after is fine and deliberately still allowed:
+ * pseudo-elements cannot have children.
+ */
+const surfaceStart = glass.indexOf(".lg-surface {");
+if (surfaceStart === -1) {
+  failures.push("src/styles/glass.css: .lg-surface rule not found — the containment guard below cannot run");
+} else if (/contain\s*:/.test(glass.slice(surfaceStart, glass.indexOf("}", surfaceStart)))) {
+  failures.push("src/styles/glass.css: .lg-surface must not declare `contain` — it clips every dropdown rendered inside a glass panel (move it to ::before/::after)");
+}
 requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf"]);
 requireText("src/components/JobsWidget.jsx", jobs, "appearanceRaf");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
