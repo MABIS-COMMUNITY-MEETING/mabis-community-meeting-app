@@ -169,6 +169,7 @@ export default function History() {
                       : (a.completed ? 1 : -1)));
 
               const done = () => weekTopics().filter((t) => t.completed).length;
+              const minutes = () => minutesFor().get(week);
               const isOpen = () => !!openWeeks[week];
               const att = () => allAttendance().find((a) => a.week_label === week);
               const presentNames = () => att()?.present_names || [];
@@ -193,6 +194,10 @@ export default function History() {
                       <div class="text-left">
                         <p class="font-semibold text-foreground text-base">{formatWeekFull(week)}</p>
                         <p class="text-xs text-muted-foreground mt-0.5">
+                          <Show when={minutes()}>
+                            <JapaneseText ja="議事録あり" layout="inline" japaneseClass="ml-1 inline text-[0.85em]">Minutes</JapaneseText>
+                            <span aria-hidden="true">{" · "}</span>
+                          </Show>
                           {weekTopics().length} <span lang="ja">件のトピック</span> · {presentNames().length} <span lang="ja">出席</span>
                           <Show when={missingMembers().length > 0}>
                             {` · ${missingMembers().length} `}<span lang="ja">欠席</span>
