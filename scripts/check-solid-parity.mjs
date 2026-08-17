@@ -226,6 +226,77 @@ const waitFor = async (predicate, timeoutMs = 6000) => {
 
 const textNow = () => (root ? root.textContent.replace(/\s+/g, " ") : "");
 
+/*
+ * Which declaration actually WINS for a property on a given element.
+ *
+ * jsdom does not compute the cascade, and asserting on markup is not enough:
+ * the default layout's square corners were caused by
+ *
+ *     .bg-card.rounded-2xl.shadow-sm { border-radius: 2px }
+ *
+ * in index.css quietly outranking the element's own .rounded-2xl — (0,3,0)
+ * against (0,1,0), no !important involved. Every check that looked at classes
+ * or at the presence of a rule passed while the page rendered square. So this
+ * resolves the winner the way a browser would: collect matching rules, order
+ * by importance, then specificity, then source order.
+ */
+function splitSelectorList(list) {
+  // Top-level commas only — :is(a, b, c) is ONE selector, not three.
+  const out = [];
+  let depth = 0;
+  let buf = "";
+  for (const ch of list) {
+    if (ch === "(" || ch === "[") depth += 1;
+    else if (ch === ")" || ch === "]") depth -= 1;
+    if (ch === "," && depth === 0) { out.push(buf); buf = ""; continue; }
+    buf += ch;
+  }
+  if (buf.trim()) out.push(buf);
+  return out;
+}
+
+function selectorSpecificity(selector) {
+  const s = selector.replace(/\\./g, "");
+  const ids = (s.match(/#[\w-]+/g) || []).length;
+  const classes = (s.match(/\.[\w-]+|\[[^\]]+\]|:(?!:)(?!not|is|where)[\w-]+(\([^)]*\))?/g) || []).length;
+  const elements = (s.match(/(^|[\s>+~(])[a-z][\w-]*/gi) || []).length;
+  return ids * 10000 + classes * 100 + elements;
+}
+
+function winningDeclaration(element, property) {
+  const candidates = [];
+  const blocks = /(@media[^{]+\{)|(\})|([^{}]+)\{([^{}]*)\}/g;
+  let media = null;
+  let depth = 0;
+  let order = 0;
+  let block;
+  while ((block = blocks.exec(builtCss))) {
+    if (block[1]) { media = block[1].slice(0, -1).trim(); depth += 1; continue; }
+    if (block[2]) { if (depth > 0) { depth -= 1; if (!depth) media = null; } continue; }
+    if (media) continue;                       // desktop only; phone widths differ by design
+    const body = block[4];
+    if (!body.includes(`${property}:`)) continue;
+    for (const selector of splitSelectorList(block[3])) {
+      const trimmed = selector.trim();
+      if (!trimmed || /:(hover|focus|active)\b/.test(trimmed)) continue;
+      let hit = false;
+      try { hit = element.matches(trimmed.replace(/::(before|after)\b/g, "").trim()); } catch { hit = false; }
+      if (!hit) continue;
+      const declaration = (body.match(new RegExp(`${property}:[^;]*`, "g")) || []).join("; ");
+      candidates.push({
+        declaration,
+        important: new RegExp(`${property}:[^;]*!important`).test(body),
+        specificity: selectorSpecificity(trimmed),
+        order: order++,
+      });
+    }
+  }
+  candidates.sort((a, b) => (a.important !== b.important
+    ? (a.important ? 1 : -1)
+    : (a.specificity !== b.specificity ? a.specificity - b.specificity : a.order - b.order)));
+  return candidates.length ? candidates[candidates.length - 1].declaration : "";
+}
+
 // ── route-specific parity ──────────────────────────────────────────────────
 // Only the landing route asserts the Splash slice; the auth and fallback
 // routes assert their own source of truth. Everything below the divider is
@@ -465,6 +536,21 @@ if (route === "/login") {
     check("the radius override is gated on the boss layout",
       /html\.home-layout-boss[^{}]*\.mabis-widget[^{}]*rounded-2xl/.test(builtCss),
       "editorial-home.css would flatten the default layout's cards");
+
+    /* The assertion that would have caught the original bug: not "is the class
+       there" but "which declaration wins". */
+    const card = root.querySelector(".mabis-widget");
+    check("widget card resolves to a round corner",
+      card && /1rem/.test(winningDeclaration(card, "border-radius")),
+      card ? `winner: ${winningDeclaration(card, "border-radius")}` : "no widget rendered");
+
+    const innerControl = root.querySelector(".mabis-widget .rounded-lg");
+    check("inner controls resolve to the original radius token",
+      innerControl && /var\(--radius\)/.test(winningDeclaration(innerControl, "border-radius")),
+      innerControl ? `winner: ${winningDeclaration(innerControl, "border-radius")}` : "none found");
+    check("the default layout redefines --radius to the original 0.75rem",
+      /\.summer-home\{[^}]*--radius: *\.75rem/.test(builtCss),
+      "rounded-lg/md/sm map onto --radius, which the editorial system sets to 2px");
   }
   check("birthday banner stays closed with no birthdays today",
     !textNow().includes("Happy birthday"));
