@@ -244,9 +244,9 @@ export default function SettingsModal(props) {
                   Make the site comfortable for you
                 </JapaneseText>
                 <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  Start with colors, choose an easy-to-read font, then adjust comfort options. Every choice can be changed again.
+                  Start with colors, choose an easy-to-read font, adjust comfort options, then pick how the page is laid out. Every choice can be changed again.
                 </p>
-                <div class="mt-4 grid gap-px bg-border sm:grid-cols-3">
+                <div class="mt-4 grid gap-px bg-border sm:grid-cols-2">
                   <button
                     type="button"
                     onClick={() => {
