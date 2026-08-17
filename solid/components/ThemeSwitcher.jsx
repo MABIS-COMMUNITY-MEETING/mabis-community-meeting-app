@@ -88,10 +88,24 @@ export default function ThemeSwitcher(props) {
   const [showCustom, setShowCustom] = createSignal(false);
   const [themeLimit, setThemeLimit] = createSignal(INITIAL_THEME_LIMIT);
   const [showAllThemes, setShowAllThemes] = createSignal(false);
+  const [themeSearch, setThemeSearch] = createSignal("");
+
+  /*
+   * The catalogue is 140 themes revealed twenty at a time, so anything added
+   * near the end of THEMES was six "Show more" clicks from being seen. Same
+   * filter the font picker already uses, and it runs before the batching so a
+   * search finds a match wherever it sits in the list.
+   */
+  const matchingThemes = createMemo(() => {
+    const query = themeSearch().trim().toLowerCase();
+    if (!query) return THEME_ENTRIES;
+    return THEME_ENTRIES.filter(([key, theme]) =>
+      theme.name.toLowerCase().includes(query) || key.toLowerCase().includes(query));
+  });
 
   const visibleThemes = createMemo(() =>
-    showAllThemes() ? THEME_ENTRIES.slice(0, themeLimit()) : SIMPLE_THEME_ENTRIES);
-  const hasMoreThemes = () => showAllThemes() && themeLimit() < THEME_ENTRIES.length;
+    (showAllThemes() ? matchingThemes().slice(0, themeLimit()) : SIMPLE_THEME_ENTRIES));
+  const hasMoreThemes = () => showAllThemes() && themeLimit() < matchingThemes().length;
 
   const loadNextThemeBatch = () =>
     setThemeLimit((limit) => Math.min(limit + THEME_BATCH_SIZE, THEME_ENTRIES.length));
@@ -230,9 +244,14 @@ export default function ThemeSwitcher(props) {
             }
           >
             <div ref={loadMoreEl} class="mb-4 space-y-2">
+              <Show when={visibleThemes().length === 0}>
+                <p class="px-1 py-2 text-xs text-muted-foreground">
+                  No theme matches “{themeSearch()}”.
+                </p>
+              </Show>
               <button
                 type="button"
-                onClick={() => setShowAllThemes(false)}
+                onClick={() => { setShowAllThemes(false); setThemeSearch(""); }}
                 class="min-h-10 w-full border border-border px-3 text-xs font-bold text-foreground hover:bg-muted"
               >
                 Back to easy choices
@@ -243,7 +262,7 @@ export default function ThemeSwitcher(props) {
                   onClick={loadNextThemeBatch}
                   class="min-h-10 w-full border border-border px-3 text-xs font-bold text-foreground hover:bg-muted"
                 >
-                  Show more themes ({visibleThemes().length}/{THEME_ENTRIES.length})
+                  Show more themes ({visibleThemes().length}/{matchingThemes().length})
                 </button>
               </Show>
             </div>
