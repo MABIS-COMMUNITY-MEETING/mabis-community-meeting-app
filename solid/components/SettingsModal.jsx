@@ -1,7 +1,7 @@
 import { createSignal, createMemo, createEffect, onMount, Show, For, Index } from "solid-js";
 import {
   Settings, X, Type, Search, Check, Volume2, VolumeX, Accessibility,
-  MousePointer2, Languages, User, LogOut, Lock, AlignLeft,
+  MousePointer2, Languages, User, LogOut, Lock, AlignLeft, LayoutList,
 } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { CORE_FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
@@ -10,12 +10,37 @@ import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preferen
 import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
 import { japaneseTextEnabled, setJapaneseTextEnabled } from "@/lib/japanese-text-preference";
 import { sectionDescriptionsEnabled, setSectionDescriptionsEnabled } from "@/lib/section-descriptions-preference";
+import { homeLayout, setHomeLayout } from "@/lib/layout-preference";
 import { ensureFontCatalogStyles, FONT_CATALOG } from "@/lib/font-catalog";
 import { Dialog, DialogPortal, DialogOverlay } from "~/components/ui/dialog";
 import { Dialog as KDialog } from "@kobalte/core/dialog";
 import { JapaneseText } from "~/components/primitives";
 
 const FONTS = [...CORE_FONTS, ...FONT_CATALOG];
+
+/*
+ * The two Home arrangements, in the order they are offered.
+ *
+ * Described by what the reader will see rather than by the design vocabulary
+ * behind it, as the plain-language customization rule requires. "Boss layout"
+ * is Novesce's own name for the editorial front page.
+ */
+const LAYOUT_CHOICES = [
+  {
+    key: "simple",
+    label: "Simple",
+    ja: "シンプル",
+    detail: "Default · heading, then the section. Straight to what you came for.",
+    jaDetail: "標準・見出しのすぐ下に内容が並ぶ、一列の表示です。",
+  },
+  {
+    key: "boss",
+    label: "Boss layout",
+    ja: "ボスレイアウト",
+    detail: "The full front page · large masthead, index rail and scrolling type.",
+    jaDetail: "大きな見出しや番号の列がある、雑誌のような表示です。",
+  },
+];
 
 const SIMPLE_FONT_KEYS = ["gnu-free-mono", "gnu-free-sans", "go", "gnu-free-serif"];
 const SIMPLE_FONT_LABELS = {
