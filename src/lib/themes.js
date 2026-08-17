@@ -883,6 +883,18 @@ const REQUESTED_FONTS = [
     featured: true,
   },
   {
+    key: "space-grotesk",
+    name: "Space Grotesk",
+    detail: "Embedded OFL · geometric sans from Google Fonts",
+    source: "Featured",
+    family: "SpaceGroteskUI",
+    heading: "'SpaceGroteskUI'",
+    body: "'SpaceGroteskUI'",
+    mono: "'GNUFreeMonoUI'",
+    localOnly: false,
+    featured: true,
+  },
+  {
     key: "unifontex",
     name: "UnifontEX",
     detail: "Embedded multilingual · English 日本語 中文 ไทย",
