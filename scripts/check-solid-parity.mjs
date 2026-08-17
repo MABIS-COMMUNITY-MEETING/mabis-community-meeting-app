@@ -769,12 +769,28 @@ if (route === "/") {
 // ── Japanese companion layer ──────────────────────────────────────────────
 if (japaneseMode) {
   const annotated = root ? root.querySelectorAll("[data-ja-companion]") : [];
-  check("auto-companion annotated the tree", annotated.length > 0,
+  /*
+   * The auto-scanner only annotates strings that have NO explicit companion.
+   * Summer style's splash gives every string one through <JapaneseText>, so an
+   * empty result there is the correct outcome rather than a dead observer —
+   * and demanding annotations would push future work toward leaving strings
+   * untranslated just to satisfy this check.
+   *
+   * The scanner stays pinned regardless: the /login ja run does carry
+   * unannotated strings, so a genuinely broken MutationObserver still fails
+   * the suite there.
+   */
+  check("auto-companion annotated the tree where there was work to do",
+    annotated.length > 0 || route === "/",
     "no [data-ja-companion] attributes — the MutationObserver scan never ran");
   check("annotations carry a layout hint",
     [...annotated].every((el) => el.hasAttribute("data-ja-layout")));
   check("annotations are non-empty Japanese",
     [...annotated].every((el) => /[぀-ヿ一-龯]/.test(el.getAttribute("data-ja-companion"))));
+  /* However it got there — scanner or explicit prop — Japanese must be on the
+     page when the companion is enabled. This is the assertion that matches the
+     user-visible promise, and it holds on every route. */
+  check("Japanese companion text is on the page", /[぀-ヿ一-龥]/.test(text));
   check("screen-reader marker present", html2.includes("日本語"));
   check("japanese-text-enabled class set when the preference is on",
     window.document.documentElement.classList.contains("japanese-text-enabled"));
