@@ -39,7 +39,7 @@ function esmEntry(pkg) {
    * does. The name check skips the `{"type":"commonjs"}` marker manifests that
    * some packages drop inside their build directories.
    */
-  let dir = path.dirname(require.resolve(pkg));
+  const dir = path.dirname(require.resolve(pkg));
   let manifestPath = null;
   for (let parent = dir; ; parent = path.dirname(parent)) {
     const candidate = path.join(parent, "package.json");
