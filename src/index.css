@@ -2275,7 +2275,12 @@ html.is-scrolling .widget-loading-shell {
     min-height: 44px;
   }
 
-  .mabis-widget {
+  /* Edge-to-edge mobile modules are an EDITORIAL rule — the boss layout's
+     content planes run to the screen edge. The default layout is the original
+     card interface, which kept its rounded, shadowed cards on a phone, so it
+     must not be flattened here. `.mabis-widget` only ever appears on Home, so
+     gating on the layout class is exact rather than approximate. */
+  html.home-layout-boss .mabis-widget {
     border-left-width: 0 !important;
     border-right-width: 0 !important;
     border-radius: 0 !important;
