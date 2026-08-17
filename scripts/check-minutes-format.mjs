@@ -10,6 +10,8 @@
  *
  * Run: node scripts/check-minutes-format.mjs
  */
+import fs from "node:fs";
+
 const { topicsToMinutesHtml, topicsForWeek, isBlankDocument, resolveMinutesDocument, RESERVED_TITLES } =
   await import("../src/lib/minutes-format.js");
 
@@ -138,6 +140,40 @@ check("an empty stored document still seeds from topics", r.html.includes("Week 
 
 // The returned memo must always name the week it describes.
 check("returned memo is tagged with its week", r.memo.week === W34 && r.memo.seededWeek === W34);
+
+/*
+ * ── one editor per week ─────────────────────────────────────────────────
+ *
+ * Everything above tests the formatter, which was never the problem in the
+ * bug where 14 August's minutes showed up on the current week and the first
+ * keystroke saved them into it. That was component wiring: DocsEditor seeds
+ * Quill once in onMount and has no reseed effect, so changing week has to
+ * change the editor's identity or the old document simply stays on screen.
+ *
+ * jsdom cannot mount Quill (see the KNOWN GAP note in check-solid-parity.mjs),
+ * so the property is pinned statically instead of exercised. It is worth
+ * pinning: the previous attempt at this mechanism was an `editors` Map that
+ * nothing ever called, and it read as done for as long as nobody checked.
+ */
+const minutesSource = fs.readFileSync("solid/components/MeetingMinutes.jsx", "utf8");
+const editorSource = fs.readFileSync("solid/components/DocsEditor.jsx", "utf8");
+
+check("the minutes editor is keyed by week",
+  minutesSource.includes("<Show when={props.weekLabel} keyed>"),
+  "without a keyed remount Quill keeps the previous week's document");
+check("changes are attributed to the editor's own week, not the current prop",
+  minutesSource.includes("onChange={(html) => handleChange(html, week)}"));
+check("saves are attributed to the editor's own week",
+  minutesSource.includes("handleSave(week)"));
+check("the save payload carries its target week",
+  minutesSource.includes("const payload = { html, week, recordId: recordIdFor(week) };"));
+check("the dead per-week editor cache is gone",
+  !minutesSource.includes("editorFor"),
+  "it never ran, and its comment claimed the remount was handled");
+check("DocsEditor still seeds only on mount",
+  editorSource.includes("quill.clipboard.dangerouslyPasteHTML(props.initialHtml")
+  && !/createEffect\(\s*on\(\s*\(\)\s*=>\s*props\.initialHtml/.test(editorSource),
+  "a reseed effect would fight the caret on every save round-trip");
 
 console.log(`\nMinutes conversion: ${count - failures.length}/${count} checks passed\n`);
 if (failures.length) {
