@@ -52,7 +52,8 @@ function PagesMenu() {
         aria-expanded={open()}
         aria-haspopup="menu"
         title="Other pages"
-        class="flex h-9 items-center gap-1 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
+        aria-label="Other pages"
+        class="flex h-9 shrink-0 items-center gap-1 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
       >
         <span class="hidden sm:inline">Pages</span>
         <ChevronDown class="h-3.5 w-3.5" />
@@ -85,22 +86,30 @@ function PagesMenu() {
 export default function SummerHeader(props) {
   return (
     <header class="sticky top-0 z-40 border-b border-border bg-card shadow-sm">
-      <div class="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-3 sm:px-5">
-        <A href="/" data-cursor="HOME" class="group flex min-w-0 items-center gap-3">
-          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card shadow-md ring-1 ring-border">
-            <img src={LOGO} alt="MABIS" class="h-8 w-8 object-contain" />
+      {/*
+        * One non-wrapping row, so at phone width every pixel spent on the left
+        * is taken from the controls on the right — which are all `shrink-0` and
+        * were overflowing the viewport. The title therefore collapses to the
+        * short form and drops its second line below sm, and the gaps tighten.
+        * Everything stays reachable; nothing moves behind a menu.
+        */}
+      <div class="mx-auto flex max-w-[1440px] items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-5">
+        <A href="/" data-cursor="HOME" class="group flex min-w-0 items-center gap-2 sm:gap-3">
+          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-card shadow-md ring-1 ring-border sm:h-10 sm:w-10">
+            <img src={LOGO} alt="MABIS" class="h-7 w-7 object-contain sm:h-8 sm:w-8" />
           </span>
           <span class="min-w-0">
             <span class="block truncate font-display text-base font-bold leading-none text-foreground transition-colors group-hover:text-primary">
-              MABIS Community Meeting
+              <span class="sm:hidden">MABIS</span>
+              <span class="hidden sm:inline">MABIS Community Meeting</span>
             </span>
-            <span class="mt-0.5 block truncate text-[11px] text-muted-foreground">
+            <span class="mt-0.5 hidden truncate text-[11px] text-muted-foreground sm:block">
               Secondary Community Meeting App
             </span>
           </span>
         </A>
 
-        <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div class="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <Show when={props.canSeeInbox}>
             <A
               href="/feedback"
