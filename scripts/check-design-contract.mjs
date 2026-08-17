@@ -314,8 +314,21 @@ for (const hexcode of openMojiAssets) {
     if (!fs.existsSync(path.join(root, assetPath))) failures.push(`Missing pinned OpenMoji asset: ${assetPath}`);
 }
 
+/*
+ * No platform-native emoji glyph in app-authored source.
+ *
+ * This scanned `src/` only, which stopped being the UI when the Solid cutover
+ * landed — every component a reader actually sees lives in `solid/`, and a
+ * native emoji there shipped unguarded. Both trees are scanned now.
+ *
+ * Why it matters beyond consistency: an emoji codepoint in text is rendered by
+ * the platform's own emoji font, which differs per OS and per version, ignores
+ * the app's palette, and cannot be pinned. OpenMoji.jsx renders a pinned SVG
+ * asset instead, so the glyph is identical everywhere and frozen at a version.
+ */
 const nativeEmojiPattern = /\p{Extended_Pictographic}/u;
-for (const sourceFile of listSourceFiles("src").filter((file) => /\.(?:js|jsx|ts|tsx)$/.test(file))) {
+const emojiScanRoots = ["solid", "src"].filter((dir) => fs.existsSync(path.join(root, dir)));
+for (const sourceFile of emojiScanRoots.flatMap((dir) => listSourceFiles(dir)).filter((file) => /\.(?:js|jsx|ts|tsx)$/.test(file))) {
     const source = fs.readFileSync(path.join(root, sourceFile), "utf8");
     if (nativeEmojiPattern.test(source)) {
         failures.push(`${sourceFile} contains a platform-native emoji glyph; use OpenMoji.jsx with a pinned SVG asset`);
