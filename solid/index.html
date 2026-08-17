@@ -46,14 +46,73 @@
 
     <!-- Inlined so the first paint has a background and correct box sizing
          without waiting for the stylesheet; prevents a white flash on slow
-         connections, which Lighthouse scores as a poor FCP experience. -->
+         connections, which Lighthouse scores as a poor FCP experience.
+
+         The boot splash below is inlined for the same reason, one step
+         further. #root ships empty, and <LoadingScreen> is a Solid component,
+         so it cannot appear until the render-blocking stylesheet AND the
+         entry chunks have downloaded, parsed and executed — and bootstrap()
+         then waits up to 800ms for fonts before it calls render(). Every
+         millisecond of that was a plain #11131a screen with nothing on it,
+         which reads as a broken page rather than a loading one, especially
+         once the custom cursor appears over it.
+
+         So this is markup, not a component: it paints with the HTML, before
+         the CSS and before any JavaScript, and costs zero extra requests. The
+         colours are the --ink and --bone token values and the accent is the
+         brand primary, so when the real LoadingScreen takes over there is no
+         visible change of surface — only the counter appearing. "INITIALISING"
+         is the string the real loading screen already shows; nothing new is
+         being introduced here.
+
+         It hides itself with a sibling selector the moment Solid puts
+         anything in #root, so it needs no JavaScript to disappear and cannot
+         strand the page if the bundle fails to boot. main.jsx also removes the
+         node outright once the app is mounted. -->
     <style>
       html, body, #root { min-height: 100%; margin: 0; background: #11131a; }
       #root:empty { min-height: 100vh; }
+
+      #boot-splash {
+        position: fixed; inset: 0; z-index: 1;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 1.5rem;
+        background: #11131a; color: #f7f3ea;
+        font-family: "GNUFreeMonoUI", "FreeMono", ui-monospace, monospace;
+        font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+      }
+      #boot-splash > span:first-child { opacity: 0.5; }
+      #boot-splash-track {
+        position: relative; overflow: hidden;
+        width: min(220px, 44vw); height: 1px;
+        background: rgba(247, 243, 234, 0.15);
+      }
+      #boot-splash-track::after {
+        content: ""; position: absolute; inset: 0 auto 0 0;
+        width: 40%; background: #951E3A;
+        animation: boot-splash-sweep 1.15s ease-in-out infinite;
+      }
+      @keyframes boot-splash-sweep {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(250%); }
+      }
+      /* The app is up: stand down. */
+      #root:not(:empty) + #boot-splash {
+        opacity: 0; visibility: hidden;
+        transition: opacity 0.18s linear, visibility 0s linear 0.18s;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash-track::after { animation: none; width: 100%; opacity: 0.55; }
+        #root:not(:empty) + #boot-splash { transition: none; }
+      }
     </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="boot-splash" role="status" aria-label="Loading">
+      <span>Initialising</span>
+      <span id="boot-splash-track"></span>
+    </div>
     <noscript>
       <p style="color:#e8e3d8;font-family:monospace;padding:2rem">
         This app needs JavaScript enabled.
