@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
 import { ChevronDown, ChevronRight, Trash2, Users } from "lucide-solid";
 import { isFriday, format, parseISO } from "date-fns";
 import { base44 } from "@/api/base44Client";
-import { historyWeeks, minutesByWeek } from "@/lib/minutes-format";
+import { historyWeeks, minutesByWeek, topicsToMinutesHtml, isBlankDocument } from "@/lib/minutes-format";
 import { weekLabelToDate, formatWeekFull, getWeekLabel } from "~/lib/weeks";
 import { PageNav, PageFooter, OpenMoji } from "~/components/page-chrome";
 import { JapaneseText } from "~/components/primitives";
@@ -24,6 +24,28 @@ const PRIORITY_DOT = {
  *
  * `openWeeks` is a STORE, not a signal holding an object: expanding one week
  * should not invalidate the accordion state of the others.
+ */
+/*
+ * History — Solid port of src/pages/History.jsx.
+ *
+ * The week helpers come from ~/lib/weeks rather than being redefined here.
+ * The React file carries its own private copies of getCurrentWeekLabel,
+ * weekLabelToDate and formatWeekFull — the same three functions also exist in
+ * DiscussionWidget and lib/weekHistory, and they had already drifted apart.
+ * One shared copy is the whole reason lib/weeks.js exists.
+ *
+ * `openWeeks` is a STORE, not a signal holding an object: expanding one week
+ * should not invalidate the accordion state of the others.
+ *
+ * Every week renders as ONE document, mirroring what DiscussionWidget's
+ * normal view shows on Home — which is document-only now, no topic cards.
+ * A week with a saved `__meeting_notes__` record uses that HTML verbatim; a
+ * week that never had its document opened (so nothing was ever saved) is
+ * synthesised on the fly with the same topicsToMinutesHtml() that
+ * MeetingMinutes.jsx uses to seed a week's editor the first time it opens —
+ * so an unopened week reads exactly as it WOULD if someone opened it live,
+ * not as a separate "legacy topic card" layout. There is deliberately no
+ * second rendering path here to keep in sync with the live document.
  */
 export default function History() {
   const queryClient = useQueryClient();
