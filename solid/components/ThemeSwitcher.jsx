@@ -172,11 +172,16 @@ export default function ThemeSwitcher() {
         }}
         aria-expanded={open()}
         aria-haspopup="dialog"
-        class="flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"
+        /* Home's default layout passes the original site's rounded control;
+           everything else keeps the editorial square. */
+        class={props.triggerClass
+          || "flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"}
         title="Change colors"
       >
         <Palette class="w-4 h-4" />
-        <span class="hidden text-[10px] font-bold uppercase tracking-wide lg:inline">Colors</span>
+        <Show when={!props.triggerClass}>
+          <span class="hidden text-[10px] font-bold uppercase tracking-wide lg:inline">Colors</span>
+        </Show>
       </button>
 
       <Show when={open()}>
