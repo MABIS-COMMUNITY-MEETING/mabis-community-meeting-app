@@ -316,10 +316,58 @@ export default function Home() {
   const weekLabel = `${getISOWeekYear(now)}-W${String(getISOWeek(now)).padStart(2, "0")}`;
   const dateLabel = format(now, "dd.MM.yyyy");
 
+  /*
+   * The one place a Home widget is constructed.
+   *
+   * Both layouts call this, which is what keeps them from drifting: a change
+   * to how a widget mounts, what it is passed, or how its space is reserved
+   * lands in both by construction rather than by anyone remembering to copy
+   * it across.
+   */
+  const placeholder = (height) => (
+    <div
+      class="lazy-section-placeholder"
+      style={{
+        "--lazy-min-height": `${height}px`,
+        "contain-intrinsic-size": `auto ${height}px`,
+      }}
+      aria-hidden
+    />
+  );
+
+  const renderWidget = (s) => (
+    <LazySection minHeight={s.height}>
+      <Show when={WIDGETS[s.index]} fallback={placeholder(s.height)}>
+        {(Widget) => (
+          <Suspense fallback={placeholder(s.height)}>
+            {(() => {
+              const W = Widget();
+              return (
+                <W
+                  isAdmin={isAdmin()}
+                  members={members()}
+                  canChangeRoles={isAdmin()}
+                  canStart={isAdmin()}
+                  onStartMeeting={() => window.dispatchEvent(new CustomEvent("startMeetingMode"))}
+                />
+              );
+            })()}
+          </Suspense>
+        )}
+      </Show>
+    </LazySection>
+  );
+
   return (
-    <div class="editorial-home min-h-screen bg-background overflow-x-hidden">
-      <SiteHeader rightSlot={controls} />
-      <Show when={isBoss()}>
+    <div
+      class="editorial-home min-h-screen bg-background overflow-x-hidden"
+      classList={{ "summer-home": !isBoss() }}
+    >
+      <Show
+        when={isBoss()}
+        fallback={<SummerHeader canSeeInbox={isAdmin()} rightSlot={summerControls} />}
+      >
+        <SiteHeader rightSlot={editorialControls} />
         <ScrollSectionIndicator total={10} />
       </Show>
 
@@ -341,23 +389,17 @@ export default function Home() {
         </Suspense>
       </Show>
 
-      <main
-        class="mx-auto px-4 pb-8 pt-20 sm:px-10"
-        classList={{
-          "max-w-[1600px] sm:pt-32": isBoss(),
-          "max-w-4xl sm:pt-28": !isBoss(),
-        }}
+      <Show
+        when={isBoss()}
+        fallback={<SummerHome sections={SECTIONS}>{renderWidget}</SummerHome>}
       >
-        <Show when={isBoss()} fallback={<SimpleMasthead weekLabel={weekLabel} dateLabel={dateLabel} date={now} />}>
+        <main class="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
           <HomeMasthead weekLabel={weekLabel} dateLabel={dateLabel} date={now} />
-        </Show>
 
-        <div class="pb-6 pt-5 sm:pb-10 sm:pt-8">
-          <HomeSectionIndex />
-        </div>
+          <div class="pb-6 pt-5 sm:pb-10 sm:pt-8">
+            <HomeSectionIndex />
+          </div>
 
-        {/* Editorial interludes — the scaffolding the simple layout drops. */}
-        <Show when={isBoss()}>
           <Suspense fallback={null}>
             <div class="-mx-4 overflow-hidden border-b py-3 jp-rule sm:-mx-10 sm:py-5">
               <ScrollVelocity
@@ -367,73 +409,31 @@ export default function Home() {
             </div>
             <ScrollScaleRitual />
           </Suspense>
-        </Show>
 
-        <div class="pb-8 pt-4 sm:pb-14 sm:pt-6">
-          <BirthdayBanner />
-        </div>
+          <div class="pb-8 pt-4 sm:pb-14 sm:pt-6">
+            <BirthdayBanner />
+          </div>
 
-        <div classList={{ "space-y-12 sm:space-y-24": isBoss(), "space-y-10": !isBoss() }}>
-          <For each={SECTIONS}>
-            {(s) => (
-              <Dynamic
-                component={isBoss() ? EditorialSection : SimpleSection}
-                index={s.index}
-                label={s.label}
-                jaLabel={s.jaLabel}
-                description={s.description}
-                jaDescription={s.jaDescription}
-                intrinsicHeight={s.height + 160}
-              >
-                <LazySection minHeight={s.height}>
-                  {/* Ported widgets render here; the rest still reserve their
-                      exact final height, so swapping one in shifts nothing. */}
-                  <Show
-                    when={WIDGETS[s.index]}
-                    fallback={
-                      <div
-                        class="lazy-section-placeholder"
-                        style={{
-                          "--lazy-min-height": `${s.height}px`,
-                          "contain-intrinsic-size": `auto ${s.height}px`,
-                        }}
-                        aria-hidden
-                      />
-                    }
-                  >
-                    {(Widget) => (
-                      <Suspense
-                        fallback={
-                          <div
-                            class="lazy-section-placeholder"
-                            style={{ "--lazy-min-height": `${s.height}px` }}
-                            aria-hidden
-                          />
-                        }
-                      >
-                        {(() => {
-                          const W = Widget();
-                          return (
-                            <W
-                              isAdmin={isAdmin()}
-                              members={members()}
-                              canChangeRoles={isAdmin()}
-                              canStart={isAdmin()}
-                              onStartMeeting={() => window.dispatchEvent(new CustomEvent("startMeetingMode"))}
-                            />
-                          );
-                        })()}
-                      </Suspense>
-                    )}
-                  </Show>
-                </LazySection>
-              </Dynamic>
-            )}
-          </For>
-        </div>
+          <div class="space-y-12 sm:space-y-24">
+            <For each={SECTIONS}>
+              {(s) => (
+                <EditorialSection
+                  index={s.index}
+                  label={s.label}
+                  jaLabel={s.jaLabel}
+                  description={s.description}
+                  jaDescription={s.jaDescription}
+                  intrinsicHeight={s.height + 160}
+                >
+                  {renderWidget(s)}
+                </EditorialSection>
+              )}
+            </For>
+          </div>
 
-        <PageFooter />
-      </main>
+          <PageFooter />
+        </main>
+      </Show>
 
       {/* Deferred until the browser is idle, as in React — same three, same order. */}
       <IdleMount timeout={1800}>
