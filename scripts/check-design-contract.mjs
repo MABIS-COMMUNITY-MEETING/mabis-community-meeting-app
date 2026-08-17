@@ -109,7 +109,25 @@ const packageJson = read("package.json");
 const performanceContract = read("scripts/check-performance-contract.mjs");
 const bundleBudget = read("scripts/check-bundle-budget.mjs");
 const cjkFontLoader = read("src/components/CjkFontLoader.jsx");
-const login = read("src/pages/Login.jsx");
+/*
+ * The LIVE sign-in page, named explicitly rather than through the src/→solid/
+ * fallback.
+ *
+ * On 2026-08-17 `base44-builder[bot]` committed "chore: add boilerplate auth
+ * templates", recreating src/pages/{Login,Register,ForgotPassword,
+ * ResetPassword,OAuthConsent}.jsx and src/components/ProtectedRoute.jsx. That
+ * boilerplate carries an email/password <form>, which this contract forbids —
+ * and because the path resolver prefers src/, the Google-only rules below
+ * silently switched from checking the page users actually see to checking
+ * platform scaffolding nothing imports. The build failed, which is the right
+ * outcome, but for the wrong reason.
+ *
+ * The boilerplate is dead: solid/App.jsx routes /login to the Solid page and
+ * redirects /register, /forgot-password and /reset-password to it. So the
+ * rules are asserted against the live page, and the guard below keeps the
+ * boilerplate unreachable rather than trusting it to stay that way.
+ */
+const login = read("solid/pages/Login.jsx");
 const docsEditor = read("src/components/DocsEditor.jsx");
 const jobsWidget = read("src/components/JobsWidget.jsx");
 const jobsRotation = read("src/lib/jobsRotation.js");
@@ -263,7 +281,17 @@ requireText("src/components/CjkFontLoader.jsx", cjkFontLoader, "MutationObserver
 requireText("src/pages/Login.jsx", login, 'base44.auth.loginWithProvider("google", "/home")');
 requireText("src/pages/Login.jsx", login, "CONTINUE WITH GOOGLE");
 forbidText("src/pages/Login.jsx", login, "loginViaEmailPassword");
-forbidText("src/pages/Login.jsx", login, "<form");
+forbidText("solid/pages/Login.jsx", login, "<form");
+
+/* The public auth surface stays Google-only however the platform scaffolds it:
+   no router may mount the boilerplate, and the retired routes must keep
+   redirecting rather than render a password form. */
+for (const retired of ["Register", "ForgotPassword", "ResetPassword", "OAuthConsent"]) {
+    forbidText("solid/App.jsx", app, `pages/${retired}`);
+}
+for (const retired of ["/register", "/forgot-password", "/reset-password"]) {
+    requireText("solid/App.jsx", app, `<Route path="${retired}" component={RedirectToLogin} />`);
+}
 requireText("src/App.jsx", app, ['<Route path="/register" element={<Navigate to="/login" replace />} />', '<Route path="/register" component={RedirectToLogin} />']);
 requireText("src/App.jsx", app, ['<Route path="/forgot-password" element={<Navigate to="/login" replace />} />', '<Route path="/forgot-password" component={RedirectToLogin} />']);
 requireText("src/App.jsx", app, ['<Route path="/reset-password" element={<Navigate to="/login" replace />} />', '<Route path="/reset-password" component={RedirectToLogin} />']);
