@@ -1,122 +1,100 @@
-import { Show } from "solid-js";
-import { JapaneseText } from "~/components/primitives";
+import { For } from "solid-js";
 import { createReveal } from "~/lib/perf";
+import BirthdayBanner from "~/components/BirthdayBanner";
 
 /*
- * The default Home arrangement.
+ * The default Home arrangement: the original MABIS interface.
  *
- * This is the layout the community asked for: the same ten numbered sections
- * as the editorial front page, with the decoration between them removed. No
- * full-height masthead, no index rail, no scrolling type bands — a heading,
- * then the widget.
+ * A sticky top bar, then the widgets stacked one after another in a single
+ * column with nothing between them — no masthead, no index rail, no section
+ * headings, no scrolling type. The widgets carry their own card styling, so
+ * this file adds structure and spacing only; see src/styles/summer-home.css
+ * for the two things that need paint.
  *
- * It is a simplification, not a different design system. Same tokens, same
- * display face, same thin rules, same tabular index numbers, same Japanese
- * companion text. The editorial character comes from the typography and the
- * rules; only the scaffolding around it is gone.
- *
- * Anything added to a section here must also be added to EditorialSection in
- * ./shell.jsx — the two layouts are arrangements of one page, not two pages.
+ * Every widget, every feature and every piece of behaviour is the same as in
+ * the boss layout — Home passes the identical render function to both. Adding
+ * something to one layout and not the other is a bug, not a variant; see "The
+ * two Home layouts" in README.md.
  */
 
-const EASE_CSS = "cubic-bezier(0.16, 1, 0.3, 1)";
+const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
+export const APP_VERSION = "v6.9.9";
 
 /**
- * One numbered section: rule, index, heading, widget.
+ * One stacked module.
  *
- * Takes the same props as EditorialSection so Home can swap between them with
- * <Dynamic> rather than duplicating the section list. `intrinsicHeight` is
- * read for the same reason it is there — reserving the height keeps
- * content-visibility from collapsing the page while the section is skipped.
+ * No visible chrome of its own: the widget inside is the card. What this adds
+ * is the same two things every section gets in the boss layout — a reserved
+ * height so `content-visibility` can skip it off-screen without collapsing the
+ * page, and the anchor id, so a deep link to a section still lands.
  */
-export function SimpleSection(props) {
+function SummerModule(props) {
   const [ref, revealed] = createReveal();
-  const index = () => props.index ?? "00";
 
   return (
     <section
       ref={ref}
-      id={`sec-${index()}`}
+      id={`sec-${props.index}`}
       data-gp-section
-      tabindex={-1}
-      aria-label={`${index()} ${props.label ?? ""}`}
-      class="cv-section scroll-mt-20 outline-none"
+      aria-label={props.label}
+      class="cv-section scroll-mt-20"
       classList={{ "cv-ready": revealed() }}
-      style={{ "contain-intrinsic-size": `auto ${props.intrinsicHeight ?? 640}px` }}
+      style={{ "contain-intrinsic-size": `auto ${props.intrinsicHeight}px` }}
     >
-      <header class="mb-3 flex items-baseline gap-3 border-b pb-2 jp-rule sm:mb-4">
-        <span class="tech-label tabular-nums text-primary">{index()}</span>
-        <h2 class="min-w-0 break-words font-display text-[clamp(1.2rem,5.5vw,1.55rem)] font-medium leading-tight tracking-[-0.035em]">
-          <JapaneseText ja={props.jaLabel}>{props.label}</JapaneseText>
-        </h2>
-      </header>
-
-      <Show when={props.description}>
-        <JapaneseText
-          ja={props.jaDescription}
-          data-section-description
-          class="mb-3 block max-w-[54ch] text-[0.8125rem] leading-[1.6] text-muted-foreground"
-          japaneseClass="mt-1 block text-[0.9em]"
-        >
-          {props.description}
-        </JapaneseText>
-      </Show>
-
-      <div
-        class="-mx-4 sm:mx-0"
-        style={{
-          opacity: revealed() ? 1 : 0,
-          transition: `opacity 0.4s ${EASE_CSS}`,
-        }}
-      >
-        {props.children}
-      </div>
+      {props.children}
     </section>
   );
 }
 
-/**
- * The short masthead: kicker, title, and the week/date line.
- *
- * The editorial masthead reserves 58vh before the first widget. This one is a
- * few lines tall and carries the same three facts.
- *
- * `data-home-masthead` is what the parity harness waits on. Asserting on the
- * copy instead would be ambiguous — SiteHeader also says COMMUNITY MEETING.
- */
-export function SimpleMasthead(props) {
-  const jaDate = () => {
-    const d = props.date instanceof Date ? props.date : new Date(props.date);
-    return isNaN(d.getTime())
-      ? ""
-      : new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric" }).format(d);
-  };
-
+/** The original footer: logo plate on a primary-gradient panel, then version. */
+function SummerFooter() {
   return (
-    <section data-home-masthead class="border-b pb-5 jp-rule sm:pb-7">
-      <div class="flex items-center gap-3">
-        <span class="h-px w-8 bg-primary" />
-        <JapaneseText ja="今週" class="jp-kicker" japaneseClass="text-[0.85em]">THIS WEEK</JapaneseText>
-      </div>
-
-      <h1 class="mt-3 font-display text-[clamp(1.85rem,8.5vw,2.9rem)] font-light leading-[0.95] tracking-[-0.055em]">
-        <JapaneseText ja="コミュニティ・ミーティング" japaneseClass="mt-1 block text-[0.34em] tracking-normal">
-          COMMUNITY MEETING
-        </JapaneseText>
-      </h1>
-
-      <dl class="mt-4 flex flex-wrap gap-x-6 gap-y-1.5 tech-label text-muted-foreground">
-        <div class="flex gap-2"><dt>WEEK</dt><dd class="text-foreground tabular-nums">{props.weekLabel}</dd></div>
-        <div class="flex gap-2">
-          <dt>DATE</dt>
-          <dd class="text-foreground tabular-nums">
-            <JapaneseText ja={jaDate()} layout="inline" japaneseClass="ml-1 inline text-[0.7em] opacity-70">
-              {props.dateLabel}
-            </JapaneseText>
-          </dd>
+    <>
+      <div
+        class="mt-4 overflow-hidden rounded-2xl shadow-xl"
+        style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--ring)))" }}
+      >
+        <div class="p-4">
+          <div class="flex flex-col items-center gap-3 rounded-2xl bg-card p-6 shadow-inner">
+            <img src={MABIS_LOGO} alt="MABIS" class="h-16 w-16 object-contain" />
+            <div class="h-px w-16 bg-border" />
+            <h2 class="text-center font-display text-xl font-black tracking-tight text-primary">
+              Secondary Community Meeting App
+            </h2>
+          </div>
         </div>
-        <div class="flex gap-2"><dt>CYCLE</dt><dd class="text-foreground">FRIDAY</dd></div>
-      </dl>
-    </section>
+      </div>
+      <div class="mb-5 mt-3 flex justify-center">
+        <div class="inline-flex items-center rounded-2xl bg-primary px-4 py-1.5 font-display text-sm font-bold tracking-wide text-primary-foreground shadow-md">
+          Version: {APP_VERSION}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/**
+ * @param sections  the shared section list from Home
+ * @param children  a function taking one section, returning its widget. Home
+ *                  passes the same one to both layouts, which is what keeps
+ *                  them from drifting apart.
+ */
+export function SummerHome(props) {
+  return (
+    <main data-summer-home class="mx-auto max-w-[1440px] space-y-6 px-4 py-6 sm:px-6">
+      <BirthdayBanner />
+      <For each={props.sections}>
+        {(section) => (
+          <SummerModule
+            index={section.index}
+            label={section.label}
+            intrinsicHeight={section.height + 40}
+          >
+            {props.children(section)}
+          </SummerModule>
+        )}
+      </For>
+      <SummerFooter />
+    </main>
   );
 }
