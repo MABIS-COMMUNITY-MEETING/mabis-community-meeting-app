@@ -54,12 +54,27 @@ function base44ForSolid(options) {
   });
 }
 
+/* Mirrors the hook in vite.config.js — see the note there. Both builds ship
+ * the same entry HTML, so the parity harness must see the same output. */
+function stripHtmlComments() {
+  return {
+    name: "strip-html-comments",
+    apply: "build",
+    transformIndexHtml: {
+      order: "post",
+      handler: (html) => html
+        .replace(/<!--(?!\[if)[\s\S]*?-->/g, "")
+        .replace(/\n\s*\n+/g, "\n"),
+    },
+  };
+}
+
 export default defineConfig({
   configFile: false,
   root: path.resolve(process.cwd(), "solid"),
   // Fonts, logo and manifest are shared with the React build rather than copied.
   publicDir: path.resolve(process.cwd(), "public"),
-  plugins: [base44ForSolid({ analyticsTracker: true }), solid()],
+  plugins: [base44ForSolid({ analyticsTracker: true }), solid(), stripHtmlComments()],
   resolve: {
     alias: {
       "@": path.resolve(process.cwd(), "src"),
