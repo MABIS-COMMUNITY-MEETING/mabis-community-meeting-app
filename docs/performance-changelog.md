@@ -126,6 +126,73 @@ baking adds one hop (`var(--radius-lg)`, defined as `var(--radius)`). It now
 accepts the indirection and verifies it resolves, while still failing on a baked
 px value — the regression it was written for.
 
+### Frame pacing on displays that are not 60 Hz
+
+The animation architecture was already refresh-rate independent — a fixed
+timestep with an accumulator in `src/lib/physics/scheduler.js`, analytically
+integrated springs in `physics/math.js`, time-based easing in `SpinWheel`.
+Nothing advances by frame count. That half was right.
+
+The half that judged it was not. Both places that asked "is this frame late?"
+answered against a hardcoded `1000 / 60`, which is wrong in **both** directions
+at once:
+
+| display | what it does | old verdict | correct verdict |
+|---|---|---|---|
+| 30 Hz, perfectly paced | 33.3 ms every frame | **demoted on sight** | keep effects |
+| 144 Hz stuttering at ~70 Hz | 6.9 / 13.9 ms alternating | **healthy** | demote |
+| 240 Hz stuttering to a third | 4.2 / 16.7 ms | **healthy** | demote |
+
+The first row cost a steady low-refresh machine its glass, cursor physics and
+motion before it had drawn a second of content — the exact opposite of the
+intent, since that device was keeping perfect time. The other two are the
+false-negative half: every frame in them is under the old 25 ms "slow frame"
+threshold, so a user watching an obvious stutter got a monitor reporting 0%
+dropped frames.
+
+The decision window was refresh-coupled too. It counted 90 frames, which is
+1.50 s of evidence at 60 Hz but 0.38 s at 240 Hz and 0.25 s at 360 Hz — the
+faster the display, the less the verdict rested on, and all of it sampled
+during mount, the most contended moment of the page's life.
+
+**`src/lib/physics/refresh-rate.js`** now measures the panel instead of assuming
+it, taking a low percentile of recent rAF deltas. A low percentile rather than
+a mean or median because the error is one-sided: the compositor cannot present
+frames closer together than the panel refreshes but can present them further
+apart whenever one is missed, so the bottom of the distribution is the refresh
+interval and the entire tail is the jank. Averaging would drag the "budget"
+upward in proportion to how badly the page was running, and the metric would
+excuse exactly the stutter it exists to catch.
+
+It owns no loop. The physics scheduler already runs a rAF callback whenever
+anything is moving, so it feeds the estimator for free; feeding is one compare
+and one array store, no allocation.
+
+`monitorFrameBudget` now counts frames that missed a whole vsync **for this
+display**, over a 2 s wall-clock window after an 800 ms warm-up. Stable-but-slow
+keeps its effects, unstable loses them — the right priority, because consistent
+pacing is what makes motion feel smooth, not the size of the frame rate.
+`perf-monitor` prices dropped frames the same way and now reports p50/p95/p99
+and jitter, plus p99 expressed in refreshes, which is the only form of the
+number that means the same thing on a 60 Hz laptop and a 360 Hz monitor.
+
+Stated rather than hidden: a device pinned at *exactly* half its panel rate
+forever is indistinguishable by frame spacing from a genuine half-rate panel.
+Real struggling devices mix intervals and the low percentile finds the fast
+ones. In the pinned case the delivery is at least perfectly even, so treating
+it as slow-but-steady is the right failure mode.
+
+Cost: **+0.1 KiB gzip** on the eager bundle (17.0 → 17.1 KiB).
+
+- `check:pacing` (`check-frame-pacing.mjs`) — 40 assertions against synthetic
+  displays from 30 Hz to 1000 Hz, driven by an injected clock so they hold in a
+  sandbox with no display. Verified to fail on the pre-change logic for all
+  three rows of the table above. 480 and 1000 Hz are in there deliberately: no
+  panel needs them today, and the point is that no ceiling is written into the
+  estimator. The source is pinned as well as the behaviour, because a
+  behavioural test alone would still pass if someone reintroduced a 60 Hz
+  constant beside the measurement.
+
 ### Remaining bottlenecks, ranked by measured cost
 
 1. **axios, 43.7 KiB raw, eager.** The single largest dependency left on the
