@@ -3,9 +3,15 @@
  *
  * The publish pipeline invokes `npm run build --mode development` (and may
  * append other flags). npm appends extra arguments to the LAST command of a
- * `&&` chain, so with the old inline script the flags landed on
- * check-css-split.mjs, which read `--mode` as a dist directory and failed the
- * whole build with "No build found at /app_temp/--mode".
+ * `&&` chain, so with the old inline script the flags landed on whichever
+ * check happened to be last — which read `--mode` as a dist directory and
+ * failed the whole build with "No build found at /app_temp/--mode". That is
+ * what broke publishing for a full day, while the build stayed green locally
+ * every time, because locally nothing appends flags.
+ *
+ * Keep this wrapper even if the step list shrinks to one. The bug is in how
+ * npm forwards arguments, not in any particular check, so it returns the
+ * moment a check is appended to an inline chain again.
  *
  * Wrapping the sequence in one script fixes that class of bug permanently:
  * appended flags arrive here and are deliberately IGNORED — including
@@ -22,7 +28,6 @@ const steps = [
   ["node", ["scripts/check-font-subset.mjs"]],
   ["node", ["scripts/generate-service-worker.mjs"]],
   ["node", ["scripts/check-bundle-budget.mjs"]],
-  ["node", ["scripts/check-css-split.mjs"]],
 ];
 
 for (const [cmd, args] of steps) {
