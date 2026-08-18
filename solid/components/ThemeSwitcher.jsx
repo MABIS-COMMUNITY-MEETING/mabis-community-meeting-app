@@ -86,6 +86,7 @@ export default function ThemeSwitcher(props) {
   const [customPrimary, setCustomPrimary] = createSignal("#951E3A");
   const [customSecondary, setCustomSecondary] = createSignal("#EACE54");
   const [savedThemes, setSavedThemes] = createSignal([]);
+  const auth = useAuth();
   const [themeName, setThemeName] = createSignal("");
   const [showCustom, setShowCustom] = createSignal(false);
   const [themeLimit, setThemeLimit] = createSignal(INITIAL_THEME_LIMIT);
@@ -392,6 +393,7 @@ export default function ThemeSwitcher(props) {
               </div>
             </Show>
           </div>
+          </Show>
         </div>
       </Show>
     </div>
