@@ -254,8 +254,19 @@ if (surfaceStart === -1) {
 requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf"]);
 requireText("src/components/JobsWidget.jsx", jobs, "appearanceRaf");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
-requireText("src/index.css", css, "content-visibility: auto");
-requireText("src/index.css", css, "contain-intrinsic-size: auto 720px");
+/*
+ * Inverted: content-visibility must NOT come back on the section wrapper.
+ *
+ * `main [data-gp-section] { content-visibility: auto; contain-intrinsic-size:
+ * auto 720px }` reported every skipped section at the same 720px estimate, so
+ * the document height changed as each one rendered at its real height — the
+ * scrollbar jumped and the scroll position drifted on the way down, and again
+ * on the way back up. LazySection already skips the work and reserves the space
+ * with that section's own minHeight, so this bought nothing and cost the one
+ * thing the reader touches constantly.
+ */
+forbidText("src/index.css", css, "content-visibility: auto");
+requireText("src/components/home/LazySection.jsx", lazySection, "contain-intrinsic-size");
 requireText("src/main.jsx", main, "window.setTimeout(resolve, 800)");
 requireText("src/main.jsx", main, '.register("/sw.js"');
 requireText("package.json", packageJson, "node scripts/generate-service-worker.mjs");
