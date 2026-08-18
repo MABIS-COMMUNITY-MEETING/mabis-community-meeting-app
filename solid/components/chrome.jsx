@@ -6,7 +6,7 @@
  * nothing as separate chunks.
  *
  * ScrollProgress (a 2px bar tracking page position) and ScrollSectionIndicator
- * (a right-edge "03＆10" counter with its own progress line) used to live here
+ * (a right-edge section counter with its own progress line) used to live here
  * too. Both existed only to draw the scroll position back at the reader, and
  * both drove a style.transform write on every frame of every scroll. They were
  * removed so scrolling is the browser's business alone — see "Scrolling" in
