@@ -334,6 +334,26 @@ self.addEventListener("fetch", (event) => {
 });
 `;
 
+/*
+ * Parse the worker before writing it.
+ *
+ * This file is assembled inside a template literal, so every backslash in it
+ * is an escape sequence for the generator first. A regex literal here lost its
+ * `\/` on the way out and produced `/^/(@vite|...)//` — not valid JavaScript.
+ *
+ * That failure is completely silent: the build succeeds, sw.js is written, and
+ * the browser simply refuses to install the worker. Offline support and the
+ * layout cache stop working and nothing anywhere says why. Parsing it here
+ * turns a silent breakage into a failed build.
+ */
+try {
+  new Function(serviceWorker);
+} catch (error) {
+  console.error(`Generated service worker is not valid JavaScript: ${error.message}`);
+  console.error("Check for backslashes in the template literal — they are escaped twice.");
+  process.exit(1);
+}
+
 fs.writeFileSync(path.join(dist, "sw.js"), serviceWorker);
 const bytes = [...precache].reduce((total, url) => {
   const relative = url.replace(/^\//, "").split("?")[0];
