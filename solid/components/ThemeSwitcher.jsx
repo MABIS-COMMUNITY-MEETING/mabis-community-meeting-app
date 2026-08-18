@@ -1,7 +1,7 @@
 import { createSignal, createMemo, onMount, onCleanup, createEffect, Show, For } from "solid-js";
 import { Palette, Check, RotateCcw, Save, Trash2, Star } from "lucide-solid";
 import {
-  THEMES, applyTheme, applyCustomColors, clearCustomColors,
+  THEMES, SELECTABLE_THEME_KEYS, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
 } from "@/lib/themes";
@@ -228,6 +228,7 @@ export default function ThemeSwitcher() {
             </For>
           </div>
 
+          <Show when={HAS_THEME_CATALOGUE}>
           <Show
             when={showAllThemes()}
             fallback={
