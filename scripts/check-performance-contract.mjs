@@ -265,7 +265,9 @@ requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize
  * with that section's own minHeight, so this bought nothing and cost the one
  * thing the reader touches constantly.
  */
-forbidText("src/index.css", css, "content-visibility: auto");
+/* Declarations only. index.css documents this removal at length and names the
+   property while doing so; prose about why it is gone is not a regression. */
+forbidText("src/index.css", css.replace(/\/\*[\s\S]*?\*\//g, ""), "content-visibility: auto");
 requireText("src/components/home/LazySection.jsx", lazySection, "contain-intrinsic-size");
 requireText("src/main.jsx", main, "window.setTimeout(resolve, 800)");
 requireText("src/main.jsx", main, '.register("/sw.js"');
