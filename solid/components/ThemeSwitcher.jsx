@@ -27,8 +27,24 @@ function paletteStripe(theme) {
   return stripe;
 }
 
-const THEME_ENTRIES = Object.entries(THEMES);
-const SIMPLE_THEME_KEYS = ["default", "sage", "sky", "sakura", "midnight", "lesbian"];
+/*
+ * Both lists come from SELECTABLE_THEME_KEYS, never from THEMES.
+ *
+ * THEMES still carries the retired catalogue for the pride ambience, the
+ * Frutiger Aero treatment and the contrast fixtures. Enumerating it here is
+ * what used to put ~140 themes in the picker, so the allow-list is the only
+ * thing this file may read.
+ */
+const THEME_ENTRIES = SELECTABLE_THEME_KEYS
+  .map((key) => [key, THEMES[key]])
+  .filter(([, theme]) => theme);
+
+/* With one theme there is nothing to browse, search or page through, so the
+   catalogue affordance stays out of the DOM entirely rather than rendering a
+   "Browse all themes · 1" button leading to the same single swatch. */
+const HAS_THEME_CATALOGUE = THEME_ENTRIES.length > 1;
+
+const SIMPLE_THEME_KEYS = SELECTABLE_THEME_KEYS;
 const SIMPLE_THEME_ENTRIES = SIMPLE_THEME_KEYS
   .map((key) => [key, THEMES[key]])
   .filter(([, theme]) => theme);
