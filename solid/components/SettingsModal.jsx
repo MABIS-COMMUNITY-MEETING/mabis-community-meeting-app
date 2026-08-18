@@ -134,6 +134,9 @@ export default function SettingsModal(props) {
   const [codeSaved, setCodeSaved] = createSignal(false);
   const [codeError, setCodeError] = createSignal(false);
 
+  /* Seeded from the stored preference so the panel opens showing what is
+     actually in use, not a default that may not be the reader's choice. */
+  const [layout, setLayout] = createSignal(homeLayout());
   const [soundOn, setSoundOn] = createSignal(isSoundEnabled());
   const [animationsOn, setAnimationsOn] = createSignal(!animationsDisabled());
   const [customCursorOn, setCustomCursorOn] = createSignal(customCursorEnabled());
