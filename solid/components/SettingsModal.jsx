@@ -1,7 +1,7 @@
 import { createSignal, createMemo, createEffect, onMount, Show, For, Index } from "solid-js";
 import {
   Settings, X, Type, Search, Check, Volume2, VolumeX, Accessibility,
-  MousePointer2, Languages, User, LogOut, Lock, AlignLeft,
+  MousePointer2, Languages, User, LogOut, Lock, AlignLeft, LayoutList,
 } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { CORE_FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
@@ -10,6 +10,7 @@ import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preferen
 import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
 import { japaneseTextEnabled, setJapaneseTextEnabled } from "@/lib/japanese-text-preference";
 import { sectionDescriptionsEnabled, setSectionDescriptionsEnabled } from "@/lib/section-descriptions-preference";
+import { homeLayout, setHomeLayout } from "@/lib/layout-preference";
 import { ensureFontCatalogStyles, FONT_CATALOG } from "@/lib/font-catalog";
 import { Dialog, DialogPortal, DialogOverlay } from "~/components/ui/dialog";
 import { Dialog as KDialog } from "@kobalte/core/dialog";
@@ -34,6 +35,39 @@ const SIMPLE_FONT_LABELS = {
  * with GNU FreeMono (the embedded default) as the placeholder rather than
  * whatever font happens to be active.
  */
+/*
+ * The two Home presentations, in the order they are offered.
+ *
+ * Described by what the reader will see rather than by the design vocabulary
+ * behind it, as the plain-language customization rule requires. "Boss style"
+ * is Novesce's own name for the editorial front page, and "Summer style" for
+ * the original MABIS interface — they are two presentations of one page, which
+ * is why they are styles and not layouts.
+ *
+ * Summer is FIRST and is the default: DEFAULT_HOME_LAYOUT is "simple" in
+ * layout-preference.js, so a reader who has never chosen gets it.
+ *
+ * The stored value is still `simple` / `boss` under `mabis-home-layout`. The
+ * names are user-facing; the key is not, and renaming it would silently reset
+ * the preference for everyone who has already chosen one.
+ */
+const LAYOUT_CHOICES = [
+  {
+    key: "simple",
+    label: "Summer style",
+    ja: "サマースタイル",
+    detail: "Default · the interface the school has always used. White cards, one after another.",
+    jaDetail: "標準・これまで使ってきた画面です。白いカードが上から順に並びます。",
+  },
+  {
+    key: "boss",
+    label: "Boss style",
+    ja: "ボススタイル",
+    detail: "The editorial front page · large masthead, numbered sections and scrolling type.",
+    jaDetail: "大きな見出しや番号付きの区切りがある、雑誌のような表示です。",
+  },
+];
+
 function FontPreview(props) {
   let el;
   const [ready, setReady] = createSignal(false);
@@ -284,6 +318,61 @@ export default function SettingsModal(props) {
                   </div>
                 </details>
               </Show>
+
+              {/* Page layout — which of the two styles Home renders in. */}
+              <div id="setting-layout" class="scroll-mt-20">
+                <div class="mb-2 flex items-center gap-2">
+                  <LayoutList class="w-4 h-4 text-primary" />
+                  <JapaneseText
+                    ja="ページの並べ方"
+                    as="h3"
+                    class="block font-display font-bold text-foreground text-sm uppercase tracking-wide"
+                    japaneseClass="text-[0.78em] normal-case tracking-normal"
+                  >
+                    Page Layout
+                  </JapaneseText>
+                </div>
+                <JapaneseText
+                  as="p"
+                  ja="ホームの見た目です。どちらも同じ項目が同じ順番で、同じ機能を持ちます。見た目だけが変わります。"
+                  class="mb-3 block text-xs text-muted-foreground"
+                  japaneseClass="mt-1 block text-[0.9em]"
+                >
+                  How the Home page looks. Both choices have exactly the same sections, in the same order, with the same features — only the presentation changes.
+                </JapaneseText>
+                <div class="grid gap-px bg-border sm:grid-cols-2">
+                  <For each={LAYOUT_CHOICES}>
+                    {(choice) => {
+                      const selected = () => layout() === choice.key;
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => { setLayout(choice.key); setHomeLayout(choice.key); }}
+                          aria-pressed={selected()}
+                          class="min-h-20 bg-background p-3 text-left hover:bg-muted"
+                          classList={{ "ring-2 ring-inset ring-primary": selected() }}
+                        >
+                          <span class="flex items-center gap-1.5">
+                            <JapaneseText ja={choice.ja} class="block text-sm font-bold text-foreground" japaneseClass="text-[0.78em]">
+                              {choice.label}
+                            </JapaneseText>
+                            <Show when={selected()}>
+                              <Check class="w-3.5 h-3.5 text-primary" />
+                            </Show>
+                          </span>
+                          <JapaneseText
+                            ja={choice.jaDetail}
+                            class="mt-1 block text-xs leading-relaxed text-muted-foreground"
+                            japaneseClass="mt-0.5 block text-[0.9em]"
+                          >
+                            {choice.detail}
+                          </JapaneseText>
+                        </button>
+                      );
+                    }}
+                  </For>
+                </div>
+              </div>
 
               {/* Typography */}
               <div id="setting-font" class="scroll-mt-20">
