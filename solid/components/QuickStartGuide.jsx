@@ -1,7 +1,6 @@
 import { createEffect, onCleanup, Index, Show } from "solid-js";
 import { X } from "lucide-solid";
 import { JapaneseText } from "~/components/primitives";
-import { lockBodyScroll } from "@/lib/scroll-lock";
 
 const SECTIONS = [
   {
@@ -40,13 +39,14 @@ const SECTIONS = [
 export default function QuickStartGuide(props) {
   createEffect(() => {
     if (!props.open) return;
+    const previousOverflow = document.body.style.overflow;
     const handleKeyDown = (event) => {
       if (event.key === "Escape") props.onClose();
     };
-    const release = lockBodyScroll();
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
     onCleanup(() => {
-      release();
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     });
   });

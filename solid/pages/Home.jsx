@@ -1,4 +1,4 @@
-import { createSignal, lazy, Suspense, Show, ErrorBoundary } from "solid-js";
+import { createSignal, onMount, onCleanup, lazy, Suspense, Show } from "solid-js";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection } from "~/components/home/LazySection";
 import { SummerHome } from "~/components/home/summer";
@@ -6,6 +6,7 @@ import SummerHeader from "~/components/home/SummerHeader";
 import { useQuery } from "@tanstack/solid-query";
 import { Settings, Palette, CircleHelp, LogOut } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
+import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
 import { useHomeLayout } from "~/lib/prefs";
 import { usePresenceHeartbeat } from "~/lib/usePresence";
@@ -315,6 +316,11 @@ export default function Home() {
     </>
   );
 
+  onMount(() => {
+    const stop = installScrollStateClass();
+    onCleanup(stop);
+  });
+
   // Computed once. Not signals — nothing here changes after mount, so putting
   // it in the reactive graph would only add cost.
   const now = new Date();
@@ -394,38 +400,17 @@ export default function Home() {
         when={isBoss()}
         fallback={<SummerHome sections={SECTIONS}>{renderWidget}</SummerHome>}
       >
-        {/*
-         * BossHome (and everything it statically pulls in — SiteHeader,
-         * Glass, glass.css) is one dynamically-imported chunk. Suspense only
-         * covers the *loading* state; it does nothing if that import()
-         * rejects, which happens on a transient network blip, an ad/privacy
-         * blocker, or the classic stale-tab-after-a-redeploy case where the
-         * hashed chunk filename the page has in memory no longer exists on
-         * the server. With no ErrorBoundary that rejection just leaves
-         * `fallback={null}` showing forever — a silent, permanent blank
-         * where the header and liquid-glass chrome should be. This is the
-         * "glass sometimes just won't load" bug.
-         *
-         * The fix isn't to retry the same import() — a rejected dynamic
-         * import is cached rejected by the module loader, so retrying it
-         * in place resolves to the same rejection every time. Falling back
-         * to SummerHome (already a static import, same content, same ten
-         * sections, just the simple arrangement) means one failed chunk
-         * degrades the page instead of blanking it.
-         */}
-        <ErrorBoundary fallback={() => <SummerHome sections={SECTIONS}>{renderWidget}</SummerHome>}>
-          <Suspense fallback={null}>
-            <BossHome
-              sections={SECTIONS}
-              controls={editorialControls}
-              weekLabel={weekLabel}
-              dateLabel={dateLabel}
-              date={now}
-            >
-              {renderWidget}
-            </BossHome>
-          </Suspense>
-        </ErrorBoundary>
+        <Suspense fallback={null}>
+          <BossHome
+            sections={SECTIONS}
+            controls={editorialControls}
+            weekLabel={weekLabel}
+            dateLabel={dateLabel}
+            date={now}
+          >
+            {renderWidget}
+          </BossHome>
+        </Suspense>
       </Show>
 
       {/* Deferred until the browser is idle, as in React — same three, same order. */}

@@ -12,7 +12,6 @@ import {
   resolveThemeColor, stripHtml, safeFilename,
 } from "~/lib/quill-setup";
 import { downloadOdt } from "@/lib/odt-export";
-import { lockBodyScroll } from "@/lib/scroll-lock";
 import "quill/dist/quill.snow.css";
 
 /*
@@ -289,7 +288,9 @@ export default function DocsEditor(props) {
 
   createEffect(on(fullscreen, (isFull) => {
     if (!isFull) return;
-    onCleanup(lockBodyScroll());
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    onCleanup(() => { document.body.style.overflow = previous; });
   }, { defer: true }));
 
   createEffect(on(findOpen, (isOpen) => {

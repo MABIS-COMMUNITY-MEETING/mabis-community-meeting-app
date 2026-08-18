@@ -50,14 +50,8 @@
       html, body, #root { min-height: 100%; margin: 0; background: #11131a; }
       #root:empty { min-height: 100vh; }
 
-      /* pointer-events:none unconditionally. This is a full-viewport fixed
-         overlay, and it is neutralised two ways — a sibling selector and a
-         removal in main.jsx. If either misses (a host that re-mounts #root,
-         a bundle that fails before render) it becomes an invisible trap that
-         eats every scroll and click on the page. It never needs to receive
-         input, so it should never be able to. */
       #boot-splash {
-        position: fixed; inset: 0; z-index: 1; pointer-events: none;
+        position: fixed; inset: 0; z-index: 1;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center; gap: 1.5rem;
         background: #11131a; color: #f7f3ea;

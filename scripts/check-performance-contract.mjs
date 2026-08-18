@@ -97,9 +97,8 @@ const home = read("src/pages/Home.jsx");
 const discussion = read("src/components/DiscussionWidget.jsx");
 const feedback = read("src/pages/Feedback.jsx");
 const optionalCursor = read("src/components/OptionalCustomCursor.jsx");
+const scrollProgress = read("src/lib/scroll-progress.js");
 const smoothScroll = readIfPresent("src/components/SmoothScroll.jsx") + readIfPresent("solid/lib/perf.js");
-const chrome = read("solid/components/chrome.jsx");
-const motionCss = read("solid/solid-motion.css");
 const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
 const glass = read("src/styles/glass.css");
@@ -189,31 +188,11 @@ requireText("src/components/LoadingScreen.jsx", loadingScreen, "CACHING STUFF");
 forbidText("src/lib/home-route-warmup.js", homeRouteWarmup, 'from "three"');
 forbidText("src/App.jsx", app, "<SmoothScroll />");
 forbidText("scroll implementation", smoothScroll, 'addEventListener("wheel"');
-/*
- * Scrolling is the browser's, and only one thing may listen to it.
- *
- * src/lib/scroll-progress.js used to own a passive scroll listener, a rAF
- * publisher and a ResizeObserver, feeding a progress bar, a section counter,
- * a marquee band and the glass optical response. All of that was removed: the
- * page now scrolls natively and nothing redraws itself in response.
- *
- * What must survive is the opposite of decoration — installScrollStateClass()
- * toggles html.is-scrolling, which solid-motion.css uses to drop
- * backdrop-filter, hide the grain layer and pause infinite animations for the
- * duration of a gesture. That is what keeps a native scroll at frame rate on
- * an integrated GPU, so it is required, and required in the shell rather than
- * in one page.
- */
-requireText("src/App.jsx", app, "installScrollStateClass()");
-requireText("scroll implementation", smoothScroll, 'classList.add("is-scrolling")');
-forbidText("solid/components/chrome.jsx", chrome, "subscribeScrollProgress");
+requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListener("scroll", onScroll, { passive: true })');
+requireText("src/lib/scroll-progress.js", scrollProgress, 'classList.toggle("is-scrolling", active)');
+requireText("src/lib/scroll-progress.js", scrollProgress, "new ResizeObserver(scheduleMetrics)");
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
-/* Static. It used to measure its own rect on every scroll event and drive a
-   spring through the shared physics scheduler to write transform and opacity
-   per frame; a line that resizes because the page moved is the clearest signal
-   that the site, not the browser, is doing the scrolling. */
-forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, 'addEventListener("scroll"');
-forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "lineEl.style.transform");
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, ["style={{ scale, opacity }}", "lineEl.style.transform"]);
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
 /* A cache-first worker that never skips waiting serves the previous build to
    every open tab until all of them close. That turned into shipped fixes that
@@ -255,53 +234,8 @@ if (surfaceStart === -1) {
 requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf"]);
 requireText("src/components/JobsWidget.jsx", jobs, "appearanceRaf");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
-/*
- * content-visibility is allowed, but ONLY gated on cv-ready.
- *
- * solid-motion.css skips a section once `.cv-ready` says its entrance has
- * played. That gate is what makes it safe: a section the browser has rendered
- * at least once has a real measured height for `contain-intrinsic-size: auto`
- * to remember, so skipping it again on the way past costs no layout shift.
- *
- * index.css also carried `main [data-gp-section] { content-visibility: auto;
- * contain-intrinsic-size: auto 720px }`, ungated. Its 720px was dead on arrival
- * — both section components set contain-intrinsic-size inline, per section, and
- * an inline style always wins — but its content-visibility applied before first
- * render, which defeated the gate. Sections were skipped with nothing measured
- * to remember, so each one jumped from its estimate to its true height as it
- * revealed and the scroll position moved under the reader; it also discarded
- * the entrance animation, the exact bug the gate was introduced to fix.
- *
- * So: required in solid-motion.css behind cv-ready, forbidden ungated in
- * index.css.
- */
-requireText("solid/solid-motion.css", motionCss, ".cv-section.cv-ready");
-/* Declarations only. index.css documents this removal at length and names the
-   property while doing so; prose about why it is gone is not a regression. */
-forbidText("src/index.css", css.replace(/\/\*[\s\S]*?\*\//g, ""), "content-visibility: auto");
-requireText("src/components/home/LazySection.jsx", lazySection, "contain-intrinsic-size");
-/*
- * The custom scrollbar may only be drawn where the OS draws a classic one.
- *
- * Any ::-webkit-scrollbar declaration opts a scroller out of the platform's
- * overlay scrollbars. On Windows and Linux that is cosmetic; on macOS it swaps
- * a bar that hides, fades, widens on hover and takes no layout width for one
- * that does none of those. The site scrolled correctly on Windows and Linux and
- * felt broken on a Mac for precisely this reason, so every such rule is gated
- * on .classic-scrollbars and the class is set from a measurement before paint.
- */
-requireText("src/main.jsx", main, "applyScrollbarMode()");
-/* Both spellings. scrollbar-width is the standard property and opts a scroller
-   out of overlay scrollbars exactly as the -webkit- pseudo-element does, so
-   guarding only one of them leaves the door open. */
-/* Whole rule blocks, not just the selector: ::-webkit-scrollbar lives in the
-   selector and would go with it, but scrollbar-width is a declaration inside
-   the braces and would survive. */
-const scrollbarRules = css
-  .replace(/\/\*[\s\S]*?\*\//g, "")
-  .replace(/[^{}]*classic-scrollbars[^{}]*\{[^{}]*\}/g, "");
-forbidText("src/index.css", scrollbarRules, "::-webkit-scrollbar");
-forbidText("src/index.css", scrollbarRules, "scrollbar-width");
+requireText("src/index.css", css, "content-visibility: auto");
+requireText("src/index.css", css, "contain-intrinsic-size: auto 720px");
 requireText("src/main.jsx", main, "window.setTimeout(resolve, 800)");
 requireText("src/main.jsx", main, '.register("/sw.js"');
 requireText("package.json", packageJson, "node scripts/generate-service-worker.mjs");

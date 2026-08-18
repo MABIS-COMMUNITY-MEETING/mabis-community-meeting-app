@@ -27,7 +27,6 @@ import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
 import { applyHomeLayoutPreference, syncHomeLayoutCache } from "@/lib/layout-preference";
-import { applyScrollbarMode } from "@/lib/scrollbar-mode";
 import { preloadRoute } from "~/lib/routes";
 
 /*
@@ -79,11 +78,6 @@ async function bootstrap() {
   applyJapaneseTextPreference();
   applySectionDescriptionsPreference();
   applyHomeLayoutPreference();
-  /* Before first paint with the rest of them: the custom scrollbar must not
-     render once and then swap. Costs one forced layout of a detached 100px
-     box, and decides whether this machine gets the styled scrollbar at all —
-     see lib/scrollbar-mode.js. */
-  applyScrollbarMode();
 
   const replayed = applyThemeSnapshot();
 

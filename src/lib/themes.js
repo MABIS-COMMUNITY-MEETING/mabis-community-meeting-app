@@ -743,36 +743,8 @@ export function clearCustomColors({ notify = true } = {}) {
   if (notify) window.dispatchEvent(new Event("themeChanged"));
 }
 
-/**
- * The themes the app offers. MABIS, and nothing else (Novesce, Aug 2026).
- *
- * THEMES below still holds the whole catalogue — the palettes back the pride
- * ambience, the Frutiger Aero surface treatment in index.css and the
- * contrast-safety fixtures in check-theme-balance.mjs, so deleting the data is
- * a separate job from withdrawing the choice. Everything user-facing reads
- * THIS list, never THEMES directly; read THEMES and you put all of them back
- * in front of people.
- *
- * ~117 KiB of palette source is now unreachable by any UI path. It is lazy
- * (ThemeSwitcher/SettingsModal only), so it costs no boot time, but it is dead
- * weight and worth deleting once the couple of non-UI consumers above are
- * untangled.
- */
-export const SELECTABLE_THEME_KEYS = ["default"];
-
-export const isSelectableTheme = (key) => SELECTABLE_THEME_KEYS.includes(key);
-
-/**
- * The stored theme, coerced to one that is actually on offer.
- *
- * applyTheme() already falls back for an UNKNOWN key, but every retired theme
- * is still a known key — so without this a reader who picked one before it was
- * withdrawn kept it forever, and no amount of resetting their account record
- * would move them. Coercing on read is what actually retires a theme.
- */
 export function getStoredTheme() {
-  const stored = localStorage.getItem("mabis-theme");
-  return isSelectableTheme(stored) ? stored : "default";
+  return localStorage.getItem("mabis-theme") || "default";
 }
 
 export function getStoredCustomColors() {
@@ -947,22 +919,6 @@ export const FONT_LIBRARIES = [
   { key: "flintype", name: "FLINT*ype", detail: "FLINTA* discovery archive. Its current site is moving, so indexed commercial fonts are not mirrored without their licences.", url: "https://flintype.com/" },
 ];
 
-/*
- * OpenMoji leads every font stack the app writes.
- *
- * Its @font-face in index.css carries a `unicode-range` covering emoji
- * codepoints and nothing else, so putting it first can never affect a letter,
- * a digit or a CJK glyph — the browser skips it for anything outside that
- * range. What it does do is get there before the platform emoji font, which is
- * the whole point: the contract forbids relying on Apple Color Emoji / Segoe /
- * Noto, and those otherwise win by default for any emoji a PERSON typed.
- *
- * It belongs here rather than only in the CSS defaults because applyFont()
- * overwrites --font-* whenever a user picks a face. Prepending in the CSS
- * alone would hold until someone opened Settings and then quietly stop.
- */
-const EMOJI_FAMILY = "'OpenMojiColor'";
-
 function withGnuFallbacks(primary, generic = "monospace") {
   const selectedFamilies = primary.split(",").map((family) => family.trim()).filter(Boolean);
   const requiredFallbacks = [
@@ -972,13 +928,13 @@ function withGnuFallbacks(primary, generic = "monospace") {
     "'GNUFreeSerifThai'",
     generic,
   ];
-  return [...new Set([EMOJI_FAMILY, ...selectedFamilies, ...requiredFallbacks])].join(", ");
+  return [...new Set([...selectedFamilies, ...requiredFallbacks])].join(", ");
 }
 
 function applyResolvedFont(font) {
   const root = document.documentElement;
-  const thaiFallback = `${EMOJI_FAMILY}, 'GNUFreeSerifThai', 'GNUFreeSerifUI', serif`;
-  const cjkFallback = `${EMOJI_FAMILY}, 'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', monospace`;
+  const thaiFallback = "'GNUFreeSerifThai', 'GNUFreeSerifUI', serif";
+  const cjkFallback = "'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', monospace";
   const headingStack = withGnuFallbacks(font.heading);
   const bodyStack = withGnuFallbacks(font.body);
   const monoStack = withGnuFallbacks(font.mono);

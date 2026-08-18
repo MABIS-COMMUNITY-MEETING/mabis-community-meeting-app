@@ -203,19 +203,7 @@ self.addEventListener("activate", (event) => {
 async function applyLayout(layout) {
   const cache = await caches.open(LAYOUT_CACHE);
   if (layout === "boss") {
-    /*
-     * addAll() is all-or-nothing: if one URL in BOSS_LAYOUT_URLS 404s or hits
-     * a transient network error, the whole call rejects, meaning NONE of the
-     * URLs get cached — including glass.css, even though every other boss
-     * chunk fetched fine. One flaky request then quietly costs the whole
-     * layout its offline cache, so the next boss-layout paint (or the first
-     * one after an interrupted connection) has nothing to fall back on.
-     * Caching each URL independently means one failure only ever costs that
-     * one file.
-     */
-    await Promise.all(BOSS_LAYOUT_URLS.map((url) =>
-      cache.add(url).catch(() => {})
-    ));
+    await cache.addAll(BOSS_LAYOUT_URLS);
     return;
   }
   await Promise.all(BOSS_LAYOUT_URLS.map((url) => cache.delete(url)));
@@ -256,44 +244,17 @@ async function appShellNavigation(event) {
   }
 }
 
-/* Prefixes, not a regex. This file is emitted from a template literal, so any
-   backslash in it is an escape sequence for the GENERATOR first — a regex
-   literal here silently lost its \/ and shipped a worker that would not parse.
-   Plain string prefixes have nothing to escape. */
-const DEV_SERVER_PREFIXES = ["/@vite/", "/@id/", "/@fs/", "/node_modules/", "/src/", "/solid/"];
-
 async function staticAsset(request) {
   const cached = await caches.match(request, { ignoreSearch: true });
   if (cached) return cached;
 
-  try {
-    const response = await fetch(request);
-    if (response.ok && response.type === "basic") {
-      const runtime = await caches.open(RUNTIME_CACHE);
-      await runtime.put(request, response.clone());
-      await trim(runtime, MAX_RUNTIME_ENTRIES);
-    }
-    return response;
-  } catch (error) {
-    /*
-     * The network failed and this is not in the cache.
-     *
-     * This used to fall straight through as a rejected promise, and a
-     * rejection inside respondWith() makes the browser fail the resource
-     * OUTRIGHT — no retry, no fallback to the network it would have used
-     * without a worker. For a stylesheet that reads as "the CSS randomly did
-     * not load": the page renders unstyled with nothing in the console
-     * pointing at the worker.
-     *
-     * Try the cache once more, ignoring Vary this time — a stale copy of a
-     * hashed asset is always better than none. Only if that misses does the
-     * error propagate, and then it is the browser's own network error rather
-     * than one this worker manufactured.
-     */
-    const stale = await caches.match(request, { ignoreSearch: true, ignoreVary: true });
-    if (stale) return stale;
-    throw error;
+  const response = await fetch(request);
+  if (response.ok && response.type === "basic") {
+    const runtime = await caches.open(RUNTIME_CACHE);
+    await runtime.put(request, response.clone());
+    await trim(runtime, MAX_RUNTIME_ENTRIES);
   }
+  return response;
 }
 
 self.addEventListener("fetch", (event) => {
@@ -302,25 +263,6 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-
-  /*
-   * Never touch the dev server.
-   *
-   * A worker installed by an earlier PRODUCTION visit keeps controlling this
-   * origin, and the Base44 preview serves the app from Vite's dev server on
-   * that same origin. Those module URLs (/@vite/, /@fs/, /src/, HMR "?t="
-   * stamps) exist in no build this worker has ever cached, so every one was a
-   * guaranteed cache miss handed to a network fetch that fails the instant the
-   * dev server reloads — which is constantly. The result is stylesheets and
-   * chunks that intermittently do not arrive, in the preview only, with the
-   * built site working perfectly.
-   *
-   * Returning early leaves them to the browser, which is what a worker that
-   * knows nothing about them should have done from the start.
-   */
-  if (DEV_SERVER_PREFIXES.some((prefix) => url.pathname.startsWith(prefix)) || url.searchParams.has("t")) {
-    return;
-  }
 
   // Authenticated Base44 data is deliberately never placed in Cache Storage.
   if (
@@ -345,26 +287,6 @@ self.addEventListener("fetch", (event) => {
   }
 });
 `;
-
-/*
- * Parse the worker before writing it.
- *
- * This file is assembled inside a template literal, so every backslash in it
- * is an escape sequence for the generator first. A regex literal here lost its
- * `\/` on the way out and produced `/^/(@vite|...)//` — not valid JavaScript.
- *
- * That failure is completely silent: the build succeeds, sw.js is written, and
- * the browser simply refuses to install the worker. Offline support and the
- * layout cache stop working and nothing anywhere says why. Parsing it here
- * turns a silent breakage into a failed build.
- */
-try {
-  new Function(serviceWorker);
-} catch (error) {
-  console.error(`Generated service worker is not valid JavaScript: ${error.message}`);
-  console.error("Check for backslashes in the template literal — they are escaped twice.");
-  process.exit(1);
-}
 
 fs.writeFileSync(path.join(dist, "sw.js"), serviceWorker);
 const bytes = [...precache].reduce((total, url) => {
