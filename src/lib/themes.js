@@ -642,8 +642,31 @@ export function clearCustomColors({ notify = true } = {}) {
   if (notify) window.dispatchEvent(new Event("themeChanged"));
 }
 
+/**
+ * The themes the app offers. MABIS, and nothing else (Novesce, Aug 2026).
+ *
+ * THEMES below still holds the whole catalogue — the palettes back the pride
+ * ambience, the Frutiger Aero surface treatment in index.css and the
+ * contrast-safety fixtures in check-theme-balance.mjs, so deleting the data is
+ * a separate job from withdrawing the choice. Everything user-facing reads
+ * THIS list, never THEMES directly; read THEMES and you put all of them back
+ * in front of people.
+ */
+export const SELECTABLE_THEME_KEYS = ["default"];
+
+export const isSelectableTheme = (key) => SELECTABLE_THEME_KEYS.includes(key);
+
+/**
+ * The stored theme, coerced to one that is actually on offer.
+ *
+ * applyTheme() already falls back for an UNKNOWN key, but every retired theme
+ * is still a KNOWN key — so without this a reader who picked one before it was
+ * withdrawn keeps it forever, and no amount of resetting their account record
+ * moves them. Coercing on read is what actually retires a theme.
+ */
 export function getStoredTheme() {
-  return localStorage.getItem("mabis-theme") || "default";
+  const stored = localStorage.getItem("mabis-theme");
+  return isSelectableTheme(stored) ? stored : "default";
 }
 
 export function getStoredCustomColors() {
