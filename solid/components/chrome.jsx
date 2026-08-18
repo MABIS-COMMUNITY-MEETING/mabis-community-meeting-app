@@ -9,9 +9,9 @@
  * (a right-edge section counter with its own progress line) used to live here
  * too. Both existed only to draw the scroll position back at the reader, and
  * both drove a style.transform write on every frame of every scroll. They were
- * removed so scrolling is the browser's business alone — see "Scrolling" in
- * README.md. Nothing else consumed src/lib/scroll-progress.js, so that module
- * and its passive scroll listener went with them.
+ * removed so scrolling is the browser's business alone — see "Scrolling belongs
+ * to the browser" in README.md. Nothing else consumed src/lib/scroll-progress.js,
+ * so that module and its passive scroll listener went with them.
  *
  * What remains here is static: no listeners, no per-frame writes.
  */
