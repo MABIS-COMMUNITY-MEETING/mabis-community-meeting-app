@@ -15,6 +15,7 @@ import ScrollScaleRitual from "~/components/home/ScrollScaleRitual";
 import BirthdayBanner from "~/components/BirthdayBanner";
 import { ScrollSectionIndicator } from "~/components/chrome";
 import { PageFooter } from "~/components/page-chrome";
+import StyleWelcome from "~/components/home/StyleWelcome";
 import { SummerHome } from "~/components/home/summer";
 import SummerHeader from "~/components/home/SummerHeader";
 import { useHomeLayout } from "~/lib/prefs";
@@ -396,6 +397,13 @@ export default function Home() {
           <SettingsModal open onClose={() => setShowSettings(false)} isAdmin={isAdmin()} />
         </Suspense>
       </Show>
+
+      {/* First visit only — asks once, then never again. Sits above the content
+          in BOTH styles so the question is not tied to the one it happens to
+          be defaulting to. */}
+      <div class="mx-auto max-w-[1440px] px-4 pt-4 sm:px-6">
+        <StyleWelcome />
+      </div>
 
       <Show
         when={isBoss()}
