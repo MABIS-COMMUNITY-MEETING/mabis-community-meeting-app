@@ -1,1 +1,0 @@
-import{b as s,a5 as t,a6 as n,k as r}from"./index-B3BM_l5O.js";function u(){const[o,a]=s(t()),e=()=>a(t());return window.addEventListener(n,e),window.addEventListener("storage",e),r(()=>{window.removeEventListener(n,e),window.removeEventListener("storage",e)}),o}export{u};
