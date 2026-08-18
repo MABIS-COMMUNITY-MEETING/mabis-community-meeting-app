@@ -1,0 +1,1 @@
+import{I as e,U as t}from"./web-CS2Ad8n3.js";import{r as n,t as r}from"./index-DYEFZc7I.js";function i(){let[i,a]=e(n()),o=()=>a(n());return window.addEventListener(r,o),window.addEventListener(`storage`,o),t(()=>{window.removeEventListener(r,o),window.removeEventListener(`storage`,o)}),i}export{i as t};
