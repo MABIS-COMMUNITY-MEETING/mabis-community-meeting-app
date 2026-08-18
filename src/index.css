@@ -2538,9 +2538,12 @@ html.is-scrolling .widget-loading-shell {
 
   .mobile-horizontal-scroll {
     overscroll-behavior-inline: contain;
-    scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
   }
+  /* Gated for the same reason as the base scrollbar rule: scrollbar-width
+     opts a scroller out of overlay scrollbars just as ::-webkit-scrollbar
+     does. See lib/scrollbar-mode.js. */
+  html.classic-scrollbars .mobile-horizontal-scroll { scrollbar-width: thin; }
 }
 
 /* ── reduced motion ── */
