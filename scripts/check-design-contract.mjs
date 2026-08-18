@@ -468,7 +468,23 @@ requireText("src/lib/japanese-text-preference.js", japanesePreference, 'mabis-ja
 requireText("src/lib/japanese-text-preference.js", japanesePreference, '=== "true"');
 requireText("src/components/SettingsModal.jsx", settingsModal, "SIMPLE_FONT_KEYS");
 requireText("src/components/SettingsModal.jsx", settingsModal, "Advanced font choices");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "SIMPLE_THEME_KEYS");
+/*
+ * The picker must build its list from the allow-list, not from THEMES.
+ *
+ * THEMES still holds the ~140 retired palettes, because they back the pride
+ * ambience, the Frutiger Aero surface and the contrast fixtures. So the
+ * catalogue is one `Object.entries(THEMES)` away from returning to the UI, and
+ * that regression would look like a feature rather than a fault. Pin the
+ * allow-list, and forbid enumerating THEMES in the surface that renders the
+ * swatches.
+ */
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "SELECTABLE_THEME_KEYS");
+requireText("src/lib/themes.js", themes, "export const SELECTABLE_THEME_KEYS");
+if (/Object\.entries\(THEMES\)|Object\.keys\(THEMES\)/.test(themeSwitcher)) {
+  failures.push(
+    "src/components/ThemeSwitcher.jsx enumerates THEMES directly — that puts every retired theme back in the picker. Build the list from SELECTABLE_THEME_KEYS."
+  );
+}
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "Browse all themes");
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "VOICE YOUR WORDS");
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "A WEEKLY RITUAL");
