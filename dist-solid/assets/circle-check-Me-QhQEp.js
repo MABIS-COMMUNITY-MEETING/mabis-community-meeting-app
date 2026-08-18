@@ -1,0 +1,1 @@
+import{O as e,V as t}from"./web-CS2Ad8n3.js";import{t as n}from"./Icon-CkCn3QH5.js";var r=[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`path`,{d:`m9 12 2 2 4-4`,key:`dzmm74`}]],i=i=>e(n,t(i,{iconNode:r,name:`circle-check`}));export{i as t};
