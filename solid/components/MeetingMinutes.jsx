@@ -161,12 +161,21 @@ export default function MeetingMinutes(props) {
     saveMutation.mutate(payload);
   };
 
-  const handleChange = (html) => {
-    latest = { week: props.weekLabel, html };
+  /*
+   * `week` is the week the EDITOR was built for, passed down by the keyed
+   * <Show> below — not props.weekLabel read at call time.
+   *
+   * The difference matters during a week switch, when the prop has already
+   * moved but the editor emitting the change has not been torn down yet.
+   * Reading the prop there is what let one week's text land in another's
+   * record. It defaults to the prop so a caller that does not care is unaffected.
+   */
+  const handleChange = (html, week = props.weekLabel) => {
+    latest = { week, html };
     if (props.canEdit === false) return;
 
     // Target captured now, while we are definitely still on this week.
-    const payload = { html, week: props.weekLabel, recordId: recordIdFor(props.weekLabel) };
+    const payload = { html, week, recordId: recordIdFor(week) };
     if (pending) clearTimeout(pending.timer);
     const timer = setTimeout(() => {
       pending = null;
@@ -199,33 +208,12 @@ export default function MeetingMinutes(props) {
     window.removeEventListener("pagehide", flushPending);
   });
 
-  /* One component identity per week — changing week swaps the identity, which
-     is what forces DocsEditor to remount with that week's initialHtml. */
-  const editors = new Map();
-  const editorFor = (week) => {
-    if (!editors.has(week)) {
-      editors.set(week, () => (
-        <DocsEditor
-          title={props.weekTitle || "Meeting minutes"}
-          initialHtml={initialHtml()}
-          onChange={handleChange}
-          onSave={props.canEdit === false ? undefined : handleSave}
-          saving={saveMutation.isPending}
-          saved={savedFlash()}
-          minHeight="420px"
-          placeholder="Write the minutes for this week…"
-        />
-      ));
-    }
-    return editors.get(week);
-  };
-
-  const handleSave = () => {
+  const handleSave = (week = props.weekLabel) => {
     if (pending) return flushPending();
     saveMutation.mutate({
-      html: latest.week === props.weekLabel ? latest.html : initialHtml(),
-      week: props.weekLabel,
-      recordId: recordIdFor(props.weekLabel),
+      html: latest.week === week ? latest.html : initialHtml(),
+      week,
+      recordId: recordIdFor(week),
     });
   };
 
@@ -240,16 +228,44 @@ export default function MeetingMinutes(props) {
     >
       <IdleMount timeout={1200}>
         <Suspense fallback={<ReadOnlyPaper html={initialHtml()} canEdit={props.canEdit} />}>
-          <DocsEditor
-            title={props.weekTitle || "Meeting minutes"}
-            initialHtml={initialHtml()}
-            onChange={handleChange}
-            onSave={props.canEdit === false ? undefined : handleSave}
-            saving={saveMutation.isPending}
-            saved={savedFlash()}
-            minHeight="420px"
-            placeholder="Write the minutes for this week…"
-          />
+          {/*
+            keyed, and load-bearing: one editor identity per week.
+
+            DocsEditor seeds Quill from `initialHtml` exactly once, in onMount
+            (clipboard.dangerouslyPasteHTML). It has no effect that reseeds when
+            the prop changes — deliberately, because reseeding mid-edit would
+            fight the caret every time a save round-tripped. So switching week
+            has to swap the component identity, or Quill simply keeps showing
+            the week you came from.
+
+            Without this the bug was worse than a display glitch: the editor
+            still held 14 August's text, and the first keystroke typed on the
+            new week sent that whole document into the new week's record
+            through handleChange. Two weeks, one set of minutes.
+
+            It only reproduced when the target week's topics were already
+            cached — on a cache miss `topicsQuery.isLoading` flips, the outer
+            <Show> tears the editor down, and the remount hid it. That is why
+            it looked intermittent.
+
+            A previous attempt at this lived here as an `editors` Map keyed by
+            week, with a comment claiming it forced the remount. Nothing ever
+            called it; the render below used <DocsEditor> directly. Removed.
+          */}
+          <Show when={props.weekLabel} keyed>
+            {(week) => (
+              <DocsEditor
+                title={props.weekTitle || "Meeting minutes"}
+                initialHtml={initialHtml()}
+                onChange={(html) => handleChange(html, week)}
+                onSave={props.canEdit === false ? undefined : () => handleSave(week)}
+                saving={saveMutation.isPending}
+                saved={savedFlash()}
+                minHeight="420px"
+                placeholder="Write the minutes for this week…"
+              />
+            )}
+          </Show>
         </Suspense>
       </IdleMount>
     </Show>
