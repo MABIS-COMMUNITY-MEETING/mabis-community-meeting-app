@@ -15,6 +15,9 @@ import ScrollScaleRitual from "~/components/home/ScrollScaleRitual";
 import BirthdayBanner from "~/components/BirthdayBanner";
 import { ScrollSectionIndicator } from "~/components/chrome";
 import { PageFooter } from "~/components/page-chrome";
+import { SummerHome } from "~/components/home/summer";
+import SummerHeader from "~/components/home/SummerHeader";
+import { useHomeLayout } from "~/lib/prefs";
 
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
@@ -241,10 +244,67 @@ export default function Home() {
   const weekLabel = `${getISOWeekYear(now)}-W${String(getISOWeek(now)).padStart(2, "0")}`;
   const dateLabel = format(now, "dd.MM.yyyy");
 
+  /*
+   * One renderWidget(), handed to BOTH styles.
+   *
+   * This block used to sit inline inside the editorial <For>. Extracting it is
+   * the whole reason the two styles cannot drift: widget work lands in both
+   * without anyone remembering to copy it, and only page furniture — the bar,
+   * the masthead, the interludes — is written twice.
+   */
+  const renderWidget = (s) => (
+    <Show
+      when={WIDGETS[s.index]}
+      fallback={
+        <div
+          class="lazy-section-placeholder"
+          style={{
+            "--lazy-min-height": `${s.height}px`,
+            "contain-intrinsic-size": `auto ${s.height}px`,
+          }}
+          aria-hidden
+        />
+      }
+    >
+      {(Widget) => (
+        <Suspense
+          fallback={
+            <div
+              class="lazy-section-placeholder"
+              style={{ "--lazy-min-height": `${s.height}px` }}
+              aria-hidden
+            />
+          }
+        >
+          {(() => {
+            const W = Widget();
+            return (
+              <W
+                isAdmin={isAdmin()}
+                members={members()}
+                canChangeRoles={isAdmin()}
+                canStart={isAdmin()}
+                onStartMeeting={() => window.dispatchEvent(new CustomEvent("startMeetingMode"))}
+              />
+            );
+          })()}
+        </Suspense>
+      )}
+    </Show>
+  );
+
   return (
-    <div class="editorial-home min-h-screen bg-background overflow-x-hidden">
-      <SiteHeader rightSlot={controls} />
-      <ScrollSectionIndicator total={10} />
+    <div
+      class="editorial-home min-h-screen bg-background overflow-x-hidden"
+      classList={{ "summer-home": !isBoss() }}
+    >
+      <Show
+        when={isBoss()}
+        fallback={<SummerHeader canSeeInbox={isAdmin()} rightSlot={controls} />}
+      >
+        <SiteHeader rightSlot={controls} />
+        <ScrollSectionIndicator total={10} />
+      </Show>
 
       <Show when={showHelp()}>
         <Suspense fallback={null}>
