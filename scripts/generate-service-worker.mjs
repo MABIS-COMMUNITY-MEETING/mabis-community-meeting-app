@@ -248,13 +248,34 @@ async function staticAsset(request) {
   const cached = await caches.match(request, { ignoreSearch: true });
   if (cached) return cached;
 
-  const response = await fetch(request);
-  if (response.ok && response.type === "basic") {
-    const runtime = await caches.open(RUNTIME_CACHE);
-    await runtime.put(request, response.clone());
-    await trim(runtime, MAX_RUNTIME_ENTRIES);
+  try {
+    const response = await fetch(request);
+    if (response.ok && response.type === "basic") {
+      const runtime = await caches.open(RUNTIME_CACHE);
+      await runtime.put(request, response.clone());
+      await trim(runtime, MAX_RUNTIME_ENTRIES);
+    }
+    return response;
+  } catch (error) {
+    /*
+     * The network failed and this is not in the cache.
+     *
+     * This used to fall straight through as a rejected promise, and a
+     * rejection inside respondWith() makes the browser fail the resource
+     * OUTRIGHT — no retry, no fallback to the network it would have used
+     * without a worker. For a stylesheet that reads as "the CSS randomly did
+     * not load": the page renders unstyled with nothing in the console
+     * pointing at the worker.
+     *
+     * Try the cache once more, ignoring Vary this time — a stale copy of a
+     * hashed asset is always better than none. Only if that misses does the
+     * error propagate, and then it is the browser's own network error rather
+     * than one this worker manufactured.
+     */
+    const stale = await caches.match(request, { ignoreSearch: true, ignoreVary: true });
+    if (stale) return stale;
+    throw error;
   }
-  return response;
 }
 
 self.addEventListener("fetch", (event) => {
@@ -263,6 +284,25 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  /*
+   * Never touch the dev server.
+   *
+   * A worker installed by an earlier PRODUCTION visit keeps controlling this
+   * origin, and the Base44 preview serves the app from Vite's dev server on
+   * that same origin. Those module URLs (/@vite/, /@fs/, /src/, HMR "?t="
+   * stamps) exist in no build this worker has ever cached, so every one was a
+   * guaranteed cache miss handed to a network fetch that fails the instant the
+   * dev server reloads — which is constantly. The result is stylesheets and
+   * chunks that intermittently do not arrive, in the preview only, with the
+   * built site working perfectly.
+   *
+   * Returning early leaves them to the browser, which is what a worker that
+   * knows nothing about them should have done from the start.
+   */
+  if (/^\/(@vite|@id|@fs|node_modules|src|solid)\//.test(url.pathname) || url.searchParams.has("t")) {
+    return;
+  }
 
   // Authenticated Base44 data is deliberately never placed in Cache Storage.
   if (
