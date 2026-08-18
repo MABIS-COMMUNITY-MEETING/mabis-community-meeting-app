@@ -86,6 +86,28 @@ export async function pullPrefs() {
       if (keepLocalJapaneseText && [JAPANESE_TEXT_STORAGE_KEY, JAPANESE_TEXT_UPDATED_AT_KEY].includes(k)) return;
       localStorage.setItem(k, v);
     });
+
+    /*
+     * The account is authoritative for theme IDENTITY.
+     *
+     * The loop above only ever writes keys the account HAS. A key the account
+     * does not have was left untouched, so a theme or a colour pair set once
+     * on a device outlived the account forever — there was no value that could
+     * be stored centrally to undo it, and no amount of resetting someone's
+     * record would put their browser back on the house palette.
+     *
+     * Clearing these three when the account omits them makes the record the
+     * single source of truth: getStoredTheme() falls back to "default", and
+     * applyStoredPrefs() below repaints from that.
+     *
+     * Deliberately just these three. The rest of the "mabis" bag holds
+     * device-local state that was never meant to round-trip — burst-scheduler
+     * timings, per-week meeting flags — and deleting those because the account
+     * has not seen them would throw away working data to fix a palette.
+     */
+    for (const key of ["mabis-theme", "mabis-custom-colors", "mabis-theme-snapshot-v1"]) {
+      if (!(key in remote)) localStorage.removeItem(key);
+    }
   }
 
   const animationPreferenceChanged = applyStoredPrefs();
