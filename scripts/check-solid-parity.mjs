@@ -567,7 +567,6 @@ if (route === "/login") {
       (textNow().match(/BANGKOK/g) || []).length >= 2,
       "the band renders its sequence twice for the seamless loop");
     check("scroll-scale ritual rendered", textNow().includes("VOICE YOUR WORDS"));
-    check("scroll section indicator rendered", textNow().includes("SCROLL"));
     check("page guide rendered", textNow().includes("Choose where to go"));
     check("page footer rendered", textNow().includes("COLOPHON"));
   } else {
@@ -755,7 +754,16 @@ if (route === "/login") {
 const shellHtml = () => (root ? root.innerHTML : "");
 check("grain overlay mounted", shellHtml().includes("grain-layer"));
 check("palette stripe mounted", shellHtml().includes("--palette-stripes"));
-check("scroll progress bar mounted", shellHtml().includes("--palette-gradient"));
+/*
+ * Inverted deliberately. The shell used to mount a 2px scroll-progress bar
+ * here, and the boss layout a right-edge section counter; both redrew
+ * themselves on every scroll frame. Scrolling belongs to the browser, so the
+ * assertion is now that they stay gone — re-adding either would put a
+ * per-frame style write back on every scroll of every route.
+ */
+check("no scroll-driven chrome in the shell",
+  !shellHtml().includes("--palette-gradient"),
+  "the scroll-progress bar is back in App.jsx");
 
 // React wraps every route EXCEPT Splash in PageTransition.
 if (route === "/") {
