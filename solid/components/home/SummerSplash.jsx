@@ -74,7 +74,23 @@ export default function SummerSplash(props) {
   const motes = buildMotes(moteCount());
 
   return (
-    <div class="summer-splash fixed inset-0 flex flex-col items-center justify-center overflow-hidden">
+    {/*
+      * Normal flow, not `fixed inset-0`.
+      *
+      * The original was fixed, and on a tall window that looks identical — but
+      * a fixed, overflow-hidden panel is exactly as tall as the viewport and
+      * never scrolls, so anything that does not fit is simply unreachable. In
+      * a short viewport (the Base44 preview iframe, a phone in landscape, a
+      * small window) the Start button fell off the bottom with no way to get
+      * to it.
+      *
+      * `min-h-[100dvh]` fills the screen when there is room and grows the
+      * document when there is not, so the page scrolls instead of clipping.
+      * `relative` keeps providing the positioning context the absolutely
+      * placed motes need, which is the only thing `fixed` was really doing
+      * for them.
+      */}
+    <div class="summer-splash relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden px-4 py-12">
       <For each={motes}>
         {(m) => (
           <span
@@ -96,7 +112,7 @@ export default function SummerSplash(props) {
 
       <span class="summer-splash-glow" aria-hidden="true" />
 
-      <div class="relative z-10 flex w-full max-w-2xl flex-col items-center px-8 text-center">
+      <div class="relative z-10 flex w-full max-w-2xl flex-col items-center px-4 text-center sm:px-8">
         <div class="mb-6 flex h-32 w-32 items-center justify-center overflow-hidden rounded-3xl bg-white shadow-2xl">
           <img src={LOGO} alt="MABIS" width="112" height="112" class="h-28 w-28 rounded-3xl object-contain" />
         </div>
