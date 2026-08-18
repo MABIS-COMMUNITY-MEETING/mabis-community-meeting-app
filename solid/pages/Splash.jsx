@@ -1,4 +1,6 @@
-import { createSignal, onMount, onCleanup, For } from "solid-js";
+import { createSignal, createEffect, onMount, onCleanup, For, Show } from "solid-js";
+import { useNavigate } from "@solidjs/router";
+import { useAuth } from "~/lib/AuthContext";
 import { ArrowUpRight, Plus, ArrowDown } from "lucide-solid";
 import { subscribe } from "@/lib/physics/scheduler";
 import { integrateSpring } from "@/lib/physics/math";
@@ -81,7 +83,19 @@ export default function Splash() {
   // The React page reads auth to pick the button label. AuthContext has not
   // been ported yet — that is its own migration task — so this slice renders
   // the signed-out label. Everything visual is unaffected.
-  const isAuthenticated = () => false;
+  /*
+   * Real auth, not a stub.
+   *
+   * This was hardcoded to false, so Enter always went to /login and the button
+   * always read "ENTER LOG IN" — a signed-in reader was sent to a login screen
+   * they had no business seeing, every single time.
+   */
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const isAuthenticated = () => auth.isAuthenticated();
+
+  /* Set when Enter is pressed while the session probe is still in flight. */
+  const [waitingForAuth, setWaitingForAuth] = createSignal(false);
 
   onMount(() => {
     if (!finePointer()) return;
@@ -119,9 +133,33 @@ export default function Splash() {
     });
   });
 
+  const go = () => navigate(auth.isAuthenticated() ? "/home" : "/login");
+
+  /*
+   * Enter, without ever showing a signed-in reader the login screen.
+   *
+   * Two things had to change. `window.location.href` was a full page load: it
+   * threw away the running app and paid the whole boot again — re-fetching the
+   * HTML, re-parsing the bundle, re-applying theme and font, and redoing the
+   * auth check that had just finished. Client-side navigation keeps all of it.
+   *
+   * And the decision has to WAIT. isLoadingAuth() starts true, so a reader who
+   * presses Enter before the probe resolves reads as signed out and gets
+   * bounced to /login even though their session is perfectly good. Pressing
+   * Enter early now records the intent and the effect below routes the moment
+   * the answer arrives.
+   */
   const enter = () => {
-    window.location.href = isAuthenticated() ? "/home" : "/login";
+    if (auth.isLoadingAuth()) { setWaitingForAuth(true); return; }
+    go();
   };
+
+  createEffect(() => {
+    if (waitingForAuth() && !auth.isLoadingAuth()) {
+      setWaitingForAuth(false);
+      go();
+    }
+  });
 
   const marqueeRun = () => (
     <For each={Array.from({ length: 6 })}>
@@ -245,7 +283,11 @@ export default function Splash() {
             >
               <span class="tech-label">N° 02</span>
               <span class="text-lg sm:text-xl font-display font-normal tracking-tight">
-                {isAuthenticated() ? "ENTER START" : "ENTER LOG IN"}
+                <Show when={!waitingForAuth()} fallback="ENTER · CHECKING…">
+                  <Show when={!auth.isLoadingAuth()} fallback="ENTER">
+                    {isAuthenticated() ? "ENTER START" : "ENTER LOG IN"}
+                  </Show>
+                </Show>
               </span>
               <span class="relative flex h-8 w-8 items-center justify-center overflow-hidden">
                 <ArrowUpRight class="h-6 w-6" />
