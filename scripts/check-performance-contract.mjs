@@ -97,8 +97,9 @@ const home = read("src/pages/Home.jsx");
 const discussion = read("src/components/DiscussionWidget.jsx");
 const feedback = read("src/pages/Feedback.jsx");
 const optionalCursor = read("src/components/OptionalCustomCursor.jsx");
-const scrollProgress = read("src/lib/scroll-progress.js");
 const smoothScroll = readIfPresent("src/components/SmoothScroll.jsx") + readIfPresent("solid/lib/perf.js");
+const chrome = read("solid/components/chrome.jsx");
+const appShell = read("solid/App.jsx");
 const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
 const glass = read("src/styles/glass.css");
@@ -188,11 +189,31 @@ requireText("src/components/LoadingScreen.jsx", loadingScreen, "CACHING STUFF");
 forbidText("src/lib/home-route-warmup.js", homeRouteWarmup, 'from "three"');
 forbidText("src/App.jsx", app, "<SmoothScroll />");
 forbidText("scroll implementation", smoothScroll, 'addEventListener("wheel"');
-requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListener("scroll", onScroll, { passive: true })');
-requireText("src/lib/scroll-progress.js", scrollProgress, 'classList.toggle("is-scrolling", active)');
-requireText("src/lib/scroll-progress.js", scrollProgress, "new ResizeObserver(scheduleMetrics)");
+/*
+ * Scrolling is the browser's, and only one thing may listen to it.
+ *
+ * src/lib/scroll-progress.js used to own a passive scroll listener, a rAF
+ * publisher and a ResizeObserver, feeding a progress bar, a section counter,
+ * a marquee band and the glass optical response. All of that was removed: the
+ * page now scrolls natively and nothing redraws itself in response.
+ *
+ * What must survive is the opposite of decoration — installScrollStateClass()
+ * toggles html.is-scrolling, which solid-motion.css uses to drop
+ * backdrop-filter, hide the grain layer and pause infinite animations for the
+ * duration of a gesture. That is what keeps a native scroll at frame rate on
+ * an integrated GPU, so it is required, and required in the shell rather than
+ * in one page.
+ */
+requireText("solid/App.jsx", appShell, "installScrollStateClass()");
+requireText("scroll implementation", smoothScroll, 'classList.add("is-scrolling")');
+forbidText("solid/components/chrome.jsx", chrome, "subscribeScrollProgress");
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, ["style={{ scale, opacity }}", "lineEl.style.transform"]);
+/* Static. It used to measure its own rect on every scroll event and drive a
+   spring through the shared physics scheduler to write transform and opacity
+   per frame; a line that resizes because the page moved is the clearest signal
+   that the site, not the browser, is doing the scrolling. */
+forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, 'addEventListener("scroll"');
+forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "lineEl.style.transform");
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
 /* A cache-first worker that never skips waiting serves the previous build to
    every open tab until all of them close. That turned into shipped fixes that
