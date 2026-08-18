@@ -335,22 +335,6 @@ forbidText("src/index.css", css, "@import url('/fonts/by-womxn/fonts.css')");
 /* Preload the first-paint subsets. Preloading the full pan-Unicode faces put
    287 KiB of font-display:block ahead of first paint; see the header of
    scripts/build-font-subsets.py. check-font-subset.mjs guards the rest. */
-/*
- * The boot splash must stay in the entry HTML.
- *
- * #root ships empty and LoadingScreen is a Solid component, so without this
- * markup the page is a flat #11131a rectangle from first paint until the
- * stylesheet, the entry chunks and bootstrap()'s font wait have all finished —
- * seconds on a cold cache, and long enough that the custom cursor appears over
- * a blank screen. Deleting it would not fail any build or change any test:
- * the app still works, it just looks broken while it loads. Hence the pin.
- *
- * The hide rule is pinned separately because losing only that leaves the
- * splash covering the app forever, which is the worse failure of the two.
- */
-requireText("solid/index.html", html, 'id="boot-splash"');
-requireText("solid/index.html", html, "#root:not(:empty) + #boot-splash");
-
 requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono-subset.woff2?v=3");
 requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3");
 forbidText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono.woff2");

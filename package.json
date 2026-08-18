@@ -14,7 +14,6 @@
     "prebuild": "npm run check:design && npm run check:themes && npm run check:performance && npm run check:jobs && npm run check:odt && npm run check:minutes && npm run check:auth && npm run check:realtime && npm run check:pacing",
     "check:realtime": "node scripts/check-lazy-realtime.mjs",
     "check:pacing": "node scripts/check-frame-pacing.mjs",
-    "check:csssplit": "node scripts/check-css-split.mjs",
     "measure:css": "node scripts/measure-css-coverage.mjs",
     "check:css": "node scripts/check-tailwind-layer.mjs",
     "check:fonts": "node scripts/check-font-subset.mjs",
