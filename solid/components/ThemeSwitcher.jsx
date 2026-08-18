@@ -90,7 +90,7 @@ function ThemeOption(props) {
   );
 }
 
-export default function ThemeSwitcher() {
+export default function ThemeSwitcher(props) {
   let menuEl;
   let loadMoreEl;
 
