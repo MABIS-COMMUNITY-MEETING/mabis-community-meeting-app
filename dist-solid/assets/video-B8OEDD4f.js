@@ -1,0 +1,1 @@
+import{I as a}from"./Icon-B5uRym7C.js";import{c as o,m as r}from"./index-B3BM_l5O.js";var t=[["path",{d:"m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5",key:"ftymec"}],["rect",{x:"2",y:"6",width:"14",height:"12",rx:"2",key:"158x01"}]],m=e=>o(a,r(e,{iconNode:t,name:"video"})),c=m;export{c as v};
