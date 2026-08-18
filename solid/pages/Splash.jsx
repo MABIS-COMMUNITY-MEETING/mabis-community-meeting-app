@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, For, Show } from "solid-js";
+import { createSignal, onMount, onCleanup, For } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import { ArrowUpRight, Plus, ArrowDown } from "lucide-solid";
 import { subscribe } from "@/lib/physics/scheduler";
@@ -12,8 +12,6 @@ import {
   MagneticButton,
   SplitChars,
 } from "~/components/primitives";
-import { useHomeLayout } from "~/lib/prefs";
-import SummerSplash from "~/components/home/SummerSplash";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 const EASE_CSS = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -78,7 +76,7 @@ function Enter(props) {
   return <div class={props.class} style={style()}>{props.children}</div>;
 }
 
-function EditorialSplash() {
+export default function Splash() {
   let bgRef;
   let titleRef;
 
@@ -290,30 +288,5 @@ function EditorialSplash() {
         </Marquee>
       </div>
     </div>
-  );
-}
-
-/**
- * The landing page for whichever style is selected.
- *
- * Routed through <Show> rather than a branch inside one component, so the
- * editorial splash's pointer-parallax subscription and its kinetic background
- * never mount at all under Summer style — the cheapest version of that work
- * is the version that does not run.
- */
-export default function Splash() {
-  const auth = useAuth();
-  const navigate = useNavigate();
-  const layout = useHomeLayout();
-
-  const enter = () => navigate(auth.isAuthenticated() ? "/home" : "/login");
-
-  return (
-    <Show
-      when={layout() === "boss"}
-      fallback={<SummerSplash authenticated={auth.isAuthenticated()} onEnter={enter} />}
-    >
-      <EditorialSplash />
-    </Show>
   );
 }

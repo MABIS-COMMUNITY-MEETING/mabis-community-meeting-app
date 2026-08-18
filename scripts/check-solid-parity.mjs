@@ -176,40 +176,6 @@ for (const k of Object.getOwnPropertyNames(window)) {
 Object.defineProperty(window, "performance", { value: globalThis.performance, configurable: true });
 globalThis.self = window;
 
-/*
- * Let chunk stylesheets resolve.
- *
- * jsdom does not fetch <link rel="stylesheet">, so it never fires their load
- * event. Vite's __vitePreload awaits exactly that event before resolving a
- * dynamic import whose chunk carries CSS — so any lazily-loaded component
- * with its own stylesheet hangs forever here and its whole route reads as
- * "never mounted", which is indistinguishable from a genuinely broken port.
- *
- * That stopped being a theoretical gap when glass.css moved into the boss
- * chunk: the entire boss layout became unverifiable, 62 assertions of
- * coverage lost to a harness limitation rather than to anything wrong.
- *
- * Firing the event is safe because nothing here reads the stylesheet's
- * CONTENT through the DOM — the rules are asserted against `builtCss`, read
- * off disk. It only unblocks the import.
- *
- * Quill is the documented exception. DocsEditor pulls quill.snow.css, and
- * when that import resolves Quill mounts and never settles (see the KNOWN GAP
- * note above); the run then dies on the watchdog instead of reporting. So
- * that one sheet stays unresolved, which leaves DocsEditor exactly as pending
- * as it has always been — no coverage lost relative to before.
- */
-const stylesheetLoadFixup = new window.MutationObserver((records) => {
-  for (const record of records) {
-    for (const node of record.addedNodes) {
-      if (node.tagName !== "LINK" || node.rel !== "stylesheet") continue;
-      if (/quill/i.test(node.href || "")) continue;
-      setTimeout(() => node.dispatchEvent(new window.Event("load")), 0);
-    }
-  }
-});
-stylesheetLoadFixup.observe(window.document.head, { childList: true, subtree: true });
-
 // Imported by real path, not a data: URL — the entry code-splits Splash and
 // Home into sibling chunks, and relative specifiers only resolve against a
 // real file URL.
@@ -340,31 +306,12 @@ if (route === "/login") {
   check("sign-in headline present", text.includes("Sign in"));
   check("Japanese title present", text.includes("サインイン"));
   check("subtitle present", text.includes("Continue with your MABIS Google account"));
-  /*
-   * The CTA's casing is style-dependent — editorial sets it in tech-label
-   * caps, Summer in sentence case — so match case-insensitively. What must
-   * never vary is that the button exists: the contract is that /login exposes
-   * exactly one Continue with Google control.
-   */
-  check("Google CTA present", /continue with google/i.test(text));
-
-  if (bossLayout) {
-    check("AuthLayout IDENTITY label present", text.includes("IDENTITY"));
-    check("AuthLayout AUTH label present", text.includes("AUTH"));
-    check("AuthLayout N° 00 present", text.includes("N° 00"));
-    check("AuthLayout background word present", text.includes("MABIS"));
-    check("auth entrance keyframe applied (not framer)", html2.includes("auth-rise"));
-  } else {
-    /*
-     * Summer style drops the editorial furniture entirely (Novesce, Aug 2026).
-     * Asserting its ABSENCE is the point: a regression that reinstated the
-     * masthead here would otherwise pass every remaining check on this page.
-     */
-    check("Summer auth shell rendered", !!(root && root.querySelector(".summer-page")));
-    check("editorial N° 00 meta absent in Summer style", !text.includes("N° 00"));
-    check("editorial IDENTITY caption absent in Summer style", !text.includes("IDENTITY"));
-    check("editorial auth entrance not used in Summer style", !html2.includes("auth-rise"));
-  }
+  check("Google CTA present", text.includes("CONTINUE WITH GOOGLE"));
+  check("AuthLayout IDENTITY label present", text.includes("IDENTITY"));
+  check("AuthLayout AUTH label present", text.includes("AUTH"));
+  check("AuthLayout N° 00 present", text.includes("N° 00"));
+  check("AuthLayout background word present", text.includes("MABIS"));
+  check("auth entrance keyframe applied (not framer)", html2.includes("auth-rise"));
   check("logo slot rendered, not the icon fallback",
     !!(root && root.querySelector('img[alt="MABIS"]')),
     "AuthLayout should take the logo branch, so <Dynamic component={icon}> must not render");
@@ -380,7 +327,7 @@ if (route === "/login") {
   // would be looking at the login redirect instead, and every check below would
   // be vacuously true, so assert we are NOT on login first.
   check("signed-in session recovered (not bounced to login)",
-    !/continue with google/i.test(text),
+    !text.includes("CONTINUE WITH GOOGLE"),
     "landed on /login — the seeded offline session was rejected");
   /*
    * Wait for the masthead, and assert on something only Home renders.
@@ -567,6 +514,7 @@ if (route === "/login") {
       (textNow().match(/BANGKOK/g) || []).length >= 2,
       "the band renders its sequence twice for the seamless loop");
     check("scroll-scale ritual rendered", textNow().includes("VOICE YOUR WORDS"));
+    check("scroll section indicator rendered", textNow().includes("SCROLL"));
     check("page guide rendered", textNow().includes("Choose where to go"));
     check("page footer rendered", textNow().includes("COLOPHON"));
   } else {
@@ -666,7 +614,7 @@ if (route === "/login") {
     check("submit is disabled until a message is typed",
       [...root.querySelectorAll("button")].some((b) => b.disabled && /Submit/.test(b.textContent)));
   }
-} else if (route === "/" && bossLayout) {
+} else if (route === "/") {
   // ── content parity with src/pages/Splash.jsx ──────────────────────────────
   check('hero headline "COMMUNITY" present', text.includes("COMMUNITY"));
   check('hero headline "MEETING" present', text.includes("MEETING"));
@@ -703,41 +651,6 @@ if (route === "/login") {
   // Elements that DO animate a transform should have one inline.
   const vertLabels = root ? [...root.querySelectorAll(".vert-text")] : [];
   check("vertical side labels rendered", vertLabels.length >= 2);
-} else if (route === "/") {
-  /*
-   * Summer style's splash (the default). A port of the ORIGINAL MABIS landing
-   * — app 6a7f1d91128253fcdbf4f5a2 — not of the editorial one above.
-   *
-   * The performance assertions are the point of this block. The original drove
-   * 216 elements from framer-motion on repeat:Infinity, each carrying a
-   * blurred box-shadow, and that is what made it unusable on a phone. The port
-   * animates transform and opacity from one shared CSS keyframe instead. A
-   * regression back to per-element JS animation, or to box-shadow glows, would
-   * look identical in a screenshot and would be invisible to every other check
-   * in this file — so it is pinned directly.
-   */
-  check("title present", text.includes("SECONDARY COMMUNITY") && text.includes("MEETING APP"));
-  check("CTA present", /start|log in/i.test(text));
-  check("Summer splash field rendered", !!(root && root.querySelector(".summer-splash")));
-  check("centre glow rendered", !!(root && root.querySelector(".summer-splash-glow")));
-
-  const motes = root ? [...root.querySelectorAll(".summer-splash-dot")] : [];
-  check("motes rendered", motes.length > 0, `found ${motes.length}`);
-  check("mote count is bounded well under the original 216",
-    motes.length <= 120,
-    `found ${motes.length} — the original shipped 216 to every device`);
-
-  check("motes carry no box-shadow (glow is a gradient, not a blur pass)",
-    motes.every((m) => !/box-shadow/i.test(m.getAttribute("style") || "")));
-  check("motes drive motion through CSS custom properties, not inline transforms",
-    motes.every((m) => {
-      const s = m.getAttribute("style") || "";
-      return s.includes("--dx") && s.includes("--dy") && !/(^|;)\s*transform:/i.test(s);
-    }));
-
-  check("editorial splash furniture absent in Summer style",
-    !text.includes("N° 02") && !html2.includes("corner-bracket") && !html2.includes("huge-crop"));
-  check("no marquee on the Summer splash", !html2.includes("MABIS BANGKOK"));
 } else {
   // src/lib/PageNotFound.jsx — any unmatched path.
   check("404 numeral present", text.includes("404"));
@@ -754,16 +667,7 @@ if (route === "/login") {
 const shellHtml = () => (root ? root.innerHTML : "");
 check("grain overlay mounted", shellHtml().includes("grain-layer"));
 check("palette stripe mounted", shellHtml().includes("--palette-stripes"));
-/*
- * Inverted deliberately. The shell used to mount a 2px scroll-progress bar
- * here, and the boss layout a right-edge section counter; both redrew
- * themselves on every scroll frame. Scrolling belongs to the browser, so the
- * assertion is now that they stay gone — re-adding either would put a
- * per-frame style write back on every scroll of every route.
- */
-check("no scroll-driven chrome in the shell",
-  !shellHtml().includes("--palette-gradient"),
-  "the scroll-progress bar is back in App.jsx");
+check("scroll progress bar mounted", shellHtml().includes("--palette-gradient"));
 
 // React wraps every route EXCEPT Splash in PageTransition.
 if (route === "/") {
@@ -777,28 +681,12 @@ if (route === "/") {
 // ── Japanese companion layer ──────────────────────────────────────────────
 if (japaneseMode) {
   const annotated = root ? root.querySelectorAll("[data-ja-companion]") : [];
-  /*
-   * The auto-scanner only annotates strings that have NO explicit companion.
-   * Summer style's splash gives every string one through <JapaneseText>, so an
-   * empty result there is the correct outcome rather than a dead observer —
-   * and demanding annotations would push future work toward leaving strings
-   * untranslated just to satisfy this check.
-   *
-   * The scanner stays pinned regardless: the /login ja run does carry
-   * unannotated strings, so a genuinely broken MutationObserver still fails
-   * the suite there.
-   */
-  check("auto-companion annotated the tree where there was work to do",
-    annotated.length > 0 || route === "/",
+  check("auto-companion annotated the tree", annotated.length > 0,
     "no [data-ja-companion] attributes — the MutationObserver scan never ran");
   check("annotations carry a layout hint",
     [...annotated].every((el) => el.hasAttribute("data-ja-layout")));
   check("annotations are non-empty Japanese",
     [...annotated].every((el) => /[぀-ヿ一-龯]/.test(el.getAttribute("data-ja-companion"))));
-  /* However it got there — scanner or explicit prop — Japanese must be on the
-     page when the companion is enabled. This is the assertion that matches the
-     user-visible promise, and it holds on every route. */
-  check("Japanese companion text is on the page", /[぀-ヿ一-龥]/.test(text));
   check("screen-reader marker present", html2.includes("日本語"));
   check("japanese-text-enabled class set when the preference is on",
     window.document.documentElement.classList.contains("japanese-text-enabled"));

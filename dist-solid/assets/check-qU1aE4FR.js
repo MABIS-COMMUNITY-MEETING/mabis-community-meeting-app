@@ -1,0 +1,1 @@
+import{B as e,D as t}from"./web-CRd2b-C6.js";import{t as n}from"./Icon-DovX7xqt.js";var r=[[`path`,{d:`M20 6 9 17l-5-5`,key:`1gmf2c`}]],i=i=>t(n,e(i,{iconNode:r,name:`check`}));export{i as t};
