@@ -3,6 +3,7 @@ import App from "~/App.jsx";
 import "@/index.css";
 import "@/styles/glass.css";
 import "@/styles/editorial-home.css";
+import "@/styles/summer-home.css";
 import "~/solid-motion.css";
 import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
@@ -51,6 +52,11 @@ async function bootstrap() {
 
   applyAnimationPreference();
   applyJapaneseTextPreference();
+  /* Puts home-layout-simple / home-layout-boss on <html> BEFORE first paint,
+     so editorial-home.css (which is gated on the boss class) either matches or
+     does not from the very first frame. Doing this after render would flash the
+     wrong style. */
+  applyHomeLayoutPreference();
   applySectionDescriptionsPreference();
 
   const replayed = applyThemeSnapshot();
