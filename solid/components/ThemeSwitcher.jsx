@@ -260,6 +260,7 @@ export default function ThemeSwitcher() {
               </Show>
             </div>
           </Show>
+          </Show>
 
           <Show when={savedThemes().length > 0}>
             <div class="border-t border-border pt-3 mb-4">
