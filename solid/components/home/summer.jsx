@@ -17,7 +17,8 @@ import BirthdayBanner from "~/components/BirthdayBanner";
  * two Home layouts" in README.md.
  */
 
-const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
+/* Still exported: other modules read the version even though the colophon
+   card that used to display the logo is gone. */
 export const APP_VERSION = "v6.9.9";
 
 /**
@@ -50,18 +51,9 @@ function SummerModule(props) {
 function SummerFooter() {
   return (
     <>
-      {/* No frame. The maroon band was a gradient panel showing through the
-          padding around this card; both the panel and the wrapper it needed
-          are gone, leaving the card to sit on the page like every other one.
-          shadow-xl moves onto the card itself so it keeps its lift. */}
-      <div class="mt-4 flex flex-col items-center gap-3 rounded-2xl bg-card p-6 shadow-xl">
-        <img src={MABIS_LOGO} alt="MABIS" class="h-16 w-16 object-contain" />
-        <div class="h-px w-16 bg-border" />
-        <h2 class="text-center font-display text-xl font-black tracking-tight text-primary">
-          Secondary Community Meeting App
-        </h2>
-      </div>
-      <div class="mb-5 mt-3 flex justify-center">
+      {/* The colophon card — logo, rule and app name — is gone at Novesce's
+          request. The version chip below is what remains of the footer. */}
+      <div class="mb-5 mt-6 flex justify-center">
         <div class="inline-flex items-center rounded-2xl bg-primary px-4 py-1.5 font-display text-sm font-bold tracking-wide text-primary-foreground shadow-md">
           Version: {APP_VERSION}
         </div>
