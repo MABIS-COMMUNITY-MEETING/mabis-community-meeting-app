@@ -2,6 +2,58 @@ import { Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { Plus } from "lucide-solid";
 import { JapaneseText } from "~/components/primitives";
+import { useHomeLayout } from "~/lib/prefs";
+
+/*
+ * Summer style's auth shell — the original centred card.
+ *
+ * None of the editorial furniture survives here: no 22vw background wordmark,
+ * no technical frame, no crosshairs, no "N° 00" meta row, no two-column split
+ * with an 8xl extralight headline. Summer put a single rounded white card in
+ * the middle of a light page, and that is all this is.
+ *
+ * The prop contract is identical, so pages do not know which shell they are
+ * in — which is what keeps the two from drifting.
+ */
+function SummerAuthLayout(props) {
+  return (
+    <div class="summer-page flex min-h-screen w-full items-center justify-center px-4 py-12">
+      <div class="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
+        <div class="flex flex-col items-center text-center">
+          <Show
+            when={props.logo}
+            fallback={
+              <div class="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
+                <Dynamic component={props.icon} class="h-7 w-7 text-primary-foreground" aria-hidden="true" />
+              </div>
+            }
+          >
+            <div class="mb-4 inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-border bg-card">
+              {props.logo}
+            </div>
+          </Show>
+
+          <h1 class="font-display text-2xl font-bold leading-none text-foreground">{props.title}</h1>
+          <Show when={props.jaTitle}>
+            <p lang="ja" class="mt-1.5 text-sm text-muted-foreground">{props.jaTitle}</p>
+          </Show>
+          <Show when={props.subtitle}>
+            <JapaneseText as="p" ja={props.jaSubtitle} class="mt-2 block text-sm text-muted-foreground" japaneseClass="text-[0.9em]">
+              {props.subtitle}
+            </JapaneseText>
+          </Show>
+        </div>
+
+        <div class="mt-8">
+          {props.children}
+          <Show when={props.footer}>
+            <p class="mt-6 text-center text-xs text-muted-foreground">{props.footer}</p>
+          </Show>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Editorial auth shell — 1:1 port of src/components/AuthLayout.jsx.
@@ -20,7 +72,7 @@ import { JapaneseText } from "~/components/primitives";
  *     because in Solid a prop holding a component must not be destructured or
  *     captured — reading it through Dynamic keeps it reactive.
  */
-export default function AuthLayout(props) {
+function EditorialAuthLayout(props) {
   return (
     <div class="relative min-h-screen w-full overflow-hidden bg-bone text-foreground">
       <div class="grid-bg absolute inset-0 opacity-60" />
@@ -85,5 +137,21 @@ export default function AuthLayout(props) {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * The auth shell for whichever style is selected.
+ *
+ * Routed through <Show> rather than an early return: an early return would
+ * read the preference once at construction and never again, so switching
+ * style in Settings would leave the old shell mounted until a reload.
+ */
+export default function AuthLayout(props) {
+  const layout = useHomeLayout();
+  return (
+    <Show when={layout() === "boss"} fallback={<SummerAuthLayout {...props} />}>
+      <EditorialAuthLayout {...props} />
+    </Show>
   );
 }
