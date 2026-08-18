@@ -190,6 +190,12 @@ async function appShellNavigation(event) {
   }
 }
 
+/* Prefixes, not a regex. This file is emitted from a template literal, so any
+   backslash in it is an escape sequence for the GENERATOR first — a regex
+   literal here silently lost its / and shipped a worker that would not parse.
+   Plain string prefixes have nothing to escape. */
+const DEV_SERVER_PREFIXES = ["/@vite/", "/@id/", "/@fs/", "/node_modules/", "/src/", "/solid/"];
+
 async function staticAsset(request) {
   const cached = await caches.match(request, { ignoreSearch: true });
   if (cached) return cached;
@@ -246,7 +252,7 @@ self.addEventListener("fetch", (event) => {
    * Returning early leaves them to the browser, which is what a worker that
    * knows nothing about them should have done from the start.
    */
-  if (/^/(@vite|@id|@fs|node_modules|src|solid)//.test(url.pathname) || url.searchParams.has("t")) {
+  if (DEV_SERVER_PREFIXES.some((prefix) => url.pathname.startsWith(prefix)) || url.searchParams.has("t")) {
     return;
   }
 
