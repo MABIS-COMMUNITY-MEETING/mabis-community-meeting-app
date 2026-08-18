@@ -12,6 +12,7 @@ import {
   resolveThemeColor, stripHtml, safeFilename,
 } from "~/lib/quill-setup";
 import { downloadOdt } from "@/lib/odt-export";
+import { lockBodyScroll } from "@/lib/scroll-lock";
 import "quill/dist/quill.snow.css";
 
 /*
