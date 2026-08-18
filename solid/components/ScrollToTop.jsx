@@ -1,5 +1,6 @@
 import { createEffect, on, onMount, onCleanup } from "solid-js";
 import { useLocation } from "@solidjs/router";
+import { releaseAllScrollLocks } from "@/lib/scroll-lock";
 
 const getHashId = (hash) => {
   const rawId = hash.slice(1);
@@ -23,6 +24,18 @@ const getHashId = (hash) => {
 export default function ScrollToTop() {
   const location = useLocation();
   let cameFromHistory = false;
+
+  /*
+   * Safety valve for background scroll.
+   *
+   * Nothing that locks scroll survives a route change — every locker is a
+   * modal, an overlay or a fullscreen editor. So a lock still standing here is
+   * a leak, and the cost of the two failure modes is wildly asymmetric: a
+   * dialog briefly scrolling behind itself is a blemish, while a reader who
+   * cannot scroll the site at all has no way to use it and nothing on screen
+   * to explain why. Release unconditionally.
+   */
+  createEffect(on(() => location.pathname, () => releaseAllScrollLocks()));
 
   onMount(() => {
     const onPop = () => { cameFromHistory = true; };
