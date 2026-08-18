@@ -127,3 +127,60 @@ export function isBlankDocument(html) {
     .replace(/<[^>]*>/g, "")
     .trim();
 }
+
+/**
+ * Every week's written minutes, keyed by week label.
+ *
+ * The document lives in the DiscussionTopic row titled `__meeting_notes__`.
+ * Blank documents are omitted, so callers can treat "has an entry" as "this
+ * week was actually written up" rather than re-testing emptiness.
+ */
+export function minutesByWeek(topics) {
+  const byWeek = new Map();
+  for (const t of topics || []) {
+    if (!t || t.title !== "__meeting_notes__" || !t.week_label) continue;
+    if (isBlankDocument(t.description)) continue;
+    byWeek.set(t.week_label, t.description);
+  }
+  return byWeek;
+}
+
+/**
+ * Compare two week labels, newest first.
+ *
+ * Not a string comparison. `"YYYY-Www"` only sorts correctly as text while
+ * every label is zero-padded, and a single record written as `2026-W9` instead
+ * of `2026-W09` sorted above `2026-W33` — putting an early-March meeting at the
+ * top of History. Comparing the parsed numbers cannot drift that way.
+ */
+export function compareWeeksDesc(a, b) {
+  const parse = (label) => {
+    const [year, week] = String(label ?? "").split("-W");
+    return [parseInt(year, 10) || 0, parseInt(week, 10) || 0];
+  };
+  const [ay, aw] = parse(a);
+  const [by, bw] = parse(b);
+  return by - ay || bw - aw;
+}
+
+/**
+ * The weeks History should list, newest first.
+ *
+ * A week qualifies when it has written minutes OR an archived topic. The
+ * archived-topic rule alone is what History used to use, and it made sense when
+ * a meeting WAS its topic list; since Discussion became a document, a week can
+ * be fully minuted with nothing archived, and those weeks were being dropped
+ * from History entirely.
+ *
+ * `currentWeek` is excluded when given: it is still being written and it is
+ * already on Home.
+ */
+export function historyWeeks(topics, { currentWeek } = {}) {
+  const weeks = new Set(minutesByWeek(topics).keys());
+  for (const t of topics || []) {
+    if (!t || !t.week_label) continue;
+    if (t.archived && !RESERVED_TITLES.has(t.title)) weeks.add(t.week_label);
+  }
+  weeks.delete(currentWeek);
+  return [...weeks].sort(compareWeeksDesc);
+}
