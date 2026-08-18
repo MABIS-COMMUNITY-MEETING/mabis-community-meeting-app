@@ -50,24 +50,16 @@ function SummerModule(props) {
 function SummerFooter() {
   return (
     <>
-      <div
-        class="mt-4 overflow-hidden rounded-2xl shadow-xl"
-        style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--ring)))" }}
-      >
-        {/* The maroon frame IS this padding — the gradient behind showing
-            through around the white card. p-4 made a 16px band; p-[3px] reads
-            as a drawn line. The inner radius drops to rounded-xl so the two
-            curves stay concentric: an inner corner as round as the outer one
-            looks pinched once the gap between them is only a few pixels. */}
-        <div class="p-[3px]">
-          <div class="flex flex-col items-center gap-3 rounded-xl bg-card p-6 shadow-inner">
-            <img src={MABIS_LOGO} alt="MABIS" class="h-16 w-16 object-contain" />
-            <div class="h-px w-16 bg-border" />
-            <h2 class="text-center font-display text-xl font-black tracking-tight text-primary">
-              Secondary Community Meeting App
-            </h2>
-          </div>
-        </div>
+      {/* No frame. The maroon band was a gradient panel showing through the
+          padding around this card; both the panel and the wrapper it needed
+          are gone, leaving the card to sit on the page like every other one.
+          shadow-xl moves onto the card itself so it keeps its lift. */}
+      <div class="mt-4 flex flex-col items-center gap-3 rounded-2xl bg-card p-6 shadow-xl">
+        <img src={MABIS_LOGO} alt="MABIS" class="h-16 w-16 object-contain" />
+        <div class="h-px w-16 bg-border" />
+        <h2 class="text-center font-display text-xl font-black tracking-tight text-primary">
+          Secondary Community Meeting App
+        </h2>
       </div>
       <div class="mb-5 mt-3 flex justify-center">
         <div class="inline-flex items-center rounded-2xl bg-primary px-4 py-1.5 font-display text-sm font-bold tracking-wide text-primary-foreground shadow-md">
