@@ -124,8 +124,25 @@ function ProtectedFeedback() {
 }
 
 /* React wraps every route except Splash in PageTransition. */
+/*
+ * /login, but never for someone who is already signed in.
+ *
+ * Splash decides where Enter goes, but it is not the only way in: a bookmark,
+ * a back button, an old link in a chat, or the OAuth redirect landing after the
+ * session was already restored all arrive here directly. Without this they
+ * would sit on a login form they have no reason to see.
+ *
+ * Gated on isLoadingAuth so the probe gets to finish first — redirecting on the
+ * initial `false` would bounce a signed-in reader to /home, fail Protected's
+ * check, and send them straight back here.
+ */
 function TransitionedLogin() {
-  return <PageTransition><Login /></PageTransition>;
+  const auth = useAuth();
+  return (
+    <Show when={auth.isLoadingAuth() || !auth.isAuthenticated()} fallback={<Navigate href="/home" />}>
+      <PageTransition><Login /></PageTransition>
+    </Show>
+  );
 }
 
 function TransitionedNotFound() {
