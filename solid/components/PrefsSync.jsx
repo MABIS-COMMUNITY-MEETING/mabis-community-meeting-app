@@ -40,7 +40,12 @@ export default function PrefsSync() {
           ready = true;
           dropCustomColoursUnlessOwned();
         });
-    }).catch(() => {});
+    }).catch(() => {
+      /* prefs_sync failed to load, so no pull will happen and nothing will
+         overwrite local state. Reconcile anyway — the restriction must not
+         depend on an optional chunk arriving. */
+      if (!cancelled) dropCustomColoursUnlessOwned();
+    });
 
     /*
      * Custom colours belong to one account (lib/custom-color-access.js).
