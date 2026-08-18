@@ -1,0 +1,1 @@
+import{O as e,V as t}from"./web-CS2Ad8n3.js";import{t as n}from"./Icon-CkCn3QH5.js";var r=[[`path`,{d:`M5 12h14`,key:`1ays0h`}],[`path`,{d:`m12 5 7 7-7 7`,key:`xquz4c`}]],i=i=>e(n,t(i,{iconNode:r,name:`arrow-right`}));export{i as t};

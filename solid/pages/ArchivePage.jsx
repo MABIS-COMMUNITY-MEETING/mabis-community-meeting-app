@@ -4,8 +4,9 @@ import { useQuery } from "@tanstack/solid-query";
 import { ChevronDown, ChevronRight } from "lucide-solid";
 import { format } from "date-fns";
 import { formatWeekFull, groupByWeek } from "@/lib/weekHistory";
-import { PageNav, PageFooter } from "~/components/page-chrome";
+import { PageNav, PageFooter, SummerPageNav, SummerPageFooter } from "~/components/page-chrome";
 import { JapaneseText } from "~/components/primitives";
+import { useHomeLayout } from "~/lib/prefs";
 
 /*
  * ArchivePage — shared implementation for the Announcements and News archives.
@@ -20,9 +21,21 @@ import { JapaneseText } from "~/components/primitives";
  * genuinely different is a prop.
  *
  * `openWeeks` is a store so expanding one week does not invalidate the others.
+ *
+ * TWO STYLES, ONE PAGE. Boss style keeps the editorial treatment: the N°
+ * caption, the oversized display title, the fixed nav. Summer style drops all
+ * of that for the original MABIS bar — a sticky header carrying the title and
+ * count, and nothing between it and the list.
+ *
+ * Only the chrome branches. The week accordion below is shared verbatim,
+ * because it was already Summer's own card vocabulary (`bg-card rounded-2xl
+ * border shadow-sm`) and the editorial layer never overrode it. Duplicating
+ * it per style is how the two would drift apart.
  */
 export default function ArchivePage(props) {
   const [openWeeks, setOpenWeeks] = createStore({});
+  const layout = useHomeLayout();
+  const boss = () => layout() === "boss";
 
   const query = useQuery(() => ({
     queryKey: [props.queryKey],
@@ -37,40 +50,63 @@ export default function ArchivePage(props) {
       "archive_date",
     );
 
+  const itemCount = () => `${items().length} ${props.itemNoun}${items().length !== 1 ? "s" : ""}`;
+
   return (
-    <div class="min-h-screen bg-background">
-      <PageNav label={props.navLabel} />
+    <div class={`min-h-screen ${boss() ? "bg-background" : "summer-page"}`}>
+      <Show
+        when={boss()}
+        fallback={
+          <SummerPageNav
+            title={props.summerTitle}
+            ja={props.subtitleJa}
+            meta={`${itemCount()} · Secondary Community Meeting App`}
+          />
+        }
+      >
+        <PageNav label={props.navLabel} />
+      </Show>
 
-      <main class="mx-auto max-w-7xl px-4 pb-2 pt-20 sm:px-8 sm:pt-32">
-        <div class="mb-10 sm:mb-14">
-          <JapaneseText
-            as="div"
-            ja={props.archiveJa}
-            class="block tech-label text-primary mb-4"
-            japaneseClass="text-[0.8em] normal-case tracking-normal"
-          >
-            {props.archiveLabel}
-          </JapaneseText>
-
-          <h1 class={`font-display ${props.titleClamp || "text-[clamp(2.65rem,13vw,4.5rem)]"} font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl`}>
-            {props.title}
-          </h1>
-
-          <p lang="ja" class="mt-1 text-sm text-muted-foreground">{props.subtitleJa}</p>
-
-          <div class="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
-            <span>
-              {items().length}{" "}
-              <span lang="ja" class="normal-case tracking-normal text-[0.8em]">{props.countJa}</span>
-            </span>
-            <span class="h-1 w-1 bg-primary" />
-            <JapaneseText as="span" ja="週ごとにグループ化" japaneseClass="text-[0.8em] normal-case tracking-normal">
-              GROUPED BY WEEK
+      <main
+        class={
+          boss()
+            ? "mx-auto max-w-7xl px-4 pb-2 pt-20 sm:px-8 sm:pt-32"
+            : "mx-auto max-w-7xl px-4 pb-2 pt-8 sm:px-5"
+        }
+      >
+        {/* The editorial masthead. Summer style has none — its header already
+            said what page this is, which is the whole point of the bar. */}
+        <Show when={boss()}>
+          <div class="mb-10 sm:mb-14">
+            <JapaneseText
+              as="div"
+              ja={props.archiveJa}
+              class="block tech-label text-primary mb-4"
+              japaneseClass="text-[0.8em] normal-case tracking-normal"
+            >
+              {props.archiveLabel}
             </JapaneseText>
-            <span class="h-1 w-1 bg-primary" />
-            <span>MABIS</span>
+
+            <h1 class={`font-display ${props.titleClamp || "text-[clamp(2.65rem,13vw,4.5rem)]"} font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl`}>
+              {props.title}
+            </h1>
+
+            <p lang="ja" class="mt-1 text-sm text-muted-foreground">{props.subtitleJa}</p>
+
+            <div class="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
+              <span>
+                {items().length}{" "}
+                <span lang="ja" class="normal-case tracking-normal text-[0.8em]">{props.countJa}</span>
+              </span>
+              <span class="h-1 w-1 bg-primary" />
+              <JapaneseText as="span" ja="週ごとにグループ化" japaneseClass="text-[0.8em] normal-case tracking-normal">
+                GROUPED BY WEEK
+              </JapaneseText>
+              <span class="h-1 w-1 bg-primary" />
+              <span>MABIS</span>
+            </div>
           </div>
-        </div>
+        </Show>
 
         <Show when={weeks().length === 0}>
           <div class="border border-border bg-card p-8 text-center sm:rounded-2xl sm:p-16">
@@ -151,7 +187,9 @@ export default function ArchivePage(props) {
           </For>
         </div>
 
-        <PageFooter />
+        <Show when={boss()} fallback={<SummerPageFooter />}>
+          <PageFooter />
+        </Show>
       </main>
     </div>
   );

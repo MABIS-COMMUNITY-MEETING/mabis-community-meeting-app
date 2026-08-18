@@ -1,0 +1,1 @@
+import{O as e,V as t}from"./web-CS2Ad8n3.js";import{t as n}from"./Icon-CkCn3QH5.js";var r=[[`path`,{d:`M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z`,key:`1ffxy3`}],[`path`,{d:`m21.854 2.147-10.94 10.939`,key:`12cjpa`}]],i=i=>e(n,t(i,{iconNode:r,name:`send`}));export{i as t};

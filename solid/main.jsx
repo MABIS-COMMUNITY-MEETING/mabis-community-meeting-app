@@ -1,14 +1,30 @@
 import { render } from "solid-js/web";
 import App from "~/App.jsx";
+/*
+ * Every stylesheet is linked from the entry, eagerly.
+ *
+ * glass.css and editorial-home.css were split out to travel with the boss
+ * chunk instead — 25.4 KiB the default layout can never match. That was
+ * correct on paper and it built clean, but the top bar rendered with no glass
+ * afterwards and could not be diagnosed remotely, so it was reverted at
+ * Novesce's request.
+ *
+ * The cost of being wrong is asymmetric: 25.4 KiB of unused CSS is a number in
+ * a report, while a top bar with no material is the first thing anyone sees.
+ * If the split is attempted again, verify it in a real browser before relying
+ * on it — a green build proves the file is emitted, not that the link lands.
+ */
 import "@/index.css";
 import "@/styles/glass.css";
 import "@/styles/editorial-home.css";
+import "@/styles/summer-home.css";
 import "~/solid-motion.css";
 import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
-import { startPerfMonitor } from "~/lib/perf-monitor";
+import { applyHomeLayoutPreference, syncHomeLayoutCache } from "@/lib/layout-preference";
+import { applyScrollbarMode } from "@/lib/scrollbar-mode";
 import { preloadRoute } from "~/lib/routes";
 
 /*
@@ -45,13 +61,26 @@ async function bootstrap() {
   // still warms every OTHER route, just later, since only this one is on the
   // critical path for first paint.
   preloadRoute(window.location.pathname);
-  // The splash has exactly one destination. Warming it here means the button
-  // press is a render, not a download.
-  if (window.location.pathname === "/") preloadRoute("/login");
+  // The splash has exactly two possible destinations, and until auth
+  // resolves there is no way to know which — so warm both. loaders["/home"]
+  // is deliberately chunk-only (see routes.js), no entity reads, so this
+  // cannot fire an unauthenticated data request; it only means Splash's
+  // now-client-side Enter navigation (see pages/Splash.jsx) has Home's JS
+  // already in cache instead of fetching it after the click.
+  if (window.location.pathname === "/") {
+    preloadRoute("/login");
+    preloadRoute("/home");
+  }
 
   applyAnimationPreference();
   applyJapaneseTextPreference();
   applySectionDescriptionsPreference();
+  applyHomeLayoutPreference();
+  /* Before first paint with the rest of them: the custom scrollbar must not
+     render once and then swap. Costs one forced layout of a detached 100px
+     box, and decides whether this machine gets the styled scrollbar at all —
+     see lib/scrollbar-mode.js. */
+  applyScrollbarMode();
 
   const replayed = applyThemeSnapshot();
 
@@ -73,7 +102,7 @@ async function bootstrap() {
 
   // Opt-in only (?perf=1). Costs nothing otherwise — a monitor that slows the
   // page down would defeat its own purpose.
-  startPerfMonitor();
+  startPerfMonitorIfRequested();
 
   if (replayed) reconcileThemeAfterPaint();
   idlePreloadRemainingRoutes();
@@ -81,9 +110,32 @@ async function bootstrap() {
   // Installing after load keeps precache traffic out of the critical path.
   // The worker is a progressive enhancement and never intercepts Base44 APIs.
   if (import.meta.env.PROD && "serviceWorker" in navigator) {
+    /*
+     * The worker calls skipWaiting(), so a new build can take control of this
+     * page while it is open. This page's own lazy chunks belong to the build
+     * it loaded, and the new worker has just evicted them from the cache, so
+     * the next route or widget import could 404. One reload lands cleanly on
+     * the new build.
+     *
+     * Only when there WAS a controller: on a first visit controllerchange
+     * fires because the very first worker took over, and reloading there
+     * would be a pointless flash on every new device.
+     */
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadController || reloading) return;
+      reloading = true;
+      window.location.reload();
+    });
+
     const register = () => {
       const run = () => navigator.serviceWorker
         .register("/sw.js", { scope: "/", updateViaCache: "none" })
+        // Only the layout in use belongs in the offline shell. Told once here
+        // so a reader who never opens Settings still gets the right one, and
+        // again from setHomeLayout() on every change.
+        .then(() => syncHomeLayoutCache())
         .catch(() => {});
       if ("requestIdleCallback" in window) {
         window.requestIdleCallback(run, { timeout: 3000 });
@@ -147,6 +199,32 @@ function reconcileThemeAfterPaint() {
   };
   if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 3000 });
   else window.setTimeout(run, 1200);
+}
+
+/*
+ * startPerfMonitor() returns immediately when the monitor is off, so importing
+ * it looked free — but the import is not the call. The whole module (five
+ * PerformanceObservers, the rAF frame sampler and the console report) was
+ * compiled into the boot chunk on every visit: 3.6 KiB of parse work to decide
+ * to do nothing. Reading the flag is a two-line localStorage lookup, so it
+ * happens here and the module is fetched only when it is going to run.
+ *
+ * This is a read only. Persisting ?perf=1 stays in perf-monitor's own
+ * perfEnabled(), which runs again inside startPerfMonitor() — one writer, and
+ * this gate cannot drift into disagreeing with it about what to store.
+ */
+const PERF_FLAG = "mabis-perf";
+
+function startPerfMonitorIfRequested() {
+  let requested = false;
+  try {
+    requested = new URLSearchParams(location.search).has("perf")
+      || localStorage.getItem(PERF_FLAG) === "1";
+  } catch {
+    return;
+  }
+  if (!requested) return;
+  import("~/lib/perf-monitor").then(({ startPerfMonitor }) => startPerfMonitor()).catch(() => {});
 }
 
 bootstrap();

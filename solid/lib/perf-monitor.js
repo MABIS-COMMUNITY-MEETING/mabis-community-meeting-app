@@ -19,15 +19,25 @@
  *   event / INP                  — worst interaction latency. This is what a
  *     user means by "it feels laggy".
  *   longtask                     — fallback attribution for non-Chromium.
- *   dropped frames               — rAF delta vs the display's frame budget,
- *     sampled only while scrolling, which is where smoothness is judged.
+ *   frame pacing                 — rAF deltas vs the display's MEASURED frame
+ *     budget, sampled only while scrolling, which is where smoothness is
+ *     judged. Reported as a distribution, not an average: a page can hold a
+ *     144 FPS mean and still feel terrible if the intervals are ragged, so
+ *     p95, p99 and jitter are the numbers that answer "is it smooth", and the
+ *     mean is the number that hides the answer.
  *   layout-shift                 — CLS, catches content jumping during lazy
  *     mount (the classic content-visibility regression).
  *
  * Read results at any time with:  __perf.report()
  */
 
+import { refreshHz, refreshIntervalMs, resetFrameChain, sampleFrame } from "@/lib/physics/refresh-rate";
+
 const FLAG = "mabis-perf";
+
+/* Two seconds of scroll at 240 Hz. Older samples have scrolled off screen and
+ * stopped being interesting. */
+const PACING_RING = 480;
 
 export function perfEnabled() {
   if (typeof window === "undefined") return false;
@@ -55,6 +65,13 @@ export function startPerfMonitor() {
     lcp: 0,
     frames: { sampled: 0, dropped: 0, worstMs: 0 },
   };
+
+  /* Deltas are kept raw so the report can quote the shape of the
+   * distribution. Writing one is a single store — nothing is allocated on a
+   * scroll frame. */
+  const pacing = new Float64Array(PACING_RING);
+  let pacingCount = 0;
+  let pacingHead = 0;
 
   const observers = [];
   const observe = (type, cb, extra = {}) => {
@@ -124,35 +141,48 @@ export function startPerfMonitor() {
   let rafId = 0;
   let last = 0;
   let idle = 0;
-  const budget = 1000 / 60;
 
   const tick = (now) => {
+    sampleFrame(now);
     if (last) {
       const delta = now - last;
+      /* The budget is whatever this display actually does. Hardcoding 60 Hz
+       * here reported 0% dropped on a 144 Hz session stuttering at 40 ms,
+       * because 40 ms is inside a 16.7 ms budget's 1.5x slack — the monitor
+       * said the page was fine while the user watched it stutter. */
+      const budget = refreshIntervalMs();
       state.frames.sampled++;
       if (delta > budget * 1.5) state.frames.dropped++;
       if (delta > state.frames.worstMs) state.frames.worstMs = Math.round(delta);
+      pacing[pacingHead] = delta;
+      pacingHead = (pacingHead + 1) % PACING_RING;
+      if (pacingCount < PACING_RING) pacingCount++;
     }
     last = now;
     rafId = requestAnimationFrame(tick);
   };
 
   const onScroll = () => {
-    if (!rafId) { last = 0; rafId = requestAnimationFrame(tick); }
+    /* Re-arming after a park: the previous timestamp is from before the
+     * gesture and is not a frame delta. */
+    if (!rafId) { last = 0; resetFrameChain(); rafId = requestAnimationFrame(tick); }
     clearTimeout(idle);
     idle = setTimeout(() => { cancelAnimationFrame(rafId); rafId = 0; }, 200);
   };
+
+  /* Sorted copy of the ring, built only when a report is asked for. */
+  const pacingSorted = () => Array.from(pacing.subarray(0, pacingCount)).sort((a, b) => a - b);
   window.addEventListener("scroll", onScroll, { passive: true });
 
   window.__perf = {
     raw: state,
-    report: () => report(state),
-    reset: () => { state.loaf.length = 0; state.longTasks.length = 0; state.inp = 0; state.frames = { sampled: 0, dropped: 0, worstMs: 0 }; },
+    report: () => report(state, pacingSorted()),
+    reset: () => { state.loaf.length = 0; state.longTasks.length = 0; state.inp = 0; state.frames = { sampled: 0, dropped: 0, worstMs: 0 }; pacingCount = 0; pacingHead = 0; },
     off: () => { try { localStorage.removeItem(FLAG); } catch {} },
   };
 
   // One automatic summary once the page has settled.
-  setTimeout(() => report(state), 6000);
+  setTimeout(() => report(state, pacingSorted()), 6000);
 
   return () => {
     observers.forEach((o) => o.disconnect());
@@ -170,16 +200,48 @@ function deviceProfile() {
     network: c.effectiveType ?? "unknown",
     saveData: !!c.saveData,
     dpr: window.devicePixelRatio,
+    refreshHz: Math.round(refreshHz()),
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   };
 }
 
-function report(state) {
+const at = (sorted, p) =>
+  sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * p))] : 0;
+
+/**
+ * Frame pacing, expressed in refreshes rather than milliseconds.
+ *
+ * A p99 of 8 ms is excellent on a 120 Hz panel and a missed frame on a 360 Hz
+ * one. Quoting the same delta as a multiple of this display's own refresh is
+ * the only form of the number that means the same thing on every machine, and
+ * the only form that stays meaningful when panels get faster than any constant
+ * written here today.
+ */
+function pacingStats(sorted) {
+  if (!sorted.length) return null;
+  const budget = refreshIntervalMs();
+  const mean = sorted.reduce((a, b) => a + b, 0) / sorted.length;
+  /* Mean absolute deviation, not standard deviation: it is in milliseconds,
+   * it is not dominated by the single worst frame, and "the average frame
+   * lands 3 ms from where it should" is a sentence about smoothness. */
+  const jitter = sorted.reduce((a, b) => a + Math.abs(b - mean), 0) / sorted.length;
+  return {
+    budgetMs: +budget.toFixed(2),
+    p50Ms: +at(sorted, 0.5).toFixed(1),
+    p95Ms: +at(sorted, 0.95).toFixed(1),
+    p99Ms: +at(sorted, 0.99).toFixed(1),
+    p99Refreshes: +(at(sorted, 0.99) / budget).toFixed(2),
+    jitterMs: +jitter.toFixed(2),
+  };
+}
+
+function report(state, sorted = []) {
   const f = state.frames;
   const dropPct = f.sampled ? ((f.dropped / f.sampled) * 100).toFixed(1) : "0.0";
+  const pacing = pacingStats(sorted);
 
   console.groupCollapsed(
-    `%cMABIS perf%c  INP ${state.inp}ms · dropped ${dropPct}% · worst frame ${f.worstMs}ms`,
+    `%cMABIS perf%c  INP ${state.inp}ms · dropped ${dropPct}% · worst frame ${f.worstMs}ms · ${Math.round(refreshHz())}Hz`,
     "background:#951E3A;color:#fff;padding:2px 6px;border-radius:3px",
     "color:inherit"
   );
@@ -187,6 +249,16 @@ function report(state) {
   console.table(state.device);
   console.log(`LCP ${state.lcp}ms · CLS ${state.cls.toFixed(3)} · INP ${state.inp}ms (${state.inpTarget || "n/a"})`);
   console.log(`Frames sampled during scroll: ${f.sampled}, dropped: ${f.dropped} (${dropPct}%), worst: ${f.worstMs}ms`);
+
+  if (pacing) {
+    console.log("%cFrame pacing during scroll", "font-weight:bold");
+    console.table(pacing);
+    console.log(
+      "Read it this way: p99Refreshes near 1.0 is smooth on ANY display. Above 2.0 means the" +
+      " worst 1% of frames missed a whole vsync. Low jitterMs matters more than a low p50 —" +
+      " evenly spaced slow frames look better than an unpredictable fast average."
+    );
+  }
 
   if (state.loaf.length) {
     const worst = [...state.loaf].sort((a, b) => b.durationMs - a.durationMs).slice(0, 8);

@@ -10,6 +10,7 @@ export default function NewsHistory() {
       archiveLabel=" ARCHIVE — 04"
       archiveJa="アーカイブ — 04"
       title={<>NEWS<br />HISTORY</>}
+      summerTitle="News History"
       subtitleJa="ニュース履歴"
       countJa="件の記事"
       itemNoun="article"

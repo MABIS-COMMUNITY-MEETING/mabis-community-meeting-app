@@ -1,0 +1,1 @@
+function e(e){if(!e)return`?`;if(e.role===`teacher`||/^(Ms\.?|Mrs\.?|Mr\.?|Dr\.?)\b/i.test(e.name))return e.name;let t=e.name.match(/\((.*?)\)/);return t?t[1].trim():e.name.split(` `)[0]}export{e as t};

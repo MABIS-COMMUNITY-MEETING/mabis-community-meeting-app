@@ -1,16 +1,14 @@
-import { createSignal, createMemo, Show, For } from "solid-js";
+import { createMemo, Show, For } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
 import { ChevronDown, ChevronRight, Trash2, Users } from "lucide-solid";
-import { isFriday, format, parseISO } from "date-fns";
+import { isFriday } from "date-fns";
 import { base44 } from "@/api/base44Client";
-import { weekLabelToDate, formatWeekFull } from "~/lib/weeks";
-import { PageNav, PageFooter, OpenMoji } from "~/components/page-chrome";
+import { historyWeeks, minutesByWeek, topicsToMinutesHtml, isBlankDocument } from "@/lib/minutes-format";
+import { weekLabelToDate, formatWeekFull, getWeekLabel } from "~/lib/weeks";
+import { PageNav, PageFooter, OpenMoji, SummerPageNav, SummerPageFooter } from "~/components/page-chrome";
 import { JapaneseText } from "~/components/primitives";
-
-const PRIORITY_DOT = {
-  1: "bg-red-800", 2: "bg-red-600", 3: "bg-red-400", 4: "bg-red-300", 5: "bg-red-200",
-};
+import { useHomeLayout } from "~/lib/prefs";
 
 /*
  * History — Solid port of src/pages/History.jsx.
@@ -23,10 +21,25 @@ const PRIORITY_DOT = {
  *
  * `openWeeks` is a STORE, not a signal holding an object: expanding one week
  * should not invalidate the accordion state of the others.
+ *
+ * Every week renders as ONE document, mirroring what DiscussionWidget's
+ * normal view shows on Home — which is document-only now, no separate topic
+ * cards. A week with a saved `__meeting_notes__` record uses that HTML
+ * verbatim; a week that never had its document opened (so nothing was ever
+ * saved) is synthesised on the fly with the same topicsToMinutesHtml() that
+ * MeetingMinutes.jsx uses to seed a week's editor the first time it opens —
+ * so an unopened week reads exactly as it WOULD if someone opened it live,
+ * not as a separate "legacy topic card" layout. There is deliberately no
+ * second rendering path here to drift out of sync with the live document.
  */
 export default function History() {
   const queryClient = useQueryClient();
   const [openWeeks, setOpenWeeks] = createStore({});
+  /* Boss style keeps the editorial masthead; Summer style replaces it with the
+     original bar. Only the chrome differs — the week documents below are the
+     same in both, which is the contract. */
+  const layout = useHomeLayout();
+  const boss = () => layout() === "boss";
 
   const topicsQuery = useQuery(() => ({
     queryKey: ["topics"],
@@ -45,13 +58,18 @@ export default function History() {
   const allAttendance = () => attendanceQuery.data || [];
   const allMembers = () => membersQuery.data || [];
 
-  // Only weeks with archived (completed-then-ended) topics count as history.
-  const pastWeeks = createMemo(() =>
-    [...new Set(
-      allTopics()
-        .filter((t) => t.week_label && t.title !== "__meeting_notes__" && t.archived)
-        .map((t) => t.week_label),
-    )].sort().reverse());
+  /*
+   * Which weeks are history, and what each one left behind.
+   *
+   * Both live in lib/minutes-format.js rather than here — same reason
+   * resolveMinutesDocument does. They are the rules that decide what a past
+   * meeting IS, they are pure, and check-minutes-format.mjs exercises them
+   * directly (including the week-ordering cases, which a component cannot be
+   * tested for). This page just renders the answer.
+   */
+  const currentWeek = getWeekLabel(new Date());
+  const minutesFor = createMemo(() => minutesByWeek(allTopics()));
+  const pastWeeks = createMemo(() => historyWeeks(allTopics(), { currentWeek }));
 
   const deleteWeek = useMutation(() => ({
     mutationFn: async (weekLabel) => {
@@ -62,31 +80,50 @@ export default function History() {
   }));
 
   return (
-    <div class="min-h-screen bg-background">
-      <PageNav label=" N°02 — MEETING HISTORY" />
+    <div class={`min-h-screen ${boss() ? "bg-background" : "summer-page"}`}>
+      <Show
+        when={boss()}
+        fallback={
+          <SummerPageNav
+            title="Meeting History"
+            ja="ミーティング履歴"
+            meta={`${pastWeeks().length} week${pastWeeks().length !== 1 ? "s" : ""} · Secondary Community Meeting App`}
+          />
+        }
+      >
+        <PageNav label=" N°02 — MEETING HISTORY" />
+      </Show>
 
-      <main class="mx-auto max-w-7xl px-4 pb-2 pt-20 sm:px-8 sm:pt-32">
-        <div class="mb-10 sm:mb-14">
-          <JapaneseText
-            as="div"
-            ja="アーカイブ — 02"
-            class="block tech-label text-primary mb-4"
-            japaneseClass="text-[0.8em] normal-case tracking-normal"
-          >
-            {" ARCHIVE — 02"}
-          </JapaneseText>
-          <h1 class="font-display text-[clamp(2.65rem,13vw,4.5rem)] font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl">
-            MEETING<br />HISTORY
-          </h1>
-          <p lang="ja" class="mt-1 text-sm text-muted-foreground">ミーティング履歴</p>
-          <div class="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
-            <JapaneseText as="span" ja="過去のミーティング" japaneseClass="text-[0.8em] normal-case tracking-normal">PAST MEETINGS</JapaneseText>
-            <span class="h-1 w-1 bg-primary" />
-            <JapaneseText as="span" ja="毎週金曜日" japaneseClass="text-[0.8em] normal-case tracking-normal">WEEKLY FRIDAY</JapaneseText>
-            <span class="h-1 w-1 bg-primary" />
-            <span>MABIS</span>
+      <main
+        class={
+          boss()
+            ? "mx-auto max-w-7xl px-4 pb-2 pt-20 sm:px-8 sm:pt-32"
+            : "mx-auto max-w-7xl px-4 pb-2 pt-8 sm:px-5"
+        }
+      >
+        <Show when={boss()}>
+          <div class="mb-10 sm:mb-14">
+            <JapaneseText
+              as="div"
+              ja="アーカイブ — 02"
+              class="block tech-label text-primary mb-4"
+              japaneseClass="text-[0.8em] normal-case tracking-normal"
+            >
+              {" ARCHIVE — 02"}
+            </JapaneseText>
+            <h1 class="font-display text-[clamp(2.65rem,13vw,4.5rem)] font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl">
+              MEETING<br />HISTORY
+            </h1>
+            <p lang="ja" class="mt-1 text-sm text-muted-foreground">ミーティング履歴</p>
+            <div class="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
+              <JapaneseText as="span" ja="過去のミーティング" japaneseClass="text-[0.8em] normal-case tracking-normal">PAST MEETINGS</JapaneseText>
+              <span class="h-1 w-1 bg-primary" />
+              <JapaneseText as="span" ja="毎週金曜日" japaneseClass="text-[0.8em] normal-case tracking-normal">WEEKLY FRIDAY</JapaneseText>
+              <span class="h-1 w-1 bg-primary" />
+              <span>MABIS</span>
+            </div>
           </div>
-        </div>
+        </Show>
 
         <Show when={pastWeeks().length === 0}>
           <div class="border border-border bg-card p-8 text-center sm:rounded-2xl sm:p-16">
@@ -112,18 +149,26 @@ export default function History() {
         <div class="space-y-3">
           <For each={pastWeeks()}>
             {(week) => {
-              // History shows the full meeting snapshot — all topics (completed
-              // and not), identical to what was shown in the meeting. The
-              // __meeting_ended__ marker is excluded.
+              // Raw topic records feeding the count badge and, for a week with
+              // no saved document, the synthesised minutes below. Never
+              // rendered as cards directly anymore.
               const weekTopics = createMemo(() =>
                 allTopics()
-                  .filter((t) => t.week_label === week && t.title !== "__meeting_notes__" && t.title !== "__meeting_ended__")
-                  .sort((a, b) =>
-                    (!!a.completed === !!b.completed)
-                      ? (a.priority || 3) - (b.priority || 3)
-                      : (a.completed ? 1 : -1)));
+                  .filter((t) => t.week_label === week && t.title !== "__meeting_notes__" && t.title !== "__meeting_ended__"));
 
               const done = () => weekTopics().filter((t) => t.completed).length;
+              // The document this week actually shows: its saved minutes if it
+              // has any, otherwise the same on-the-fly conversion
+              // MeetingMinutes.jsx would seed the editor with. isBlankDocument
+              // guards an empty synthesised string the same way it guards a
+              // stored one — "<p><br></p>" from an untouched editor must not
+              // count as "there is a document" either.
+              const displayHtml = createMemo(() => {
+                const saved = minutesFor().get(week);
+                if (!isBlankDocument(saved)) return saved;
+                return topicsToMinutesHtml(allTopics(), week);
+              });
+              const hasDocument = () => !isBlankDocument(displayHtml());
               const isOpen = () => !!openWeeks[week];
               const att = () => allAttendance().find((a) => a.week_label === week);
               const presentNames = () => att()?.present_names || [];
@@ -148,6 +193,10 @@ export default function History() {
                       <div class="text-left">
                         <p class="font-semibold text-foreground text-base">{formatWeekFull(week)}</p>
                         <p class="text-xs text-muted-foreground mt-0.5">
+                          <Show when={hasDocument()}>
+                            <JapaneseText ja="議事録あり" layout="inline" japaneseClass="ml-1 inline text-[0.85em]">Minutes</JapaneseText>
+                            <span aria-hidden="true">{" · "}</span>
+                          </Show>
                           {weekTopics().length} <span lang="ja">件のトピック</span> · {presentNames().length} <span lang="ja">出席</span>
                           <Show when={missingMembers().length > 0}>
                             {` · ${missingMembers().length} `}<span lang="ja">欠席</span>
@@ -157,10 +206,15 @@ export default function History() {
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <span class={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                        done() === weekTopics().length ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                        {done()}/{weekTopics().length} <span lang="ja">完了</span>
-                      </span>
+                      {/* A document-only week has no topics to be done — "0/0
+                          complete" reads as a failure rather than as nothing to
+                          report. */}
+                      <Show when={weekTopics().length > 0}>
+                        <span class={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                          done() === weekTopics().length ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                          {done()}/{weekTopics().length} <span lang="ja">完了</span>
+                        </span>
+                      </Show>
 
                       <Show when={att()?.meeting_date && !isFriday(new Date(att().meeting_date))}>
                         <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-primary-foreground">
@@ -177,11 +231,19 @@ export default function History() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm(`Delete all topics from ${formatWeekFull(week)}?`)) deleteWeek.mutate(week);
+                          /* This deletes every DiscussionTopic row for the week,
+                             and any saved minutes live in one of those rows
+                             (__meeting_notes__). The old wording said "all
+                             topics", which did not warn anyone that the written
+                             minutes go with them. */
+                          const warning = !isBlankDocument(minutesFor().get(week))
+                            ? `Delete the minutes AND all topics from ${formatWeekFull(week)}? This cannot be undone.`
+                            : `Delete all topics from ${formatWeekFull(week)}? This cannot be undone.`;
+                          if (window.confirm(warning)) deleteWeek.mutate(week);
                         }}
                         class="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        title="Delete this week"
-                        aria-label={`Delete all topics from ${formatWeekFull(week)}`}
+                        title={!isBlankDocument(minutesFor().get(week)) ? "Delete this week's minutes and topics" : "Delete this week"}
+                        aria-label={`Delete the record of ${formatWeekFull(week)}`}
                       >
                         <Trash2 class="w-3.5 h-3.5" />
                       </button>
@@ -220,38 +282,40 @@ export default function History() {
                         </div>
                       </Show>
 
-                      <div class="border-b border-border px-4 py-4 sm:px-6">
-                        <p class="text-xs font-bold text-primary uppercase mb-3">
-                          Discussion Topics <span lang="ja" class="normal-case text-[0.85em] font-normal">議題</span>
-                        </p>
-                        <div class="space-y-2">
-                          <For each={weekTopics()}>
-                            {(t) => (
-                              <div class="flex items-start gap-3 p-3 rounded-xl border border-border bg-card">
-                                <div class={`w-1 self-stretch rounded-full shrink-0 ${PRIORITY_DOT[t.priority || 3]}`} />
-                                <span class={`mt-1 w-4 h-4 rounded shrink-0 flex items-center justify-center text-[10px] ${
-                                  t.completed ? "bg-green-400 text-primary-foreground" : "border-2 border-border"}`}>
-                                  {t.completed ? "✓" : ""}
-                                </span>
-                                <div class="flex-1 min-w-0">
-                                  <p class="text-sm font-bold text-primary mb-0.5">{t.submitted_by}</p>
-                                  <p class={`font-semibold text-base leading-snug ${
-                                    t.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                                    {t.title}
-                                  </p>
-                                  <Show when={t.description}>
-                                    <div
-                                      class="mt-2 pt-2 border-t border-border text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none
-                                      [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-                                      innerHTML={t.description}
-                                    />
-                                  </Show>
-                                </div>
-                              </div>
-                            )}
-                          </For>
+                      {/*
+                        The single document for this week — saved minutes if it
+                        has any, otherwise the same conversion the live editor
+                        would seed itself with (see topicsToMinutesHtml, above).
+                        Rendered on the same .docs-editor-content /
+                        .theme-rich-text surface the editor uses, so a week
+                        reads here exactly as it was written, or exactly as it
+                        would look the moment someone opened it.
+                      */}
+                      <Show
+                        when={hasDocument()}
+                        fallback={
+                          <div class="px-4 py-6 sm:px-6">
+                            <JapaneseText
+                              as="p"
+                              ja="この週の議事録もトビックも残っていません。"
+                              class="block text-sm text-muted-foreground"
+                              japaneseClass="mt-1 block text-[0.9em]"
+                            >
+                              Nothing was written for this week.
+                            </JapaneseText>
+                          </div>
+                        }
+                      >
+                        <div class="border-b border-border px-4 py-4 sm:px-6">
+                          <p class="text-xs font-bold text-primary uppercase mb-3">
+                            Minutes <span lang="ja" class="normal-case text-[0.85em] font-normal">議事録</span>
+                          </p>
+                          <div
+                            class="docs-editor-content theme-rich-text rounded-lg border border-border px-4 py-3 text-sm leading-relaxed [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                            innerHTML={displayHtml()}
+                          />
                         </div>
-                      </div>
+                      </Show>
                     </div>
                   </Show>
                 </div>
@@ -260,7 +324,9 @@ export default function History() {
           </For>
         </div>
 
-        <PageFooter />
+        <Show when={boss()} fallback={<SummerPageFooter />}>
+          <PageFooter />
+        </Show>
       </main>
     </div>
   );
