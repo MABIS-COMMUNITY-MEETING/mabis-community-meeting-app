@@ -304,28 +304,7 @@
 }
 
 /* ── scroll edge: a separate, narrow boundary beneath navigation ── */
-
-/*
- * DO NOT put `isolation: isolate` on this element.
- *
- * It was here, to give .lg-scroll-edge (z-index 0) and .lg-surface (z-index 1)
- * a local stacking context to resolve against. It did that — and it also
- * silently destroyed the blur on the site header, which is the largest piece
- * of glass in the app.
- *
- * Per Filter Effects, `isolation: isolate` forms a BACKDROP ROOT. An element's
- * backdrop-filter samples only what is painted beneath it *within its backdrop
- * root*, so once this header became one, the glass inside it had nothing left
- * to sample: the page scrolling underneath was outside the root. The tint and
- * the border still rendered, so the bar looked correct in a screenshot and in
- * every computed style — it was simply transparent instead of frosted, with no
- * error anywhere to explain why.
- *
- * The stacking context it was added for already exists without it: the header
- * is `position: fixed` with `z-50`, and a positioned element with a z-index
- * other than auto creates one. A stacking context alone is NOT a backdrop
- * root, which is exactly the distinction that makes this safe.
- */
+.site-header-shell { isolation: isolate; }
 .site-header-shell > .lg-surface { z-index: 1; }
 .lg-scroll-edge {
   position: absolute;

@@ -4,7 +4,7 @@ import { LazySection } from "~/components/home/LazySection";
 import { SummerHome } from "~/components/home/summer";
 import SummerHeader from "~/components/home/SummerHeader";
 import { useQuery } from "@tanstack/solid-query";
-import { Settings, Palette, CircleHelp, LogOut } from "lucide-solid";
+import { Settings, Palette, CircleHelp } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
@@ -295,22 +295,11 @@ export default function Home() {
         <span class="hidden text-sm font-semibold text-foreground sm:block">
           {auth.user()?.full_name?.split(" ")[0] || "User"}
         </span>
-        {/*
-          * Icon-only below sm. The word plus its Japanese companion is ~90px,
-          * and this bar is a single non-wrapping row: with the theme, help,
-          * settings, avatar and Pages controls all `shrink-0`, that width was
-          * what pushed the button off the right edge of a phone and squeezed
-          * the title to nothing. The editorial header does not need this —
-          * SiteHeader moves its controls into a drawer at that width.
-          */}
         <button
           onClick={() => auth.logout()}
-          title="Sign Out"
-          aria-label="Sign Out"
-          class="flex h-9 shrink-0 items-center justify-center rounded-lg bg-primary px-2.5 text-xs font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 sm:px-4"
+          class="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
         >
-          <LogOut class="h-4 w-4 sm:hidden" aria-hidden="true" />
-          <span class="hidden sm:inline">Sign Out</span>
+          Sign Out
         </button>
       </div>
     </>

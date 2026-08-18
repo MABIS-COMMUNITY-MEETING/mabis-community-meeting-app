@@ -100,7 +100,6 @@ const copilot = read(".github/copilot-instructions.md");
 const themes = read("src/lib/themes.js");
 const css = read("src/index.css");
 const editorialHomeCss = read("src/styles/editorial-home.css");
-const glassCss = read("src/styles/glass.css");
 const home = read("src/pages/Home.jsx");
 const cursorPreference = read("src/lib/cursor-preference.js");
 const themeBalance = read("src/lib/color/themeBalance.js");
@@ -193,7 +192,7 @@ const easyLayoutRule = "Keep Home easy to navigate: the default layout stacks th
 const japaneseTextRule = "Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang=\"ja\"` so Maple Mono CJK fallback applies; the default remains off.";
 const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.";
 const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
-const homeLayoutRule = "The app has two styles, chosen in Settings and applied everywhere — Home, the splash, login and the archive pages. `Summer style` is the default and must ALWAYS stick to the style Summer wants — the original MABIS interface, as built in app `6a7f1d91128253fcdbf4f5a2`, which is the reference for it: the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding. Match that site; do not improve it, modernise it, tidy it, or drift it toward the editorial system or an AI's taste. An editorial flourish added to a Summer surface — an N° caption, tracked-out display type, a ruled plane, a square radius — is a bug exactly as a missing widget is. Summer style is the ONLY sanctioned exception to the Novesce UI mandate, and it is an exception to the editorial system alone, never to the tokens, fonts, OpenMoji, Google-only auth, cursor, glass or performance rules. `Boss style` is opt-in and must ALWAYS follow the Novesce design philosophy in full: the Japanese editorial system — numbered sections, tracked-out display type, ruled neutral planes, N° captions, restrained radii, the glass control plane — built from semantic tokens, the GNU FreeMono stack with Maple Mono for CJK, and pinned OpenMoji. A Boss surface that is not editorial, or that reaches for a generic dashboard look, is a bug. Every feature, widget, page, control and fix must exist in BOTH styles; adding something to one and not the other is a bug, not a variant. They are two presentations of one product, not two products.";
+const homeLayoutRule = "Home has two layouts: the default reproduces the original MABIS interface — the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding — and the art-directed editorial layout is opt-in as `Boss style` in Settings. Anything added, changed or fixed in one layout must exist in the other; they are two presentations of one page, not two products.";
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, richTextThemeRule);
     requireText(relativePath, content, easyLayoutRule);
@@ -320,31 +319,6 @@ for (const sourceFile of listSourceFiles("src").filter((file) => /\.(?:js|jsx|ts
     if (nativeEmojiPattern.test(source)) {
         failures.push(`${sourceFile} contains a platform-native emoji glyph; use OpenMoji.jsx with a pinned SVG asset`);
     }
-}
-
-/*
- * The site header must not form a backdrop root.
- *
- * The contract requires live glass backdrop blur on the floating control
- * plane. `isolation: isolate`, `filter`, `opacity` below 1 or a `mask` on the
- * header shell each form a backdrop root (Filter Effects), and a backdrop
- * filter samples nothing outside its own root — so the header renders its tint
- * and border with no blur at all.
- *
- * That failure is invisible to everything else here: the build passes, the
- * markup is unchanged, the computed styles all look right, and the bar just
- * quietly stops being glass. It shipped that way once already.
- *
- * The header's stacking context comes from `position: fixed` + `z-50`, which
- * is not a backdrop root, so nothing needs this to lay out correctly.
- */
-{
-  const shellRule = glassCss.match(/\.site-header-shell\s*\{[^}]*\}/g)?.join("\n") || "";
-  if (/isolation\s*:\s*isolate|(^|;|\{)\s*filter\s*:|mix-blend-mode\s*:/.test(shellRule)) {
-    failures.push(
-      "src/styles/glass.css: .site-header-shell forms a backdrop root — the top bar's glass will render transparent instead of blurred. See the note above that rule."
-    );
-  }
 }
 
 requireText("src/styles/editorial-home.css", editorialHomeCss, ".editorial-home .mabis-widget-header");

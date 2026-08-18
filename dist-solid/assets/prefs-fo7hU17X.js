@@ -1,0 +1,1 @@
+import{F as e,H as t}from"./web-CRd2b-C6.js";import{r as n,t as r}from"./index-DtYHD0EE.js";function i(){let[i,a]=e(n()),o=()=>a(n());return window.addEventListener(r,o),window.addEventListener(`storage`,o),t(()=>{window.removeEventListener(r,o),window.removeEventListener(`storage`,o)}),i}export{i as t};
