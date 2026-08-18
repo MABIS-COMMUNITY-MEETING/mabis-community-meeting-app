@@ -398,10 +398,22 @@ for (const sourceFile of emojiScanRoots.flatMap((dir) => listSourceFiles(dir)).f
  * is not a backdrop root, so nothing needs this to lay out correctly.
  */
 {
+  const backdropRootProps = /isolation\s*:\s*isolate|(^|;|\{)\s*filter\s*:|mix-blend-mode\s*:/;
+
   const shellRule = glassCss.match(/\.site-header-shell\s*\{[^}]*\}/g)?.join("\n") || "";
-  if (/isolation\s*:\s*isolate|(^|;|\{)\s*filter\s*:|mix-blend-mode\s*:/.test(shellRule)) {
+  if (backdropRootProps.test(shellRule)) {
     failures.push(
       "src/styles/glass.css: .site-header-shell forms a backdrop root — the top bar's glass will render transparent instead of blurred. See the note above that rule."
+    );
+  }
+
+  /* The surface itself must not form one either. backdrop-filter already gives
+     it a stacking context, so isolation/filter/mix-blend-mode here buy nothing
+     and cost the entire effect. */
+  const surfaceRule = glassCss.match(/(^|\})\s*\.lg-surface\s*\{[^}]*\}/m)?.[0] || "";
+  if (backdropRootProps.test(surfaceRule)) {
+    failures.push(
+      "src/styles/glass.css: .lg-surface forms its own backdrop root — it has no backdrop left to sample and will render tint and border with no blur."
     );
   }
 }
