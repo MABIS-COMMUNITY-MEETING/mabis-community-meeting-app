@@ -101,6 +101,9 @@ const themes = read("src/lib/themes.js");
 const css = read("src/index.css");
 const editorialHomeCss = read("src/styles/editorial-home.css");
 const glassCss = read("src/styles/glass.css");
+const customColorAccess = read("src/lib/custom-color-access.js");
+const themeSwitcher = read("src/components/ThemeSwitcher.jsx");
+const prefsSync = read("src/components/PrefsSync.jsx");
 const home = read("src/pages/Home.jsx");
 const cursorPreference = read("src/lib/cursor-preference.js");
 const themeBalance = read("src/lib/color/themeBalance.js");
@@ -288,6 +291,29 @@ requireText("src/lib/themes.js", themes, "'Maple Mono NF CN', 'Maple Mono CN', '
  * too — dropping it would let a 2.63 MiB emoji font try to render ordinary
  * text and pull itself onto the critical path.
  */
+/*
+ * Custom colours belong to one account.
+ *
+ * The theme catalogue stays open to everyone; the make-your-own surface does
+ * not (Novesce, Aug 2026 — see src/lib/custom-color-access.js). Three things
+ * are pinned because the feature needs all three and losing any one of them
+ * fails silently:
+ *
+ *   · the predicate, in one place, so the three call sites cannot drift;
+ *   · the switcher gate — without it the controls simply reappear for
+ *     everyone, with no error and nothing visibly wrong;
+ *   · the reconcile — without it an account that already had custom colours
+ *     keeps them with no way to change or reset them, which is worse than
+ *     never having restricted it.
+ *
+ * This is a UI availability rule, not an authorisation boundary; the note in
+ * custom-color-access.js says why that is the right weight here.
+ */
+requireText("src/lib/custom-color-access.js", customColorAccess, "boss@montessoribkk.com");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "canUseCustomColors(auth.user())");
+requireText("src/components/PrefsSync.jsx", prefsSync, "canUseCustomColors(auth.user())");
+requireText("src/components/PrefsSync.jsx", prefsSync, "clearCustomColors()");
+
 requireText("src/index.css", css, "font-family: 'OpenMojiColor'");
 requireText("src/index.css", css, "unicode-range:");
 requireText("src/lib/themes.js", themes, "const EMOJI_FAMILY = \"'OpenMojiColor'\"");
