@@ -244,6 +244,12 @@ export default function Home() {
   const weekLabel = `${getISOWeekYear(now)}-W${String(getISOWeek(now)).padStart(2, "0")}`;
   const dateLabel = format(now, "dd.MM.yyyy");
 
+  /* Which style this reader chose. Stored under "mabis-home-layout" with values
+     "simple"/"boss"; the class is already on <html> before first paint, so CSS
+     never flashes — this signal is only for the parts that branch in JS. */
+  const layout = useHomeLayout();
+  const isBoss = () => layout() === "boss";
+
   /*
    * One renderWidget(), handed to BOTH styles.
    *
@@ -324,6 +330,10 @@ export default function Home() {
         </Suspense>
       </Show>
 
+      <Show
+        when={isBoss()}
+        fallback={<SummerHome sections={SECTIONS}>{renderWidget}</SummerHome>}
+      >
       <main class="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
         <HomeMasthead weekLabel={weekLabel} dateLabel={dateLabel} date={now} />
 
@@ -357,46 +367,8 @@ export default function Home() {
                 intrinsicHeight={s.height + 160}
               >
                 <LazySection minHeight={s.height}>
-                  {/* Ported widgets render here; the rest still reserve their
-                      exact final height, so swapping one in shifts nothing. */}
-                  <Show
-                    when={WIDGETS[s.index]}
-                    fallback={
-                      <div
-                        class="lazy-section-placeholder"
-                        style={{
-                          "--lazy-min-height": `${s.height}px`,
-                          "contain-intrinsic-size": `auto ${s.height}px`,
-                        }}
-                        aria-hidden
-                      />
-                    }
-                  >
-                    {(Widget) => (
-                      <Suspense
-                        fallback={
-                          <div
-                            class="lazy-section-placeholder"
-                            style={{ "--lazy-min-height": `${s.height}px` }}
-                            aria-hidden
-                          />
-                        }
-                      >
-                        {(() => {
-                          const W = Widget();
-                          return (
-                            <W
-                              isAdmin={isAdmin()}
-                              members={members()}
-                              canChangeRoles={isAdmin()}
-                              canStart={isAdmin()}
-                              onStartMeeting={() => window.dispatchEvent(new CustomEvent("startMeetingMode"))}
-                            />
-                          );
-                        })()}
-                      </Suspense>
-                    )}
-                  </Show>
+                  {/* The same renderWidget() the Summer style receives. */}
+                  {renderWidget(s)}
                 </LazySection>
               </EditorialSection>
             )}
@@ -405,6 +377,7 @@ export default function Home() {
 
         <PageFooter />
       </main>
+      </Show>
 
       {/* Deferred until the browser is idle, as in React — same three, same order. */}
       <IdleMount timeout={1800}>
