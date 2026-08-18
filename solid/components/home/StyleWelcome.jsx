@@ -1,4 +1,4 @@
-import { Show, For } from "solid-js";
+import { createSignal, Show, For } from "solid-js";
 import { Check } from "lucide-solid";
 import { JapaneseText } from "~/components/primitives";
 import { hasChosenHomeLayout, setHomeLayout } from "@/lib/layout-preference";
@@ -39,15 +39,14 @@ const CHOICES = [
 ];
 
 export default function StyleWelcome(props) {
-  /* Read once, at mount. Making this reactive would re-open the panel the
-     moment the key is cleared elsewhere, which is not what anyone wants. */
-  const [unchosen, setUnchosen] = [() => !hasChosenHomeLayout(), () => {}];
-  let dismissed = false;
-  const [show, setShow] = [() => unchosen() && !dismissed, () => {}];
+  /* Evaluated once, at mount: whether this reader has ever chosen. A signal
+     rather than a plain variable because choosing has to hide the panel, and
+     only a signal re-runs the <Show> below. */
+  const [show, setShow] = createSignal(!hasChosenHomeLayout());
 
   const choose = (key) => {
     setHomeLayout(key);
-    dismissed = true;
+    setShow(false);
     props.onDone?.();
   };
 
