@@ -1,7 +1,7 @@
 import { createSignal, createMemo, onMount, onCleanup, createEffect, Show, For } from "solid-js";
 import { Palette, Check, RotateCcw, Save, Trash2, Star, Search } from "lucide-solid";
 import {
-  THEMES, applyTheme, applyCustomColors, clearCustomColors,
+  THEMES, SELECTABLE_THEME_KEYS, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
 } from "@/lib/themes";
@@ -29,11 +29,23 @@ function paletteStripe(theme) {
   return stripe;
 }
 
-const THEME_ENTRIES = Object.entries(THEMES);
-const SIMPLE_THEME_KEYS = ["default", "sage", "sky", "sakura", "midnight", "lesbian"];
-const SIMPLE_THEME_ENTRIES = SIMPLE_THEME_KEYS
+/*
+ * Both lists come from SELECTABLE_THEME_KEYS, never from THEMES.
+ *
+ * THEMES still carries the retired catalogue for the pride ambience, the
+ * Frutiger Aero treatment and the contrast fixtures. Enumerating it here is
+ * what used to put ~140 themes in the picker, so the allow-list is the only
+ * thing this file is permitted to read.
+ */
+const THEME_ENTRIES = SELECTABLE_THEME_KEYS
   .map((key) => [key, THEMES[key]])
   .filter(([, theme]) => theme);
+const SIMPLE_THEME_ENTRIES = THEME_ENTRIES;
+
+/* With one theme there is nothing to browse, search or page through, so the
+   whole catalogue affordance stays out of the DOM rather than rendering a
+   "Browse all themes · 1" button that leads to the same single swatch. */
+const HAS_THEME_CATALOGUE = THEME_ENTRIES.length > 1;
 
 /*
  * ThemeSwitcher — Solid port of src/components/ThemeSwitcher.jsx.
@@ -248,6 +260,7 @@ export default function ThemeSwitcher(props) {
             </For>
           </div>
 
+          <Show when={HAS_THEME_CATALOGUE}>
           <Show
             when={showAllThemes()}
             fallback={
@@ -283,6 +296,7 @@ export default function ThemeSwitcher(props) {
                 </button>
               </Show>
             </div>
+          </Show>
           </Show>
 
           {/*
