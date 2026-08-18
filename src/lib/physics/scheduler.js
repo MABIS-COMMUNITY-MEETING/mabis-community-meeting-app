@@ -10,12 +10,7 @@
  * A fixed timestep with an accumulator keeps behaviour identical at 60/120/240Hz.
  * The accumulator is clamped so a stalled tab can never trigger a burst of
  * catch-up steps (the classic "spiral of death").
- *
- * This loop also feeds the shared refresh-rate estimator. It is the one rAF
- * callback that runs whenever anything on the page is moving, so it supplies
- * the measurement for free — no observer needs a loop of its own.
  */
-import { sampleFrame, resetFrameChain } from "@/lib/physics/refresh-rate";
 
 const FIXED_DT = 1 / 120;
 const MAX_FRAME = 0.1; // never simulate more than 100ms of catch-up in one frame
@@ -26,8 +21,6 @@ let last = 0;
 let acc = 0;
 
 function frame(now) {
-  sampleFrame(now);
-
   const t = now / 1000;
   let elapsed = t - last;
   last = t;
@@ -66,9 +59,6 @@ export function wake() {
   if (raf !== null || document.hidden) return;
   last = performance.now() / 1000;
   acc = 0;
-  /* The loop has been parked for an unknown time; the next timestamp is not a
-   * frame delta and must not be measured as one. */
-  resetFrameChain();
   raf = requestAnimationFrame(frame);
 }
 
@@ -85,7 +75,6 @@ if (typeof document !== "undefined") {
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
-      resetFrameChain();
     } else {
       wake();
     }

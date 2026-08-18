@@ -1,5 +1,3 @@
-import { refreshIntervalMs, resetFrameChain, sampleFrame } from "@/lib/physics/refresh-rate";
-
 export const PERFORMANCE_TIER_EVENT = "mabis-performance-tier";
 
 let lowPower = false;
@@ -39,59 +37,6 @@ export function applyLowPowerMode(enabled) {
   window.dispatchEvent(new CustomEvent(PERFORMANCE_TIER_EVENT, { detail: enabled }));
 }
 
-/*
- * Thresholds for the demotion decision below. Every one of them is either a
- * ratio against the measured refresh interval or a wall-clock duration. None
- * is a frame count and none is an absolute frame time, because both of those
- * change meaning when the panel changes.
- */
-
-/* Judge nothing during mount. The first frames of a page are the most
- * contended moment of its life — chunks compiling, fonts swapping, widgets
- * mounting — and are the worst possible evidence about the hardware. The
- * warm-up doubles as the estimator's bootstrap: by the time judging starts,
- * enough frames have been fed to know what the panel does. */
-const WARMUP_MS = 800;
-
-/* A wall-clock window, not a frame count. The old 90-frame window lasted 1.5 s
- * at 60 Hz but only 0.37 s at 240 Hz, so the faster the display, the less
- * evidence the decision rested on. */
-const WINDOW_MS = 2000;
-
-/* A frame is late once it has missed a whole vsync. Half a refresh of slack
- * absorbs timer noise without hiding a genuinely dropped frame. */
-const LATE_FACTOR = 1.5;
-
-/* Demote when this share of the window arrived late. */
-const LATE_SHARE = 0.2;
-
-/* Below this the window saw a stalled tab, not a running page; decide nothing. */
-const MIN_FRAMES = 30;
-
-/* Longer than this is a tab switch or a debugger pause, not a dropped frame. */
-const STALL_MS = 200;
-
-/**
- * Watch frame pacing and demote to the lite tier if the page cannot keep up.
- *
- * The question this asks is deliberately NOT "are frames arriving slowly?" but
- * "are frames arriving late for this display?". Those differ, and the
- * difference is the whole bug this replaced:
- *
- *   - A steady 30 Hz panel delivers 33 ms frames forever. Under absolute
- *     thresholds every frame looked slow and the device was demoted on sight,
- *     stripping glass and cursor physics off hardware that was keeping perfect
- *     time. Measured against its own refresh, nothing is late and nothing is
- *     taken away.
- *   - A 144 Hz panel collapsing to a stuttering 70 Hz is a 3.5x regression the
- *     user can see. Under absolute thresholds it never tripped, because 14 ms
- *     is comfortably inside a 60 Hz budget. Measured against its own refresh,
- *     most frames miss a vsync and the tier drops as it should.
- *
- * Stable-but-slow therefore keeps its effects and unstable loses them, which
- * is the right priority: consistent pacing is what makes motion feel smooth,
- * not the size of the frame rate.
- */
 export function monitorFrameBudget(onLowPower) {
   if (detectLowPowerDevice()) {
     onLowPower();
@@ -100,34 +45,30 @@ export function monitorFrameBudget(onLowPower) {
 
   let raf = 0;
   let previous = 0;
-  let started = 0;
   let frames = 0;
-  let lateFrames = 0;
+  let slowFrames = 0;
+  let elapsed = 0;
 
   const sample = (now) => {
-    if (!started) started = now;
-    sampleFrame(now);
-
-    const dt = now - previous;
-    const judging = now - started > WARMUP_MS;
-    if (previous && judging && dt < STALL_MS) {
-      frames += 1;
-      if (dt > refreshIntervalMs() * LATE_FACTOR) lateFrames += 1;
+    if (!previous) previous = now;
+    else {
+      const dt = now - previous;
+      previous = now;
+      // Ignore tab switches and debugging pauses; count sustained missed frames.
+      if (dt < 100) {
+        frames += 1;
+        elapsed += dt;
+        if (dt > 25) slowFrames += 1;
+      }
     }
-    previous = now;
 
-    if (now - started >= WARMUP_MS + WINDOW_MS) {
-      raf = 0;
-      if (frames >= MIN_FRAMES && lateFrames / frames > LATE_SHARE) onLowPower();
+    if (frames >= 90) {
+      if (elapsed / frames > 20 || slowFrames / frames > 0.2) onLowPower();
       return;
     }
     raf = requestAnimationFrame(sample);
   };
 
   raf = requestAnimationFrame(sample);
-  return () => {
-    if (raf) cancelAnimationFrame(raf);
-    raf = 0;
-    resetFrameChain();
-  };
+  return () => cancelAnimationFrame(raf);
 }

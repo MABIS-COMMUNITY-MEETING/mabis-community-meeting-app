@@ -1,18 +1,9 @@
 /* Contemporary Japanese-editorial normalization for the Home route.
    This is a structural vocabulary: neutral planes, rules, compact controls,
    restrained radii and one accent. It deliberately adds no cultural copy or
-   decorative imitation, and stays scoped away from admin/auth surfaces.
+   decorative imitation, and stays scoped away from admin/auth surfaces. */
 
-   SCOPED TO THE BOSS LAYOUT. Home defaults to the original MABIS card
-   interface, which is what the widgets' own classes already produce — every
-   rule below exists to override those classes into the editorial system. So
-   the default layout wants none of it, and `html.home-layout-boss` (set on
-   <html> before first paint by src/lib/layout-preference.js) is what turns the
-   whole layer on. Gating it here rather than unsetting it per-property means
-   the default layout matches none of these selectors at all: no !important
-   cascade to resolve, no overridden declarations to compute, nothing. */
-
-html.home-layout-boss .editorial-home {
+.editorial-home {
   --editorial-rule: hsl(var(--foreground) / 0.16);
   --editorial-rule-strong: hsl(var(--foreground) / 0.32);
   --editorial-wash: hsl(var(--foreground) / 0.025);
@@ -20,14 +11,14 @@ html.home-layout-boss .editorial-home {
   --editorial-radius: 2px;
 }
 
-html.home-layout-boss .editorial-home [data-gp-section] {
+.editorial-home [data-gp-section] {
   border-bottom: 1px solid var(--editorial-rule);
   padding-bottom: clamp(1.75rem, 3vw, 3.5rem);
 }
 
 /* One crisp information plane per module. The section grid supplies depth and
    hierarchy, so widget shadows and inflated card radii are unnecessary. */
-html.home-layout-boss .editorial-home .mabis-widget {
+.editorial-home .mabis-widget {
   isolation: isolate;
   color: hsl(var(--card-foreground));
   background: hsl(var(--card)) !important;
@@ -36,15 +27,15 @@ html.home-layout-boss .editorial-home .mabis-widget {
   box-shadow: none !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget:hover {
+.editorial-home .mabis-widget:hover {
   transform: none !important;
   border-color: hsl(var(--foreground) / 0.46) !important;
   box-shadow: none !important;
 }
 
 /* Headers read as publication furniture instead of branded SaaS banners. */
-html.home-layout-boss .editorial-home .mabis-widget-header,
-html.home-layout-boss .editorial-home div.mabis-widget-header[class*="bg-"] {
+.editorial-home .mabis-widget-header,
+.editorial-home div.mabis-widget-header[class*="bg-"] {
   position: relative;
   color: hsl(var(--foreground)) !important;
   background-color: hsl(var(--card)) !important;
@@ -54,7 +45,7 @@ html.home-layout-boss .editorial-home div.mabis-widget-header[class*="bg-"] {
   box-shadow: none !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget-header::before {
+.editorial-home .mabis-widget-header::before {
   content: "";
   position: absolute;
   inset: 0 auto auto 0;
@@ -64,84 +55,84 @@ html.home-layout-boss .editorial-home .mabis-widget-header::before {
   pointer-events: none;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget-title {
+.editorial-home .mabis-widget-title {
   color: hsl(var(--foreground)) !important;
   font-weight: 500 !important;
   line-height: 1 !important;
   letter-spacing: -0.035em !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget-header .text-white,
-html.home-layout-boss .editorial-home .mabis-widget-header .text-white\/90,
-html.home-layout-boss .editorial-home .mabis-widget-header .text-white\/80,
-html.home-layout-boss .editorial-home .mabis-widget-header .text-white\/70,
-html.home-layout-boss .editorial-home .mabis-widget-header .text-white\/60,
-html.home-layout-boss .editorial-home .mabis-widget-header button,
-html.home-layout-boss .editorial-home .mabis-widget-header svg {
+.editorial-home .mabis-widget-header .text-white,
+.editorial-home .mabis-widget-header .text-white\/90,
+.editorial-home .mabis-widget-header .text-white\/80,
+.editorial-home .mabis-widget-header .text-white\/70,
+.editorial-home .mabis-widget-header .text-white\/60,
+.editorial-home .mabis-widget-header button,
+.editorial-home .mabis-widget-header svg {
   color: hsl(var(--foreground)) !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget-header [class*="bg-white/"] {
+.editorial-home .mabis-widget-header [class*="bg-white/"] {
   color: hsl(var(--foreground)) !important;
   background: var(--editorial-wash-active) !important;
   border-color: var(--editorial-rule) !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget-header .bg-white {
+.editorial-home .mabis-widget-header .bg-white {
   color: hsl(var(--background)) !important;
   background: hsl(var(--foreground)) !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget-header .bg-white svg {
+.editorial-home .mabis-widget-header .bg-white svg {
   color: currentColor !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget-actions {
+.editorial-home .mabis-widget-actions {
   row-gap: 0.4rem;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget-header :is(button, a, [role="button"]):not(.rounded-full) {
+.editorial-home .mabis-widget-header :is(button, a, [role="button"]):not(.rounded-full) {
   border-radius: var(--editorial-radius) !important;
   box-shadow: none !important;
 }
 
 /* Widget interiors keep useful density while separating records with rules. */
-html.home-layout-boss .editorial-home .mabis-widget-body {
+.editorial-home .mabis-widget-body {
   color: hsl(var(--foreground));
   background: hsl(var(--card));
 }
 
-html.home-layout-boss .editorial-home .mabis-widget :is(.rounded-2xl, .rounded-xl, .rounded-lg, .rounded-md) {
+.editorial-home .mabis-widget :is(.rounded-2xl, .rounded-xl, .rounded-lg, .rounded-md) {
   border-radius: var(--editorial-radius) !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget [class*="shadow"] {
+.editorial-home .mabis-widget [class*="shadow"] {
   box-shadow: none !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget [class*="hover:shadow"]:hover {
+.editorial-home .mabis-widget [class*="hover:shadow"]:hover {
   box-shadow: none !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget [class*="hover:scale"]:hover {
+.editorial-home .mabis-widget [class*="hover:scale"]:hover {
   transform: translateY(-1px) !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget :is(.bg-gray-50, .bg-gray-100) {
+.editorial-home .mabis-widget :is(.bg-gray-50, .bg-gray-100) {
   background: var(--editorial-wash) !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget :is(.border-gray-100, .border-gray-200, .border-gray-300) {
+.editorial-home .mabis-widget :is(.border-gray-100, .border-gray-200, .border-gray-300) {
   border-color: var(--editorial-rule) !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget :is(button, a, [role="button"]):not(.rounded-full) {
+.editorial-home .mabis-widget :is(button, a, [role="button"]):not(.rounded-full) {
   border-radius: var(--editorial-radius) !important;
   box-shadow: none !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget button[class*="bg-[#951E3A]"],
-html.home-layout-boss .editorial-home .mabis-widget [role="button"][class*="bg-[#951E3A]"] {
+.editorial-home .mabis-widget button[class*="bg-[#951E3A]"],
+.editorial-home .mabis-widget [role="button"][class*="bg-[#951E3A]"] {
   min-height: 2.25rem;
   border: 1px solid hsl(var(--primary));
   font-family: var(--font-mono);
@@ -150,24 +141,24 @@ html.home-layout-boss .editorial-home .mabis-widget [role="button"][class*="bg-[
   letter-spacing: 0.06em;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]) {
+.editorial-home .mabis-widget :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]) {
   border-radius: var(--editorial-radius) !important;
   border-color: var(--editorial-rule) !important;
   background: hsl(var(--card)) !important;
   box-shadow: none !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget :is(input, textarea, select):focus {
+.editorial-home .mabis-widget :is(input, textarea, select):focus {
   border-color: hsl(var(--primary)) !important;
   box-shadow: inset 2px 0 0 hsl(var(--primary)) !important;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget table {
+.editorial-home .mabis-widget table {
   border-collapse: collapse;
   border-spacing: 0;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget th {
+.editorial-home .mabis-widget th {
   background: transparent !important;
   font-family: var(--font-mono);
   font-size: 0.625rem;
@@ -176,12 +167,12 @@ html.home-layout-boss .editorial-home .mabis-widget th {
   text-transform: uppercase;
 }
 
-html.home-layout-boss .editorial-home .mabis-widget :is(th, td) {
+.editorial-home .mabis-widget :is(th, td) {
   border-color: var(--editorial-rule) !important;
 }
 
 /* Birthday notices use the same editorial system instead of a novelty gradient. */
-html.home-layout-boss .editorial-home .birthday-notice {
+.editorial-home .birthday-notice {
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -194,7 +185,7 @@ html.home-layout-boss .editorial-home .birthday-notice {
   border-block: 1px solid var(--editorial-rule-strong);
 }
 
-html.home-layout-boss .editorial-home .birthday-notice::before {
+.editorial-home .birthday-notice::before {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
@@ -202,7 +193,7 @@ html.home-layout-boss .editorial-home .birthday-notice::before {
   background: hsl(var(--primary));
 }
 
-html.home-layout-boss .editorial-home .birthday-notice__mark {
+.editorial-home .birthday-notice__mark {
   display: grid;
   width: 2.75rem;
   height: 2.75rem;
@@ -211,7 +202,7 @@ html.home-layout-boss .editorial-home .birthday-notice__mark {
   border: 1px solid var(--editorial-rule-strong);
 }
 
-html.home-layout-boss .editorial-home .birthday-notice__close {
+.editorial-home .birthday-notice__close {
   display: grid;
   width: 2.75rem;
   height: 2.75rem;
@@ -220,27 +211,27 @@ html.home-layout-boss .editorial-home .birthday-notice__close {
   color: hsl(var(--muted-foreground));
 }
 
-html.home-layout-boss .editorial-home .birthday-notice__close:hover {
+.editorial-home .birthday-notice__close:hover {
   color: hsl(var(--foreground));
   background: var(--editorial-wash-active);
 }
 
 @media (max-width: 639px) {
-  html.home-layout-boss .editorial-home [data-gp-section] {
+  .editorial-home [data-gp-section] {
     padding-bottom: 2rem;
   }
 
-  html.home-layout-boss .editorial-home .mabis-widget {
+  .editorial-home .mabis-widget {
     border-left: 0 !important;
     border-right: 0 !important;
     border-radius: 0 !important;
   }
 
-  html.home-layout-boss .editorial-home .mabis-widget-header::before {
+  .editorial-home .mabis-widget-header::before {
     width: 3.75rem;
   }
 
-  html.home-layout-boss .editorial-home .birthday-notice {
+  .editorial-home .birthday-notice {
     margin-inline: -1rem;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 0.75rem;
@@ -249,10 +240,10 @@ html.home-layout-boss .editorial-home .birthday-notice__close:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html.home-layout-boss .editorial-home .mabis-widget,
-  html.home-layout-boss .editorial-home .mabis-widget *,
-  html.home-layout-boss .editorial-home .birthday-notice,
-  html.home-layout-boss .editorial-home .birthday-notice * {
+  .editorial-home .mabis-widget,
+  .editorial-home .mabis-widget *,
+  .editorial-home .birthday-notice,
+  .editorial-home .birthday-notice * {
     scroll-behavior: auto;
   }
 }
