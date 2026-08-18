@@ -39,14 +39,13 @@ const SECTIONS = [
 export default function QuickStartGuide(props) {
   createEffect(() => {
     if (!props.open) return;
-    const previousOverflow = document.body.style.overflow;
     const handleKeyDown = (event) => {
       if (event.key === "Escape") props.onClose();
     };
-    document.body.style.overflow = "hidden";
+    const release = lockBodyScroll();
     window.addEventListener("keydown", handleKeyDown);
     onCleanup(() => {
-      document.body.style.overflow = previousOverflow;
+      release();
       window.removeEventListener("keydown", handleKeyDown);
     });
   });
