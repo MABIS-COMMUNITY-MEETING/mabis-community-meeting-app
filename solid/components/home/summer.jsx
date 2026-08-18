@@ -19,7 +19,7 @@ import BirthdayBanner from "~/components/BirthdayBanner";
 
 /* Still exported: other modules read the version even though the colophon
    card that used to display the logo is gone. */
-export const APP_VERSION = "v6.9.9";
+export const APP_VERSION = "v67";
 
 /**
  * One stacked module.
