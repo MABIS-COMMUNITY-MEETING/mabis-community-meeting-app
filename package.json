@@ -27,7 +27,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.42",
+    "@base44/sdk": "^0.8.43",
     "@base44/vite-plugin": "^1.0.30",
     "@kobalte/core": "^0.13.13",
     "@solidjs/router": "^1.0.0",
@@ -36,11 +36,11 @@
     "date-fns": "^3.6.0",
     "lucide-solid": "^1.31.0",
     "quill": "^2.0.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "solid-js": "^1.9.14",
     "solid-motionone": "^1.0.4",
-    "tailwindcss-animate": "^1.0.7",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
