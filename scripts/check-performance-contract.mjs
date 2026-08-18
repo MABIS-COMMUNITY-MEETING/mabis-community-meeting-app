@@ -99,7 +99,6 @@ const feedback = read("src/pages/Feedback.jsx");
 const optionalCursor = read("src/components/OptionalCustomCursor.jsx");
 const smoothScroll = readIfPresent("src/components/SmoothScroll.jsx") + readIfPresent("solid/lib/perf.js");
 const chrome = read("solid/components/chrome.jsx");
-const appShell = read("solid/App.jsx");
 const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
 const glass = read("src/styles/glass.css");
@@ -204,7 +203,7 @@ forbidText("scroll implementation", smoothScroll, 'addEventListener("wheel"');
  * an integrated GPU, so it is required, and required in the shell rather than
  * in one page.
  */
-requireText("solid/App.jsx", appShell, "installScrollStateClass()");
+requireText("src/App.jsx", app, "installScrollStateClass()");
 requireText("scroll implementation", smoothScroll, 'classList.add("is-scrolling")');
 forbidText("solid/components/chrome.jsx", chrome, "subscribeScrollProgress");
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
