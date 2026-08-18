@@ -35,7 +35,20 @@
   --glass_press: 1;
 
   position: relative;
-  isolation: isolate;
+  /*
+   * NO `isolation: isolate` here.
+   *
+   * It was, for the ::before/::after/.lg-content layering — but `backdrop-filter`
+   * already creates a stacking context on this element, so it bought nothing,
+   * and `isolation: isolate` is one of the properties that forms a BACKDROP
+   * ROOT. An element that is its own backdrop root has no backdrop left to
+   * sample, which is a documented way to end up with a surface that keeps its
+   * tint and border and renders no blur at all — exactly the symptom this bar
+   * had. The layering is unchanged without it.
+   *
+   * Same class of bug as the one removed from .site-header-shell below; see
+   * the longer note there.
+   */
   /* NOTE: no transform at rest — a transformed element becomes a backdrop
      root, which would blank out the edge-lens pass below */
   /* Blur is intentionally constant between frames; interpolating a backdrop
@@ -304,7 +317,28 @@
 }
 
 /* ── scroll edge: a separate, narrow boundary beneath navigation ── */
-.site-header-shell { isolation: isolate; }
+
+/*
+ * DO NOT put `isolation: isolate` on this element.
+ *
+ * It was here, to give .lg-scroll-edge (z-index 0) and .lg-surface (z-index 1)
+ * a local stacking context to resolve against. It did that — and it also
+ * silently destroyed the blur on the site header, which is the largest piece
+ * of glass in the app.
+ *
+ * Per Filter Effects, `isolation: isolate` forms a BACKDROP ROOT. An element's
+ * backdrop-filter samples only what is painted beneath it *within its backdrop
+ * root*, so once this header became one, the glass inside it had nothing left
+ * to sample: the page scrolling underneath was outside the root. The tint and
+ * the border still rendered, so the bar looked correct in a screenshot and in
+ * every computed style — it was simply transparent instead of frosted, with no
+ * error anywhere to explain why.
+ *
+ * The stacking context it was added for already exists without it: the header
+ * is `position: fixed` with `z-50`, and a positioned element with a z-index
+ * other than auto creates one. A stacking context alone is NOT a backdrop
+ * root, which is exactly the distinction that makes this safe.
+ */
 .site-header-shell > .lg-surface { z-index: 1; }
 .lg-scroll-edge {
   position: absolute;
