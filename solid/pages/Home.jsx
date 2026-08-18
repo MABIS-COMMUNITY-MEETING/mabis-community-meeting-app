@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, lazy, Suspense, Show, ErrorBoundary } from "solid-js";
+import { createSignal, lazy, Suspense, Show, ErrorBoundary } from "solid-js";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection } from "~/components/home/LazySection";
 import { SummerHome } from "~/components/home/summer";
