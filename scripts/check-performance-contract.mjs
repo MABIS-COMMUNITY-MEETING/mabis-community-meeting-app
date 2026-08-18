@@ -291,11 +291,14 @@ requireText("src/components/home/LazySection.jsx", lazySection, "contain-intrins
  * on .classic-scrollbars and the class is set from a measurement before paint.
  */
 requireText("src/main.jsx", main, "applyScrollbarMode()");
-forbidText(
-  "src/index.css",
-  css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/html\.classic-scrollbars[^,{]*/g, ""),
-  "::-webkit-scrollbar",
-);
+/* Both spellings. scrollbar-width is the standard property and opts a scroller
+   out of overlay scrollbars exactly as the -webkit- pseudo-element does, so
+   guarding only one of them leaves the door open. */
+const scrollbarRules = css
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/html\.classic-scrollbars[^,{]*/g, "");
+forbidText("src/index.css", scrollbarRules, "::-webkit-scrollbar");
+forbidText("src/index.css", scrollbarRules, "scrollbar-width");
 requireText("src/main.jsx", main, "window.setTimeout(resolve, 800)");
 requireText("src/main.jsx", main, '.register("/sw.js"');
 requireText("package.json", packageJson, "node scripts/generate-service-worker.mjs");
