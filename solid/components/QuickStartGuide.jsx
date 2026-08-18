@@ -1,6 +1,7 @@
 import { createEffect, onCleanup, Index, Show } from "solid-js";
 import { X } from "lucide-solid";
 import { JapaneseText } from "~/components/primitives";
+import { lockBodyScroll } from "@/lib/scroll-lock";
 
 const SECTIONS = [
   {
