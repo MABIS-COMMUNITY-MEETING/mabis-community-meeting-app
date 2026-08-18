@@ -13,6 +13,24 @@
  * engine essentially nothing beyond the widgets' own utilities.
  */
 
+/*
+ * Summer style away from Home.
+ *
+ * The archive and auth pages get the same page surface Home does, so moving
+ * between them is one continuous sheet rather than a light page and a themed
+ * one. Same gradient, same radius restoration, same deference to a dark
+ * theme — see the notes on .summer-home below, which this shares.
+ */
+.summer-page {
+  background-color: hsl(var(--background));
+  background-image: linear-gradient(180deg, #f7f5f6 0%, #f1eef0 100%);
+  --radius: 0.75rem;
+}
+
+body.theme-is-dark .summer-page {
+  background-image: none;
+}
+
 .summer-home {
   /* The literal gradient from the original site. */
   background-image: linear-gradient(180deg, #f7f5f6 0%, #f1eef0 100%);

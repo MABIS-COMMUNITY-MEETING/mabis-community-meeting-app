@@ -35,7 +35,20 @@
   --glass_press: 1;
 
   position: relative;
-  isolation: isolate;
+  /*
+   * NO `isolation: isolate` here.
+   *
+   * It was, for the ::before/::after/.lg-content layering — but `backdrop-filter`
+   * already creates a stacking context on this element, so it bought nothing,
+   * and `isolation: isolate` is one of the properties that forms a BACKDROP
+   * ROOT. An element that is its own backdrop root has no backdrop left to
+   * sample, which is a documented way to end up with a surface that keeps its
+   * tint and border and renders no blur at all — exactly the symptom this bar
+   * had. The layering is unchanged without it.
+   *
+   * Same class of bug as the one removed from .site-header-shell below; see
+   * the longer note there.
+   */
   /* NOTE: no transform at rest — a transformed element becomes a backdrop
      root, which would blank out the edge-lens pass below */
   /* Blur is intentionally constant between frames; interpolating a backdrop
@@ -304,7 +317,28 @@
 }
 
 /* ── scroll edge: a separate, narrow boundary beneath navigation ── */
-.site-header-shell { isolation: isolate; }
+
+/*
+ * DO NOT put `isolation: isolate` on this element.
+ *
+ * It was here, to give .lg-scroll-edge (z-index 0) and .lg-surface (z-index 1)
+ * a local stacking context to resolve against. It did that — and it also
+ * silently destroyed the blur on the site header, which is the largest piece
+ * of glass in the app.
+ *
+ * Per Filter Effects, `isolation: isolate` forms a BACKDROP ROOT. An element's
+ * backdrop-filter samples only what is painted beneath it *within its backdrop
+ * root*, so once this header became one, the glass inside it had nothing left
+ * to sample: the page scrolling underneath was outside the root. The tint and
+ * the border still rendered, so the bar looked correct in a screenshot and in
+ * every computed style — it was simply transparent instead of frosted, with no
+ * error anywhere to explain why.
+ *
+ * The stacking context it was added for already exists without it: the header
+ * is `position: fixed` with `z-50`, and a positioned element with a z-index
+ * other than auto creates one. A stacking context alone is NOT a backdrop
+ * root, which is exactly the distinction that makes this safe.
+ */
 .site-header-shell > .lg-surface { z-index: 1; }
 .lg-scroll-edge {
   position: absolute;
@@ -323,6 +357,42 @@
   transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
   will-change: transform, opacity;
 }
+
+/* ── lite tier: cheaper glass, still glass ─────────────────────────
+   This rule used to live in index.css as
+
+     html.performance-lite .lg-surface {
+       background: hsl(var(--background) / 0.96) !important;
+       backdrop-filter: none !important;
+     }
+
+   which is the one thing the contract forbids outright: a performance tier
+   "may pause decoration but must not replace glass with an opaque fallback".
+   At 0.96 alpha with no filter this was not the material any more, just a
+   bar. And because the frame monitor used to demote healthy hardware on sight
+   — a steady 30 Hz panel was condemned by its first frame, see the note in
+   performance-tier.js — people saw their top bar like that permanently, with
+   no setting that would bring it back.
+
+   What actually costs GPU time here is the blur RADIUS (raster cost scales
+   with it), the extra saturate and brightness passes, and the two decorative
+   pseudo-element layers. So those go, and the single thing that makes it
+   glass — a live backdrop blur — stays, at roughly a third of the radius.
+   The tier still gets its cheap surface; it just gets a cheaper pane of glass
+   instead of a sheet of paint.
+
+   Specificity carries this over .lg-navigation's own 26px, so the header
+   strip is covered without naming it. */
+html.performance-lite .lg-surface {
+  --glass_blur: 9px;
+  --glass_tint: 0.14;
+  backdrop-filter: blur(var(--glass_blur));
+  -webkit-backdrop-filter: blur(var(--glass_blur));
+  box-shadow: none;
+}
+
+html.performance-lite .lg-surface::before,
+html.performance-lite .lg-surface::after { display: none; }
 
 html.performance-lite .lg-depth { display: none; }
 html.performance-lite .lg-scroll-edge {

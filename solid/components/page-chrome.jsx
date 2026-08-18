@@ -1,3 +1,4 @@
+import { Show } from "solid-js";
 import { A, useNavigate } from "@solidjs/router";
 import { ArrowLeft, Plus } from "lucide-solid";
 import { JapaneseText } from "~/components/primitives";
@@ -69,6 +70,66 @@ export function PageNav(props) {
   );
 }
 
+/*
+ * Summer style's page header — the original MABIS bar.
+ *
+ * PageNav above carries no page identity because the boss masthead supplies
+ * it: the big display title, the N° caption and the count all live in the
+ * page body. Summer style has no masthead, so the header has to carry them,
+ * which is exactly what the original site did — a sticky white strip with the
+ * back arrow, the page name and one muted count line.
+ *
+ * Sticky rather than fixed, so no page needs to reserve room for it. The
+ * colours are theme tokens rather than the original's literal grays; the same
+ * bar has to survive every theme the app has grown since.
+ */
+export function SummerPageNav(props) {
+  const navigate = useNavigate();
+  const goBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/home");
+  };
+
+  return (
+    <header class="sticky top-0 z-40 border-b border-border bg-card shadow-sm">
+      <div class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-5">
+        <button
+          type="button"
+          onClick={goBack}
+          data-cursor="BACK"
+          aria-label="Back"
+          class="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted"
+        >
+          <ArrowLeft class="h-5 w-5" />
+        </button>
+
+        <div class="min-w-0">
+          <JapaneseText
+            as="h1"
+            ja={props.ja}
+            class="block truncate font-display text-base font-semibold leading-none text-foreground"
+            japaneseClass="ml-1.5 inline text-[0.8em] font-normal opacity-70"
+            layout="inline"
+          >
+            {props.title}
+          </JapaneseText>
+          <Show when={props.meta}>
+            <p class="mt-0.5 truncate text-[11px] text-muted-foreground">{props.meta}</p>
+          </Show>
+        </div>
+
+        <A
+          href="/home"
+          data-cursor="HOME"
+          class="ml-auto shrink-0 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+        >
+          HOME
+        </A>
+      </div>
+    </header>
+  );
+}
+
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 export const APP_VERSION = "v6.9.9";
 
@@ -105,5 +166,30 @@ export function PageFooter() {
         </div>
       </div>
     </>
+  );
+}
+
+/*
+ * Summer style's footer.
+ *
+ * PageFooter above is a colophon — the plate, the tracked-out display type,
+ * the MABIS / BANGKOK TH / 2026 rule. That is editorial furniture, and Summer
+ * style drops editorial furniture. What the original had was a logo, the app
+ * name and a version, centred, which is all this is.
+ */
+export function SummerPageFooter() {
+  return (
+    <div class="mt-10 mb-8 flex flex-col items-center gap-3 border-t border-border pt-8 text-center">
+      <img src={MABIS_LOGO} alt="MABIS" loading="lazy" class="h-10 w-10 object-contain" />
+      <JapaneseText
+        as="p"
+        ja="セカンダリー・コミュニティ・ミーティング・アプリ"
+        class="block text-sm font-semibold text-foreground"
+        japaneseClass="mt-0.5 block text-[0.8em] font-normal opacity-70"
+      >
+        Secondary Community Meeting App
+      </JapaneseText>
+      <p class="text-[11px] text-muted-foreground">MABIS · Bangkok TH · {APP_VERSION}</p>
+    </div>
   );
 }

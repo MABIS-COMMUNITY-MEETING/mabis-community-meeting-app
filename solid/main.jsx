@@ -1,5 +1,19 @@
 import { render } from "solid-js/web";
 import App from "~/App.jsx";
+/*
+ * Every stylesheet is linked from the entry, eagerly.
+ *
+ * glass.css and editorial-home.css were split out to travel with the boss
+ * chunk instead — 25.4 KiB the default layout can never match. That was
+ * correct on paper and it built clean, but the top bar rendered with no glass
+ * afterwards and could not be diagnosed remotely, so it was reverted at
+ * Novesce's request.
+ *
+ * The cost of being wrong is asymmetric: 25.4 KiB of unused CSS is a number in
+ * a report, while a top bar with no material is the first thing anyone sees.
+ * If the split is attempted again, verify it in a real browser before relying
+ * on it — a green build proves the file is emitted, not that the link lands.
+ */
 import "@/index.css";
 import "@/styles/glass.css";
 import "@/styles/editorial-home.css";
@@ -10,6 +24,7 @@ import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
 import { applyHomeLayoutPreference, syncHomeLayoutCache } from "@/lib/layout-preference";
+import { applyScrollbarMode } from "@/lib/scrollbar-mode";
 import { preloadRoute } from "~/lib/routes";
 
 /*
@@ -61,6 +76,11 @@ async function bootstrap() {
   applyJapaneseTextPreference();
   applySectionDescriptionsPreference();
   applyHomeLayoutPreference();
+  /* Before first paint with the rest of them: the custom scrollbar must not
+     render once and then swap. Costs one forced layout of a detached 100px
+     box, and decides whether this machine gets the styled scrollbar at all —
+     see lib/scrollbar-mode.js. */
+  applyScrollbarMode();
 
   const replayed = applyThemeSnapshot();
 

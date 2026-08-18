@@ -1,1 +1,0 @@
-import{B as e,D as t}from"./web-CRd2b-C6.js";import{t as n}from"./Icon-DovX7xqt.js";var r=[[`rect`,{width:`18`,height:`18`,x:`3`,y:`3`,rx:`2`,ry:`2`,key:`1m3agn`}],[`circle`,{cx:`9`,cy:`9`,r:`2`,key:`af1f0g`}],[`path`,{d:`m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21`,key:`1xmnt7`}]],i=i=>t(n,e(i,{iconNode:r,name:`image`}));export{i as t};

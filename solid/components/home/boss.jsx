@@ -2,7 +2,6 @@ import { lazy, Suspense, For } from "solid-js";
 import { EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
 import SiteHeader from "~/components/SiteHeader";
 import BirthdayBanner from "~/components/BirthdayBanner";
-import { ScrollSectionIndicator } from "~/components/chrome";
 import { PageFooter } from "~/components/page-chrome";
 
 /*
@@ -40,7 +39,6 @@ export default function BossHome(props) {
   return (
     <>
       <SiteHeader rightSlot={props.controls} />
-      <ScrollSectionIndicator total={10} />
 
       <main class="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
         <HomeMasthead weekLabel={props.weekLabel} dateLabel={props.dateLabel} date={props.date} />

@@ -6,8 +6,9 @@ import { isFriday } from "date-fns";
 import { base44 } from "@/api/base44Client";
 import { historyWeeks, minutesByWeek, topicsToMinutesHtml, isBlankDocument } from "@/lib/minutes-format";
 import { weekLabelToDate, formatWeekFull, getWeekLabel } from "~/lib/weeks";
-import { PageNav, PageFooter, OpenMoji } from "~/components/page-chrome";
+import { PageNav, PageFooter, OpenMoji, SummerPageNav, SummerPageFooter } from "~/components/page-chrome";
 import { JapaneseText } from "~/components/primitives";
+import { useHomeLayout } from "~/lib/prefs";
 
 /*
  * History — Solid port of src/pages/History.jsx.
@@ -34,6 +35,11 @@ import { JapaneseText } from "~/components/primitives";
 export default function History() {
   const queryClient = useQueryClient();
   const [openWeeks, setOpenWeeks] = createStore({});
+  /* Boss style keeps the editorial masthead; Summer style replaces it with the
+     original bar. Only the chrome differs — the week documents below are the
+     same in both, which is the contract. */
+  const layout = useHomeLayout();
+  const boss = () => layout() === "boss";
 
   const topicsQuery = useQuery(() => ({
     queryKey: ["topics"],
@@ -74,31 +80,50 @@ export default function History() {
   }));
 
   return (
-    <div class="min-h-screen bg-background">
-      <PageNav label=" N°02 — MEETING HISTORY" />
+    <div class={`min-h-screen ${boss() ? "bg-background" : "summer-page"}`}>
+      <Show
+        when={boss()}
+        fallback={
+          <SummerPageNav
+            title="Meeting History"
+            ja="ミーティング履歴"
+            meta={`${pastWeeks().length} week${pastWeeks().length !== 1 ? "s" : ""} · Secondary Community Meeting App`}
+          />
+        }
+      >
+        <PageNav label=" N°02 — MEETING HISTORY" />
+      </Show>
 
-      <main class="mx-auto max-w-7xl px-4 pb-2 pt-20 sm:px-8 sm:pt-32">
-        <div class="mb-10 sm:mb-14">
-          <JapaneseText
-            as="div"
-            ja="アーカイブ — 02"
-            class="block tech-label text-primary mb-4"
-            japaneseClass="text-[0.8em] normal-case tracking-normal"
-          >
-            {" ARCHIVE — 02"}
-          </JapaneseText>
-          <h1 class="font-display text-[clamp(2.65rem,13vw,4.5rem)] font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl">
-            MEETING<br />HISTORY
-          </h1>
-          <p lang="ja" class="mt-1 text-sm text-muted-foreground">ミーティング履歴</p>
-          <div class="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
-            <JapaneseText as="span" ja="過去のミーティング" japaneseClass="text-[0.8em] normal-case tracking-normal">PAST MEETINGS</JapaneseText>
-            <span class="h-1 w-1 bg-primary" />
-            <JapaneseText as="span" ja="毎週金曜日" japaneseClass="text-[0.8em] normal-case tracking-normal">WEEKLY FRIDAY</JapaneseText>
-            <span class="h-1 w-1 bg-primary" />
-            <span>MABIS</span>
+      <main
+        class={
+          boss()
+            ? "mx-auto max-w-7xl px-4 pb-2 pt-20 sm:px-8 sm:pt-32"
+            : "mx-auto max-w-7xl px-4 pb-2 pt-8 sm:px-5"
+        }
+      >
+        <Show when={boss()}>
+          <div class="mb-10 sm:mb-14">
+            <JapaneseText
+              as="div"
+              ja="アーカイブ — 02"
+              class="block tech-label text-primary mb-4"
+              japaneseClass="text-[0.8em] normal-case tracking-normal"
+            >
+              {" ARCHIVE — 02"}
+            </JapaneseText>
+            <h1 class="font-display text-[clamp(2.65rem,13vw,4.5rem)] font-light leading-[0.9] tracking-ultra sm:text-7xl md:text-8xl">
+              MEETING<br />HISTORY
+            </h1>
+            <p lang="ja" class="mt-1 text-sm text-muted-foreground">ミーティング履歴</p>
+            <div class="mt-6 flex flex-wrap items-center gap-3 tech-label text-muted-foreground">
+              <JapaneseText as="span" ja="過去のミーティング" japaneseClass="text-[0.8em] normal-case tracking-normal">PAST MEETINGS</JapaneseText>
+              <span class="h-1 w-1 bg-primary" />
+              <JapaneseText as="span" ja="毎週金曜日" japaneseClass="text-[0.8em] normal-case tracking-normal">WEEKLY FRIDAY</JapaneseText>
+              <span class="h-1 w-1 bg-primary" />
+              <span>MABIS</span>
+            </div>
           </div>
-        </div>
+        </Show>
 
         <Show when={pastWeeks().length === 0}>
           <div class="border border-border bg-card p-8 text-center sm:rounded-2xl sm:p-16">
@@ -299,7 +324,9 @@ export default function History() {
           </For>
         </div>
 
-        <PageFooter />
+        <Show when={boss()} fallback={<SummerPageFooter />}>
+          <PageFooter />
+        </Show>
       </main>
     </div>
   );

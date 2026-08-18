@@ -1,12 +1,11 @@
-import { createSignal, onMount, onCleanup, lazy, Suspense, Show } from "solid-js";
+import { createSignal, lazy, Suspense, Show, ErrorBoundary } from "solid-js";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 import { LazySection } from "~/components/home/LazySection";
 import { SummerHome } from "~/components/home/summer";
 import SummerHeader from "~/components/home/SummerHeader";
 import { useQuery } from "@tanstack/solid-query";
-import { Settings, Palette, CircleHelp } from "lucide-solid";
+import { Settings, Palette, CircleHelp, LogOut } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
-import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
 import { useHomeLayout } from "~/lib/prefs";
 import { usePresenceHeartbeat } from "~/lib/usePresence";
@@ -295,20 +294,26 @@ export default function Home() {
         <span class="hidden text-sm font-semibold text-foreground sm:block">
           {auth.user()?.full_name?.split(" ")[0] || "User"}
         </span>
+        {/*
+          * Icon-only below sm. The word plus its Japanese companion is ~90px,
+          * and this bar is a single non-wrapping row: with the theme, help,
+          * settings, avatar and Pages controls all `shrink-0`, that width was
+          * what pushed the button off the right edge of a phone and squeezed
+          * the title to nothing. The editorial header does not need this —
+          * SiteHeader moves its controls into a drawer at that width.
+          */}
         <button
           onClick={() => auth.logout()}
-          class="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+          title="Sign Out"
+          aria-label="Sign Out"
+          class="flex h-9 shrink-0 items-center justify-center rounded-lg bg-primary px-2.5 text-xs font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 sm:px-4"
         >
-          Sign Out
+          <LogOut class="h-4 w-4 sm:hidden" aria-hidden="true" />
+          <span class="hidden sm:inline">Sign Out</span>
         </button>
       </div>
     </>
   );
-
-  onMount(() => {
-    const stop = installScrollStateClass();
-    onCleanup(stop);
-  });
 
   // Computed once. Not signals — nothing here changes after mount, so putting
   // it in the reactive graph would only add cost.
@@ -389,17 +394,38 @@ export default function Home() {
         when={isBoss()}
         fallback={<SummerHome sections={SECTIONS}>{renderWidget}</SummerHome>}
       >
-        <Suspense fallback={null}>
-          <BossHome
-            sections={SECTIONS}
-            controls={editorialControls}
-            weekLabel={weekLabel}
-            dateLabel={dateLabel}
-            date={now}
-          >
-            {renderWidget}
-          </BossHome>
-        </Suspense>
+        {/*
+         * BossHome (and everything it statically pulls in — SiteHeader,
+         * Glass, glass.css) is one dynamically-imported chunk. Suspense only
+         * covers the *loading* state; it does nothing if that import()
+         * rejects, which happens on a transient network blip, an ad/privacy
+         * blocker, or the classic stale-tab-after-a-redeploy case where the
+         * hashed chunk filename the page has in memory no longer exists on
+         * the server. With no ErrorBoundary that rejection just leaves
+         * `fallback={null}` showing forever — a silent, permanent blank
+         * where the header and liquid-glass chrome should be. This is the
+         * "glass sometimes just won't load" bug.
+         *
+         * The fix isn't to retry the same import() — a rejected dynamic
+         * import is cached rejected by the module loader, so retrying it
+         * in place resolves to the same rejection every time. Falling back
+         * to SummerHome (already a static import, same content, same ten
+         * sections, just the simple arrangement) means one failed chunk
+         * degrades the page instead of blanking it.
+         */}
+        <ErrorBoundary fallback={() => <SummerHome sections={SECTIONS}>{renderWidget}</SummerHome>}>
+          <Suspense fallback={null}>
+            <BossHome
+              sections={SECTIONS}
+              controls={editorialControls}
+              weekLabel={weekLabel}
+              dateLabel={dateLabel}
+              date={now}
+            >
+              {renderWidget}
+            </BossHome>
+          </Suspense>
+        </ErrorBoundary>
       </Show>
 
       {/* Deferred until the browser is idle, as in React — same three, same order. */}
