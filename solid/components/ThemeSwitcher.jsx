@@ -188,11 +188,18 @@ export default function ThemeSwitcher() {
         }}
         aria-expanded={open()}
         aria-haspopup="dialog"
-        class="flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"
+        /* The trigger is the only part that changes shape between the two
+           styles — square and bordered in the editorial bar, rounded and
+           shadowed on the original white one. The panel below is identical in
+           both, so only this class is a prop. */
+        class={props.triggerClass
+          || "flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"}
         title="Change colors"
       >
         <Palette class="w-4 h-4" />
-        <span class="hidden text-[10px] font-bold uppercase tracking-wide lg:inline">Colors</span>
+        <Show when={!props.triggerClass}>
+          <span class="hidden text-[10px] font-bold uppercase tracking-wide lg:inline">Colors</span>
+        </Show>
       </button>
 
       <Show when={open()}>
