@@ -99,6 +99,7 @@ const feedback = read("src/pages/Feedback.jsx");
 const optionalCursor = read("src/components/OptionalCustomCursor.jsx");
 const smoothScroll = readIfPresent("src/components/SmoothScroll.jsx") + readIfPresent("solid/lib/perf.js");
 const chrome = read("solid/components/chrome.jsx");
+const motionCss = read("solid/solid-motion.css");
 const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
 const glass = read("src/styles/glass.css");
@@ -255,16 +256,26 @@ requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearance
 requireText("src/components/JobsWidget.jsx", jobs, "appearanceRaf");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
 /*
- * Inverted: content-visibility must NOT come back on the section wrapper.
+ * content-visibility is allowed, but ONLY gated on cv-ready.
  *
- * `main [data-gp-section] { content-visibility: auto; contain-intrinsic-size:
- * auto 720px }` reported every skipped section at the same 720px estimate, so
- * the document height changed as each one rendered at its real height — the
- * scrollbar jumped and the scroll position drifted on the way down, and again
- * on the way back up. LazySection already skips the work and reserves the space
- * with that section's own minHeight, so this bought nothing and cost the one
- * thing the reader touches constantly.
+ * solid-motion.css skips a section once `.cv-ready` says its entrance has
+ * played. That gate is what makes it safe: a section the browser has rendered
+ * at least once has a real measured height for `contain-intrinsic-size: auto`
+ * to remember, so skipping it again on the way past costs no layout shift.
+ *
+ * index.css also carried `main [data-gp-section] { content-visibility: auto;
+ * contain-intrinsic-size: auto 720px }`, ungated. Its 720px was dead on arrival
+ * — both section components set contain-intrinsic-size inline, per section, and
+ * an inline style always wins — but its content-visibility applied before first
+ * render, which defeated the gate. Sections were skipped with nothing measured
+ * to remember, so each one jumped from its estimate to its true height as it
+ * revealed and the scroll position moved under the reader; it also discarded
+ * the entrance animation, the exact bug the gate was introduced to fix.
+ *
+ * So: required in solid-motion.css behind cv-ready, forbidden ungated in
+ * index.css.
  */
+requireText("solid/solid-motion.css", motionCss, ".cv-section.cv-ready");
 /* Declarations only. index.css documents this removal at length and names the
    property while doing so; prose about why it is gone is not a regression. */
 forbidText("src/index.css", css.replace(/\/\*[\s\S]*?\*\//g, ""), "content-visibility: auto");
