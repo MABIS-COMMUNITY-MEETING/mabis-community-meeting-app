@@ -203,7 +203,19 @@ self.addEventListener("activate", (event) => {
 async function applyLayout(layout) {
   const cache = await caches.open(LAYOUT_CACHE);
   if (layout === "boss") {
-    await cache.addAll(BOSS_LAYOUT_URLS);
+    /*
+     * addAll() is all-or-nothing: if one URL in BOSS_LAYOUT_URLS 404s or hits
+     * a transient network error, the whole call rejects, meaning NONE of the
+     * URLs get cached — including glass.css, even though every other boss
+     * chunk fetched fine. One flaky request then quietly costs the whole
+     * layout its offline cache, so the next boss-layout paint (or the first
+     * one after an interrupted connection) has nothing to fall back on.
+     * Caching each URL independently means one failure only ever costs that
+     * one file.
+     */
+    await Promise.all(BOSS_LAYOUT_URLS.map((url) =>
+      cache.add(url).catch(() => {})
+    ));
     return;
   }
   await Promise.all(BOSS_LAYOUT_URLS.map((url) => cache.delete(url)));
