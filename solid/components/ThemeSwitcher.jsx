@@ -6,6 +6,8 @@ import {
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
 } from "@/lib/themes";
 import { JapaneseText } from "~/components/primitives";
+import { useAuth } from "~/lib/AuthContext";
+import { canUseCustomColors } from "@/lib/custom-color-access";
 
 const INITIAL_THEME_LIMIT = 20;
 const THEME_BATCH_SIZE = 20;
@@ -282,7 +284,14 @@ export default function ThemeSwitcher(props) {
             </div>
           </Show>
 
-          <Show when={savedThemes().length > 0}>
+          {/*
+            * Custom colours and the palettes saved from them belong to one
+            * account (see lib/custom-color-access.js). Everyone else keeps the
+            * full vetted theme catalogue above; only the make-your-own surface
+            * is withheld, which is also why this gate sits here and not around
+            * the whole panel.
+            */}
+          <Show when={canUseCustomColors(auth.user()) && savedThemes().length > 0}>
             <div class="border-t border-border pt-3 mb-4">
               <div class="flex items-center gap-1.5 mb-2">
                 <Star class="w-3 h-3 text-amber-500" />
@@ -313,6 +322,7 @@ export default function ThemeSwitcher(props) {
             </div>
           </Show>
 
+          <Show when={canUseCustomColors(auth.user())}>
           <div class="border-t border-border pt-3">
             <div
               onClick={() => setShowCustom((s) => !s)}
