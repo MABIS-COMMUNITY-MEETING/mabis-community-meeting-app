@@ -171,6 +171,73 @@ export default function Home() {
   // A function, not an element: SiteHeader renders this in two places
   // (desktop bar + mobile drawer), and in Solid the same nodes cannot occupy
   // both — they would move rather than duplicate.
+  /*
+   * The SAME controls in the original site's clothes.
+   *
+   * Every control below exists in the editorial set too — same handlers, same
+   * order, same permissions. Only the shape differs: rounded, bordered,
+   * shadowed, because a square bordered tech-label button reads as a foreign
+   * object on a white bar with rounded controls. Anything added to one of
+   * these two must be added to the other.
+   */
+  const summerControls = () => (
+    <>
+      <ThemeSwitcher triggerClass="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted" />
+      <button
+        onClick={() => setShowHelp(true)}
+        onMouseEnter={preloadQuickStartGuide}
+        onFocus={preloadQuickStartGuide}
+        onPointerDown={preloadQuickStartGuide}
+        title="How to use this site"
+        class="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted"
+      >
+        <CircleHelp class="h-4 w-4" />
+      </button>
+      <button
+        onMouseEnter={preloadSettings}
+        onFocus={preloadSettings}
+        onPointerDown={preloadSettings}
+        onClick={() => setShowSettings(true)}
+        title="Settings"
+        class="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted"
+      >
+        <Settings class="h-4 w-4" />
+      </button>
+
+      <div class="flex items-center gap-2.5">
+        <div class="relative shrink-0">
+          <div
+            class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-card shadow"
+            style={{ border: `4px solid ${roleColor()}`, "box-sizing": "border-box" }}
+          >
+            <Show
+              when={auth.user()?.avatar_url}
+              fallback={<img src={MABIS_LOGO} alt="avatar" class="h-full w-full object-contain p-0.5" />}
+            >
+              <img src={auth.user().avatar_url} alt="avatar" class="h-full w-full object-cover" />
+            </Show>
+          </div>
+          <button
+            onClick={() => setEditingProfile(!editingProfile())}
+            title="Customize Profile Picture"
+            class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-primary shadow-md"
+          >
+            <Palette class="h-3 w-3" />
+          </button>
+        </div>
+        <span class="hidden text-sm font-semibold text-foreground sm:block">
+          {auth.user()?.full_name?.split(" ")[0] || "User"}
+        </span>
+        <button
+          onClick={() => auth.logout()}
+          class="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+        >
+          Sign Out
+        </button>
+      </div>
+    </>
+  );
+
   const controls = () => (
     <>
       <ThemeSwitcher />
@@ -306,7 +373,7 @@ export default function Home() {
     >
       <Show
         when={isBoss()}
-        fallback={<SummerHeader canSeeInbox={isAdmin()} rightSlot={controls} />}
+        fallback={<SummerHeader canSeeInbox={isAdmin()} rightSlot={summerControls} />}
       >
         <SiteHeader rightSlot={controls} />
         <ScrollSectionIndicator total={10} />
