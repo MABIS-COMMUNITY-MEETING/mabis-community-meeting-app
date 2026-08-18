@@ -47,22 +47,6 @@ function base44ForSolid(options) {
   });
 }
 
-/*
- * NOT DOING: stripping HTML comments from the built entry.
- *
- * They do ship — 2.5 KiB of a 9.0 KiB document, measured, on the critical path
- * of every visit and on the one asset that can never be cached forever. A
- * `transformIndexHtml` post hook removed them cleanly and the build was green
- * here and in a fresh checkout.
- *
- * It came out again because it rewrites the exact artifact Base44's publish
- * pipeline consumes, and publishing started failing with "build errors" that
- * are not reproducible in this sandbox. Injection anchors expressed as HTML
- * comments are a common pattern, and ~600 bytes of gzip is not worth a
- * deployment that will not go out. If the publish failure is ever traced to
- * something else, this is safe to restore.
- */
-
 export default defineConfig({
   logLevel: "error",
   root: path.resolve(process.cwd(), "solid"),

@@ -1,13 +1,11 @@
 import { createSignal, createMemo, onMount, onCleanup, createEffect, Show, For } from "solid-js";
 import { Palette, Check, RotateCcw, Save, Trash2, Star, Search } from "lucide-solid";
 import {
-  THEMES, SELECTABLE_THEME_KEYS, applyTheme, applyCustomColors, clearCustomColors,
+  THEMES, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
 } from "@/lib/themes";
 import { JapaneseText } from "~/components/primitives";
-import { useAuth } from "~/lib/AuthContext";
-import { canUseCustomColors } from "@/lib/custom-color-access";
 
 const INITIAL_THEME_LIMIT = 20;
 const THEME_BATCH_SIZE = 20;
@@ -29,23 +27,11 @@ function paletteStripe(theme) {
   return stripe;
 }
 
-/*
- * Both lists come from SELECTABLE_THEME_KEYS, never from THEMES.
- *
- * THEMES still carries the retired catalogue for the pride ambience, the
- * Frutiger Aero treatment and the contrast fixtures. Enumerating it here is
- * what used to put ~140 themes in the picker, so the allow-list is the only
- * thing this file is permitted to read.
- */
-const THEME_ENTRIES = SELECTABLE_THEME_KEYS
+const THEME_ENTRIES = Object.entries(THEMES);
+const SIMPLE_THEME_KEYS = ["default", "sage", "sky", "sakura", "midnight", "lesbian"];
+const SIMPLE_THEME_ENTRIES = SIMPLE_THEME_KEYS
   .map((key) => [key, THEMES[key]])
   .filter(([, theme]) => theme);
-const SIMPLE_THEME_ENTRIES = THEME_ENTRIES;
-
-/* With one theme there is nothing to browse, search or page through, so the
-   whole catalogue affordance stays out of the DOM rather than rendering a
-   "Browse all themes · 1" button that leads to the same single swatch. */
-const HAS_THEME_CATALOGUE = THEME_ENTRIES.length > 1;
 
 /*
  * ThemeSwitcher — Solid port of src/components/ThemeSwitcher.jsx.
@@ -98,7 +84,6 @@ export default function ThemeSwitcher(props) {
   const [customPrimary, setCustomPrimary] = createSignal("#951E3A");
   const [customSecondary, setCustomSecondary] = createSignal("#EACE54");
   const [savedThemes, setSavedThemes] = createSignal([]);
-  const auth = useAuth();
   const [themeName, setThemeName] = createSignal("");
   const [showCustom, setShowCustom] = createSignal(false);
   const [themeLimit, setThemeLimit] = createSignal(INITIAL_THEME_LIMIT);
@@ -260,7 +245,6 @@ export default function ThemeSwitcher(props) {
             </For>
           </div>
 
-          <Show when={HAS_THEME_CATALOGUE}>
           <Show
             when={showAllThemes()}
             fallback={
@@ -297,16 +281,8 @@ export default function ThemeSwitcher(props) {
               </Show>
             </div>
           </Show>
-          </Show>
 
-          {/*
-            * Custom colours and the palettes saved from them belong to one
-            * account (see lib/custom-color-access.js). Everyone else keeps the
-            * full vetted theme catalogue above; only the make-your-own surface
-            * is withheld, which is also why this gate sits here and not around
-            * the whole panel.
-            */}
-          <Show when={canUseCustomColors(auth.user()) && savedThemes().length > 0}>
+          <Show when={savedThemes().length > 0}>
             <div class="border-t border-border pt-3 mb-4">
               <div class="flex items-center gap-1.5 mb-2">
                 <Star class="w-3 h-3 text-amber-500" />
@@ -337,7 +313,6 @@ export default function ThemeSwitcher(props) {
             </div>
           </Show>
 
-          <Show when={canUseCustomColors(auth.user())}>
           <div class="border-t border-border pt-3">
             <div
               onClick={() => setShowCustom((s) => !s)}
@@ -407,7 +382,6 @@ export default function ThemeSwitcher(props) {
               </div>
             </Show>
           </div>
-          </Show>
         </div>
       </Show>
     </div>
