@@ -73,23 +73,21 @@ function buildMotes(count) {
 export default function SummerSplash(props) {
   const motes = buildMotes(moteCount());
 
+  /*
+   * Normal flow, not `fixed inset-0`.
+   *
+   * The original was fixed, and on a tall window that looks identical — but a
+   * fixed, overflow-hidden panel is exactly as tall as the viewport and never
+   * scrolls, so anything that does not fit is simply unreachable. In a short
+   * viewport (the Base44 preview iframe, a phone in landscape, a small window)
+   * the Start button fell off the bottom with no way to reach it.
+   *
+   * `min-h-[100dvh]` fills the screen when there is room and grows the document
+   * when there is not, so the page scrolls instead of clipping. `relative`
+   * keeps providing the positioning context the absolutely placed motes need,
+   * which is the only thing `fixed` was really doing for them.
+   */
   return (
-    {/*
-      * Normal flow, not `fixed inset-0`.
-      *
-      * The original was fixed, and on a tall window that looks identical — but
-      * a fixed, overflow-hidden panel is exactly as tall as the viewport and
-      * never scrolls, so anything that does not fit is simply unreachable. In
-      * a short viewport (the Base44 preview iframe, a phone in landscape, a
-      * small window) the Start button fell off the bottom with no way to get
-      * to it.
-      *
-      * `min-h-[100dvh]` fills the screen when there is room and grows the
-      * document when there is not, so the page scrolls instead of clipping.
-      * `relative` keeps providing the positioning context the absolutely
-      * placed motes need, which is the only thing `fixed` was really doing
-      * for them.
-      */}
     <div class="summer-splash relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden px-4 py-12">
       <For each={motes}>
         {(m) => (
