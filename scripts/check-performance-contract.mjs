@@ -294,9 +294,12 @@ requireText("src/main.jsx", main, "applyScrollbarMode()");
 /* Both spellings. scrollbar-width is the standard property and opts a scroller
    out of overlay scrollbars exactly as the -webkit- pseudo-element does, so
    guarding only one of them leaves the door open. */
+/* Whole rule blocks, not just the selector: ::-webkit-scrollbar lives in the
+   selector and would go with it, but scrollbar-width is a declaration inside
+   the braces and would survive. */
 const scrollbarRules = css
   .replace(/\/\*[\s\S]*?\*\//g, "")
-  .replace(/html\.classic-scrollbars[^,{]*/g, "");
+  .replace(/[^{}]*classic-scrollbars[^{}]*\{[^{}]*\}/g, "");
 forbidText("src/index.css", scrollbarRules, "::-webkit-scrollbar");
 forbidText("src/index.css", scrollbarRules, "scrollbar-width");
 requireText("src/main.jsx", main, "window.setTimeout(resolve, 800)");
