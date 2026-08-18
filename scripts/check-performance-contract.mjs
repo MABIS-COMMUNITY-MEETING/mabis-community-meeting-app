@@ -280,6 +280,22 @@ requireText("solid/solid-motion.css", motionCss, ".cv-section.cv-ready");
    property while doing so; prose about why it is gone is not a regression. */
 forbidText("src/index.css", css.replace(/\/\*[\s\S]*?\*\//g, ""), "content-visibility: auto");
 requireText("src/components/home/LazySection.jsx", lazySection, "contain-intrinsic-size");
+/*
+ * The custom scrollbar may only be drawn where the OS draws a classic one.
+ *
+ * Any ::-webkit-scrollbar declaration opts a scroller out of the platform's
+ * overlay scrollbars. On Windows and Linux that is cosmetic; on macOS it swaps
+ * a bar that hides, fades, widens on hover and takes no layout width for one
+ * that does none of those. The site scrolled correctly on Windows and Linux and
+ * felt broken on a Mac for precisely this reason, so every such rule is gated
+ * on .classic-scrollbars and the class is set from a measurement before paint.
+ */
+requireText("src/main.jsx", main, "applyScrollbarMode()");
+forbidText(
+  "src/index.css",
+  css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/html\.classic-scrollbars[^,{]*/g, ""),
+  "::-webkit-scrollbar",
+);
 requireText("src/main.jsx", main, "window.setTimeout(resolve, 800)");
 requireText("src/main.jsx", main, '.register("/sw.js"');
 requireText("package.json", packageJson, "node scripts/generate-service-worker.mjs");
