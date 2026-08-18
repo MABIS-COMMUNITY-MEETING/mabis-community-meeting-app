@@ -6,7 +6,6 @@ import SummerHeader from "~/components/home/SummerHeader";
 import { useQuery } from "@tanstack/solid-query";
 import { Settings, Palette, CircleHelp, LogOut } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
-import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
 import { useHomeLayout } from "~/lib/prefs";
 import { usePresenceHeartbeat } from "~/lib/usePresence";
@@ -315,11 +314,6 @@ export default function Home() {
       </div>
     </>
   );
-
-  onMount(() => {
-    const stop = installScrollStateClass();
-    onCleanup(stop);
-  });
 
   // Computed once. Not signals — nothing here changes after mount, so putting
   // it in the reactive graph would only add cost.
