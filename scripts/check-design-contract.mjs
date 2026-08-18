@@ -102,7 +102,6 @@ const css = read("src/index.css");
 const editorialHomeCss = read("src/styles/editorial-home.css");
 const glassCss = read("src/styles/glass.css");
 const customColorAccess = read("src/lib/custom-color-access.js");
-const themeSwitcher = read("src/components/ThemeSwitcher.jsx");
 const prefsSync = read("src/components/PrefsSync.jsx");
 const home = read("src/pages/Home.jsx");
 const cursorPreference = read("src/lib/cursor-preference.js");
