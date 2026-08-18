@@ -1,1 +1,0 @@
-import{c as e,l as t}from"./format-BYnr62Nj.js";import{n}from"./isFriday-DrR5X27V.js";function r(n,r,i){let a=e(n,i?.in);return isNaN(r)?t(i?.in||n,NaN):(r&&a.setDate(a.getDate()+r),a)}function i(t,n){return e(t,n?.in).getFullYear()}function a(e,t,i){let a=t-n(e,i);return a<=0&&(a+=7),r(e,a,i)}function o(e,t){return a(e,5,t)}export{i as n,r,o as t};

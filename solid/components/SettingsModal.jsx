@@ -1,7 +1,7 @@
 import { createSignal, createMemo, createEffect, onMount, Show, For, Index } from "solid-js";
 import {
   Settings, X, Type, Search, Check, Volume2, VolumeX, Accessibility,
-  MousePointer2, Languages, User, LogOut, Lock, AlignLeft, LayoutList,
+  MousePointer2, Languages, User, LogOut, Lock, AlignLeft,
 } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { CORE_FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
@@ -10,37 +10,12 @@ import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preferen
 import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
 import { japaneseTextEnabled, setJapaneseTextEnabled } from "@/lib/japanese-text-preference";
 import { sectionDescriptionsEnabled, setSectionDescriptionsEnabled } from "@/lib/section-descriptions-preference";
-import { homeLayout, setHomeLayout } from "@/lib/layout-preference";
 import { ensureFontCatalogStyles, FONT_CATALOG } from "@/lib/font-catalog";
 import { Dialog, DialogPortal, DialogOverlay } from "~/components/ui/dialog";
 import { Dialog as KDialog } from "@kobalte/core/dialog";
 import { JapaneseText } from "~/components/primitives";
 
 const FONTS = [...CORE_FONTS, ...FONT_CATALOG];
-
-/*
- * The two Home arrangements, in the order they are offered.
- *
- * Described by what the reader will see rather than by the design vocabulary
- * behind it, as the plain-language customization rule requires. "Boss layout"
- * is Novesce's own name for the editorial front page.
- */
-const LAYOUT_CHOICES = [
-  {
-    key: "simple",
-    label: "Original",
-    ja: "もとのデザイン",
-    detail: "Default · the interface the school has always used. White cards, one after another.",
-    jaDetail: "標準・これまで使ってきた画面です。白いカードが上から順に並びます。",
-  },
-  {
-    key: "boss",
-    label: "Boss layout",
-    ja: "ボスレイアウト",
-    detail: "The editorial front page · large masthead, numbered sections and scrolling type.",
-    jaDetail: "大きな見出しや番号付きの区切りがある、雑誌のような表示です。",
-  },
-];
 
 const SIMPLE_FONT_KEYS = ["gnu-free-mono", "gnu-free-sans", "go", "gnu-free-serif"];
 const SIMPLE_FONT_LABELS = {
@@ -130,7 +105,6 @@ export default function SettingsModal(props) {
   const [customCursorOn, setCustomCursorOn] = createSignal(customCursorEnabled());
   const [japaneseTextOn, setJapaneseTextOn] = createSignal(japaneseTextEnabled());
   const [sectionDescriptionsOn, setSectionDescriptionsOn] = createSignal(sectionDescriptionsEnabled());
-  const [layout, setLayout] = createSignal(homeLayout());
 
   const [currentFont, setCurrentFont] = createSignal(getStoredFont());
   const [fontAvailability, setFontAvailability] = createSignal({});
@@ -244,9 +218,9 @@ export default function SettingsModal(props) {
                   Make the site comfortable for you
                 </JapaneseText>
                 <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  Start with colors, choose an easy-to-read font, adjust comfort options, then pick how the page is laid out. Every choice can be changed again.
+                  Start with colors, choose an easy-to-read font, then adjust comfort options. Every choice can be changed again.
                 </p>
-                <div class="mt-4 grid gap-px bg-border sm:grid-cols-2">
+                <div class="mt-4 grid gap-px bg-border sm:grid-cols-3">
                   <button
                     type="button"
                     onClick={() => {
@@ -269,61 +243,6 @@ export default function SettingsModal(props) {
                     <JapaneseText ja="快適さ" class="mt-1 block text-sm font-bold text-foreground">Comfort</JapaneseText>
                     <span class="mt-0.5 block text-xs text-muted-foreground">Sound, motion, language</span>
                   </a>
-                  <a href="#setting-layout" class="min-h-20 bg-background p-3 text-left hover:bg-muted">
-                    <span class="text-[10px] font-bold text-muted-foreground">04</span>
-                    <JapaneseText ja="レイアウト" class="mt-1 block text-sm font-bold text-foreground">Layout</JapaneseText>
-                    <span class="mt-0.5 block text-xs text-muted-foreground">Original or boss</span>
-                  </a>
-                </div>
-              </section>
-
-              {/* Layout */}
-              <section id="setting-layout" class="scroll-mt-20">
-                <div class="mb-2 flex items-center gap-2">
-                  <LayoutList class="w-4 h-4 text-primary" />
-                  <JapaneseText
-                    ja="ページの並べ方"
-                    as="h3"
-                    class="block font-display font-bold text-foreground text-sm uppercase tracking-wide"
-                    japaneseClass="text-[0.78em] normal-case tracking-normal"
-                  >
-                    Page Layout
-                  </JapaneseText>
-                </div>
-                <p class="mb-3 text-xs text-muted-foreground">
-                  How the Home page looks. Both choices have exactly the same sections, in the same order, with the same features — only the presentation changes.
-                </p>
-                <div class="grid gap-px bg-border sm:grid-cols-2">
-                  <For each={LAYOUT_CHOICES}>
-                    {(choice) => {
-                      const selected = () => layout() === choice.key;
-                      return (
-                        <button
-                          type="button"
-                          onClick={() => { setLayout(choice.key); setHomeLayout(choice.key); }}
-                          aria-pressed={selected()}
-                          class="min-h-20 bg-background p-3 text-left hover:bg-muted"
-                          classList={{ "ring-2 ring-inset ring-primary": selected() }}
-                        >
-                          <span class="flex items-center gap-1.5">
-                            <JapaneseText ja={choice.ja} class="block text-sm font-bold text-foreground" japaneseClass="text-[0.78em]">
-                              {choice.label}
-                            </JapaneseText>
-                            <Show when={selected()}>
-                              <Check class="w-3.5 h-3.5 text-primary" />
-                            </Show>
-                          </span>
-                          <JapaneseText
-                            ja={choice.jaDetail}
-                            class="mt-1 block text-xs leading-relaxed text-muted-foreground"
-                            japaneseClass="mt-0.5 block text-[0.9em]"
-                          >
-                            {choice.detail}
-                          </JapaneseText>
-                        </button>
-                      );
-                    }}
-                  </For>
                 </div>
               </section>
 

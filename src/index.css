@@ -5,44 +5,6 @@
    licensed local copies. Every UI stack falls through GNU FreeFont. Maple Mono is
    loaded only for explicitly marked Chinese, Japanese, and Korean text.
    ────────────────────────────────────────────────────────────── */
-/*
- * MUST STAY AHEAD OF EVERY RULE IN THIS FILE.
- *
- * A CSS @import is only honoured when it precedes every rule other than
- * @charset and @layer statements. This sat 267 lines down, below the
- * @font-face block that opens the type system, so the browser and the bundler
- * both discarded it and Tailwind injected nothing at all: the shipped
- * stylesheet contained not one utility — no .flex, no .grid, no .p-4, no
- * .bg-card. Every element styled by a utility class lost its background,
- * spacing and layout, which is what "things are transparent and it is not
- * rendering correctly" looked like. Nothing errored: the build stayed green
- * and the stylesheet was simply half the size it should have been.
- *
- * check-tailwind-layer.mjs fails the build if the utility layer goes missing
- * again, whatever the cause.
- *
- * Tailwind v4 still reads the v3 JS config through @config, which is what
- * holds the custom tokens (colours, role hues, fonts) and the
- * tailwindcss-animate plugin without a rewrite to @theme.
- *
- * The borderRadius tokens are the one exception. v4's theme resolver
- * statically bakes `theme.extend.borderRadius.lg: 'var(--radius)'` from
- * @config into a fixed px value at build time (e.g. `border-radius:16px`)
- * instead of leaving it as a live `var(--radius)` reference — it can't tell
- * that value is meant to stay dynamic. That silently breaks every layout
- * that changes --radius per theme (see "the default layout redefines
- * --radius" below and check-solid-parity.mjs's radius-token check, which
- * exists specifically to catch this class of bug). Re-declaring just these
- * three as native v4 theme keys keeps them as real custom properties.
- */
-@import "tailwindcss";
-@config "../tailwind.config.js";
-@theme {
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) + 2px);
-  --radius-sm: calc(var(--radius) + 4px);
-}
-
 @font-face {
   font-family: 'torrefarfan';
   font-style: normal;
@@ -225,52 +187,19 @@
   unicode-range: U+0E00-0E7F;
 }
 
-/* ── The default UI face, split for first paint ──────────────────────────────
-   These two weights are the only fonts preloaded, and they are font-display:
-   block, so nothing paints until they arrive. Whole, GNU FreeMono is
-   pan-Unicode — 4160 codepoints, Greek through Georgian — and the pair weighed
-   287 KiB, more than three times the app's entire gzipped JS and CSS.
-
-   scripts/build-font-subsets.py splits each into the codepoints first paint can
-   reach plus everything else, and prints the two unicode-range values below.
-   The ranges do not overlap, so a browser fetches the 30 KiB subset for an
-   all-Latin page and the rest file only when a character it alone covers is
-   actually on screen. No glyph is lost. Preloaded bytes: 287 KiB -> 58 KiB.
-
-   Edit these ranges only by re-running the script; check:fonts fails the build
-   if they stop matching the files, or if the shipped bundle grows a character
-   that the subset does not cover. */
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: normal;
   font-display: block;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMono-subset.woff2?v=3') format('woff2');
-  unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-36F, U+2000-206F, U+2070-209F, U+2190-21FF, U+2212, U+25BC, U+2610-2611, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'GNUFreeMonoUI';
-  font-style: normal;
-  font-display: block;
-  font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMono-rest.woff2?v=3') format('woff2');
-  unicode-range: U+100-130, U+132-151, U+154-2BA, U+2BD-2C5, U+2C7-2D9, U+2DB, U+2DD-2FF, U+370-1FFF, U+20A0-218F, U+2200-2211, U+2213-25BB, U+25BD-260F, U+2612-FEFE, U+FF00-FFFC, U+FFFE-10FFFF;
+  src: url('/fonts/gnu-freefont/FreeMono.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: normal;
   font-display: block;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3') format('woff2');
-  unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-36F, U+2000-206F, U+2070-209F, U+2190-21FF, U+2212, U+25BC, U+2610-2611, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'GNUFreeMonoUI';
-  font-style: normal;
-  font-display: block;
-  font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBold-rest.woff2?v=3') format('woff2');
-  unicode-range: U+100-130, U+132-151, U+154-2BA, U+2BD-2C5, U+2C7-2D9, U+2DB, U+2DD-2FF, U+370-1FFF, U+20A0-218F, U+2200-2211, U+2213-25BB, U+25BD-260F, U+2612-FEFE, U+FF00-FFFC, U+FFFE-10FFFF;
+  src: url('/fonts/gnu-freefont/FreeMonoBold.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
@@ -294,6 +223,10 @@
   font-weight: 400;
   src: url('/fonts/UnifontExMono.woff2?v=3') format('woff2');
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   :root {
@@ -2024,15 +1957,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12p
 input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 0; background: hsl(var(--primary)); border: none; cursor: pointer; }
 
 @layer components {
-  /* editorial card polish — applies to all widget cards automatically.
-
-     NOTE: this matches the widget card's exact utility signature at
-     specificity (0,3,0), so it beats the element's own .rounded-2xl (0,1,0)
-     with no !important — which is why gating editorial-home.css alone did not
-     make the default layout's cards round again. It is also used by History
-     and ArchivePage, which are editorial and want it, so it cannot be gated on
-     the layout class. summer-home.css restores the original card there
-     instead; keep the two in step. */
+  /* editorial card polish — applies to all widget cards automatically */
   .bg-white.rounded-2xl.shadow-sm,
   .bg-card.rounded-2xl.shadow-sm {
     border: 1px solid hsl(var(--border) / 0.7);
@@ -2275,9 +2200,7 @@ html.is-scrolling .widget-loading-shell {
   html { scroll-padding-top: calc(4.5rem + env(safe-area-inset-top)); }
   body { overflow-x: clip; }
 
-  /* Clears the boss layout's FIXED header. The default layout's bar is sticky
-     and in normal flow, so the same padding there would just be a gap. */
-  html.home-layout-boss .editorial-home > main {
+  .editorial-home > main {
     padding-top: calc(5rem + env(safe-area-inset-top)) !important;
   }
   .site-nav-panel {
@@ -2350,12 +2273,7 @@ html.is-scrolling .widget-loading-shell {
     min-height: 44px;
   }
 
-  /* Edge-to-edge mobile modules are an EDITORIAL rule — the boss layout's
-     content planes run to the screen edge. The default layout is the original
-     card interface, which kept its rounded, shadowed cards on a phone, so it
-     must not be flattened here. `.mabis-widget` only ever appears on Home, so
-     gating on the layout class is exact rather than approximate. */
-  html.home-layout-boss .mabis-widget {
+  .mabis-widget {
     border-left-width: 0 !important;
     border-right-width: 0 !important;
     border-radius: 0 !important;

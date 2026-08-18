@@ -19,10 +19,6 @@ import {
   applySectionDescriptionsPreference,
   SECTION_DESCRIPTIONS_EVENT,
 } from "@/lib/section-descriptions-preference";
-import {
-  applyHomeLayoutPreference,
-  HOME_LAYOUT_EVENT,
-} from "@/lib/layout-preference";
 
 /* Every UI preference the app stores locally lives under a "mabis" key.
    We mirror that whole bag onto the signed-in user so settings follow them
@@ -48,7 +44,6 @@ export function applyStoredPrefs() {
   applyCursorPreference();
   applyJapaneseTextPreference();
   applySectionDescriptionsPreference();
-  applyHomeLayoutPreference();
   return animationPreferenceChanged;
 }
 
@@ -101,4 +96,4 @@ export async function pushPrefs() {
   await base44.auth.updateMe({ ui_prefs: collectPrefs() });
 }
 
-export const PREF_EVENTS = ["themeChanged", "fontChanged", MOTION_EVENT, CURSOR_EVENT, JAPANESE_TEXT_EVENT, SECTION_DESCRIPTIONS_EVENT, HOME_LAYOUT_EVENT, "storage"];
+export const PREF_EVENTS = ["themeChanged", "fontChanged", MOTION_EVENT, CURSOR_EVENT, JAPANESE_TEXT_EVENT, SECTION_DESCRIPTIONS_EVENT, "storage"];

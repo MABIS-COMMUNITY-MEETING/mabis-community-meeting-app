@@ -181,12 +181,11 @@ Novesce prefers direct manipulation over page jumps and detached forms.
 - Keep controls compact, but preserve accessible touch targets.
 - Never hide an essential action behind hover alone.
 - Avoid destructive rewrites of working interaction code when a surgical fix is possible.
-- Keep Home easy to navigate: the default layout stacks the widgets as the original MABIS interface did, and the Boss layout adds numbered editorial sections with a plain-language page guide; usability aids must clarify whichever layout is in use rather than bolt a generic dashboard onto either one.
+- Keep Home easy to navigate with its numbered editorial sections, plain-language page guide, and contextual instructions; usability aids must clarify the existing Japanese editorial hierarchy rather than replace it with a generic dashboard.
 - Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang="ja"` so Maple Mono CJK fallback applies; the default remains off.
 - **Removed pages (Aug 2026).** `Team`, `Dashboard`, `Meetings`, `Topics`, `JobWheel`, `Register`, `ForgotPassword` and `ResetPassword` were deleted at Novesce's request: none were routed in `src/App.jsx`, none emitted a bundle chunk, and none were reachable by any user. `check-design-contract.mjs` previously asserted two OpenMoji call sites inside `Team.jsx`; those assertions were removed with the file. The OpenMoji rule itself is unchanged and still enforced — pinned asset existence, the `OpenMoji.jsx` component contract, the CC BY-SA licence file, and a repo-wide ban on platform-native emoji glyphs. Do not re-create these pages.
 - **When adding or changing any UI copy** (labels, buttons, headings, empty states, dates, counts, toasts), add its Japanese companion in the same change. Short static strings go in `EXACT_TRANSLATIONS` in `src/lib/japanese-ui-translations.js` (picked up automatically by `JapaneseUiCompanion`); anything dynamic (dates, counts, composed sentences) gets an explicit `ja` prop via `JapaneseText`/`JapaneseDate`. Do not ship new user-facing English text without its Japanese counterpart—the Japanese-mode toggle must stay comprehensive, not partial.
 - Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.
-- Home has two layouts: the default reproduces the original MABIS interface — the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding — and the art-directed editorial layout is opt-in as `Boss layout` in Settings. Anything added, changed or fixed in one layout must exist in the other; they are two presentations of one page, not two products.
 - Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.
 
 ### AI enforcement procedure
@@ -303,34 +302,6 @@ Reference components:
 - `src/components/home/EditorialSection.jsx`
 - `src/components/SectionReveal.jsx`
 - `src/components/SiteHeader.jsx`
-
-## The two Home layouts
-
-Home renders in one of two presentations, chosen per user under **Settings → Page Layout** and stored in `src/lib/layout-preference.js`. This is a deliberate exception to the rest of this document, requested directly by Novesce: the default is **not** the editorial system.
-
-**Default — the original MABIS interface.** What the community used before the editorial redesign. A sticky white top bar with the logo, the two-line title and the controls; then the widgets stacked one after another in a single column, each a rounded white card with a coloured header band, on the original page gradient. No masthead, no index rail, no section headings, no scrolling type, no page guide.
-
-**Boss layout — opt-in.** The art-directed editorial front page: the tall masthead, the numbered index rail beside each section, the page guide, the scrolling type band, the scale ritual and the scroll section indicator.
-
-What the two share is not negotiable:
-
-- the same ten sections, in the same order;
-- the same widgets, the same features, the same behaviour, the same permissions;
-- every route still reachable (the default bar carries a small **Pages** menu in place of the editorial overlay);
-- the same preferences — themes, fonts, sound, motion, cursor, and the opt-in Japanese companion text.
-
-**Anything added, changed or fixed in one layout must exist in the other.** They are two presentations of one page, not two products. A feature in only one of them is a bug, and so is a fix applied to only one of them. In practice this is enforced by construction: `solid/pages/Home.jsx` holds one `SECTIONS` list and one `renderWidget()`, and hands the identical function to both layouts, so widget work lands in both without anyone remembering to copy it. Only page furniture — the bar, the masthead, the interludes — is written twice, and each copy says so in a comment.
-
-How the look is switched, and why it costs nothing:
-
-- The widgets already carry the original card classes (`rounded-2xl`, `shadow-sm`, a `bg-primary` header). `src/styles/editorial-home.css` exists purely to override them into the editorial system, so it is gated on `html.home-layout-boss` — set on `<html>` before first paint. In the default layout none of those selectors match, so there is no `!important` cascade to resolve and no overridden declaration to compute.
-- `src/styles/summer-home.css` adds only what the widgets do not style themselves: the page gradient and the birthday notice. Single-class selectors, no `!important`.
-- The boss interludes (`ScrollVelocity`, `ScrollScaleRitual`) are lazy and excluded from the install precache. `syncHomeLayoutCache()` tells the service worker which layout is in use, so it fetches those chunks when the boss layout is selected and deletes them when it is not — one layout in storage, never both.
-
-Layout sources:
-
-- `solid/components/home/summer.jsx` and `SummerHeader.jsx` (default)
-- `solid/components/home/shell.jsx` (boss)
 
 ## Spacing
 

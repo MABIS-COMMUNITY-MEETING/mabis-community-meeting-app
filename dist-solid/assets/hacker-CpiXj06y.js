@@ -1,1 +1,0 @@
-var e=`mabis_hacker_mode`,t={id:`hacker`,full_name:`hacker`,email:`hacker@localhost`,role:`user`};function n(){try{return localStorage.getItem(e)===`1`}catch{return!1}}function r(){try{localStorage.removeItem(e)}catch{}}export{r as n,n as r,t};

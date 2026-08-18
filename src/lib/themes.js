@@ -1,6 +1,5 @@
 import { bfdi_colorways, character_swatches } from "@/lib/bfdi_palettes";
 import { gmk_ui } from "@/lib/gmk_palettes";
-import { catppuccin_flavours } from "@/lib/catppuccin_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
 import { balancedPalette, contrastSafeInk, contrastSafePair, mutedForeground, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
 import { saveThemeSnapshot } from "@/lib/theme-boot";
@@ -205,73 +204,6 @@ function gmkTheme(key) {
   return t;
 }
 
-/*
- * Catppuccin flavours.
- *
- * Built like gmkTheme rather than paletteTheme, because three of the four are
- * dark and paletteTheme always paints a near-white page. The canonical hexes
- * go in untouched; only the surface ladder is picked from them.
- *
- * The ladder differs by flavour polarity so a card always sits ABOVE its page:
- * on the dark flavours base is the page and surface0..2 rise from it, while on
- * Latte the page drops to mantle so base can be the raised card. Using the
- * same order for both would recess every card into the background.
- */
-function catppuccinTheme(key) {
-  const f = catppuccin_flavours[key];
-  const d = f.dark;
-
-  const page = d ? f.base : f.mantle;
-  const raised = d ? f.surface0 : f.base;
-  const sunken = d ? f.surface1 : f.surface0;
-  const edge = d ? f.surface2 : f.surface1;
-
-  const primaryPair = keyColorPair(hexToHsl(f.accents.mauve));
-  const secondaryPair = keyColorPair(hexToHsl(f.accents.blue));
-  const accentPair = keyColorPair(hexToHsl(f.accents.peach));
-
-  const t = {
-    name: f.name,
-    vars: {
-      "--primary": primaryPair.fill,
-      "--primary-foreground": primaryPair.foreground,
-      "--secondary": secondaryPair.fill,
-      "--secondary-foreground": secondaryPair.foreground,
-      "--accent": accentPair.fill,
-      "--accent-foreground": accentPair.foreground,
-      "--background": hexToHsl(page),
-      "--foreground": hexToHsl(f.text),
-      "--card": hexToHsl(raised),
-      "--card-foreground": hexToHsl(f.text),
-      "--popover": hexToHsl(raised),
-      "--popover-foreground": hexToHsl(f.text),
-      "--muted": hexToHsl(sunken),
-      "--muted-foreground": hexToHsl(f.subtext0),
-      "--border": hexToHsl(edge),
-      "--input": hexToHsl(edge),
-      "--ring": primaryPair.fill,
-    },
-    bodyClass: `theme-${key}`,
-    swatches: f.swatches,
-    flag: f.swatches,
-    dark: d,
-    character: {
-      character_primary: f.accents.mauve,
-      character_secondary: f.accents.blue,
-      character_highlight: f.accents.pink,
-    },
-  };
-
-  const roles = ["--role-student", "--role-teacher", "--role-chair", "--role-minutes", "--role-admin", "--role-editor"];
-  const usable = balancedPalette(f.swatches).map(keepHueLegible);
-  roles.forEach((r, i) => { t.vars[r] = usable[i % usable.length]; });
-  /* Catppuccin's accents are already tuned for their own backgrounds; leaving
-     them exact is the whole point of shipping the palette rather than an
-     approximation of it. */
-  t.exact = true;
-  return t;
-}
-
 /* Legible copy of a swatch that never invents a new hue: saturation is left
    alone, lightness is pulled into a band that reads on both light and dark. */
 function keepHueLegible(hex) {
@@ -459,27 +391,6 @@ export const THEMES = {
   gmk_wob:         gmkTheme("wob"),
   gmk_monochrome:  gmkTheme("monochrome"),
   gmk_prussian:    gmkTheme("prussian_alert"),
-
-  // ── Catppuccin (canonical hexes, see lib/catppuccin_palettes.js) ──
-  catppuccin_latte:     catppuccinTheme("latte"),
-  catppuccin_frappe:    catppuccinTheme("frappe"),
-  catppuccin_macchiato: catppuccinTheme("macchiato"),
-  catppuccin_mocha:     catppuccinTheme("mocha"),
-
-  /* Bridget — Guilty Gear.
-     Her habit blue and cream with the gold trim, plus the pale blue and pink
-     she is inseparable from. The pink is a deliberate accent rather than a
-     pastel wash, which is what the design contract asks for on transfeminine
-     treatments. */
-  bridget: paletteTheme("bridget", "Bridget", "222 58% 40%", "340 82% 72%",
-    /* Order matters: the first two entries become primary and secondary, so
-       the pink sits beside the habit blue rather than being demoted to a
-       stripe behind the gold trim. */
-    ["#2B4FA2", "#F5A9B8", "#5BCEFA", "#E8C15A", "#F4F1E8"]),
-
-  /* Mew Mew Kissy Cutie — Deltarune. Pink and purple, as requested. */
-  mewmew: paletteTheme("mewmew", "Mew Mew", "330 76% 55%", "280 48% 44%",
-    ["#E5399A", "#7B3FA0", "#C58BE0", "#F9B6DA", "#FFF0F7"]),
 };
 
 /* The Pride palettes are the app's flagship collection: they are art-directed in
@@ -723,18 +634,6 @@ export function applyCustomColors(primaryHex, secondaryHex) {
   root.style.setProperty("--primary-foreground-muted", mutedForeground(primaryPair.foreground, primaryPair.fill));
   applyPalette([primaryHex, secondaryHex]);
   localStorage.setItem("mabis-custom-colors", JSON.stringify({ primary: primaryHex, secondary: secondaryHex }));
-  // Without this, the boot snapshot (theme-boot.js) never learns custom
-  // colors happened: applyTheme()/applyResolvedFont() both snapshot their
-  // own result, but this function painted straight to the DOM and stopped.
-  // Next boot then replays the LAST snapshot on record — the plain base
-  // theme from before these colors were set, since themeKey/fontKey still
-  // match and the replay has no way to know a custom-color layer sits on
-  // top of them — so the custom colors are invisible on first paint and
-  // only reappear once reconcileThemeAfterPaint()'s idle callback fires
-  // (up to 3s later). Passing null/null keeps the recorded theme/font keys
-  // as they were; only the painted `style` string (this function's own
-  // output) needs to be current.
-  saveThemeSnapshot(null, null);
   window.dispatchEvent(new Event("themeChanged"));
 }
 

@@ -1,25 +1,20 @@
-import { createSignal, onMount, onCleanup, lazy, Suspense, Show } from "solid-js";
+import { createSignal, onMount, onCleanup, lazy, Suspense, For, Show } from "solid-js";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
-import { LazySection } from "~/components/home/LazySection";
-import { SummerHome } from "~/components/home/summer";
-import SummerHeader from "~/components/home/SummerHeader";
+import { LazySection, EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/home/shell";
 import { useQuery } from "@tanstack/solid-query";
 import { Settings, Palette, CircleHelp } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { installScrollStateClass } from "~/lib/perf";
 import { useAuth } from "~/lib/AuthContext";
-import { useHomeLayout } from "~/lib/prefs";
 import { usePresenceHeartbeat } from "~/lib/usePresence";
+import SiteHeader from "~/components/SiteHeader";
 import ThemeSwitcher from "~/components/ThemeSwitcher";
 import IdleMount from "~/components/IdleMount";
-
-/*
- * The whole boss layout, in one chunk the default layout never fetches: the
- * glass header and its index overlay, the masthead, the section index, the
- * editorial section frame and the scroll interludes. Statically imported it
- * was downloaded, parsed and evaluated on every visit to reach a false branch.
- */
-const BossHome = lazy(() => import("~/components/home/boss"));
+import ScrollVelocity from "~/components/ScrollVelocity";
+import ScrollScaleRitual from "~/components/home/ScrollScaleRitual";
+import BirthdayBanner from "~/components/BirthdayBanner";
+import { ScrollSectionIndicator } from "~/components/chrome";
+import { PageFooter } from "~/components/page-chrome";
 
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
 const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
@@ -144,10 +139,6 @@ const WIDGETS = {
 
 export default function Home() {
   const auth = useAuth();
-  // "simple" by default; "boss" is the art-directed editorial front page,
-  // opt-in from Settings. See src/lib/layout-preference.js.
-  const layout = useHomeLayout();
-  const isBoss = () => layout() === "boss";
   const isAdmin = () => {
     const role = auth.user()?.role_override || auth.user()?.role;
     return role === "admin" || role === "editor";
@@ -177,7 +168,7 @@ export default function Home() {
   // A function, not an element: SiteHeader renders this in two places
   // (desktop bar + mobile drawer), and in Solid the same nodes cannot occupy
   // both — they would move rather than duplicate.
-  const editorialControls = () => (
+  const controls = () => (
     <>
       <ThemeSwitcher />
       <button
@@ -239,72 +230,6 @@ export default function Home() {
     </>
   );
 
-  /*
-   * The same controls in the original site's clothes.
-   *
-   * Same set, same order, same handlers — only the classes differ, because a
-   * bordered square tech-label button reads as a foreign object on a white
-   * bar with rounded controls. Anything added to one of these two must be
-   * added to the other.
-   */
-  const summerControls = () => (
-    <>
-      <ThemeSwitcher triggerClass="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted" />
-      <button
-        onClick={() => setShowHelp(true)}
-        onMouseEnter={preloadQuickStartGuide}
-        onFocus={preloadQuickStartGuide}
-        onPointerDown={preloadQuickStartGuide}
-        title="How to use this site"
-        class="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted"
-      >
-        <CircleHelp class="h-4 w-4" />
-      </button>
-      <button
-        onMouseEnter={preloadSettings}
-        onFocus={preloadSettings}
-        onPointerDown={preloadSettings}
-        onClick={() => setShowSettings(true)}
-        title="Settings"
-        class="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted"
-      >
-        <Settings class="h-4 w-4" />
-      </button>
-
-      <div class="flex items-center gap-2.5">
-        <div class="relative shrink-0">
-          <div
-            class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-card shadow"
-            style={{ border: `4px solid ${roleColor()}`, "box-sizing": "border-box" }}
-          >
-            <Show
-              when={auth.user()?.avatar_url}
-              fallback={<img src={MABIS_LOGO} alt="avatar" class="h-full w-full object-contain p-0.5" />}
-            >
-              <img src={auth.user().avatar_url} alt="avatar" class="h-full w-full object-cover" />
-            </Show>
-          </div>
-          <button
-            onClick={() => setEditingProfile(!editingProfile())}
-            title="Customize Profile Picture"
-            class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-primary shadow-md"
-          >
-            <Palette class="h-3 w-3" />
-          </button>
-        </div>
-        <span class="hidden text-sm font-semibold text-foreground sm:block">
-          {auth.user()?.full_name?.split(" ")[0] || "User"}
-        </span>
-        <button
-          onClick={() => auth.logout()}
-          class="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
-        >
-          Sign Out
-        </button>
-      </div>
-    </>
-  );
-
   onMount(() => {
     const stop = installScrollStateClass();
     onCleanup(stop);
@@ -316,56 +241,10 @@ export default function Home() {
   const weekLabel = `${getISOWeekYear(now)}-W${String(getISOWeek(now)).padStart(2, "0")}`;
   const dateLabel = format(now, "dd.MM.yyyy");
 
-  /*
-   * The one place a Home widget is constructed.
-   *
-   * Both layouts call this, which is what keeps them from drifting: a change
-   * to how a widget mounts, what it is passed, or how its space is reserved
-   * lands in both by construction rather than by anyone remembering to copy
-   * it across.
-   */
-  const placeholder = (height) => (
-    <div
-      class="lazy-section-placeholder"
-      style={{
-        "--lazy-min-height": `${height}px`,
-        "contain-intrinsic-size": `auto ${height}px`,
-      }}
-      aria-hidden
-    />
-  );
-
-  const renderWidget = (s) => (
-    <LazySection minHeight={s.height}>
-      <Show when={WIDGETS[s.index]} fallback={placeholder(s.height)}>
-        {(Widget) => (
-          <Suspense fallback={placeholder(s.height)}>
-            {(() => {
-              const W = Widget();
-              return (
-                <W
-                  isAdmin={isAdmin()}
-                  members={members()}
-                  canChangeRoles={isAdmin()}
-                  canStart={isAdmin()}
-                  onStartMeeting={() => window.dispatchEvent(new CustomEvent("startMeetingMode"))}
-                />
-              );
-            })()}
-          </Suspense>
-        )}
-      </Show>
-    </LazySection>
-  );
-
   return (
-    <div
-      class="editorial-home min-h-screen bg-background overflow-x-hidden"
-      classList={{ "summer-home": !isBoss() }}
-    >
-      <Show when={!isBoss()}>
-        <SummerHeader canSeeInbox={isAdmin()} rightSlot={summerControls} />
-      </Show>
+    <div class="editorial-home min-h-screen bg-background overflow-x-hidden">
+      <SiteHeader rightSlot={controls} />
+      <ScrollSectionIndicator total={10} />
 
       <Show when={showHelp()}>
         <Suspense fallback={null}>
@@ -385,22 +264,87 @@ export default function Home() {
         </Suspense>
       </Show>
 
-      <Show
-        when={isBoss()}
-        fallback={<SummerHome sections={SECTIONS}>{renderWidget}</SummerHome>}
-      >
-        <Suspense fallback={null}>
-          <BossHome
-            sections={SECTIONS}
-            controls={editorialControls}
-            weekLabel={weekLabel}
-            dateLabel={dateLabel}
-            date={now}
-          >
-            {renderWidget}
-          </BossHome>
-        </Suspense>
-      </Show>
+      <main class="mx-auto max-w-[1600px] px-4 pb-8 pt-20 sm:px-10 sm:pt-32">
+        <HomeMasthead weekLabel={weekLabel} dateLabel={dateLabel} date={now} />
+
+        <div class="pb-6 pt-5 sm:pb-10 sm:pt-8">
+          <HomeSectionIndex />
+        </div>
+
+        {/* restrained editorial interlude */}
+        <div class="-mx-4 overflow-hidden border-b py-3 jp-rule sm:-mx-10 sm:py-5">
+          <ScrollVelocity
+            items={["MABIS", "COMMUNITY", "FRIDAY", "BANGKOK"]}
+            class="font-display font-light tracking-[-0.035em] text-foreground/16 text-[clamp(1.35rem,7vw,2.15rem)] sm:text-[4.2vw]"
+          />
+        </div>
+
+        <ScrollScaleRitual />
+
+        <div class="pb-8 pt-4 sm:pb-14 sm:pt-6">
+          <BirthdayBanner />
+        </div>
+
+        <div class="space-y-12 sm:space-y-24">
+          <For each={SECTIONS}>
+            {(s) => (
+              <EditorialSection
+                index={s.index}
+                label={s.label}
+                jaLabel={s.jaLabel}
+                description={s.description}
+                jaDescription={s.jaDescription}
+                intrinsicHeight={s.height + 160}
+              >
+                <LazySection minHeight={s.height}>
+                  {/* Ported widgets render here; the rest still reserve their
+                      exact final height, so swapping one in shifts nothing. */}
+                  <Show
+                    when={WIDGETS[s.index]}
+                    fallback={
+                      <div
+                        class="lazy-section-placeholder"
+                        style={{
+                          "--lazy-min-height": `${s.height}px`,
+                          "contain-intrinsic-size": `auto ${s.height}px`,
+                        }}
+                        aria-hidden
+                      />
+                    }
+                  >
+                    {(Widget) => (
+                      <Suspense
+                        fallback={
+                          <div
+                            class="lazy-section-placeholder"
+                            style={{ "--lazy-min-height": `${s.height}px` }}
+                            aria-hidden
+                          />
+                        }
+                      >
+                        {(() => {
+                          const W = Widget();
+                          return (
+                            <W
+                              isAdmin={isAdmin()}
+                              members={members()}
+                              canChangeRoles={isAdmin()}
+                              canStart={isAdmin()}
+                              onStartMeeting={() => window.dispatchEvent(new CustomEvent("startMeetingMode"))}
+                            />
+                          );
+                        })()}
+                      </Suspense>
+                    )}
+                  </Show>
+                </LazySection>
+              </EditorialSection>
+            )}
+          </For>
+        </div>
+
+        <PageFooter />
+      </main>
 
       {/* Deferred until the browser is idle, as in React — same three, same order. */}
       <IdleMount timeout={1800}>

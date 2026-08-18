@@ -44,7 +44,7 @@ const SOLID_EQUIVALENTS = {
   "src/lib/routeLoaders.js": ["solid/lib/routes.js"],
   "src/lib/home-route-warmup.js": ["solid/lib/home-warmup.js"],
   "src/lib/query-client.js": ["solid/lib/query-client.js"],
-  "src/components/home/LazySection.jsx": ["solid/components/home/LazySection.jsx", "solid/lib/perf.js"],
+  "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
   // The React AuthContext went with the React UI; Solid has its own carrying
   // the same offline-recovery guarantees this rule protects.
   "src/lib/AuthContext.jsx": ["solid/lib/AuthContext.jsx"],
@@ -121,15 +121,7 @@ const lazySection = read("src/components/home/LazySection.jsx");
 const idleMount = read("src/components/IdleMount.jsx");
 const serviceWorkerGenerator = read("scripts/generate-service-worker.mjs");
 const packageJson = read("package.json");
-/*
- * The SHIPPED entry, not the root one.
- *
- * vite.config.js sets `root: solid/`, so solid/index.html is what Vite builds
- * and what dist/index.html is generated from. The root index.html is a React
- * leftover — it still points at /src/main.jsx, which no longer exists — and
- * this rule had been validating that dead file rather than the served one.
- */
-const html = read("solid/index.html");
+const html = read("index.html");
 
 forbidText("src/pages/Home.jsx", home, 'from "moment"');
 forbidText("src/pages/Home.jsx", home, "from 'moment'");
@@ -156,15 +148,7 @@ requireText("src/components/SettingsModal.jsx", settings, ["useDeferredValue(fon
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const INITIAL_THEME_LIMIT = 20;");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["const ThemeOption = memo", "function ThemeOption("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "new IntersectionObserver");
-/* The catalogue must stay progressively mounted — 20 at a time, never the
-   whole set at once. The list being sliced gained a search filter in front of
-   it (140 themes made the tail unreachable without one); what matters is that
-   a slice still bounds what is mounted, not which array it slices. */
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, [
-  "THEME_ENTRIES.slice(0, themeLimit)",
-  "THEME_ENTRIES.slice(0, themeLimit())",
-  "matchingThemes().slice(0, themeLimit())",
-]);
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["THEME_ENTRIES.slice(0, themeLimit)", "THEME_ENTRIES.slice(0, themeLimit())"]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const THEME_STRIPES = new WeakMap();");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["style={{ background: paletteStripe(theme) }}", "paletteStripe("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "clearCustomColors({ notify: false });");
@@ -194,43 +178,9 @@ requireText("src/lib/scroll-progress.js", scrollProgress, "new ResizeObserver(sc
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, ["style={{ scale, opacity }}", "lineEl.style.transform"]);
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
-/* A cache-first worker that never skips waiting serves the previous build to
-   every open tab until all of them close. That turned into shipped fixes that
-   users could not see, so both halves of the handover are pinned: the worker
-   takes over, and the page reloads once when it does. */
-requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "self.skipWaiting();");
-requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "await self.clients.claim();");
-requireText("src/main.jsx", main, 'navigator.serviceWorker.addEventListener("controllerchange"');
-
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
-
-/*
- * .lg-surface must never declare containment.
- *
- * It is the wrapper every glass panel renders its content into, including the
- * site header. `contain: paint` clips descendants to the padding box and makes
- * the element a containing block for fixed descendants, so any menu opened
- * from a glass panel silently vanishes — present in the DOM, correct in every
- * computed style, invisible on screen. That shipped once; the file carried a
- * comment warning against it at the time, so a comment is not enough.
- *
- * Containment on ::before / ::after is fine and deliberately still allowed:
- * pseudo-elements cannot have children.
- */
-const surfaceStart = glass.indexOf(".lg-surface {");
-/* Comments are stripped first: the rule carries a prose warning that names the
-   very declaration being forbidden, and matching that would fail the build for
-   documenting the rule. */
-const surfaceBody = surfaceStart === -1
-  ? ""
-  : glass.slice(surfaceStart, glass.indexOf("}", surfaceStart)).replace(/\/\*[\s\S]*?\*\//g, "");
-if (surfaceStart === -1) {
-  failures.push("src/styles/glass.css: .lg-surface rule not found — the containment guard below cannot run");
-} else if (/contain\s*:/.test(surfaceBody)) {
-  failures.push("src/styles/glass.css: .lg-surface must not declare `contain` — it clips every dropdown rendered inside a glass panel (move it to ::before/::after)");
-}
 requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf"]);
 requireText("src/components/JobsWidget.jsx", jobs, "appearanceRaf");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
@@ -272,12 +222,7 @@ forbidText("src/lib/themes.js", themes, 'import { BY_WOMXN_FONTS }');
 requireText("src/index.css", css, "html.theme-committing *::before");
 forbidText("src/index.css", css, "body.theme-shifting");
 forbidText("src/index.css", css, "@import url('/fonts/by-womxn/fonts.css')");
-/* Preload the first-paint subsets. Preloading the full pan-Unicode faces put
-   287 KiB of font-display:block ahead of first paint; see the header of
-   scripts/build-font-subsets.py. check-font-subset.mjs guards the rest. */
-requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono-subset.woff2?v=3");
-requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3");
-forbidText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono.woff2");
+requireText("index.html", html, "/fonts/gnu-freefont/FreeMono.woff2?v=2");
 requireText("src/lib/routeLoaders.js", routeLoaders, "saveDataEnabled()");
 requireText("src/lib/query-client.js", queryClient, "CACHE_LIFETIME");
 requireText("src/components/home/LazySection.jsx", lazySection, "isConstrainedNetwork()");

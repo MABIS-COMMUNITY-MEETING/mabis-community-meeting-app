@@ -1,5 +1,5 @@
 import { createSignal, createMemo, onMount, onCleanup, createEffect, Show, For } from "solid-js";
-import { Palette, Check, RotateCcw, Save, Trash2, Star, Search } from "lucide-solid";
+import { Palette, Check, RotateCcw, Save, Trash2, Star } from "lucide-solid";
 import {
   THEMES, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
@@ -74,7 +74,7 @@ function ThemeOption(props) {
   );
 }
 
-export default function ThemeSwitcher(props) {
+export default function ThemeSwitcher() {
   let menuEl;
   let loadMoreEl;
 
@@ -88,24 +88,10 @@ export default function ThemeSwitcher(props) {
   const [showCustom, setShowCustom] = createSignal(false);
   const [themeLimit, setThemeLimit] = createSignal(INITIAL_THEME_LIMIT);
   const [showAllThemes, setShowAllThemes] = createSignal(false);
-  const [themeSearch, setThemeSearch] = createSignal("");
-
-  /*
-   * The catalogue is 140 themes revealed twenty at a time, so anything added
-   * near the end of THEMES was six "Show more" clicks from being seen. Same
-   * filter the font picker already uses, and it runs before the batching so a
-   * search finds a match wherever it sits in the list.
-   */
-  const matchingThemes = createMemo(() => {
-    const query = themeSearch().trim().toLowerCase();
-    if (!query) return THEME_ENTRIES;
-    return THEME_ENTRIES.filter(([key, theme]) =>
-      theme.name.toLowerCase().includes(query) || key.toLowerCase().includes(query));
-  });
 
   const visibleThemes = createMemo(() =>
-    (showAllThemes() ? matchingThemes().slice(0, themeLimit()) : SIMPLE_THEME_ENTRIES));
-  const hasMoreThemes = () => showAllThemes() && themeLimit() < matchingThemes().length;
+    showAllThemes() ? THEME_ENTRIES.slice(0, themeLimit()) : SIMPLE_THEME_ENTRIES);
+  const hasMoreThemes = () => showAllThemes() && themeLimit() < THEME_ENTRIES.length;
 
   const loadNextThemeBatch = () =>
     setThemeLimit((limit) => Math.min(limit + THEME_BATCH_SIZE, THEME_ENTRIES.length));
@@ -178,8 +164,6 @@ export default function ThemeSwitcher(props) {
 
   return (
     <div class="relative">
-      {/* triggerClass: Home's default layout passes the original site's rounded
-          control. Everything else keeps the editorial square, label and all. */}
       <button
         type="button"
         onClick={() => {
@@ -188,14 +172,11 @@ export default function ThemeSwitcher(props) {
         }}
         aria-expanded={open()}
         aria-haspopup="dialog"
-        class={props.triggerClass
-          || "flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"}
+        class="flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"
         title="Change colors"
       >
         <Palette class="w-4 h-4" />
-        <Show when={!props.triggerClass}>
-          <span class="hidden text-[10px] font-bold uppercase tracking-wide lg:inline">Colors</span>
-        </Show>
+        <span class="hidden text-[10px] font-bold uppercase tracking-wide lg:inline">Colors</span>
       </button>
 
       <Show when={open()}>
@@ -218,20 +199,6 @@ export default function ThemeSwitcher(props) {
               Pick one of the easy choices. Your current choice is {THEMES[currentTheme()]?.name || "Custom"}.
             </p>
           </div>
-
-          <Show when={showAllThemes()}>
-            <div class="relative mb-3">
-              <Search class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="search"
-                value={themeSearch()}
-                onInput={(e) => { setThemeSearch(e.currentTarget.value); setThemeLimit(INITIAL_THEME_LIMIT); }}
-                placeholder="Search themes…"
-                aria-label="Search themes"
-                class="h-9 w-full rounded-lg border border-border bg-background pl-8 pr-2.5 text-xs text-foreground outline-none focus:border-primary"
-              />
-            </div>
-          </Show>
 
           <div class="grid grid-cols-2 gap-2 mb-4">
             <For each={visibleThemes()}>
@@ -258,14 +225,9 @@ export default function ThemeSwitcher(props) {
             }
           >
             <div ref={loadMoreEl} class="mb-4 space-y-2">
-              <Show when={visibleThemes().length === 0}>
-                <p class="px-1 py-2 text-xs text-muted-foreground">
-                  No theme matches “{themeSearch()}”.
-                </p>
-              </Show>
               <button
                 type="button"
-                onClick={() => { setShowAllThemes(false); setThemeSearch(""); }}
+                onClick={() => setShowAllThemes(false)}
                 class="min-h-10 w-full border border-border px-3 text-xs font-bold text-foreground hover:bg-muted"
               >
                 Back to easy choices
@@ -276,7 +238,7 @@ export default function ThemeSwitcher(props) {
                   onClick={loadNextThemeBatch}
                   class="min-h-10 w-full border border-border px-3 text-xs font-bold text-foreground hover:bg-muted"
                 >
-                  Show more themes ({visibleThemes().length}/{matchingThemes().length})
+                  Show more themes ({visibleThemes().length}/{THEME_ENTRIES.length})
                 </button>
               </Show>
             </div>

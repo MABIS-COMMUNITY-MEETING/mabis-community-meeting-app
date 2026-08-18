@@ -1,5 +1,6 @@
 import { createEffect, onCleanup, Show } from "solid-js";
 import { useJapaneseText } from "~/lib/motion";
+import { translateUiText } from "@/lib/japanese-ui-translations";
 
 /*
  * Automatic Japanese companion text — 1:1 port of
@@ -15,29 +16,6 @@ import { useJapaneseText } from "~/lib/motion";
  * Prefer <JapaneseText ja="…">, and add the string to
  * src/lib/japanese-ui-translations.js so this scanner can catch it too.
  */
-/*
- * The dictionary is ~10 KiB minified — a few hundred Japanese strings — and it
- * is loaded on demand rather than imported.
- *
- * This component is part of the app shell and mounts on every page, so a
- * static import put the whole table in the boot chunk of every visit. The
- * companion is off by default (see japanese-text-preference.js), so on the
- * default path that was 10 KiB parsed and a several-hundred-key object
- * allocated to annotate nothing. Fetched on the first flip to enabled instead;
- * the annotate helpers below no-op until it lands, and the effect schedules a
- * full pass over document.body the moment it does, so nothing is missed.
- */
-let translateUiText = null;
-let dictionaryPromise = null;
-
-function loadDictionary() {
-  if (!dictionaryPromise) {
-    dictionaryPromise = import("@/lib/japanese-ui-translations")
-      .then((module) => { translateUiText = module.translateUiText; });
-  }
-  return dictionaryPromise;
-}
-
 const COMPANION_ATTRIBUTE = "data-ja-companion";
 const AUTO_ATTRIBUTE = "data-ja-auto";
 const LAYOUT_ATTRIBUTE = "data-ja-layout";
@@ -75,7 +53,7 @@ function directText(element) {
 }
 
 function annotateText(element) {
-  if (!translateUiText || shouldSkip(element)) return;
+  if (shouldSkip(element)) return;
   const text = directText(element);
   const japanese = translateUiText(text);
   if (!japanese || japanese === text) {
@@ -92,7 +70,7 @@ function annotateText(element) {
 }
 
 function annotateControl(element) {
-  if (!translateUiText || shouldSkip(element)) return;
+  if (shouldSkip(element)) return;
 
   if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
     const original = element.getAttribute(ORIGINAL_PLACEHOLDER) || element.getAttribute("placeholder");
@@ -175,8 +153,6 @@ export default function JapaneseUiCompanion() {
     }
 
     let frame = 0;
-    let observer = null;
-    let disposed = false;
     const pending = new Set([document.body]);
     const flush = () => {
       frame = 0;
@@ -192,38 +168,24 @@ export default function JapaneseUiCompanion() {
       if (!frame) frame = requestAnimationFrame(flush);
     };
 
-    /* Observing before the dictionary lands would queue records the annotate
-       helpers are not yet able to act on, so start once it is here — and bail
-       if the preference was turned back off while it was in flight. */
-    loadDictionary().then(() => {
-      if (disposed) return;
-
-      observer = new MutationObserver((records) => {
-        records.forEach((record) => {
-          if (record.type === "characterData") {
-            schedule(record.target.parentElement);
-            return;
-          }
-          record.addedNodes.forEach((node) => {
-            if (node instanceof Element) schedule(node);
-            else if (node.parentElement) schedule(node.parentElement);
-          });
+    const observer = new MutationObserver((records) => {
+      records.forEach((record) => {
+        if (record.type === "characterData") {
+          schedule(record.target.parentElement);
+          return;
+        }
+        record.addedNodes.forEach((node) => {
+          if (node instanceof Element) schedule(node);
+          else if (node.parentElement) schedule(node.parentElement);
         });
       });
-
-      schedule(document.body);
-      observer.observe(document.body, { childList: true, characterData: true, subtree: true });
-    }).catch(() => {
-      /* offline on the very first flip: English stays, which is the same
-         result as the preference being off. It retries on the next flip. */
-      dictionaryPromise = null;
     });
 
-    /* Registered synchronously so it belongs to this effect's owner, not to
-       whatever is running when the import resolves. */
+    schedule(document.body);
+    observer.observe(document.body, { childList: true, characterData: true, subtree: true });
+
     onCleanup(() => {
-      disposed = true;
-      if (observer) observer.disconnect();
+      observer.disconnect();
       if (frame) cancelAnimationFrame(frame);
       cleanup();
     });

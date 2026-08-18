@@ -44,7 +44,7 @@ const SOLID_EQUIVALENTS = {
     "src/components/JapaneseText.jsx": ["solid/components/primitives.jsx"],
     "src/components/OpenMoji.jsx": ["solid/components/page-chrome.jsx"],
     "src/components/home/HomeSectionIndex.jsx": ["solid/components/home/shell.jsx"],
-    "src/components/home/LazySection.jsx": ["solid/components/home/LazySection.jsx", "solid/lib/perf.js"],
+    "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
     "src/components/JobsWidget.jsx": ["solid/components/JobsWidget.jsx", "solid/components/jobs/SpinWheel.jsx"],
 };
 
@@ -109,25 +109,7 @@ const packageJson = read("package.json");
 const performanceContract = read("scripts/check-performance-contract.mjs");
 const bundleBudget = read("scripts/check-bundle-budget.mjs");
 const cjkFontLoader = read("src/components/CjkFontLoader.jsx");
-/*
- * The LIVE sign-in page, named explicitly rather than through the src/→solid/
- * fallback.
- *
- * On 2026-08-17 `base44-builder[bot]` committed "chore: add boilerplate auth
- * templates", recreating src/pages/{Login,Register,ForgotPassword,
- * ResetPassword,OAuthConsent}.jsx and src/components/ProtectedRoute.jsx. That
- * boilerplate carries an email/password <form>, which this contract forbids —
- * and because the path resolver prefers src/, the Google-only rules below
- * silently switched from checking the page users actually see to checking
- * platform scaffolding nothing imports. The build failed, which is the right
- * outcome, but for the wrong reason.
- *
- * The boilerplate is dead: solid/App.jsx routes /login to the Solid page and
- * redirects /register, /forgot-password and /reset-password to it. So the
- * rules are asserted against the live page, and the guard below keeps the
- * boilerplate unreachable rather than trusting it to stay that way.
- */
-const login = read("solid/pages/Login.jsx");
+const login = read("src/pages/Login.jsx");
 const docsEditor = read("src/components/DocsEditor.jsx");
 const jobsWidget = read("src/components/JobsWidget.jsx");
 const jobsRotation = read("src/lib/jobsRotation.js");
@@ -189,41 +171,17 @@ for (const [relativePath, content] of editorialContractFiles) {
 }
 
 const richTextThemeRule = "Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.";
-const easyLayoutRule = "Keep Home easy to navigate: the default layout stacks the widgets as the original MABIS interface did, and the Boss layout adds numbered editorial sections with a plain-language page guide; usability aids must clarify whichever layout is in use rather than bolt a generic dashboard onto either one.";
+const easyLayoutRule = "Keep Home easy to navigate with its numbered editorial sections, plain-language page guide, and contextual instructions; usability aids must clarify the existing Japanese editorial hierarchy rather than replace it with a generic dashboard.";
 const japaneseTextRule = "Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang=\"ja\"` so Maple Mono CJK fallback applies; the default remains off.";
 const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.";
 const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
-const homeLayoutRule = "Home has two layouts: the default reproduces the original MABIS interface — the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding — and the art-directed editorial layout is opt-in as `Boss layout` in Settings. Anything added, changed or fixed in one layout must exist in the other; they are two presentations of one page, not two products.";
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, richTextThemeRule);
     requireText(relativePath, content, easyLayoutRule);
     requireText(relativePath, content, japaneseTextRule);
     requireText(relativePath, content, simpleCustomizationRule);
     requireText(relativePath, content, jobsPeriodRule);
-    requireText(relativePath, content, homeLayoutRule);
 }
-
-/*
- * The layout choice itself, asserted in code as well as in prose.
- *
- * The default is the load-bearing half: an AI "tidying up" the preference back
- * to the editorial layout would undo an explicit request from Novesce, and
- * nothing else in the build would notice.
- */
-const bossHome = read("solid/components/home/boss.jsx");
-const layoutPreference = read("src/lib/layout-preference.js");
-requireText("src/lib/layout-preference.js", layoutPreference, 'DEFAULT_HOME_LAYOUT = "simple"');
-requireText("src/lib/layout-preference.js", layoutPreference, 'HOME_LAYOUTS = ["simple", "boss"]');
-requireText("src/pages/Home.jsx", home, ["const isBoss = () => layout() === \"boss\""]);
-requireText("src/components/SettingsModal.jsx", settingsModal, "Boss layout");
-
-/* The editorial layer must stay gated, or the default layout silently becomes
-   the editorial one again — flat cards, 2px radii, no elevation. */
-requireText("src/styles/editorial-home.css", editorialHomeCss, "html.home-layout-boss .editorial-home .mabis-widget");
-forbidText("src/styles/editorial-home.css", editorialHomeCss, "\n.editorial-home ");
-
-/* One widget render path for both layouts. Two would drift. */
-requireText("src/pages/Home.jsx", home, "const renderWidget = (s) =>");
 
 const cursorTrackingRule = "The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement.";
 const cursorContractFiles = [
@@ -281,17 +239,7 @@ requireText("src/components/CjkFontLoader.jsx", cjkFontLoader, "MutationObserver
 requireText("src/pages/Login.jsx", login, 'base44.auth.loginWithProvider("google", "/home")');
 requireText("src/pages/Login.jsx", login, "CONTINUE WITH GOOGLE");
 forbidText("src/pages/Login.jsx", login, "loginViaEmailPassword");
-forbidText("solid/pages/Login.jsx", login, "<form");
-
-/* The public auth surface stays Google-only however the platform scaffolds it:
-   no router may mount the boilerplate, and the retired routes must keep
-   redirecting rather than render a password form. */
-for (const retired of ["Register", "ForgotPassword", "ResetPassword", "OAuthConsent"]) {
-    forbidText("solid/App.jsx", app, `pages/${retired}`);
-}
-for (const retired of ["/register", "/forgot-password", "/reset-password"]) {
-    requireText("solid/App.jsx", app, `<Route path="${retired}" component={RedirectToLogin} />`);
-}
+forbidText("src/pages/Login.jsx", login, "<form");
 requireText("src/App.jsx", app, ['<Route path="/register" element={<Navigate to="/login" replace />} />', '<Route path="/register" component={RedirectToLogin} />']);
 requireText("src/App.jsx", app, ['<Route path="/forgot-password" element={<Navigate to="/login" replace />} />', '<Route path="/forgot-password" component={RedirectToLogin} />']);
 requireText("src/App.jsx", app, ['<Route path="/reset-password" element={<Navigate to="/login" replace />} />', '<Route path="/reset-password" component={RedirectToLogin} />']);
@@ -348,10 +296,7 @@ requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "SIMPLE_THEME_KEY
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "Browse all themes");
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "VOICE YOUR WORDS");
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "A WEEKLY RITUAL");
-/* The page guide is the boss layout's navigation aid and moved into its chunk
-   with the rest of the editorial furniture. The default layout deliberately
-   has none — it is a single stack of cards, with nothing to jump between. */
-requireText("solid/components/home/boss.jsx", bossHome, "<HomeSectionIndex />");
+requireText("src/pages/Home.jsx", home, "<HomeSectionIndex />");
 requireText("src/pages/Home.jsx", home, "<QuickStartGuide open");
 requireText("scripts/check-theme-balance.mjs", themeBalanceCheck, "Theme balance:");
 requireText("package.json", packageJson, "npm run check:design && npm run check:themes && npm run check:performance");

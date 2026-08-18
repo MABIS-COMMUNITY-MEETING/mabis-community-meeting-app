@@ -14,12 +14,11 @@ Preserve the Home editorial normalization in `src/styles/editorial-home.css`: ne
 
 Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.
 
-Keep Home easy to navigate: the default layout stacks the widgets as the original MABIS interface did, and the Boss layout adds numbered editorial sections with a plain-language page guide; usability aids must clarify whichever layout is in use rather than bolt a generic dashboard onto either one.
+Keep Home easy to navigate with its numbered editorial sections, plain-language page guide, and contextual instructions; usability aids must clarify the existing Japanese editorial hierarchy rather than replace it with a generic dashboard.
 - Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang="ja"` so Maple Mono CJK fallback applies; the default remains off.
 - **Removed pages (Aug 2026).** `Team`, `Dashboard`, `Meetings`, `Topics`, `JobWheel`, `Register`, `ForgotPassword` and `ResetPassword` were deleted at Novesce's request — none were routed, none emitted a chunk, none were reachable. The two OpenMoji assertions that pointed at `Team.jsx` were removed from `check-design-contract.mjs` with it; the OpenMoji rule itself is unchanged and still enforced elsewhere. Do not re-create these pages.
 - **When adding or changing any UI copy**, add its Japanese companion in the same change. Short static strings go in `EXACT_TRANSLATIONS` in `src/lib/japanese-ui-translations.js`; dynamic text (dates, counts, composed sentences) gets an explicit `ja` prop via `JapaneseText`/`JapaneseDate`. Do not ship new user-facing English text without its Japanese counterpart.
 - Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.
-- Home has two layouts: the default reproduces the original MABIS interface — the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding — and the art-directed editorial layout is opt-in as `Boss layout` in Settings. Anything added, changed or fixed in one layout must exist in the other; they are two presentations of one page, not two products.
 
 Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.
 
