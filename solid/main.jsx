@@ -8,6 +8,7 @@ import "~/solid-motion.css";
 import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
+import { applyHomeLayoutPreference } from "@/lib/layout-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
 import { startPerfMonitor } from "~/lib/perf-monitor";
 import { preloadRoute } from "~/lib/routes";
