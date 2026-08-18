@@ -1,27 +1,24 @@
 import { render } from "solid-js/web";
 import App from "~/App.jsx";
+/*
+ * Every stylesheet is linked from the entry, eagerly.
+ *
+ * glass.css and editorial-home.css were split out to travel with the boss
+ * chunk instead — 25.4 KiB the default layout can never match. That was
+ * correct on paper and it built clean, but the top bar rendered with no glass
+ * afterwards and could not be diagnosed remotely, so it was reverted at
+ * Novesce's request.
+ *
+ * The cost of being wrong is asymmetric: 25.4 KiB of unused CSS is a number in
+ * a report, while a top bar with no material is the first thing anyone sees.
+ * If the split is attempted again, verify it in a real browser before relying
+ * on it — a green build proves the file is emitted, not that the link lands.
+ */
 import "@/index.css";
+import "@/styles/glass.css";
+import "@/styles/editorial-home.css";
 import "@/styles/summer-home.css";
 import "~/solid-motion.css";
-/*
- * Only the stylesheets the DEFAULT layout actually paints with are here.
- *
- * glass.css and editorial-home.css are both boss-only — glass.css owns the
- * `.lg-*` surfaces, and Glass is rendered only by SiteHeader, which only
- * boss.jsx imports; every rule in editorial-home.css is gated on
- * `html.home-layout-boss`. The boss JS has been code-split since the port,
- * but both stylesheets were still linked from the entry HTML, so every
- * visitor on the default layout downloaded and parsed 25.4 KiB of source that
- * could not match a single element on their page.
- *
- * They now travel with the chunk that uses them: glass.css from Glass.jsx,
- * editorial-home.css from boss.jsx. Vite's preload helper waits for a chunk
- * stylesheet's load event before resolving the dynamic import, so the boss
- * layout still paints fully styled on its first frame and nothing flashes.
- *
- * Do not move these back here to "keep the imports together". check-css-split.mjs
- * fails the build if the glass rules reappear in the render-blocking sheet.
- */
 import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
@@ -109,7 +106,7 @@ async function bootstrap() {
    * works even if this line never runs), but leaving a hidden fixed-position
    * element in the tree serves nothing — take it out.
    */
-  document.getElementById("boot-splash")?.remove();
+
 
   // Opt-in only (?perf=1). Costs nothing otherwise — a monitor that slows the
   // page down would defeat its own purpose.
