@@ -38,8 +38,8 @@ export function collectPrefs() {
   return out;
 }
 
-export function applyStoredPrefs() {
-  applyTheme(getStoredTheme());
+export function applyStoredPrefs(user) {
+  applyTheme(getStoredTheme(user), { persist: false });
   const custom = getStoredCustomColors();
   if (custom) applyCustomColors(custom.primary, custom.secondary);
   applyFont(getStoredFont());
@@ -110,7 +110,7 @@ export async function pullPrefs() {
     }
   }
 
-  const animationPreferenceChanged = applyStoredPrefs();
+  const animationPreferenceChanged = applyStoredPrefs(user);
 
   // Repair older account-side preferences with the current device choice.
   if (keepLocalFont || keepLocalMotion || keepLocalJapaneseText || animationPreferenceChanged) {
