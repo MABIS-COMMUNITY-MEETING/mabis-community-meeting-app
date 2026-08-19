@@ -256,6 +256,28 @@ html.animations-disabled .tap-85:active { transform: none; }
   .cv-section.cv-ready {
     content-visibility: auto;
   }
+
+  /* A revealed section holding a fullscreen widget must drop its containment.
+
+     content-visibility: auto implies contain: layout style paint, and a
+     paint-contained element becomes the containing block for any position:
+     fixed descendant. Announcements, Discussion, Jobs, Calendar, News, Members
+     and the Minutes editor all go fullscreen by adding `fixed inset-0` to
+     themselves, so once a section has scrolled into view and picked up
+     cv-ready, opening one of its widgets fullscreen pinned it to the section
+     box instead of the viewport — it looked broken, or unscrollable, rather
+     than actually going fullscreen.
+
+     This escape hatch used to live on the ungated `[data-gp-section]` rule in
+     index.css and was removed with it on the theory that the cause —
+     content-visibility on the section — was gone too. It was not: the gated
+     `.cv-section.cv-ready` rule right above carries the exact same
+     containment side effect, so the trap it created needs the same escape
+     hatch, here where the cause actually lives. */
+  .cv-section.cv-ready:has(.fixed.inset-0) {
+    content-visibility: visible;
+    contain: none;
+  }
 }
 
 /* Never skip rendering for the section the user jumped to, or one containing
