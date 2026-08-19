@@ -755,21 +755,20 @@ export function clearCustomColors({ notify = true } = {}) {
 }
 
 /**
- * The themes the app offers. MABIS, and nothing else (Novesce, Aug 2026).
+ * The themes the app offers.
  *
- * THEMES below still holds the whole catalogue — the palettes back the pride
- * ambience, the Frutiger Aero surface treatment in index.css and the
- * contrast-safety fixtures in check-theme-balance.mjs, so deleting the data is
- * a separate job from withdrawing the choice. Everything user-facing reads
- * THIS list, never THEMES directly; read THEMES and you put all of them back
- * in front of people.
+ * Restored to the full catalogue 2026-08-19 — every key in THEMES (pride
+ * flags, BFDI colourways, GMK keysets, Touhou, Sonic, Nintendo consoles,
+ * Catppuccin, the pastels, Frutiger Aero, all of it) is selectable again.
+ * `Object.keys(THEMES)` rather than an explicit list so nothing added to
+ * THEMES above can go stale here by omission — it was exactly an explicit
+ * list (`["default"]`) silently excluding everything else that this
+ * replaces.
  *
- * ~117 KiB of palette source is now unreachable by any UI path. It is lazy
- * (ThemeSwitcher/SettingsModal only), so it costs no boot time, but it is dead
- * weight and worth deleting once the couple of non-UI consumers above are
- * untangled.
+ * Everything user-facing reads THIS list, never THEMES directly — that part
+ * of the contract is unchanged, it just no longer filters anything out.
  */
-export const SELECTABLE_THEME_KEYS = ["default"];
+export const SELECTABLE_THEME_KEYS = Object.keys(THEMES);
 
 export const isSelectableTheme = (key) => SELECTABLE_THEME_KEYS.includes(key);
 
