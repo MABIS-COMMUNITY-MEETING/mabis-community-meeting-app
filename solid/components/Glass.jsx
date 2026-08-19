@@ -1,6 +1,15 @@
 import { onMount, onCleanup, splitProps } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { registerGlass } from "@/lib/glass_pointer";
+/*
+ * The `.lg-*` rules live with the component that renders them rather than in
+ * the entry, so they load only when a glass surface actually exists. Today
+ * that means the boss layout's chunk. Co-locating it also keeps it correct if
+ * that ever changes: whatever imports Glass gets its stylesheet, and the
+ * critical-path assertion in check-css-split.mjs catches it if that import
+ * ever lands somewhere eager again.
+ */
+import "@/styles/glass.css";
 
 const VARIANTS = {
   compact: "lg-compact",

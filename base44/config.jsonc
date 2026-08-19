@@ -1,9 +1,14 @@
 {
   "name": "untitled",
   "site": {
+    // The standard, documented publish shape: vite.config.js is the maintained
+    // config — it builds the Solid app to dist/ with the full Base44 plugin
+    // surface, generates sw.js, and runs the build-time contracts. The old
+    // target (build:solid → dist-solid) is the parity-check harness, not the
+    // shipped build, and pointing publish at it is what kept failing.
     "installCommand": "npm install",
-    "buildCommand": "npm run build:solid",
-    "serveCommand": "npm run dev:solid",
-    "outputDirectory": "./dist-solid"
+    "buildCommand": "npm run build",
+    "serveCommand": "npm run dev",
+    "outputDirectory": "./dist"
   }
 }

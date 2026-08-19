@@ -1,21 +1,32 @@
 # SolidJS migration — status
 
-The React app in `src/` is **live and untouched**. The Solid app is built in
-parallel under `solid/` and swaps in only when it reaches parity.
+**The cutover is complete. The Solid app is the live site.** `vite.config.js`
+now builds `solid/` to `dist/` directly (`root: path.resolve(cwd, "solid")`) —
+see that file's own header comment for how and why. `src/main.jsx`, `src/App.jsx`
+and `src/pages/` no longer exist; `src/` now holds only the framework-agnostic
+foundation (`lib/`, `api/`, `styles/`) that Solid imports from directly, plus
+whatever of the old `src/components/` tree hasn't been cleaned up yet (dead —
+nothing imports it into a live build; see "Remaining" below).
 
 ```
-vite.config.js        React  → dist/          (live site)
-vite.solid.config.js  Solid  → dist-solid/    (in progress)
+vite.config.js         Solid → dist/            (live site)
+vite.solid.config.js   Solid → dist-solid/      (parity-check harness only)
 ```
 
-Both builds share `src/lib/**` and `src/styles/**` from their original
-location. There is no fork, so the design system cannot drift between them.
+Both configs build the same `solid/` source; `vite.solid.config.js` exists
+solely so `check-solid-parity.mjs` has a stable, separate output to assert
+against without racing the real build. There is no second framework anymore —
+references below to "the React source" describe history (what was ported
+from, and why a line is shaped the way it is), not a currently-live build.
+
+Both configs share `src/lib/**` and `src/styles/**` from their original
+location. There is no fork, so the design system cannot drift.
 
 Verify with:
 
 ```bash
-npm run build            # React, must stay green (runs all four contracts)
-npm run verify:solid     # Solid: build + compile-check + parity across routes
+npm run build             # the real build — solid/ → dist/, must stay green
+npm run verify:solid      # parity harness: build + compile-check + route assertions
 ```
 
 `verify:solid` is the one to run. It chains three things that fail for
@@ -68,8 +79,12 @@ page instead. There is an explicit assertion guarding exactly that.
 | Widgets | LunchMenu, Schedule |
 | UI primitives | Button, Input, Textarea, Badge, spinner, empty state, Select |
 | Kobalte primitives | Dialog, Tabs, Popover, DropdownMenu — ported 2026-08-15, verified against `vite.solid.config.js` |
+| Custom theme colors | `applyTheme()` and `applyResolvedFont()` both call `saveThemeSnapshot()` so the next boot can replay the painted result without importing the theme catalogue (see `theme-boot.js`); `applyCustomColors()` never did. So: pick a theme (snapshot A saved) → set custom colors (painted live, but snapshot still A) → reload → `applyThemeSnapshot()` sees `themeKey`/`fontKey` still match and replays snapshot A — the pre-custom-color paint — since the check has no way to know a custom-color layer sat on top. Custom colors vanish on first paint and only come back once `reconcileThemeAfterPaint()`'s idle callback fires (up to 3s later, if it fires at all before the user looks). Fixed 2026-08-16 by having `applyCustomColors()` call `saveThemeSnapshot(null, null)` too — null/null keeps the recorded theme/font keys as-is, only refreshes the painted `style` string, matching the other two call sites' pattern. `clearCustomColors()`'s one caller already follows it with `applyTheme()`, which re-snapshots correctly, so no second gap there. |
+| Skip login when already authenticated | Two real gaps, both fixed 2026-08-16. (1) `Splash.jsx`'s `isAuthenticated` was hardcoded `false` with a stale "AuthContext has not been ported yet" comment — it has been, for a while — so Enter always sent an already-signed-in user through `/login` again. Now reads `useAuth().isAuthenticated()` for real. (2) The deeper bug: `/login` itself had no auth check at all — `TransitionedLogin` unconditionally rendered the form, so even a direct hit on `/login` (bookmark, back button, or the exact race window where Splash's own auth read is still resolving) showed the Google button to someone with a perfectly valid session. `TransitionedLogin` now mirrors `Protected`'s gating: waits on `!isLoadingAuth() && !isLoadingPublicSettings()` (via `ChunkFallback`, not `LoadingScreen` — same reasoning as the rest of that fallback split, a 2.5KB login chunk doesn't get Home's "CACHING STUFF" treatment), then `<Navigate href="/home"/>` if already authenticated. This is the fix that actually matters: it closes the race in (1) too, since even a stale `false` read on Splash just lands the user on a `/login` that immediately bounces them onward once real auth state resolves — there is no path left where an authenticated user can get stuck looking at the login form. Verified: `/login` parity still 31/31 (harness runs it unauthenticated, form still renders correctly). |
+| Splash → Home/Login is client-side, not a hard reload | Follow-up to the row above, 2026-08-16. Enter used `window.location.href = ...` — a full browser navigation. Two costs: (a) it leaves the already-running app entirely, so nothing of ours renders during the native browser transition — not `LoadingScreen`, nothing — which is what "clicking Enter doesn't send me to a loading screen" actually was; (b) the ENTIRE boot sequence pays again from zero on the other side — re-fetch `index.html`, re-parse/execute the whole JS bundle, redo theme/font application, redo the auth network round-trip that, in the overwhelmingly common case, had already resolved while the user was still reading the splash page. Switched to `@solidjs/router`'s `useNavigate()`. Same-app routing means `Protected`'s `LoadingScreen` fallback mounts instantly (no gap, no native browser transition to fall into), and none of the boot cost is paid twice. Paired with a `main.jsx` change: Splash's boot now also `preloadRoute("/home")` alongside the existing `/login` preload — previously only `/login` was warmed, on the reasoning that `/home`'s full warm-up (chunk + 15 entity reads) shouldn't fire before sign-in. That reasoning doesn't apply to `loaders["/home"]` itself, which `routes.js` already keeps deliberately chunk-only for exactly this reason (see its own comment) — no entity reads, so nothing unauthenticated can fire. Warming it means Home's JS is already cached by the time an authenticated click needs it, rather than fetched after. |
 | Dead code removal | `Dashboard/Meetings/Topics/JobWheel/Register/ForgotPassword/Team/ResetPassword` pages deleted from `src/pages/`, along with the components only they used (`topics/TopicCard`, `meetings/MeetingCalendar`, `jobs/JobCard`, `wheel/SpinWheel`). React build verified green after removal. |
 | Jobs | `JobsWidget.jsx` + `jobs/{SpinWheel,tables}.jsx` — audited 2026-08-16 against the React source. Two real gaps found and fixed: `SpinWheel` never redrew when `members` changed outside a spin (unchecking someone in Manage Students, or "Remove from wheel", left the canvas stale — React got this for free from `useCallback`'s dependency array; Solid needed an explicit `createEffect`), and the Add Job name input had lost `autoFocus`. Wired into `DiscussionWidget`'s two remaining `PendingWidget` slots (meeting mode + normal-mode compact table) — `Home.jsx` already had it as the "04" section widget directly. Both `npm run build` and the Solid build verified green after each change. |
+| History mirrors the live document, not a separate topic-card layout | 2026-08-16. `DiscussionWidget`'s normal view (what Home actually shows) is document-only now — no topic cards; those only ever existed inside live Meeting Mode's editing flow. `History.jsx` had not caught up: it rendered a week's saved minutes document AND, below it, a second "Discussion Topics" section as individual cards (priority dot, checkbox, title, description) for any week that had raw `DiscussionTopic` rows but no saved `__meeting_notes__` record — i.e. every week nobody had happened to open live since the document format shipped. Fixed by using `topicsToMinutesHtml()` (already written for exactly this — it is what `MeetingMinutes.jsx` seeds a week's editor with the first time it opens) to synthesise the same document on the fly for a week with no saved record, instead of a second card-based rendering path. Every week in History now renders through the one `.docs-editor-content.theme-rich-text` block, whether the HTML came from a saved record or was generated just now — reads exactly as it would if someone opened that week live. `isBlankDocument()` guards the synthesised string the same way it already guarded the stored one. Verified: `check:notes` (36/36, unaffected — `minutes-format.js` itself wasn't touched, only how `History.jsx` calls it) and full `check:solid:parity` all green. |
 
 ## Remaining
 

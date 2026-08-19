@@ -1,0 +1,136 @@
+/* ──────────────────────────────────────────────────────────────
+   Summer style's splash — the maroon field with drifting motes.
+
+   Imported by the component, not the entry, so it travels in the Splash
+   chunk and costs the rest of the app nothing.
+
+   WHY THIS IS CSS AND NOT JS
+   The original drove 216 elements from framer-motion with
+   `repeat: Infinity`, animating opacity, scale, x and y per element per
+   frame, and gave every one of them a blurred `box-shadow`. That is 216
+   JS-driven animations that never settle plus 216 blur passes, which is
+   why it crawled on a phone.
+
+   Everything here animates `transform` and `opacity` only — the two
+   properties the compositor can handle without repainting — from one
+   shared keyframe, with per-dot variation carried in custom properties.
+   The main thread does no work per frame at all.
+
+   The glow is a radial-gradient painted INTO the dot rather than a
+   box-shadow around it. A box-shadow blur is a filter pass per element
+   per paint; a gradient is part of the element's own texture, uploaded
+   once and then only transformed.
+   ────────────────────────────────────────────────────────────── */
+
+.summer-splash {
+  background: linear-gradient(150deg, #951e3a, #6e1729);
+}
+
+.summer-splash-dot {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  opacity: 0;
+  /* The core reads as a solid point and fades to nothing well inside the
+     box, so no edge is visible and no blur is needed to soften it. */
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.5) 38%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  animation-name: summer-splash-drift;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+.summer-splash-dot.is-gold {
+  background: radial-gradient(
+    circle,
+    #eace54 0%,
+    rgba(234, 206, 84, 0.55) 38%,
+    rgba(234, 206, 84, 0) 70%
+  );
+}
+
+@keyframes summer-splash-drift {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0);
+  }
+  35% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--dx, 0), var(--dy, -60px), 0) scale(0.5);
+  }
+}
+
+/* The centre glow. One element, one slow pulse. */
+.summer-splash-glow {
+  position: absolute;
+  width: min(480px, 90vw);
+  height: min(480px, 90vw);
+  border-radius: 9999px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(234, 206, 84, 0.18) 0%, transparent 65%);
+  animation: summer-splash-pulse 3s ease-in-out infinite;
+}
+
+@keyframes summer-splash-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 0.9; }
+}
+
+/* The Start button's halo. The original animated `box-shadow` itself,
+   which repaints the button every frame; this pulses a pseudo-element's
+   opacity instead, so the button's own texture is never touched. */
+.summer-splash-cta {
+  position: relative;
+  isolation: isolate;
+}
+
+.summer-splash-cta::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(circle, rgba(234, 206, 84, 0.55) 0%, transparent 70%);
+  animation: summer-splash-halo 2s ease-in-out infinite;
+}
+
+@keyframes summer-splash-halo {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.75; }
+}
+
+/*
+ * Tiers.
+ *
+ * The component already ships fewer dots to a coarse pointer or a
+ * low-power device; these are the belt-and-braces for the cases it cannot
+ * see from JS, and they cost nothing when they do not apply.
+ */
+html.performance-lite .summer-splash-dot:nth-child(n + 25) { display: none; }
+html.performance-lite .summer-splash-glow,
+html.performance-lite .summer-splash-cta::after { animation: none; }
+
+html.animations-disabled .summer-splash-dot,
+html.animations-disabled .summer-splash-glow,
+html.animations-disabled .summer-splash-cta::after {
+  animation: none;
+}
+html.animations-disabled .summer-splash-dot { opacity: 0.45; }
+
+@media (prefers-reduced-motion: reduce) {
+  .summer-splash-dot {
+    animation: none;
+    opacity: 0.45;
+    transform: none;
+  }
+  .summer-splash-glow,
+  .summer-splash-cta::after { animation: none; }
+}
