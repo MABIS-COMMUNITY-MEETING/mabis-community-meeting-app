@@ -431,12 +431,32 @@
   .font-display, .font-heading { letter-spacing: -0.04em; }
   ::selection { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
 
-  /* thin technical scrollbar */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: hsl(var(--foreground) / 0.18); }
-  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--foreground) / 0.32); }
-  * { scrollbar-width: thin; scrollbar-color: hsl(var(--foreground) / 0.2) transparent; }
+  /* Thin technical scrollbar — ONLY where the OS draws a classic one.
+
+     Styling ::-webkit-scrollbar opts a scroller out of the platform's overlay
+     scrollbars and into the legacy always-visible kind. On Windows and Linux
+     that is invisible, because those already are classic. On macOS it replaces
+     a bar that hides itself, fades, widens on hover and takes no layout width
+     with one that does none of those things — the site scrolled fine on Windows
+     and Linux and felt broken on a Mac for exactly this reason.
+
+     lib/scrollbar-mode.js measures whether a scrollbar consumes layout width
+     and sets .classic-scrollbars before first paint. It is a measurement, not a
+     platform check: Windows 11 and GNOME can be overlay, and a Mac set to
+     "Show scroll bars: Always" is classic.
+
+     Both selectors are needed. The document's own scrollbar belongs to <html>,
+     which the descendant form cannot reach. */
+  html.classic-scrollbars::-webkit-scrollbar,
+  html.classic-scrollbars ::-webkit-scrollbar { width: 6px; height: 6px; }
+  html.classic-scrollbars::-webkit-scrollbar-track,
+  html.classic-scrollbars ::-webkit-scrollbar-track { background: transparent; }
+  html.classic-scrollbars::-webkit-scrollbar-thumb,
+  html.classic-scrollbars ::-webkit-scrollbar-thumb { background: hsl(var(--foreground) / 0.18); }
+  html.classic-scrollbars::-webkit-scrollbar-thumb:hover,
+  html.classic-scrollbars ::-webkit-scrollbar-thumb:hover { background: hsl(var(--foreground) / 0.32); }
+  html.classic-scrollbars,
+  html.classic-scrollbars * { scrollbar-width: thin; scrollbar-color: hsl(var(--foreground) / 0.2) transparent; }
   :focus-visible { outline: 1px solid hsl(var(--primary)); outline-offset: 3px; }
 
   /* hide native cursor only on fine pointers w/ motion allowed — keep caret for text fields */
