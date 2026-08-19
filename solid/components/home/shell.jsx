@@ -1,16 +1,42 @@
 import { createSignal, onMount, For, Show } from "solid-js";
 import { JapaneseText } from "~/components/primitives";
-import { createReveal } from "~/lib/perf";
-
-/*
- * The boss layout's editorial furniture: masthead, section index and section
- * frame. All of it is boss-only, which is why LazySection — which BOTH layouts
- * mount their widgets through — now lives in ./LazySection.jsx instead. Left
- * here it would have dragged this whole module into the default layout's
- * critical path to reach forty lines.
- */
+import { createVisibility, createReveal } from "~/lib/perf";
 
 const EASE_CSS = "cubic-bezier(0.16, 1, 0.3, 1)";
+
+/* ── LazySection ───────────────────────────────────────────────────────────
+ * Same contract as the React version — mount on approach, never unmount — but
+ * with two low-level differences:
+ *
+ *   · it uses the ONE shared IntersectionObserver (lib/perf.js) instead of
+ *     allocating a new observer per section;
+ *   · the placeholder carries contain-intrinsic-size so the reserved space is
+ *     a real layout contract rather than a min-height guess, which keeps the
+ *     scrollbar stable when the real content swaps in.
+ */
+export function LazySection(props) {
+  const [ref, visible] = createVisibility();
+
+  return (
+    <div ref={ref}>
+      <Show
+        when={visible()}
+        fallback={
+          <div
+            class="lazy-section-placeholder"
+            style={{
+              "--lazy-min-height": `${props.minHeight ?? 480}px`,
+              "contain-intrinsic-size": `auto ${props.minHeight ?? 480}px`,
+            }}
+            aria-hidden
+          />
+        }
+      >
+        <div class="widget-rise">{props.children}</div>
+      </Show>
+    </div>
+  );
+}
 
 /* ── EditorialSection ──────────────────────────────────────────────────────
  * 1:1 with src/components/home/EditorialSection.jsx, plus the single biggest

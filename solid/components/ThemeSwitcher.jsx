@@ -1,13 +1,11 @@
 import { createSignal, createMemo, onMount, onCleanup, createEffect, Show, For } from "solid-js";
-import { Palette, Check, RotateCcw, Save, Trash2, Star, Search } from "lucide-solid";
+import { Palette, Check, RotateCcw, Save, Trash2, Star } from "lucide-solid";
 import {
   THEMES, SELECTABLE_THEME_KEYS, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
 } from "@/lib/themes";
 import { JapaneseText } from "~/components/primitives";
-import { useAuth } from "~/lib/AuthContext";
-import { canUseCustomColors } from "@/lib/custom-color-access";
 
 const INITIAL_THEME_LIMIT = 20;
 const THEME_BATCH_SIZE = 20;
@@ -35,17 +33,21 @@ function paletteStripe(theme) {
  * THEMES still carries the retired catalogue for the pride ambience, the
  * Frutiger Aero treatment and the contrast fixtures. Enumerating it here is
  * what used to put ~140 themes in the picker, so the allow-list is the only
- * thing this file is permitted to read.
+ * thing this file may read.
  */
 const THEME_ENTRIES = SELECTABLE_THEME_KEYS
   .map((key) => [key, THEMES[key]])
   .filter(([, theme]) => theme);
-const SIMPLE_THEME_ENTRIES = THEME_ENTRIES;
 
 /* With one theme there is nothing to browse, search or page through, so the
-   whole catalogue affordance stays out of the DOM rather than rendering a
-   "Browse all themes · 1" button that leads to the same single swatch. */
+   catalogue affordance stays out of the DOM entirely rather than rendering a
+   "Browse all themes · 1" button leading to the same single swatch. */
 const HAS_THEME_CATALOGUE = THEME_ENTRIES.length > 1;
+
+const SIMPLE_THEME_KEYS = SELECTABLE_THEME_KEYS;
+const SIMPLE_THEME_ENTRIES = SIMPLE_THEME_KEYS
+  .map((key) => [key, THEMES[key]])
+  .filter(([, theme]) => theme);
 
 /*
  * ThemeSwitcher — Solid port of src/components/ThemeSwitcher.jsx.
@@ -98,29 +100,14 @@ export default function ThemeSwitcher(props) {
   const [customPrimary, setCustomPrimary] = createSignal("#951E3A");
   const [customSecondary, setCustomSecondary] = createSignal("#EACE54");
   const [savedThemes, setSavedThemes] = createSignal([]);
-  const auth = useAuth();
   const [themeName, setThemeName] = createSignal("");
   const [showCustom, setShowCustom] = createSignal(false);
   const [themeLimit, setThemeLimit] = createSignal(INITIAL_THEME_LIMIT);
   const [showAllThemes, setShowAllThemes] = createSignal(false);
-  const [themeSearch, setThemeSearch] = createSignal("");
-
-  /*
-   * The catalogue is 140 themes revealed twenty at a time, so anything added
-   * near the end of THEMES was six "Show more" clicks from being seen. Same
-   * filter the font picker already uses, and it runs before the batching so a
-   * search finds a match wherever it sits in the list.
-   */
-  const matchingThemes = createMemo(() => {
-    const query = themeSearch().trim().toLowerCase();
-    if (!query) return THEME_ENTRIES;
-    return THEME_ENTRIES.filter(([key, theme]) =>
-      theme.name.toLowerCase().includes(query) || key.toLowerCase().includes(query));
-  });
 
   const visibleThemes = createMemo(() =>
-    (showAllThemes() ? matchingThemes().slice(0, themeLimit()) : SIMPLE_THEME_ENTRIES));
-  const hasMoreThemes = () => showAllThemes() && themeLimit() < matchingThemes().length;
+    showAllThemes() ? THEME_ENTRIES.slice(0, themeLimit()) : SIMPLE_THEME_ENTRIES);
+  const hasMoreThemes = () => showAllThemes() && themeLimit() < THEME_ENTRIES.length;
 
   const loadNextThemeBatch = () =>
     setThemeLimit((limit) => Math.min(limit + THEME_BATCH_SIZE, THEME_ENTRIES.length));
@@ -193,8 +180,6 @@ export default function ThemeSwitcher(props) {
 
   return (
     <div class="relative">
-      {/* triggerClass: Home's default layout passes the original site's rounded
-          control. Everything else keeps the editorial square, label and all. */}
       <button
         type="button"
         onClick={() => {
@@ -203,6 +188,10 @@ export default function ThemeSwitcher(props) {
         }}
         aria-expanded={open()}
         aria-haspopup="dialog"
+        /* The trigger is the only part that changes shape between the two
+           styles — square and bordered in the editorial bar, rounded and
+           shadowed on the original white one. The panel below is identical in
+           both, so only this class is a prop. */
         class={props.triggerClass
           || "flex h-9 items-center justify-center gap-1.5 border border-foreground/30 bg-background px-2.5 text-foreground transition-colors hover:bg-foreground hover:text-background"}
         title="Change colors"
@@ -234,20 +223,6 @@ export default function ThemeSwitcher(props) {
             </p>
           </div>
 
-          <Show when={showAllThemes()}>
-            <div class="relative mb-3">
-              <Search class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="search"
-                value={themeSearch()}
-                onInput={(e) => { setThemeSearch(e.currentTarget.value); setThemeLimit(INITIAL_THEME_LIMIT); }}
-                placeholder="Search themes…"
-                aria-label="Search themes"
-                class="h-9 w-full rounded-lg border border-border bg-background pl-8 pr-2.5 text-xs text-foreground outline-none focus:border-primary"
-              />
-            </div>
-          </Show>
-
           <div class="grid grid-cols-2 gap-2 mb-4">
             <For each={visibleThemes()}>
               {(entry) => (
@@ -274,14 +249,9 @@ export default function ThemeSwitcher(props) {
             }
           >
             <div ref={loadMoreEl} class="mb-4 space-y-2">
-              <Show when={visibleThemes().length === 0}>
-                <p class="px-1 py-2 text-xs text-muted-foreground">
-                  No theme matches “{themeSearch()}”.
-                </p>
-              </Show>
               <button
                 type="button"
-                onClick={() => { setShowAllThemes(false); setThemeSearch(""); }}
+                onClick={() => setShowAllThemes(false)}
                 class="min-h-10 w-full border border-border px-3 text-xs font-bold text-foreground hover:bg-muted"
               >
                 Back to easy choices
@@ -292,21 +262,14 @@ export default function ThemeSwitcher(props) {
                   onClick={loadNextThemeBatch}
                   class="min-h-10 w-full border border-border px-3 text-xs font-bold text-foreground hover:bg-muted"
                 >
-                  Show more themes ({visibleThemes().length}/{matchingThemes().length})
+                  Show more themes ({visibleThemes().length}/{THEME_ENTRIES.length})
                 </button>
               </Show>
             </div>
           </Show>
           </Show>
 
-          {/*
-            * Custom colours and the palettes saved from them belong to one
-            * account (see lib/custom-color-access.js). Everyone else keeps the
-            * full vetted theme catalogue above; only the make-your-own surface
-            * is withheld, which is also why this gate sits here and not around
-            * the whole panel.
-            */}
-          <Show when={canUseCustomColors(auth.user()) && savedThemes().length > 0}>
+          <Show when={savedThemes().length > 0}>
             <div class="border-t border-border pt-3 mb-4">
               <div class="flex items-center gap-1.5 mb-2">
                 <Star class="w-3 h-3 text-amber-500" />
@@ -337,7 +300,6 @@ export default function ThemeSwitcher(props) {
             </div>
           </Show>
 
-          <Show when={canUseCustomColors(auth.user())}>
           <div class="border-t border-border pt-3">
             <div
               onClick={() => setShowCustom((s) => !s)}
@@ -407,7 +369,6 @@ export default function ThemeSwitcher(props) {
               </div>
             </Show>
           </div>
-          </Show>
         </div>
       </Show>
     </div>

@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
 import base44 from "@base44/vite-plugin";
 import path from "node:path";
-import { lazyRealtimeAliases } from "./scripts/lazy-realtime-aliases.mjs";
 
 /*
  * Parallel Solid build.
@@ -64,7 +63,6 @@ export default defineConfig({
     alias: {
       "@": path.resolve(process.cwd(), "src"),
       "~": path.resolve(process.cwd(), "solid"),
-      ...lazyRealtimeAliases(),
     },
   },
   build: {
