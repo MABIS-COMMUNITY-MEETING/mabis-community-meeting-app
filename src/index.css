@@ -20,28 +20,10 @@
  *
  * check-tailwind-layer.mjs fails the build if the utility layer goes missing
  * again, whatever the cause.
- *
- * Tailwind v4 still reads the v3 JS config through @config, which is what
- * holds the custom tokens (colours, role hues, fonts) and the
- * tailwindcss-animate plugin without a rewrite to @theme.
- *
- * The borderRadius tokens are the one exception. v4's theme resolver
- * statically bakes `theme.extend.borderRadius.lg: 'var(--radius)'` from
- * @config into a fixed px value at build time (e.g. `border-radius:16px`)
- * instead of leaving it as a live `var(--radius)` reference — it can't tell
- * that value is meant to stay dynamic. That silently breaks every layout
- * that changes --radius per theme (see "the default layout redefines
- * --radius" below and check-solid-parity.mjs's radius-token check, which
- * exists specifically to catch this class of bug). Re-declaring just these
- * three as native v4 theme keys keeps them as real custom properties.
  */
-@import "tailwindcss";
-@config "../tailwind.config.js";
-@theme {
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) + 2px);
-  --radius-sm: calc(var(--radius) + 4px);
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /*
  * OpenMoji, as THE emoji font.
