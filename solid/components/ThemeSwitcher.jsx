@@ -7,7 +7,7 @@ import {
 } from "@/lib/themes";
 import { JapaneseText } from "~/components/primitives";
 import { useAuth } from "~/lib/AuthContext";
-import { canUseCustomColors } from "@/lib/custom-color-access";
+import { canUseCustomColors, isCustomColorsUnlockedLocally, CUSTOM_COLORS_UNLOCKED_EVENT } from "@/lib/custom-color-access";
 
 const INITIAL_THEME_LIMIT = 20;
 const THEME_BATCH_SIZE = 20;
@@ -99,6 +99,13 @@ export default function ThemeSwitcher(props) {
   const [customSecondary, setCustomSecondary] = createSignal("#EACE54");
   const [savedThemes, setSavedThemes] = createSignal([]);
   const auth = useAuth();
+  // canUseCustomColors(user) itself reads localStorage synchronously, but a
+  // localStorage write elsewhere (the colophon-logo unlock in boss.jsx) is
+  // not reactive on its own — without this signal, a ThemeSwitcher already
+  // mounted and open would not notice the unlock until it happened to
+  // re-render for an unrelated reason.
+  const [customColorsUnlocked, setCustomColorsUnlocked] = createSignal(isCustomColorsUnlockedLocally());
+  const hasCustomColorAccess = () => canUseCustomColors(auth.user()) || customColorsUnlocked();
   const [themeName, setThemeName] = createSignal("");
   const [showCustom, setShowCustom] = createSignal(false);
   const [themeLimit, setThemeLimit] = createSignal(INITIAL_THEME_LIMIT);
@@ -133,6 +140,10 @@ export default function ThemeSwitcher(props) {
     };
     window.addEventListener("openThemeSwitcher", openFromSettings);
     onCleanup(() => window.removeEventListener("openThemeSwitcher", openFromSettings));
+
+    const onUnlock = () => setCustomColorsUnlocked(true);
+    window.addEventListener(CUSTOM_COLORS_UNLOCKED_EVENT, onUnlock);
+    onCleanup(() => window.removeEventListener(CUSTOM_COLORS_UNLOCKED_EVENT, onUnlock));
 
     setCurrentTheme(getStoredTheme());
     const custom = getStoredCustomColors();
@@ -306,7 +317,7 @@ export default function ThemeSwitcher(props) {
             * is withheld, which is also why this gate sits here and not around
             * the whole panel.
             */}
-          <Show when={canUseCustomColors(auth.user()) && savedThemes().length > 0}>
+          <Show when={hasCustomColorAccess() && savedThemes().length > 0}>
             <div class="border-t border-border pt-3 mb-4">
               <div class="flex items-center gap-1.5 mb-2">
                 <Star class="w-3 h-3 text-amber-500" />
@@ -337,7 +348,7 @@ export default function ThemeSwitcher(props) {
             </div>
           </Show>
 
-          <Show when={canUseCustomColors(auth.user())}>
+          <Show when={hasCustomColorAccess()}>
           <div class="border-t border-border pt-3">
             <div
               onClick={() => setShowCustom((s) => !s)}
