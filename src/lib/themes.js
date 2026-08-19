@@ -595,7 +595,7 @@ function applyThemeBodyClass(bodyClass) {
   }
 }
 
-export function applyTheme(themeKey) {
+export function applyTheme(themeKey, { persist = true } = {}) {
   const resolvedThemeKey = THEMES[themeKey] ? themeKey : "default";
   const theme = THEMES[resolvedThemeKey];
   const root = document.documentElement;
@@ -645,10 +645,12 @@ export function applyTheme(themeKey) {
   applyPalette(theme.swatches, !!theme.pride || !!theme.exact);
   applyCharacterTokens(theme.character);
   applyThemeBodyClass(theme.bodyClass);
-  localStorage.setItem("mabis-theme", resolvedThemeKey);
-  // Cache the painted result so the next boot can replay it without importing
-  // this module and its palettes. See lib/theme-boot.js.
-  saveThemeSnapshot(resolvedThemeKey, null);
+  if (persist) {
+    localStorage.setItem("mabis-theme", resolvedThemeKey);
+    // Cache the painted result so the next boot can replay it without importing
+    // this module and its palettes. See lib/theme-boot.js.
+    saveThemeSnapshot(resolvedThemeKey, null);
+  }
   window.dispatchEvent(new Event("themeChanged"));
 }
 
@@ -770,8 +772,14 @@ export function clearCustomColors({ notify = true } = {}) {
  * untangled.
  */
 export const SELECTABLE_THEME_KEYS = ["default"];
+export const SPECIAL_THEME_EMAIL = "boss@montessoribkk.com";
 
-export const isSelectableTheme = (key) => SELECTABLE_THEME_KEYS.includes(key);
+export function getSelectableThemeKeys(user) {
+  const email = String(user?.email || "").trim().toLowerCase();
+  return email === SPECIAL_THEME_EMAIL ? Object.keys(THEMES) : SELECTABLE_THEME_KEYS;
+}
+
+export const isSelectableTheme = (key, user) => getSelectableThemeKeys(user).includes(key);
 
 /**
  * The stored theme, coerced to one that is actually on offer.
@@ -781,9 +789,9 @@ export const isSelectableTheme = (key) => SELECTABLE_THEME_KEYS.includes(key);
  * withdrawn kept it forever, and no amount of resetting their account record
  * would move them. Coercing on read is what actually retires a theme.
  */
-export function getStoredTheme() {
+export function getStoredTheme(user) {
   const stored = localStorage.getItem("mabis-theme");
-  return isSelectableTheme(stored) ? stored : "default";
+  return isSelectableTheme(stored, user) ? stored : "default";
 }
 
 export function getStoredCustomColors() {

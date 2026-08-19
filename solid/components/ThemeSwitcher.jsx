@@ -1,7 +1,7 @@
 import { createSignal, createMemo, onMount, onCleanup, createEffect, Show, For } from "solid-js";
 import { Palette, Check, RotateCcw, Save, Trash2, Star, Search } from "lucide-solid";
 import {
-  THEMES, SELECTABLE_THEME_KEYS, applyTheme, applyCustomColors, clearCustomColors,
+  THEMES, getSelectableThemeKeys, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
 } from "@/lib/themes";
@@ -37,15 +37,7 @@ function paletteStripe(theme) {
  * what used to put ~140 themes in the picker, so the allow-list is the only
  * thing this file is permitted to read.
  */
-const THEME_ENTRIES = SELECTABLE_THEME_KEYS
-  .map((key) => [key, THEMES[key]])
-  .filter(([, theme]) => theme);
-const SIMPLE_THEME_ENTRIES = THEME_ENTRIES;
-
-/* With one theme there is nothing to browse, search or page through, so the
-   whole catalogue affordance stays out of the DOM rather than rendering a
-   "Browse all themes · 1" button that leads to the same single swatch. */
-const HAS_THEME_CATALOGUE = THEME_ENTRIES.length > 1;
+const EASY_THEME_LIMIT = 8;
 
 /*
  * ThemeSwitcher — Solid port of src/components/ThemeSwitcher.jsx.
@@ -111,6 +103,11 @@ export default function ThemeSwitcher(props) {
   const [themeLimit, setThemeLimit] = createSignal(INITIAL_THEME_LIMIT);
   const [showAllThemes, setShowAllThemes] = createSignal(false);
   const [themeSearch, setThemeSearch] = createSignal("");
+  const themeEntries = createMemo(() => getSelectableThemeKeys(auth.user())
+    .map((key) => [key, THEMES[key]])
+    .filter(([, theme]) => theme));
+  const simpleThemeEntries = createMemo(() => themeEntries().slice(0, EASY_THEME_LIMIT));
+  const hasThemeCatalogue = () => themeEntries().length > 1;
 
   /*
    * The catalogue is 140 themes revealed twenty at a time, so anything added
@@ -120,17 +117,17 @@ export default function ThemeSwitcher(props) {
    */
   const matchingThemes = createMemo(() => {
     const query = themeSearch().trim().toLowerCase();
-    if (!query) return THEME_ENTRIES;
-    return THEME_ENTRIES.filter(([key, theme]) =>
+    if (!query) return themeEntries();
+    return themeEntries().filter(([key, theme]) =>
       theme.name.toLowerCase().includes(query) || key.toLowerCase().includes(query));
   });
 
   const visibleThemes = createMemo(() =>
-    (showAllThemes() ? matchingThemes().slice(0, themeLimit()) : SIMPLE_THEME_ENTRIES));
+    (showAllThemes() ? matchingThemes().slice(0, themeLimit()) : simpleThemeEntries()));
   const hasMoreThemes = () => showAllThemes() && themeLimit() < matchingThemes().length;
 
   const loadNextThemeBatch = () =>
-    setThemeLimit((limit) => Math.min(limit + THEME_BATCH_SIZE, THEME_ENTRIES.length));
+    setThemeLimit((limit) => Math.min(limit + THEME_BATCH_SIZE, themeEntries().length));
 
   onMount(() => {
     const openFromSettings = () => {
@@ -145,7 +142,9 @@ export default function ThemeSwitcher(props) {
     window.addEventListener(CUSTOM_COLORS_UNLOCKED_EVENT, onUnlock);
     onCleanup(() => window.removeEventListener(CUSTOM_COLORS_UNLOCKED_EVENT, onUnlock));
 
-    setCurrentTheme(getStoredTheme());
+    const storedTheme = getStoredTheme(auth.user());
+    setCurrentTheme(storedTheme);
+    if (storedTheme !== "default") applyTheme(storedTheme, { persist: false });
     const custom = getStoredCustomColors();
     if (custom) {
       setCustomActive(true);
@@ -271,7 +270,7 @@ export default function ThemeSwitcher(props) {
             </For>
           </div>
 
-          <Show when={HAS_THEME_CATALOGUE}>
+          <Show when={hasThemeCatalogue()}>
           <Show
             when={showAllThemes()}
             fallback={
@@ -280,7 +279,7 @@ export default function ThemeSwitcher(props) {
                 onClick={() => { setShowAllThemes(true); setThemeLimit(INITIAL_THEME_LIMIT); }}
                 class="mb-4 min-h-11 w-full border border-border px-3 text-sm font-bold text-foreground hover:bg-muted"
               >
-                Browse all themes · {THEME_ENTRIES.length}
+                Browse all themes · {themeEntries().length}
               </button>
             }
           >

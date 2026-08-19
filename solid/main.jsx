@@ -85,7 +85,7 @@ async function bootstrap() {
     // First visit, cleared storage, or a changed preference: no usable
     // snapshot, so pay the original cost. Same code path as before.
     const themes = await import("@/lib/themes");
-    themes.applyTheme(themes.getStoredTheme());
+    themes.applyTheme(themes.getStoredTheme(), { persist: false });
     const customColors = themes.getStoredCustomColors();
     if (customColors) themes.applyCustomColors(customColors.primary, customColors.secondary);
     await Promise.race([
@@ -249,7 +249,7 @@ function idlePreloadRemainingRoutes() {
 function reconcileThemeAfterPaint() {
   const run = () => {
     import("@/lib/themes").then((themes) => {
-      themes.applyTheme(themes.getStoredTheme());
+      themes.applyTheme(themes.getStoredTheme(), { persist: false });
       const customColors = themes.getStoredCustomColors();
       if (customColors) themes.applyCustomColors(customColors.primary, customColors.secondary);
       themes.applyFont(themes.getStoredFont());
