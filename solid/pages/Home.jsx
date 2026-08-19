@@ -364,8 +364,21 @@ export default function Home() {
   );
 
   return (
+    /*
+     * overflow-x-CLIP, not overflow-x-hidden.
+     *
+     * `overflow-x: hidden` on an in-flow element forces the computed
+     * `overflow-y` from `visible` to `auto` (CSS Overflow 3), so this wrapper
+     * silently became a scroll container holding the entire page. Wherever
+     * the browser resolved its height at the viewport rather than the content
+     * — overlay-scrollbar macOS in particular — the document had nothing left
+     * to scroll and the wheel/trackpad did nothing at all.
+     *
+     * `clip` gives the same horizontal-bleed containment with no scroll
+     * container and no overflow-y coercion, so the page scrolls natively.
+     */
     <div
-      class="editorial-home min-h-screen bg-background overflow-x-hidden"
+      class="editorial-home min-h-screen bg-background overflow-x-clip"
       classList={{ "summer-home": !isBoss() }}
     >
       <Show when={!isBoss()}>
