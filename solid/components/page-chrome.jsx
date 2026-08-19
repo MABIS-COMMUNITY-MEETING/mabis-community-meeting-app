@@ -131,16 +131,31 @@ export function SummerPageNav(props) {
 }
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
-export const APP_VERSION = "v6.9.9";
+export const APP_VERSION = "v67";
 
-export function PageFooter() {
+export function PageFooter(props) {
   return (
     <>
       <div class="mt-10 border-t border-foreground/15 pt-8">
         <div class="flex flex-col items-center gap-5 text-center">
           <div class="relative flex h-16 w-16 items-center justify-center border border-foreground/20 bg-card overflow-hidden">
             <Plus class="absolute -top-1 -left-1 h-3 w-3 text-foreground/30" />
-            <img src={MABIS_LOGO} alt="MABIS" class="h-11 w-11 object-contain" />
+            {/* onLogoClick: opt-in per caller (see boss.jsx). Every other
+                PageFooter — History, ArchivePage — passes nothing, so this
+                stays a plain, non-interactive image for them, unchanged. */}
+            <Show
+              when={props.onLogoClick}
+              fallback={<img src={MABIS_LOGO} alt="MABIS" class="h-11 w-11 object-contain" />}
+            >
+              <button
+                type="button"
+                onClick={props.onLogoClick}
+                class="h-11 w-11 cursor-default appearance-none border-0 bg-transparent p-0"
+                aria-label="MABIS"
+              >
+                <img src={MABIS_LOGO} alt="" class="h-11 w-11 object-contain" />
+              </button>
+            </Show>
           </div>
           <div class="tech-label text-muted-foreground"> COLOPHON</div>
           <JapaneseText

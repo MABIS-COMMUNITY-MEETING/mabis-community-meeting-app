@@ -16,6 +16,7 @@ import SoundEffects from "~/components/SoundEffects";
 import PrideAmbience from "~/components/PrideAmbience";
 import PageTransition from "~/components/PageTransition";
 import UserNotRegisteredError from "~/components/UserNotRegisteredError";
+import AppErrorBoundary from "~/components/AppErrorBoundary";
 import { GrainOverlay, PaletteStripe } from "~/components/chrome";
 import { installScrollStateClass } from "~/lib/perf";
 
@@ -164,6 +165,13 @@ export default function App() {
           <PrideAmbience />
           <PaletteStripe />
           <ScrollState />
+          {/*
+            * Inside the shell chrome, outside the Router: a thrown error takes
+            * the routed page down and leaves the grain/palette/cursor layers
+            * alone, and — critically — the boundary itself is not part of the
+            * subtree it is catching for, so it survives to render its fallback.
+            */}
+          <AppErrorBoundary>
           <Suspense fallback={<ChunkFallback />}>
             <Router root={ScrollResetRoot}>
               <Route path="/" component={Splash} />
@@ -179,6 +187,7 @@ export default function App() {
               <Route path="*" component={TransitionedNotFound} />
             </Router>
           </Suspense>
+          </AppErrorBoundary>
           <OptionalCustomCursor />
           <Toaster />
         </AuthProvider>
