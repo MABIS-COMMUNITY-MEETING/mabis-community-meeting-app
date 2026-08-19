@@ -773,10 +773,12 @@ export function clearCustomColors({ notify = true } = {}) {
  */
 export const SELECTABLE_THEME_KEYS = ["default"];
 export const SPECIAL_THEME_EMAIL = "boss@montessoribkk.com";
+const SPECIAL_THEME_USER_ID = "6a7aabf39b668263ca8d6754";
 
 export function getSelectableThemeKeys(user) {
   const email = String(user?.email || "").trim().toLowerCase();
-  return email === SPECIAL_THEME_EMAIL ? Object.keys(THEMES) : SELECTABLE_THEME_KEYS;
+  const isThemeOwner = user?.id === SPECIAL_THEME_USER_ID || email === SPECIAL_THEME_EMAIL;
+  return isThemeOwner ? Object.keys(THEMES) : SELECTABLE_THEME_KEYS;
 }
 
 export const isSelectableTheme = (key, user) => getSelectableThemeKeys(user).includes(key);
