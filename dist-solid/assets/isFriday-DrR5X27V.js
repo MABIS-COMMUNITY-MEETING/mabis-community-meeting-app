@@ -1,0 +1,1 @@
+import{c as e}from"./format-BYnr62Nj.js";function t(t,n){return e(t,n?.in).getDay()}function n(t,n){return e(t,n?.in).getDay()===5}export{t as n,n as t};

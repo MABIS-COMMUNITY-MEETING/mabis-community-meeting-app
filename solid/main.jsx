@@ -1,16 +1,33 @@
 import { render } from "solid-js/web";
 import App from "~/App.jsx";
 import "@/index.css";
-import "@/styles/glass.css";
-import "@/styles/editorial-home.css";
 import "@/styles/summer-home.css";
 import "~/solid-motion.css";
+/*
+ * Only the stylesheets the DEFAULT layout actually paints with are here.
+ *
+ * glass.css and editorial-home.css are both boss-only — glass.css owns the
+ * `.lg-*` surfaces, and Glass is rendered only by SiteHeader, which only
+ * boss.jsx imports; every rule in editorial-home.css is gated on
+ * `html.home-layout-boss`. The boss JS has been code-split since the port,
+ * but both stylesheets were still linked from the entry HTML, so every
+ * visitor on the default layout downloaded and parsed 25.4 KiB of source that
+ * could not match a single element on their page.
+ *
+ * They now travel with the chunk that uses them: glass.css from Glass.jsx,
+ * editorial-home.css from boss.jsx. Vite's preload helper waits for a chunk
+ * stylesheet's load event before resolving the dynamic import, so the boss
+ * layout still paints fully styled on its first frame and nothing flashes.
+ *
+ * Do not move these back here to "keep the imports together". check-css-split.mjs
+ * fails the build if the glass rules reappear in the render-blocking sheet.
+ */
 import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
-import { applyHomeLayoutPreference } from "@/lib/layout-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
-import { startPerfMonitor } from "~/lib/perf-monitor";
+import { applyHomeLayoutPreference, syncHomeLayoutCache } from "@/lib/layout-preference";
+import { applyScrollbarMode } from "@/lib/scrollbar-mode";
 import { preloadRoute } from "~/lib/routes";
 
 /*
@@ -47,18 +64,26 @@ async function bootstrap() {
   // still warms every OTHER route, just later, since only this one is on the
   // critical path for first paint.
   preloadRoute(window.location.pathname);
-  // The splash has exactly one destination. Warming it here means the button
-  // press is a render, not a download.
-  if (window.location.pathname === "/") preloadRoute("/login");
+  // The splash has exactly two possible destinations, and until auth
+  // resolves there is no way to know which — so warm both. loaders["/home"]
+  // is deliberately chunk-only (see routes.js), no entity reads, so this
+  // cannot fire an unauthenticated data request; it only means Splash's
+  // now-client-side Enter navigation (see pages/Splash.jsx) has Home's JS
+  // already in cache instead of fetching it after the click.
+  if (window.location.pathname === "/") {
+    preloadRoute("/login");
+    preloadRoute("/home");
+  }
 
   applyAnimationPreference();
   applyJapaneseTextPreference();
-  /* Puts home-layout-simple / home-layout-boss on <html> BEFORE first paint,
-     so editorial-home.css (which is gated on the boss class) either matches or
-     does not from the very first frame. Doing this after render would flash the
-     wrong style. */
-  applyHomeLayoutPreference();
   applySectionDescriptionsPreference();
+  applyHomeLayoutPreference();
+  /* Before first paint with the rest of them: the custom scrollbar must not
+     render once and then swap. Costs one forced layout of a detached 100px
+     box, and decides whether this machine gets the styled scrollbar at all —
+     see lib/scrollbar-mode.js. */
+  applyScrollbarMode();
 
   const replayed = applyThemeSnapshot();
 
@@ -78,9 +103,17 @@ async function bootstrap() {
   document.documentElement.classList.add("ui-font-ready");
   render(() => <App />, document.getElementById("root"));
 
+  /*
+   * The inlined boot splash has done its job. It already hid itself the
+   * moment #root stopped being empty (a sibling selector in index.html, so it
+   * works even if this line never runs), but leaving a hidden fixed-position
+   * element in the tree serves nothing — take it out.
+   */
+  document.getElementById("boot-splash")?.remove();
+
   // Opt-in only (?perf=1). Costs nothing otherwise — a monitor that slows the
   // page down would defeat its own purpose.
-  startPerfMonitor();
+  startPerfMonitorIfRequested();
 
   if (replayed) reconcileThemeAfterPaint();
   idlePreloadRemainingRoutes();
@@ -88,9 +121,32 @@ async function bootstrap() {
   // Installing after load keeps precache traffic out of the critical path.
   // The worker is a progressive enhancement and never intercepts Base44 APIs.
   if (import.meta.env.PROD && "serviceWorker" in navigator) {
+    /*
+     * The worker calls skipWaiting(), so a new build can take control of this
+     * page while it is open. This page's own lazy chunks belong to the build
+     * it loaded, and the new worker has just evicted them from the cache, so
+     * the next route or widget import could 404. One reload lands cleanly on
+     * the new build.
+     *
+     * Only when there WAS a controller: on a first visit controllerchange
+     * fires because the very first worker took over, and reloading there
+     * would be a pointless flash on every new device.
+     */
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadController || reloading) return;
+      reloading = true;
+      window.location.reload();
+    });
+
     const register = () => {
       const run = () => navigator.serviceWorker
         .register("/sw.js", { scope: "/", updateViaCache: "none" })
+        // Only the layout in use belongs in the offline shell. Told once here
+        // so a reader who never opens Settings still gets the right one, and
+        // again from setHomeLayout() on every change.
+        .then(() => syncHomeLayoutCache())
         .catch(() => {});
       if ("requestIdleCallback" in window) {
         window.requestIdleCallback(run, { timeout: 3000 });
@@ -154,6 +210,32 @@ function reconcileThemeAfterPaint() {
   };
   if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 3000 });
   else window.setTimeout(run, 1200);
+}
+
+/*
+ * startPerfMonitor() returns immediately when the monitor is off, so importing
+ * it looked free — but the import is not the call. The whole module (five
+ * PerformanceObservers, the rAF frame sampler and the console report) was
+ * compiled into the boot chunk on every visit: 3.6 KiB of parse work to decide
+ * to do nothing. Reading the flag is a two-line localStorage lookup, so it
+ * happens here and the module is fetched only when it is going to run.
+ *
+ * This is a read only. Persisting ?perf=1 stays in perf-monitor's own
+ * perfEnabled(), which runs again inside startPerfMonitor() — one writer, and
+ * this gate cannot drift into disagreeing with it about what to store.
+ */
+const PERF_FLAG = "mabis-perf";
+
+function startPerfMonitorIfRequested() {
+  let requested = false;
+  try {
+    requested = new URLSearchParams(location.search).has("perf")
+      || localStorage.getItem(PERF_FLAG) === "1";
+  } catch {
+    return;
+  }
+  if (!requested) return;
+  import("~/lib/perf-monitor").then(({ startPerfMonitor }) => startPerfMonitor()).catch(() => {});
 }
 
 bootstrap();
