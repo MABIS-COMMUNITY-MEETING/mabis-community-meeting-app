@@ -631,6 +631,17 @@ export function applyTheme(themeKey) {
   // into unreadable territory the way a flat opacity modifier could.
   root.style.setProperty("--primary-foreground-muted", mutedForeground(vars["--primary-foreground"], vars["--primary"]));
   document.body.classList.toggle("theme-is-dark", isDark);
+  /*
+   * Aero's rules live in their own stylesheet now, so switching TO it at
+   * runtime has to fetch them. Not awaited: this is a deliberate click, the
+   * file is cached for anyone who has used the theme before, and holding a UI
+   * interaction on a network round-trip would feel worse than the gloss
+   * arriving a frame late. The boot path in solid/main.jsx DOES await it, so a
+   * returning Aero user never sees the unstyled state.
+   */
+  if (resolvedThemeKey === "frutigeraero") {
+    void import("@/styles/frutiger-aero.css").catch(() => {});
+  }
   applyPalette(theme.swatches, !!theme.pride || !!theme.exact);
   applyCharacterTokens(theme.character);
   applyThemeBodyClass(theme.bodyClass);
