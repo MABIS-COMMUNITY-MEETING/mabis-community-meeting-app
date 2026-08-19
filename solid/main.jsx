@@ -128,10 +128,49 @@ async function bootstrap() {
      */
     const hadController = Boolean(navigator.serviceWorker.controller);
     let reloading = false;
+    /*
+     * Reload once a new build takes over — but not mid-scroll and not while
+     * the reader is typing into something. This used to reload the instant
+     * controllerchange fired, which happens whenever this tab is open across
+     * a deploy (not rare during active development, or for anyone who just
+     * leaves the site open). Yanking the page out from under a scroll or an
+     * in-progress edit reads exactly like a crash: the page just resets
+     * itself with no warning while the reader is mid-gesture.
+     *
+     * `scrolling` mirrors installScrollStateClass()'s own signal rather than
+     * depending on it directly, since this runs before Home (and its
+     * onMount) exists. Cheap and self-contained: one passive listener, no
+     * reactive graph involved.
+     */
+    let scrolling = false;
+    let scrollIdleTimer = 0;
+    window.addEventListener("scroll", () => {
+      scrolling = true;
+      clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = window.setTimeout(() => { scrolling = false; }, 400);
+    }, { passive: true });
+
+    const isEditing = () => {
+      const el = document.activeElement;
+      if (!el) return false;
+      const tag = el.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable === true;
+    };
+
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (!hadController || reloading) return;
       reloading = true;
-      window.location.reload();
+      const attemptReload = () => {
+        if (scrolling || isEditing()) {
+          window.setTimeout(attemptReload, 500);
+          return;
+        }
+        window.location.reload();
+      };
+      // A five-second grace period before the first check, so a controller
+      // handoff that lands mid-gesture doesn't reload the instant the
+      // gesture happens to pause for a frame.
+      window.setTimeout(attemptReload, 5000);
     });
 
     const register = () => {
