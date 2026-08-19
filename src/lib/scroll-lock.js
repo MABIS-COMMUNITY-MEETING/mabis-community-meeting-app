@@ -34,7 +34,14 @@ let original = null;
 export function lockBodyScroll() {
   if (typeof document === "undefined") return () => {};
 
-  if (depth === 0) original = document.body.style.overflow;
+  if (depth === 0) {
+    // Every scroll-locking surface uses this module. If no lock is registered
+    // but the inline value is still hidden, it is residue from a preview HMR
+    // replacement; never preserve it as the state to restore later.
+    original = document.body.style.overflow === "hidden"
+      ? ""
+      : document.body.style.overflow;
+  }
   depth += 1;
   document.body.style.overflow = "hidden";
 
@@ -60,11 +67,15 @@ export function lockBodyScroll() {
  */
 export function releaseAllScrollLocks() {
   if (typeof document === "undefined") return;
-  if (depth === 0 && original === null) return;
   depth = 0;
   document.body.style.overflow = original ?? "";
   original = null;
 }
+
+// Preview updates can replace this module while a menu or editor owns a lock.
+// Release before the old module state disappears, otherwise no later cleanup
+// can know that the inline `overflow: hidden` belongs to a dead instance.
+if (import.meta.hot) import.meta.hot.dispose(releaseAllScrollLocks);
 
 /** Testing seam for the guard script. */
 export function scrollLockDepth() {
