@@ -2066,7 +2066,7 @@ body.pride-active .cursor-trail { background: var(--pride-highlight); mix-blend-
 /* selection, focus and scroll: theme light rather than theme fill */
 body.pride-active ::selection { background: var(--pride-glow); color: hsl(var(--background)); }
 body.pride-active :focus-visible { outline-color: var(--pride-edge); }
-body.pride-active ::-webkit-scrollbar-thumb { background: var(--pride-edge); }
+html.classic-scrollbars body.pride-active ::-webkit-scrollbar-thumb { background: var(--pride-edge); }
 
 /* micro-details — a hairline of theme light on the things you touch */
 body.pride-active button:not(:disabled):hover,
