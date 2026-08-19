@@ -1,4 +1,5 @@
 import { refreshIntervalMs, resetFrameChain, sampleFrame } from "@/lib/physics/refresh-rate";
+import { isSoftwareRendered } from "@/lib/software-rendering";
 
 export const PERFORMANCE_TIER_EVENT = "mabis-performance-tier";
 
@@ -93,7 +94,20 @@ const STALL_MS = 200;
  * not the size of the frame rate.
  */
 export function monitorFrameBudget(onLowPower) {
-  if (detectLowPowerDevice()) {
+  /*
+   * A software rasteriser is a capability fact, not a symptom, so it is read
+   * directly rather than inferred from dropped frames. Without this the page
+   * spends WARMUP_MS + WINDOW_MS (2.8 s) stuttering through the full-width
+   * header blur before the pacing evidence arrives — and since this monitor
+   * judges exactly once, a machine that merely paced badly *during* that one
+   * window is the only kind it ever catches.
+   *
+   * Deliberately grouped with detectLowPowerDevice() rather than added to it:
+   * that function answers "is this a weak device?" from memory and core count,
+   * which a fast workstation with a blacklisted GPU driver would pass easily
+   * while still blurring on the CPU. Different question, same conclusion.
+   */
+  if (detectLowPowerDevice() || isSoftwareRendered()) {
     onLowPower();
     return () => {};
   }
