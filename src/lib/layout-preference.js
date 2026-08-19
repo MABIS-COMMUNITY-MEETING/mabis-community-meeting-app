@@ -34,27 +34,6 @@ export function homeLayout() {
   }
 }
 
-/**
- * True until the reader has actually chosen a style.
- *
- * homeLayout() cannot answer this: it returns "simple" both for someone who
- * picked Summer and for someone who has never been asked, which is exactly the
- * distinction a first-run prompt needs. Read the raw key instead.
- *
- * A value we do not recognise counts as unchosen — a stale or corrupted entry
- * should get the question, not be silently treated as a decision.
- */
-export function hasChosenHomeLayout() {
-  if (typeof window === "undefined") return true;
-  try {
-    return HOME_LAYOUTS.includes(localStorage.getItem(HOME_LAYOUT_STORAGE_KEY));
-  } catch {
-    /* Storage blocked: never prompt. Without somewhere to record the answer the
-       prompt would return on every single load, which is worse than defaulting. */
-    return true;
-  }
-}
-
 export function applyHomeLayoutPreference(layout = homeLayout()) {
   if (typeof document === "undefined") return;
   const boss = layout === "boss";

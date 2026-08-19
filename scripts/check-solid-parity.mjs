@@ -7,10 +7,13 @@
  * that throws on mount, children rendered once instead of twice, a Tailwind
  * transform silently cancelled by an inline style, or a dropped class.
  *
- * Run: node scripts/check-solid-parity.mjs [route] [ja]   (default "/")
+ * Run: node scripts/check-solid-parity.mjs [route] [flags...]   (default "/")
  *
- * Passing `ja` as the second argument flips the Japanese-companion preference
- * on before the bundle boots, which exercises the auto-translation scanner.
+ * Flags, in any order, are written to localStorage before the bundle boots:
+ *   ja    the Japanese-companion preference, exercising the auto-translation
+ *         scanner on the initial-mount path rather than only on change.
+ *   boss  the editorial Home layout. Home defaults to the simple layout, so
+ *         without this the boss-only masthead and interludes never render.
  *
  * One route per process on purpose. The bundle is a singleton — ESM caches it
  * and the theme engine writes to documentElement once — so checking a second
@@ -24,7 +27,9 @@ import { JSDOM } from "jsdom";
 
 const dist = path.join(process.cwd(), "dist-solid");
 const route = process.argv[2] || "/";
-const japaneseMode = process.argv[3] === "ja";
+const flags = process.argv.slice(3);
+const japaneseMode = flags.includes("ja");
+const bossLayout = flags.includes("boss");
 const failures = [];
 const checks = [];
 
@@ -76,6 +81,7 @@ if (!window.requestIdleCallback) window.requestIdleCallback = (fn) => setTimeout
 // time useJapaneseText() reads it — setting it afterwards would only prove the
 // change event works, not the initial-mount path.
 if (japaneseMode) window.localStorage.setItem("mabis-japanese-text-enabled", "true");
+if (bossLayout) window.localStorage.setItem("mabis-home-layout", "boss");
 
 /*
  * Signed-in routes need a session. Rather than stand up a fake Base44 backend,
@@ -170,6 +176,40 @@ for (const k of Object.getOwnPropertyNames(window)) {
 Object.defineProperty(window, "performance", { value: globalThis.performance, configurable: true });
 globalThis.self = window;
 
+/*
+ * Let chunk stylesheets resolve.
+ *
+ * jsdom does not fetch <link rel="stylesheet">, so it never fires their load
+ * event. Vite's __vitePreload awaits exactly that event before resolving a
+ * dynamic import whose chunk carries CSS — so any lazily-loaded component
+ * with its own stylesheet hangs forever here and its whole route reads as
+ * "never mounted", which is indistinguishable from a genuinely broken port.
+ *
+ * That stopped being a theoretical gap when glass.css moved into the boss
+ * chunk: the entire boss layout became unverifiable, 62 assertions of
+ * coverage lost to a harness limitation rather than to anything wrong.
+ *
+ * Firing the event is safe because nothing here reads the stylesheet's
+ * CONTENT through the DOM — the rules are asserted against `builtCss`, read
+ * off disk. It only unblocks the import.
+ *
+ * Quill is the documented exception. DocsEditor pulls quill.snow.css, and
+ * when that import resolves Quill mounts and never settles (see the KNOWN GAP
+ * note above); the run then dies on the watchdog instead of reporting. So
+ * that one sheet stays unresolved, which leaves DocsEditor exactly as pending
+ * as it has always been — no coverage lost relative to before.
+ */
+const stylesheetLoadFixup = new window.MutationObserver((records) => {
+  for (const record of records) {
+    for (const node of record.addedNodes) {
+      if (node.tagName !== "LINK" || node.rel !== "stylesheet") continue;
+      if (/quill/i.test(node.href || "")) continue;
+      setTimeout(() => node.dispatchEvent(new window.Event("load")), 0);
+    }
+  }
+});
+stylesheetLoadFixup.observe(window.document.head, { childList: true, subtree: true });
+
 // Imported by real path, not a data: URL — the entry code-splits Splash and
 // Home into sibling chunks, and relative specifiers only resolve against a
 // real file URL.
@@ -220,6 +260,77 @@ const waitFor = async (predicate, timeoutMs = 6000) => {
 
 const textNow = () => (root ? root.textContent.replace(/\s+/g, " ") : "");
 
+/*
+ * Which declaration actually WINS for a property on a given element.
+ *
+ * jsdom does not compute the cascade, and asserting on markup is not enough:
+ * the default layout's square corners were caused by
+ *
+ *     .bg-card.rounded-2xl.shadow-sm { border-radius: 2px }
+ *
+ * in index.css quietly outranking the element's own .rounded-2xl — (0,3,0)
+ * against (0,1,0), no !important involved. Every check that looked at classes
+ * or at the presence of a rule passed while the page rendered square. So this
+ * resolves the winner the way a browser would: collect matching rules, order
+ * by importance, then specificity, then source order.
+ */
+function splitSelectorList(list) {
+  // Top-level commas only — :is(a, b, c) is ONE selector, not three.
+  const out = [];
+  let depth = 0;
+  let buf = "";
+  for (const ch of list) {
+    if (ch === "(" || ch === "[") depth += 1;
+    else if (ch === ")" || ch === "]") depth -= 1;
+    if (ch === "," && depth === 0) { out.push(buf); buf = ""; continue; }
+    buf += ch;
+  }
+  if (buf.trim()) out.push(buf);
+  return out;
+}
+
+function selectorSpecificity(selector) {
+  const s = selector.replace(/\\./g, "");
+  const ids = (s.match(/#[\w-]+/g) || []).length;
+  const classes = (s.match(/\.[\w-]+|\[[^\]]+\]|:(?!:)(?!not|is|where)[\w-]+(\([^)]*\))?/g) || []).length;
+  const elements = (s.match(/(^|[\s>+~(])[a-z][\w-]*/gi) || []).length;
+  return ids * 10000 + classes * 100 + elements;
+}
+
+function winningDeclaration(element, property) {
+  const candidates = [];
+  const blocks = /(@media[^{]+\{)|(\})|([^{}]+)\{([^{}]*)\}/g;
+  let media = null;
+  let depth = 0;
+  let order = 0;
+  let block;
+  while ((block = blocks.exec(builtCss))) {
+    if (block[1]) { media = block[1].slice(0, -1).trim(); depth += 1; continue; }
+    if (block[2]) { if (depth > 0) { depth -= 1; if (!depth) media = null; } continue; }
+    if (media) continue;                       // desktop only; phone widths differ by design
+    const body = block[4];
+    if (!body.includes(`${property}:`)) continue;
+    for (const selector of splitSelectorList(block[3])) {
+      const trimmed = selector.trim();
+      if (!trimmed || /:(hover|focus|active)\b/.test(trimmed)) continue;
+      let hit = false;
+      try { hit = element.matches(trimmed.replace(/::(before|after)\b/g, "").trim()); } catch { hit = false; }
+      if (!hit) continue;
+      const declaration = (body.match(new RegExp(`${property}:[^;]*`, "g")) || []).join("; ");
+      candidates.push({
+        declaration,
+        important: new RegExp(`${property}:[^;]*!important`).test(body),
+        specificity: selectorSpecificity(trimmed),
+        order: order++,
+      });
+    }
+  }
+  candidates.sort((a, b) => (a.important !== b.important
+    ? (a.important ? 1 : -1)
+    : (a.specificity !== b.specificity ? a.specificity - b.specificity : a.order - b.order)));
+  return candidates.length ? candidates[candidates.length - 1].declaration : "";
+}
+
 // ── route-specific parity ──────────────────────────────────────────────────
 // Only the landing route asserts the Splash slice; the auth and fallback
 // routes assert their own source of truth. Everything below the divider is
@@ -229,12 +340,31 @@ if (route === "/login") {
   check("sign-in headline present", text.includes("Sign in"));
   check("Japanese title present", text.includes("サインイン"));
   check("subtitle present", text.includes("Continue with your MABIS Google account"));
-  check("Google CTA present", text.includes("CONTINUE WITH GOOGLE"));
-  check("AuthLayout IDENTITY label present", text.includes("IDENTITY"));
-  check("AuthLayout AUTH label present", text.includes("AUTH"));
-  check("AuthLayout N° 00 present", text.includes("N° 00"));
-  check("AuthLayout background word present", text.includes("MABIS"));
-  check("auth entrance keyframe applied (not framer)", html2.includes("auth-rise"));
+  /*
+   * The CTA's casing is style-dependent — editorial sets it in tech-label
+   * caps, Summer in sentence case — so match case-insensitively. What must
+   * never vary is that the button exists: the contract is that /login exposes
+   * exactly one Continue with Google control.
+   */
+  check("Google CTA present", /continue with google/i.test(text));
+
+  if (bossLayout) {
+    check("AuthLayout IDENTITY label present", text.includes("IDENTITY"));
+    check("AuthLayout AUTH label present", text.includes("AUTH"));
+    check("AuthLayout N° 00 present", text.includes("N° 00"));
+    check("AuthLayout background word present", text.includes("MABIS"));
+    check("auth entrance keyframe applied (not framer)", html2.includes("auth-rise"));
+  } else {
+    /*
+     * Summer style drops the editorial furniture entirely (Novesce, Aug 2026).
+     * Asserting its ABSENCE is the point: a regression that reinstated the
+     * masthead here would otherwise pass every remaining check on this page.
+     */
+    check("Summer auth shell rendered", !!(root && root.querySelector(".summer-page")));
+    check("editorial N° 00 meta absent in Summer style", !text.includes("N° 00"));
+    check("editorial IDENTITY caption absent in Summer style", !text.includes("IDENTITY"));
+    check("editorial auth entrance not used in Summer style", !html2.includes("auth-rise"));
+  }
   check("logo slot rendered, not the icon fallback",
     !!(root && root.querySelector('img[alt="MABIS"]')),
     "AuthLayout should take the logo branch, so <Dynamic component={icon}> must not render");
@@ -250,18 +380,33 @@ if (route === "/login") {
   // would be looking at the login redirect instead, and every check below would
   // be vacuously true, so assert we are NOT on login first.
   check("signed-in session recovered (not bounced to login)",
-    !text.includes("CONTINUE WITH GOOGLE"),
+    !/continue with google/i.test(text),
     "landed on /login — the seeded offline session was rejected");
   /*
-   * Wait for the masthead, and assert on text only Home renders.
+   * Wait for the masthead, and assert on something only Home renders.
    *
    * This used to assert `text.includes("MABIS")` against a single early
    * sample — which the LOADING SCREEN also contains ("MABIS 2026"), so it
    * passed whether Home had rendered or not. Swapping the route fallback to a
-   * blank div exposed it. Poll for the masthead's own copy instead.
+   * blank div exposed it. Poll for the masthead itself instead.
+   *
+   * The default layout has no masthead at all — it goes straight from the bar
+   * into the widgets, as the original site did — so it is matched by the
+   * container's attribute. Matching on its copy would be the same trap as
+   * MABIS: the header renders "MABIS Community Meeting" before Home mounts.
    */
-  await waitFor(() => textNow().includes("COMMUNITY DASHBOARD"), 15000);
-  check("home masthead rendered", textNow().includes("COMMUNITY DASHBOARD"));
+  if (bossLayout) {
+    await waitFor(() => textNow().includes("COMMUNITY DASHBOARD"), 15000);
+    check("editorial masthead rendered", textNow().includes("COMMUNITY DASHBOARD"));
+  } else {
+    await waitFor(() => !!root.querySelector("[data-summer-home]"), 15000);
+    check("default (original MABIS) layout rendered", !!root.querySelector("[data-summer-home]"));
+    check("editorial masthead not rendered in the default layout",
+      !textNow().includes("COMMUNITY DASHBOARD"));
+    check("original top bar rendered", textNow().includes("Secondary Community Meeting App"));
+    check("archive routes still reachable without the editorial menu",
+      textNow().includes("Pages"));
+  }
 
   // MabisAIAssistant: lazy, inside IdleMount, so it appears only after the idle
   // callback fires and its chunk resolves.
@@ -291,11 +436,14 @@ if (route === "/login") {
       && [...root.querySelectorAll("button")].some((b) => b.disabled));
   }
 
-  // Header controls: React renders the avatar, first name and sign-out beside
-  // the theme/settings buttons. Solid was missing the whole block.
-  check("sign-out control rendered", textNow().includes("SIGN OUT"));
-  check("signed-in user's first name shown", textNow().includes("PARITY"),
-    "expected the seeded user's first name, upper-cased");
+  // Header controls: the avatar, first name and sign-out sit beside the
+  // theme/settings buttons in both layouts. The boss bar upper-cases them as
+  // technical labels; the default bar uses the original site's sentence case.
+  const signOut = bossLayout ? "SIGN OUT" : "Sign Out";
+  const firstName = bossLayout ? "PARITY" : "Parity";
+  check("sign-out control rendered", textNow().includes(signOut));
+  check("signed-in user's first name shown", textNow().includes(firstName),
+    `expected the seeded user's first name as "${firstName}"`);
   const avatarBtn = byTitle("Customize Profile Picture");
   check("profile-picture button rendered", !!avatarBtn);
 
@@ -327,6 +475,10 @@ if (route === "/login") {
   // Copied from the label column of src/pages/Home.jsx, in order. Note these
   // are the SECTION labels, which differ from the wording the nav index uses
   // for the same sections ("MEMBERS" vs "People").
+  //
+  // Boss-layout only: they are the editorial section HEADINGS. The default
+  // layout has no headings — the widget is the module — so it asserts the
+  // widgets themselves are all mounted instead, one section element each.
   const SECTIONS = [
     ["01", "MEETING MODE"],
     ["02", "ANNOUNCEMENTS"],
@@ -339,8 +491,14 @@ if (route === "/login") {
     ["09", "NEWS"],
     ["10", "MEMBERS"],
   ];
-  for (const [index, label] of SECTIONS) {
-    check(`section ${index} (${label}) rendered`, textNow().includes(label));
+  if (bossLayout) {
+    for (const [index, label] of SECTIONS) {
+      check(`section ${index} (${label}) rendered`, textNow().includes(label));
+    }
+  } else {
+    for (const [index] of SECTIONS) {
+      check(`section ${index} mounted`, !!root.querySelector(`#sec-${index}`));
+    }
   }
   /*
    * Wait for the lazy widget chunks to settle before counting placeholders.
@@ -402,13 +560,68 @@ if (route === "/login") {
   check("the retired Add Topic control is gone",
     !textNow().includes("Add Topic"));
 
-  // Editorial interludes and footer — all were missing from Solid's Home.
-  check("scroll-velocity band rendered",
-    (textNow().match(/BANGKOK/g) || []).length >= 2,
-    "the band renders its sequence twice for the seamless loop");
-  check("scroll-scale ritual rendered", textNow().includes("VOICE YOUR WORDS"));
-  check("page footer rendered", textNow().includes("COLOPHON"));
-  check("scroll section indicator rendered", textNow().includes("SCROLL"));
+  // Editorial interludes are boss-layout only; the footer and the page guide
+  // belong to both.
+  if (bossLayout) {
+    check("scroll-velocity band rendered",
+      (textNow().match(/BANGKOK/g) || []).length >= 2,
+      "the band renders its sequence twice for the seamless loop");
+    check("scroll-scale ritual rendered", textNow().includes("VOICE YOUR WORDS"));
+    check("page guide rendered", textNow().includes("Choose where to go"));
+    check("page footer rendered", textNow().includes("COLOPHON"));
+  } else {
+    check("scroll interludes absent from the default layout",
+      !textNow().includes("VOICE YOUR WORDS"));
+    check("editorial page guide absent from the default layout",
+      !textNow().includes("Choose where to go"));
+    check("original footer rendered", textNow().includes("Version: "));
+    /*
+     * Rounded cards.
+     *
+     * The widgets ship the original site's classes; what used to flatten them
+     * was editorial-home.css forcing a 2px radius. jsdom computes no styles,
+     * so assert both halves of the arrangement: the class is still on the
+     * widget, and the rule that would override it is gated on the boss class.
+     */
+    check("widget cards keep their rounded corners",
+      root.innerHTML.includes("mabis-widget bg-card rounded-2xl"));
+    check("the radius override is gated on the boss layout",
+      /html\.home-layout-boss[^{}]*\.mabis-widget[^{}]*rounded-2xl/.test(builtCss),
+      "editorial-home.css would flatten the default layout's cards");
+
+    /* The assertion that would have caught the original bug: not "is the class
+       there" but "which declaration wins". */
+    const card = root.querySelector(".mabis-widget");
+    check("widget card resolves to a round corner",
+      card && /1rem/.test(winningDeclaration(card, "border-radius")),
+      card ? `winner: ${winningDeclaration(card, "border-radius")}` : "no widget rendered");
+
+    /*
+     * The point of this rule is that the radius stays a LIVE custom-property
+     * reference. Tailwind v4 bakes `borderRadius.lg: 'var(--radius)'` from the
+     * JS config into a fixed px value, which freezes every theme that
+     * redefines --radius; index.css works around that by re-declaring the
+     * three radius keys in @theme.
+     *
+     * That workaround adds one hop — the utility now emits var(--radius-lg),
+     * which @theme defines as var(--radius) — so accept either spelling and
+     * verify the hop actually resolves. A baked "16px" still fails, which is
+     * the regression this exists to catch.
+     */
+    const innerControl = root.querySelector(".mabis-widget .rounded-lg");
+    const innerRadius = innerControl ? winningDeclaration(innerControl, "border-radius") : "";
+    const radiusHopResolves = /--radius-lg: *var\(--radius\)/.test(builtCss);
+    check("inner controls resolve to the original radius token",
+      innerControl
+      && (/var\(--radius\)/.test(innerRadius)
+        || (/var\(--radius-lg\)/.test(innerRadius) && radiusHopResolves)),
+      innerControl
+        ? `winner: ${innerRadius}${radiusHopResolves ? "" : " (and --radius-lg is not defined as var(--radius))"}`
+        : "none found");
+    check("the default layout redefines --radius to the original 0.75rem",
+      /\.summer-home\{[^}]*--radius: *\.75rem/.test(builtCss),
+      "rounded-lg/md/sm map onto --radius, which the editorial system sets to 2px");
+  }
   check("birthday banner stays closed with no birthdays today",
     !textNow().includes("Happy birthday"));
 
@@ -453,7 +666,7 @@ if (route === "/login") {
     check("submit is disabled until a message is typed",
       [...root.querySelectorAll("button")].some((b) => b.disabled && /Submit/.test(b.textContent)));
   }
-} else if (route === "/") {
+} else if (route === "/" && bossLayout) {
   // ── content parity with src/pages/Splash.jsx ──────────────────────────────
   check('hero headline "COMMUNITY" present', text.includes("COMMUNITY"));
   check('hero headline "MEETING" present', text.includes("MEETING"));
@@ -490,6 +703,41 @@ if (route === "/login") {
   // Elements that DO animate a transform should have one inline.
   const vertLabels = root ? [...root.querySelectorAll(".vert-text")] : [];
   check("vertical side labels rendered", vertLabels.length >= 2);
+} else if (route === "/") {
+  /*
+   * Summer style's splash (the default). A port of the ORIGINAL MABIS landing
+   * — app 6a7f1d91128253fcdbf4f5a2 — not of the editorial one above.
+   *
+   * The performance assertions are the point of this block. The original drove
+   * 216 elements from framer-motion on repeat:Infinity, each carrying a
+   * blurred box-shadow, and that is what made it unusable on a phone. The port
+   * animates transform and opacity from one shared CSS keyframe instead. A
+   * regression back to per-element JS animation, or to box-shadow glows, would
+   * look identical in a screenshot and would be invisible to every other check
+   * in this file — so it is pinned directly.
+   */
+  check("title present", text.includes("SECONDARY COMMUNITY") && text.includes("MEETING APP"));
+  check("CTA present", /start|log in/i.test(text));
+  check("Summer splash field rendered", !!(root && root.querySelector(".summer-splash")));
+  check("centre glow rendered", !!(root && root.querySelector(".summer-splash-glow")));
+
+  const motes = root ? [...root.querySelectorAll(".summer-splash-dot")] : [];
+  check("motes rendered", motes.length > 0, `found ${motes.length}`);
+  check("mote count is bounded well under the original 216",
+    motes.length <= 120,
+    `found ${motes.length} — the original shipped 216 to every device`);
+
+  check("motes carry no box-shadow (glow is a gradient, not a blur pass)",
+    motes.every((m) => !/box-shadow/i.test(m.getAttribute("style") || "")));
+  check("motes drive motion through CSS custom properties, not inline transforms",
+    motes.every((m) => {
+      const s = m.getAttribute("style") || "";
+      return s.includes("--dx") && s.includes("--dy") && !/(^|;)\s*transform:/i.test(s);
+    }));
+
+  check("editorial splash furniture absent in Summer style",
+    !text.includes("N° 02") && !html2.includes("corner-bracket") && !html2.includes("huge-crop"));
+  check("no marquee on the Summer splash", !html2.includes("MABIS BANGKOK"));
 } else {
   // src/lib/PageNotFound.jsx — any unmatched path.
   check("404 numeral present", text.includes("404"));
@@ -506,7 +754,16 @@ if (route === "/login") {
 const shellHtml = () => (root ? root.innerHTML : "");
 check("grain overlay mounted", shellHtml().includes("grain-layer"));
 check("palette stripe mounted", shellHtml().includes("--palette-stripes"));
-check("scroll progress bar mounted", shellHtml().includes("--palette-gradient"));
+/*
+ * Inverted deliberately. The shell used to mount a 2px scroll-progress bar
+ * here, and the boss layout a right-edge section counter; both redrew
+ * themselves on every scroll frame. Scrolling belongs to the browser, so the
+ * assertion is now that they stay gone — re-adding either would put a
+ * per-frame style write back on every scroll of every route.
+ */
+check("no scroll-driven chrome in the shell",
+  !shellHtml().includes("--palette-gradient"),
+  "the scroll-progress bar is back in App.jsx");
 
 // React wraps every route EXCEPT Splash in PageTransition.
 if (route === "/") {
@@ -520,12 +777,28 @@ if (route === "/") {
 // ── Japanese companion layer ──────────────────────────────────────────────
 if (japaneseMode) {
   const annotated = root ? root.querySelectorAll("[data-ja-companion]") : [];
-  check("auto-companion annotated the tree", annotated.length > 0,
+  /*
+   * The auto-scanner only annotates strings that have NO explicit companion.
+   * Summer style's splash gives every string one through <JapaneseText>, so an
+   * empty result there is the correct outcome rather than a dead observer —
+   * and demanding annotations would push future work toward leaving strings
+   * untranslated just to satisfy this check.
+   *
+   * The scanner stays pinned regardless: the /login ja run does carry
+   * unannotated strings, so a genuinely broken MutationObserver still fails
+   * the suite there.
+   */
+  check("auto-companion annotated the tree where there was work to do",
+    annotated.length > 0 || route === "/",
     "no [data-ja-companion] attributes — the MutationObserver scan never ran");
   check("annotations carry a layout hint",
     [...annotated].every((el) => el.hasAttribute("data-ja-layout")));
   check("annotations are non-empty Japanese",
     [...annotated].every((el) => /[぀-ヿ一-龯]/.test(el.getAttribute("data-ja-companion"))));
+  /* However it got there — scanner or explicit prop — Japanese must be on the
+     page when the companion is enabled. This is the assertion that matches the
+     user-visible promise, and it holds on every route. */
+  check("Japanese companion text is on the page", /[぀-ヿ一-龥]/.test(text));
   check("screen-reader marker present", html2.includes("日本語"));
   check("japanese-text-enabled class set when the preference is on",
     window.document.documentElement.classList.contains("japanese-text-enabled"));
@@ -564,7 +837,7 @@ check("font stack applied by shared themes.js", /--font-body/.test(rootStyle));
 check("ui-font-ready set (first-paint font bootstrap ran)",
   window.document.documentElement.classList.contains("ui-font-ready"));
 
-const label = `${route}${japaneseMode ? " +ja" : ""}`;
+const label = `${route}${japaneseMode ? " +ja" : ""}${bossLayout ? " +boss" : ""}`;
 console.log(`\nSolid parity [${label}]: ${checks.length - failures.length}/${checks.length} checks passed\n`);
 if (failures.length) {
   console.error(`FAILED (${label}):`);

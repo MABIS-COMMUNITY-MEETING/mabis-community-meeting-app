@@ -34,11 +34,46 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 	return null;
 }
 
+/*
+ * A URL parameter that is a COMMAND, not a setting.
+ *
+ * getAppParamValue() persists whatever it reads and falls back to the stored
+ * copy on the next load. That is right for app_id or app_base_url, which
+ * describe the app, and catastrophic for clear_access_token, which means "drop
+ * the session I am carrying right now":
+ *
+ *   1. sign out — Base44 returns to the app with ?clear_access_token=true;
+ *   2. the token is cleared, correctly, AND the flag is written to
+ *      localStorage as base44_clear_access_token;
+ *   3. sign back in — the new token is stored, fine;
+ *   4. open the app again with a clean URL — the flag is still in storage, so
+ *      the branch below fires and deletes the token that was just issued.
+ *
+ * From the first sign-out onwards the session could never survive a reload,
+ * which is exactly the "it makes me log in every single time" report. Read it
+ * from the URL only, strip it so a refresh cannot replay it, and never store
+ * it.
+ */
+const getUrlOnlyParamValue = (paramName) => {
+	if (isNode) return null;
+	const urlParams = new URLSearchParams(window.location.search);
+	const value = urlParams.get(paramName);
+	if (value === null) return null;
+	urlParams.delete(paramName);
+	const newUrl = `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ""}${window.location.hash}`;
+	window.history.replaceState({}, document.title, newUrl);
+	return value;
+}
+
 const getAppParams = () => {
-	if (getAppParamValue("clear_access_token") === 'true') {
+	if (getUrlOnlyParamValue("clear_access_token") === 'true') {
 		storage.removeItem('base44_access_token');
 		storage.removeItem('token');
 	}
+	/* Repair sessions already poisoned by the old behaviour. Without this, every
+	   account that has signed out even once keeps being logged out on every
+	   load, because the stale flag outlives the fix. */
+	if (!isNode) storage.removeItem('base44_clear_access_token');
 	return {
 		appId: getAppParamValue("app_id", { defaultValue: import.meta.env.VITE_BASE44_APP_ID }),
 		token: getAppParamValue("access_token", { removeFromUrl: true }),

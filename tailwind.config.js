@@ -1,5 +1,22 @@
+import tailwindcssAnimate from "tailwindcss-animate";
+
+/*
+ * ES module, not CommonJS.
+ *
+ * package.json declares "type": "module", so Node parses this file as ESM.
+ * While it used `module.exports` and `require()` it threw "require is not
+ * defined in ES module scope" the moment anything loaded it — and Tailwind v4
+ * resolves `@config` by loading it. The failure was silent: no build error,
+ * just a stylesheet with the entire `theme.extend` missing, so every utility
+ * defined below (bg-card, text-foreground, border-border, the role hues, the
+ * radius scale) generated nothing at all and the elements using them rendered
+ * with no background. The built CSS was 85 KB instead of ~170 KB.
+ *
+ * postcss.config.js, eslint.config.js and both Vite configs are already ESM;
+ * this file was the last CommonJS holdout.
+ */
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
     darkMode: ["class"],
     /*
      * The UI lives in solid/. src/ keeps the shared lib/api/styles layer.
@@ -70,5 +87,5 @@ module.exports = {
         }
     },
     safelist: ['bg-mabis', 'text-mabis', 'border-mabis', 'bg-golden', 'text-golden', 'bg-ink', 'text-ink', 'bg-bone'],
-    plugins: [require("tailwindcss-animate")],
+    plugins: [tailwindcssAnimate],
 }

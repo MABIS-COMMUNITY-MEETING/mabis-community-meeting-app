@@ -44,7 +44,7 @@ const SOLID_EQUIVALENTS = {
     "src/components/JapaneseText.jsx": ["solid/components/primitives.jsx"],
     "src/components/OpenMoji.jsx": ["solid/components/page-chrome.jsx"],
     "src/components/home/HomeSectionIndex.jsx": ["solid/components/home/shell.jsx"],
-    "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
+    "src/components/home/LazySection.jsx": ["solid/components/home/LazySection.jsx", "solid/lib/perf.js"],
     "src/components/JobsWidget.jsx": ["solid/components/JobsWidget.jsx", "solid/components/jobs/SpinWheel.jsx"],
 };
 
@@ -100,7 +100,9 @@ const copilot = read(".github/copilot-instructions.md");
 const themes = read("src/lib/themes.js");
 const css = read("src/index.css");
 const editorialHomeCss = read("src/styles/editorial-home.css");
-const main = read("src/main.jsx");
+const glassCss = read("src/styles/glass.css");
+const customColorAccess = read("src/lib/custom-color-access.js");
+const prefsSync = read("src/components/PrefsSync.jsx");
 const home = read("src/pages/Home.jsx");
 const cursorPreference = read("src/lib/cursor-preference.js");
 const themeBalance = read("src/lib/color/themeBalance.js");
@@ -109,7 +111,25 @@ const packageJson = read("package.json");
 const performanceContract = read("scripts/check-performance-contract.mjs");
 const bundleBudget = read("scripts/check-bundle-budget.mjs");
 const cjkFontLoader = read("src/components/CjkFontLoader.jsx");
-const login = read("src/pages/Login.jsx");
+/*
+ * The LIVE sign-in page, named explicitly rather than through the src/→solid/
+ * fallback.
+ *
+ * On 2026-08-17 `base44-builder[bot]` committed "chore: add boilerplate auth
+ * templates", recreating src/pages/{Login,Register,ForgotPassword,
+ * ResetPassword,OAuthConsent}.jsx and src/components/ProtectedRoute.jsx. That
+ * boilerplate carries an email/password <form>, which this contract forbids —
+ * and because the path resolver prefers src/, the Google-only rules below
+ * silently switched from checking the page users actually see to checking
+ * platform scaffolding nothing imports. The build failed, which is the right
+ * outcome, but for the wrong reason.
+ *
+ * The boilerplate is dead: solid/App.jsx routes /login to the Solid page and
+ * redirects /register, /forgot-password and /reset-password to it. So the
+ * rules are asserted against the live page, and the guard below keeps the
+ * boilerplate unreachable rather than trusting it to stay that way.
+ */
+const login = read("solid/pages/Login.jsx");
 const docsEditor = read("src/components/DocsEditor.jsx");
 const jobsWidget = read("src/components/JobsWidget.jsx");
 const jobsRotation = read("src/lib/jobsRotation.js");
@@ -171,17 +191,41 @@ for (const [relativePath, content] of editorialContractFiles) {
 }
 
 const richTextThemeRule = "Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.";
-const easyLayoutRule = "Keep Home easy to navigate with its numbered editorial sections, plain-language page guide, and contextual instructions; usability aids must clarify the existing Japanese editorial hierarchy rather than replace it with a generic dashboard.";
+const easyLayoutRule = "Keep Home easy to navigate: the default layout stacks the widgets as the original MABIS interface did, and the Boss style adds numbered editorial sections with a plain-language page guide; usability aids must clarify whichever layout is in use rather than bolt a generic dashboard onto either one.";
 const japaneseTextRule = "Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang=\"ja\"` so Maple Mono CJK fallback applies; the default remains off.";
-const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with large theme/font catalogues and custom color tools behind clearly labeled advanced controls.";
+const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with the large font catalogue and the custom colour tools behind clearly labeled advanced controls. The colour theme is MABIS only — `SELECTABLE_THEME_KEYS` in `src/lib/themes.js` is the single source of truth and no surface may enumerate `THEMES` directly — and the custom colour tools are available to the owning account alone.";
 const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
+const homeLayoutRule = "The app has two styles, chosen in Settings and applied everywhere — Home, the splash, login and the archive pages. `Summer style` is the default and must ALWAYS stick to the style Summer wants — the original MABIS interface, as built in app `6a7f1d91128253fcdbf4f5a2`, which is the reference for it: the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding. Match that site; do not improve it, modernise it, tidy it, or drift it toward the editorial system or an AI's taste. An editorial flourish added to a Summer surface — an N° caption, tracked-out display type, a ruled plane, a square radius — is a bug exactly as a missing widget is. Summer style is the ONLY sanctioned exception to the Novesce UI mandate, and it is an exception to the editorial system alone, never to the tokens, fonts, OpenMoji, Google-only auth, cursor, glass or performance rules. `Boss style` is opt-in and must ALWAYS follow the Novesce design philosophy in full: the Japanese editorial system — numbered sections, tracked-out display type, ruled neutral planes, N° captions, restrained radii, the glass control plane — built from semantic tokens, the GNU FreeMono stack with Maple Mono for CJK, and pinned OpenMoji. A Boss surface that is not editorial, or that reaches for a generic dashboard look, is a bug. Every feature, widget, page, control and fix must exist in BOTH styles; adding something to one and not the other is a bug, not a variant. They are two presentations of one product, not two products.";
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, richTextThemeRule);
     requireText(relativePath, content, easyLayoutRule);
     requireText(relativePath, content, japaneseTextRule);
     requireText(relativePath, content, simpleCustomizationRule);
     requireText(relativePath, content, jobsPeriodRule);
+    requireText(relativePath, content, homeLayoutRule);
 }
+
+/*
+ * The layout choice itself, asserted in code as well as in prose.
+ *
+ * The default is the load-bearing half: an AI "tidying up" the preference back
+ * to the editorial layout would undo an explicit request from Novesce, and
+ * nothing else in the build would notice.
+ */
+const bossHome = read("solid/components/home/boss.jsx");
+const layoutPreference = read("src/lib/layout-preference.js");
+requireText("src/lib/layout-preference.js", layoutPreference, 'DEFAULT_HOME_LAYOUT = "simple"');
+requireText("src/lib/layout-preference.js", layoutPreference, 'HOME_LAYOUTS = ["simple", "boss"]');
+requireText("src/pages/Home.jsx", home, ["const isBoss = () => layout() === \"boss\""]);
+requireText("src/components/SettingsModal.jsx", settingsModal, "Boss style");
+
+/* The editorial layer must stay gated, or the default layout silently becomes
+   the editorial one again — flat cards, 2px radii, no elevation. */
+requireText("src/styles/editorial-home.css", editorialHomeCss, "html.home-layout-boss .editorial-home .mabis-widget");
+forbidText("src/styles/editorial-home.css", editorialHomeCss, "\n.editorial-home ");
+
+/* One widget render path for both layouts. Two would drift. */
+requireText("src/pages/Home.jsx", home, "const renderWidget = (s) =>");
 
 const cursorTrackingRule = "The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixels without prediction, magnetic displacement, device-pixel-ratio scaling, or accumulating lag; a tightly capped spatial deadband may suppress subpixel and one-pixel OS jitter, and the outer ring may use bounded spring-follow displacement.";
 const cursorContractFiles = [
@@ -206,8 +250,8 @@ for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, scrollGlassRule);
 }
 
-const fontStackRule = "GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack.";
-const mapleCjkRule = "Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono first.";
+const fontStackRule = "GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack; the pinned OpenMoji emoji font leads every stack but is scoped by `unicode-range` to emoji codepoints alone, so it never renders text.";
+const mapleCjkRule = "Explicitly marked Chinese, Japanese, and Korean text uses Maple Mono ahead of every other text face; only the emoji-scoped OpenMoji family may precede it in a stack, and that family covers no CJK codepoint.";
 const googleAuthRule = "The public authentication surface is Google-only: `/login` exposes one Continue with Google button, and registration/password-reset routes redirect there.";
 const openMojiRule = "All app-authored emoji must use pinned, production-ready OpenMoji color SVGs; do not rely on platform-native emoji glyphs.";
 for (const [relativePath, content] of editorialContractFiles) {
@@ -228,10 +272,54 @@ requireText(".github/copilot-instructions.md", copilot, "The Novesce UI mandate 
 requireText("src/lib/themes.js", themes, "key: \"gnu-free-mono\"");
 requireText("src/lib/themes.js", themes, "gnu-free-mono-v2");
 requireText("src/lib/themes.js", themes, "function withGnuFallbacks");
-requireText("src/lib/themes.js", themes, "const cjkFallback = \"'Maple Mono NF CN'");
+requireText("src/lib/themes.js", themes, "'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono'");
+
+/*
+ * OpenMoji is the emoji font, and nothing else may render an emoji.
+ *
+ * Pinned SVGs via OpenMoji.jsx cover app-authored glyphs, but emoji people
+ * TYPE — announcements, news, minutes, topic titles, all rendered as user HTML
+ * through innerHTML — have no component to route through. Without a font
+ * leading the stack they fall to Apple Color Emoji / Segoe / Noto, which is
+ * exactly what the contract forbids and is invisible to every other check
+ * here: no build failure, no markup change, just different glyphs per device.
+ *
+ * Both halves are pinned because either alone is useless. The @font-face
+ * without the stack prefix is a font nothing selects; the prefix without the
+ * @font-face is a family that does not resolve. The unicode-range is pinned
+ * too — dropping it would let a 2.63 MiB emoji font try to render ordinary
+ * text and pull itself onto the critical path.
+ */
+/*
+ * Custom colours belong to one account.
+ *
+ * The theme catalogue stays open to everyone; the make-your-own surface does
+ * not (Novesce, Aug 2026 — see src/lib/custom-color-access.js). Three things
+ * are pinned because the feature needs all three and losing any one of them
+ * fails silently:
+ *
+ *   · the predicate, in one place, so the three call sites cannot drift;
+ *   · the switcher gate — without it the controls simply reappear for
+ *     everyone, with no error and nothing visibly wrong;
+ *   · the reconcile — without it an account that already had custom colours
+ *     keeps them with no way to change or reset them, which is worse than
+ *     never having restricted it.
+ *
+ * This is a UI availability rule, not an authorisation boundary; the note in
+ * custom-color-access.js says why that is the right weight here.
+ */
+requireText("src/lib/custom-color-access.js", customColorAccess, "boss@montessoribkk.com");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "canUseCustomColors(auth.user())");
+requireText("src/components/PrefsSync.jsx", prefsSync, "canUseCustomColors(auth.user())");
+requireText("src/components/PrefsSync.jsx", prefsSync, "clearCustomColors()");
+
+requireText("src/index.css", css, "font-family: 'OpenMojiColor'");
+requireText("src/index.css", css, "unicode-range:");
+requireText("src/lib/themes.js", themes, "const EMOJI_FAMILY = \"'OpenMojiColor'\"");
+requireText("src/lib/themes.js", themes, "[EMOJI_FAMILY, ...selectedFamilies");
 requireText("src/lib/themes.js", themes, "root.style.setProperty(\"--font-cjk\", cjkFallback)");
-requireText("src/index.css", css, "--font-body: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI'");
-requireText("src/index.css", css, "--font-cjk: 'Maple Mono NF CN'");
+requireText("src/index.css", css, "--font-body: 'OpenMojiColor', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI'");
+requireText("src/index.css", css, "--font-cjk: 'OpenMojiColor', 'Maple Mono NF CN'");
 requireText("src/index.css", css, ":lang(ko)");
 requireText("src/index.css", css, "unicode-range: U+0E00-0E7F");
 requireText("src/components/CjkFontLoader.jsx", cjkFontLoader, "https://fontsapi.zeoseven.com/442/main/result.css");
@@ -239,7 +327,17 @@ requireText("src/components/CjkFontLoader.jsx", cjkFontLoader, "MutationObserver
 requireText("src/pages/Login.jsx", login, 'base44.auth.loginWithProvider("google", "/home")');
 requireText("src/pages/Login.jsx", login, "CONTINUE WITH GOOGLE");
 forbidText("src/pages/Login.jsx", login, "loginViaEmailPassword");
-forbidText("src/pages/Login.jsx", login, "<form");
+forbidText("solid/pages/Login.jsx", login, "<form");
+
+/* The public auth surface stays Google-only however the platform scaffolds it:
+   no router may mount the boilerplate, and the retired routes must keep
+   redirecting rather than render a password form. */
+for (const retired of ["Register", "ForgotPassword", "ResetPassword", "OAuthConsent"]) {
+    forbidText("solid/App.jsx", app, `pages/${retired}`);
+}
+for (const retired of ["/register", "/forgot-password", "/reset-password"]) {
+    requireText("solid/App.jsx", app, `<Route path="${retired}" component={RedirectToLogin} />`);
+}
 requireText("src/App.jsx", app, ['<Route path="/register" element={<Navigate to="/login" replace />} />', '<Route path="/register" component={RedirectToLogin} />']);
 requireText("src/App.jsx", app, ['<Route path="/forgot-password" element={<Navigate to="/login" replace />} />', '<Route path="/forgot-password" component={RedirectToLogin} />']);
 requireText("src/App.jsx", app, ['<Route path="/reset-password" element={<Navigate to="/login" replace />} />', '<Route path="/reset-password" component={RedirectToLogin} />']);
@@ -262,16 +360,94 @@ for (const hexcode of openMojiAssets) {
     if (!fs.existsSync(path.join(root, assetPath))) failures.push(`Missing pinned OpenMoji asset: ${assetPath}`);
 }
 
+/*
+ * No platform-native emoji glyph in app-authored source.
+ *
+ * This scanned `src/` only, which stopped being the UI when the Solid cutover
+ * landed — every component a reader actually sees lives in `solid/`, and a
+ * native emoji there shipped unguarded. Both trees are scanned now.
+ *
+ * Why it matters beyond consistency: an emoji codepoint in text is rendered by
+ * the platform's own emoji font, which differs per OS and per version, ignores
+ * the app's palette, and cannot be pinned. OpenMoji.jsx renders a pinned SVG
+ * asset instead, so the glyph is identical everywhere and frozen at a version.
+ */
 const nativeEmojiPattern = /\p{Extended_Pictographic}/u;
-for (const sourceFile of listSourceFiles("src").filter((file) => /\.(?:js|jsx|ts|tsx)$/.test(file))) {
+const emojiScanRoots = ["solid", "src"].filter((dir) => fs.existsSync(path.join(root, dir)));
+for (const sourceFile of emojiScanRoots.flatMap((dir) => listSourceFiles(dir)).filter((file) => /\.(?:js|jsx|ts|tsx)$/.test(file))) {
     const source = fs.readFileSync(path.join(root, sourceFile), "utf8");
     if (nativeEmojiPattern.test(source)) {
         failures.push(`${sourceFile} contains a platform-native emoji glyph; use OpenMoji.jsx with a pinned SVG asset`);
     }
 }
 
+/*
+ * The site header must not form a backdrop root.
+ *
+ * The contract requires live glass backdrop blur on the floating control
+ * plane. `isolation: isolate`, `filter`, `opacity` below 1 or a `mask` on the
+ * header shell each form a backdrop root (Filter Effects), and a backdrop
+ * filter samples nothing outside its own root — so the header renders its tint
+ * and border with no blur at all.
+ *
+ * That failure is invisible to everything else here: the build passes, the
+ * markup is unchanged, the computed styles all look right, and the bar just
+ * quietly stops being glass. It shipped that way once already.
+ *
+ * The header's stacking context comes from `position: fixed` + `z-50`, which
+ * is not a backdrop root, so nothing needs this to lay out correctly.
+ */
+{
+  const backdropRootProps = /isolation\s*:\s*isolate|(^|;|\{)\s*filter\s*:|mix-blend-mode\s*:/;
+  /* Both rules carry a comment explaining why the property must NOT be there,
+     and that comment names the property. Strip comments first or the guard
+     fires on the very note telling you not to reintroduce it. */
+  const declarationsOnly = (rule) => rule.replace(/\/\*[\s\S]*?\*\//g, "");
+
+  const shellRule = declarationsOnly(glassCss.match(/\.site-header-shell\s*\{[^}]*\}/g)?.join("\n") || "");
+  if (backdropRootProps.test(shellRule)) {
+    failures.push(
+      "src/styles/glass.css: .site-header-shell forms a backdrop root — the top bar's glass will render transparent instead of blurred. See the note above that rule."
+    );
+  }
+
+  /* The surface itself must not form one either. backdrop-filter already gives
+     it a stacking context, so isolation/filter/mix-blend-mode here buy nothing
+     and cost the entire effect. */
+  const surfaceRule = declarationsOnly(glassCss.match(/(^|\})\s*\.lg-surface\s*\{[^}]*\}/m)?.[0] || "");
+  if (backdropRootProps.test(surfaceRule)) {
+    failures.push(
+      "src/styles/glass.css: .lg-surface forms its own backdrop root — it has no backdrop left to sample and will render tint and border with no blur."
+    );
+  }
+}
+
 requireText("src/styles/editorial-home.css", editorialHomeCss, ".editorial-home .mabis-widget-header");
-requireText("src/main.jsx", main, ["import '@/styles/editorial-home.css'", 'import "@/styles/editorial-home.css"']);
+/*
+ * The editorial layer must be imported by the app — but not from any
+ * particular file.
+ *
+ * This rule used to name the entry, which quietly forced a cost it was never
+ * meant to impose: every rule in editorial-home.css is gated on
+ * `html.home-layout-boss`, so importing it from the entry made the DEFAULT
+ * layout download and parse a stylesheet it cannot match a single selector
+ * of. Pinning the location is what made that unavoidable.
+ *
+ * What the contract actually protects is that the layer SHIPS — that nobody
+ * quietly deletes the editorial normalization by dropping its import — and
+ * that holds wherever the import lives. Scanning both trees keeps the rule
+ * true if the file moves again, and lets the import sit with the layout that
+ * needs it.
+ */
+const editorialImport = /import\s+["']@\/styles\/editorial-home\.css["']/;
+const editorialImporters = ["solid", "src"]
+    .filter((dir) => fs.existsSync(path.join(root, dir)))
+    .flatMap((dir) => listSourceFiles(dir))
+    .filter((file) => /\.(?:js|jsx|ts|tsx)$/.test(file))
+    .filter((file) => editorialImport.test(fs.readFileSync(path.join(root, file), "utf8")));
+if (editorialImporters.length === 0) {
+    failures.push("No module imports '@/styles/editorial-home.css' — the Home editorial normalization would not ship at all");
+}
 requireText("src/pages/Home.jsx", home, ['className="editorial-home min-h-screen', 'class="editorial-home min-h-screen']);
 requireText("src/lib/cursor-preference.js", cursorPreference, "mabis_custom_cursor_enabled");
 requireText("src/lib/color/themeBalance.js", themeBalance, "contrastSafePair");
@@ -292,11 +468,30 @@ requireText("src/lib/japanese-text-preference.js", japanesePreference, 'mabis-ja
 requireText("src/lib/japanese-text-preference.js", japanesePreference, '=== "true"');
 requireText("src/components/SettingsModal.jsx", settingsModal, "SIMPLE_FONT_KEYS");
 requireText("src/components/SettingsModal.jsx", settingsModal, "Advanced font choices");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "SIMPLE_THEME_KEYS");
+/*
+ * The picker must build its list from the allow-list, not from THEMES.
+ *
+ * THEMES still holds the ~140 retired palettes, because they back the pride
+ * ambience, the Frutiger Aero surface and the contrast fixtures. So the
+ * catalogue is one `Object.entries(THEMES)` away from returning to the UI, and
+ * that regression would look like a feature rather than a fault. Pin the
+ * allow-list, and forbid enumerating THEMES in the surface that renders the
+ * swatches.
+ */
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "SELECTABLE_THEME_KEYS");
+requireText("src/lib/themes.js", themes, "export const SELECTABLE_THEME_KEYS");
+if (/Object\.entries\(THEMES\)|Object\.keys\(THEMES\)/.test(themeSwitcher)) {
+  failures.push(
+    "src/components/ThemeSwitcher.jsx enumerates THEMES directly — that puts every retired theme back in the picker. Build the list from SELECTABLE_THEME_KEYS."
+  );
+}
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "Browse all themes");
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "VOICE YOUR WORDS");
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "A WEEKLY RITUAL");
-requireText("src/pages/Home.jsx", home, "<HomeSectionIndex />");
+/* The page guide is the boss layout's navigation aid and moved into its chunk
+   with the rest of the editorial furniture. The default layout deliberately
+   has none — it is a single stack of cards, with nothing to jump between. */
+requireText("solid/components/home/boss.jsx", bossHome, "<HomeSectionIndex />");
 requireText("src/pages/Home.jsx", home, "<QuickStartGuide open");
 requireText("scripts/check-theme-balance.mjs", themeBalanceCheck, "Theme balance:");
 requireText("package.json", packageJson, "npm run check:design && npm run check:themes && npm run check:performance");

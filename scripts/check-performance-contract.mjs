@@ -44,7 +44,7 @@ const SOLID_EQUIVALENTS = {
   "src/lib/routeLoaders.js": ["solid/lib/routes.js"],
   "src/lib/home-route-warmup.js": ["solid/lib/home-warmup.js"],
   "src/lib/query-client.js": ["solid/lib/query-client.js"],
-  "src/components/home/LazySection.jsx": ["solid/components/home/shell.jsx", "solid/lib/perf.js"],
+  "src/components/home/LazySection.jsx": ["solid/components/home/LazySection.jsx", "solid/lib/perf.js"],
   // The React AuthContext went with the React UI; Solid has its own carrying
   // the same offline-recovery guarantees this rule protects.
   "src/lib/AuthContext.jsx": ["solid/lib/AuthContext.jsx"],
@@ -97,8 +97,9 @@ const home = read("src/pages/Home.jsx");
 const discussion = read("src/components/DiscussionWidget.jsx");
 const feedback = read("src/pages/Feedback.jsx");
 const optionalCursor = read("src/components/OptionalCustomCursor.jsx");
-const scrollProgress = read("src/lib/scroll-progress.js");
 const smoothScroll = readIfPresent("src/components/SmoothScroll.jsx") + readIfPresent("solid/lib/perf.js");
+const chrome = read("solid/components/chrome.jsx");
+const motionCss = read("solid/solid-motion.css");
 const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
 const glass = read("src/styles/glass.css");
@@ -121,7 +122,15 @@ const lazySection = read("src/components/home/LazySection.jsx");
 const idleMount = read("src/components/IdleMount.jsx");
 const serviceWorkerGenerator = read("scripts/generate-service-worker.mjs");
 const packageJson = read("package.json");
-const html = read("index.html");
+/*
+ * The SHIPPED entry, not the root one.
+ *
+ * vite.config.js sets `root: solid/`, so solid/index.html is what Vite builds
+ * and what dist/index.html is generated from. The root index.html is a React
+ * leftover — it still points at /src/main.jsx, which no longer exists — and
+ * this rule had been validating that dead file rather than the served one.
+ */
+const html = read("solid/index.html");
 
 forbidText("src/pages/Home.jsx", home, 'from "moment"');
 forbidText("src/pages/Home.jsx", home, "from 'moment'");
@@ -148,7 +157,15 @@ requireText("src/components/SettingsModal.jsx", settings, ["useDeferredValue(fon
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const INITIAL_THEME_LIMIT = 20;");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["const ThemeOption = memo", "function ThemeOption("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "new IntersectionObserver");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["THEME_ENTRIES.slice(0, themeLimit)", "THEME_ENTRIES.slice(0, themeLimit())"]);
+/* The catalogue must stay progressively mounted — 20 at a time, never the
+   whole set at once. The list being sliced gained a search filter in front of
+   it (140 themes made the tail unreachable without one); what matters is that
+   a slice still bounds what is mounted, not which array it slices. */
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, [
+  "THEME_ENTRIES.slice(0, themeLimit)",
+  "THEME_ENTRIES.slice(0, themeLimit())",
+  "matchingThemes().slice(0, themeLimit())",
+]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "const THEME_STRIPES = new WeakMap();");
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, ["style={{ background: paletteStripe(theme) }}", "paletteStripe("]);
 requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "clearCustomColors({ notify: false });");
@@ -172,20 +189,113 @@ requireText("src/components/LoadingScreen.jsx", loadingScreen, "CACHING STUFF");
 forbidText("src/lib/home-route-warmup.js", homeRouteWarmup, 'from "three"');
 forbidText("src/App.jsx", app, "<SmoothScroll />");
 forbidText("scroll implementation", smoothScroll, 'addEventListener("wheel"');
-requireText("src/lib/scroll-progress.js", scrollProgress, 'window.addEventListener("scroll", onScroll, { passive: true })');
-requireText("src/lib/scroll-progress.js", scrollProgress, 'classList.toggle("is-scrolling", active)');
-requireText("src/lib/scroll-progress.js", scrollProgress, "new ResizeObserver(scheduleMetrics)");
+/*
+ * Scrolling is the browser's, and only one thing may listen to it.
+ *
+ * src/lib/scroll-progress.js used to own a passive scroll listener, a rAF
+ * publisher and a ResizeObserver, feeding a progress bar, a section counter,
+ * a marquee band and the glass optical response. All of that was removed: the
+ * page now scrolls natively and nothing redraws itself in response.
+ *
+ * What must survive is the opposite of decoration — installScrollStateClass()
+ * toggles html.is-scrolling, which solid-motion.css uses to drop
+ * backdrop-filter, hide the grain layer and pause infinite animations for the
+ * duration of a gesture. That is what keeps a native scroll at frame rate on
+ * an integrated GPU, so it is required, and required in the shell rather than
+ * in one page.
+ */
+requireText("src/App.jsx", app, "installScrollStateClass()");
+requireText("scroll implementation", smoothScroll, 'classList.add("is-scrolling")');
+forbidText("solid/components/chrome.jsx", chrome, "subscribeScrollProgress");
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, ["style={{ scale, opacity }}", "lineEl.style.transform"]);
+/* Static. It used to measure its own rect on every scroll event and drive a
+   spring through the shared physics scheduler to write transform and opacity
+   per frame; a line that resizes because the page moved is the clearest signal
+   that the site, not the browser, is doing the scrolling. */
+forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, 'addEventListener("scroll"');
+forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "lineEl.style.transform");
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
+/* A cache-first worker that never skips waiting serves the previous build to
+   every open tab until all of them close. That turned into shipped fixes that
+   users could not see, so both halves of the handover are pinned: the worker
+   takes over, and the page reloads once when it does. */
+requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "self.skipWaiting();");
+requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "await self.clients.claim();");
+requireText("src/main.jsx", main, 'navigator.serviceWorker.addEventListener("controllerchange"');
+
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
+
+/*
+ * .lg-surface must never declare containment.
+ *
+ * It is the wrapper every glass panel renders its content into, including the
+ * site header. `contain: paint` clips descendants to the padding box and makes
+ * the element a containing block for fixed descendants, so any menu opened
+ * from a glass panel silently vanishes — present in the DOM, correct in every
+ * computed style, invisible on screen. That shipped once; the file carried a
+ * comment warning against it at the time, so a comment is not enough.
+ *
+ * Containment on ::before / ::after is fine and deliberately still allowed:
+ * pseudo-elements cannot have children.
+ */
+const surfaceStart = glass.indexOf(".lg-surface {");
+/* Comments are stripped first: the rule carries a prose warning that names the
+   very declaration being forbidden, and matching that would fail the build for
+   documenting the rule. */
+const surfaceBody = surfaceStart === -1
+  ? ""
+  : glass.slice(surfaceStart, glass.indexOf("}", surfaceStart)).replace(/\/\*[\s\S]*?\*\//g, "");
+if (surfaceStart === -1) {
+  failures.push("src/styles/glass.css: .lg-surface rule not found — the containment guard below cannot run");
+} else if (/contain\s*:/.test(surfaceBody)) {
+  failures.push("src/styles/glass.css: .lg-surface must not declare `contain` — it clips every dropdown rendered inside a glass panel (move it to ::before/::after)");
+}
 requireText("src/components/JobsWidget.jsx", jobs, ["appearanceRef", "appearanceRaf"]);
 requireText("src/components/JobsWidget.jsx", jobs, "appearanceRaf");
 requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize");
-requireText("src/index.css", css, "content-visibility: auto");
-requireText("src/index.css", css, "contain-intrinsic-size: auto 720px");
+/*
+ * content-visibility is allowed, but ONLY gated on cv-ready.
+ *
+ * solid-motion.css skips a section once `.cv-ready` says its entrance has
+ * played. That gate is what makes it safe: a section the browser has rendered
+ * at least once has a real measured height for `contain-intrinsic-size: auto`
+ * to remember, so skipping it again on the way past costs no layout shift.
+ *
+ * index.css also carried `main [data-gp-section] { content-visibility: auto;
+ * contain-intrinsic-size: auto 720px }`, ungated. Its 720px was dead on arrival
+ * — both section components set contain-intrinsic-size inline, per section, and
+ * an inline style always wins — but its content-visibility applied before first
+ * render, which defeated the gate. Sections were skipped with nothing measured
+ * to remember, so each one jumped from its estimate to its true height as it
+ * revealed and the scroll position moved under the reader; it also discarded
+ * the entrance animation, the exact bug the gate was introduced to fix.
+ *
+ * So: required in solid-motion.css behind cv-ready, forbidden ungated in
+ * index.css.
+ */
+requireText("solid/solid-motion.css", motionCss, ".cv-section.cv-ready");
+/* Declarations only. index.css documents this removal at length and names the
+   property while doing so; prose about why it is gone is not a regression. */
+forbidText("src/index.css", css.replace(/\/\*[\s\S]*?\*\//g, ""), "content-visibility: auto");
+requireText("src/components/home/LazySection.jsx", lazySection, "contain-intrinsic-size");
+/*
+ * The custom scrollbar may only be drawn where the OS draws a classic one.
+ *
+ * Any ::-webkit-scrollbar declaration opts a scroller out of the platform's
+ * overlay scrollbars. On Windows and Linux that is cosmetic; on macOS it swaps
+ * a bar that hides, fades, widens on hover and takes no layout width for one
+ * that does none of those. The site scrolled correctly on Windows and Linux and
+ * felt broken on a Mac for precisely this reason, so every such rule is gated
+ * on .classic-scrollbars and the class is set from a measurement before paint.
+ */
+requireText("src/main.jsx", main, "applyScrollbarMode()");
+forbidText(
+  "src/index.css",
+  css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/html\.classic-scrollbars[^,{]*/g, ""),
+  "::-webkit-scrollbar",
+);
 requireText("src/main.jsx", main, "window.setTimeout(resolve, 800)");
 requireText("src/main.jsx", main, '.register("/sw.js"');
 requireText("package.json", packageJson, "node scripts/generate-service-worker.mjs");
@@ -222,7 +332,28 @@ forbidText("src/lib/themes.js", themes, 'import { BY_WOMXN_FONTS }');
 requireText("src/index.css", css, "html.theme-committing *::before");
 forbidText("src/index.css", css, "body.theme-shifting");
 forbidText("src/index.css", css, "@import url('/fonts/by-womxn/fonts.css')");
-requireText("index.html", html, "/fonts/gnu-freefont/FreeMono.woff2?v=2");
+/* Preload the first-paint subsets. Preloading the full pan-Unicode faces put
+   287 KiB of font-display:block ahead of first paint; see the header of
+   scripts/build-font-subsets.py. check-font-subset.mjs guards the rest. */
+/*
+ * The boot splash must stay in the entry HTML.
+ *
+ * #root ships empty and LoadingScreen is a Solid component, so without this
+ * markup the page is a flat #11131a rectangle from first paint until the
+ * stylesheet, the entry chunks and bootstrap()'s font wait have all finished —
+ * seconds on a cold cache, and long enough that the custom cursor appears over
+ * a blank screen. Deleting it would not fail any build or change any test:
+ * the app still works, it just looks broken while it loads. Hence the pin.
+ *
+ * The hide rule is pinned separately because losing only that leaves the
+ * splash covering the app forever, which is the worse failure of the two.
+ */
+requireText("solid/index.html", html, 'id="boot-splash"');
+requireText("solid/index.html", html, "#root:not(:empty) + #boot-splash");
+
+requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono-subset.woff2?v=3");
+requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3");
+forbidText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono.woff2");
 requireText("src/lib/routeLoaders.js", routeLoaders, "saveDataEnabled()");
 requireText("src/lib/query-client.js", queryClient, "CACHE_LIFETIME");
 requireText("src/components/home/LazySection.jsx", lazySection, "isConstrainedNetwork()");

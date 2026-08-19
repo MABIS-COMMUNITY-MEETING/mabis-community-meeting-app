@@ -1,4 +1,4 @@
-import { lazy, Suspense, Show, onMount } from "solid-js";
+import { lazy, Suspense, Show, onMount, onCleanup } from "solid-js";
 import { Router, Route, Navigate } from "@solidjs/router";
 import { QueryClientProvider } from "@tanstack/solid-query";
 import { queryClientInstance } from "~/lib/query-client";
@@ -16,7 +16,8 @@ import SoundEffects from "~/components/SoundEffects";
 import PrideAmbience from "~/components/PrideAmbience";
 import PageTransition from "~/components/PageTransition";
 import UserNotRegisteredError from "~/components/UserNotRegisteredError";
-import { GrainOverlay, PaletteStripe, ScrollProgress } from "~/components/chrome";
+import { GrainOverlay, PaletteStripe } from "~/components/chrome";
+import { installScrollStateClass } from "~/lib/perf";
 
 /*
  * Solid migration — application shell.
@@ -124,23 +125,21 @@ function ProtectedFeedback() {
 }
 
 /* React wraps every route except Splash in PageTransition. */
-/*
- * /login, but never for someone who is already signed in.
- *
- * Splash decides where Enter goes, but it is not the only way in: a bookmark,
- * a back button, an old link in a chat, or the OAuth redirect landing after the
- * session was already restored all arrive here directly. Without this they
- * would sit on a login form they have no reason to see.
- *
- * Gated on isLoadingAuth so the probe gets to finish first — redirecting on the
- * initial `false` would bounce a signed-in reader to /home, fail Protected's
- * check, and send them straight back here.
- */
 function TransitionedLogin() {
   const auth = useAuth();
+  /*
+   * A signed-in user landing on /login — stale bookmark, browser back, or
+   * Splash's own "already authenticated" check racing auth on first paint
+   * (see Splash.jsx) — should never see the form at all, just bounce
+   * straight to /home. Gate on the same loading signals Protected uses so
+   * this does not fire on a false "not authenticated yet" read before the
+   * cookie probe / offline recovery has had a chance to resolve.
+   */
   return (
-    <Show when={auth.isLoadingAuth() || !auth.isAuthenticated()} fallback={<Navigate href="/home" />}>
-      <PageTransition><Login /></PageTransition>
+    <Show when={!auth.isLoadingAuth() && !auth.isLoadingPublicSettings()} fallback={<ChunkFallback />}>
+      <Show when={!auth.isAuthenticated()} fallback={<Navigate href="/home" />}>
+        <PageTransition><Login /></PageTransition>
+      </Show>
     </Show>
   );
 }
@@ -164,7 +163,7 @@ export default function App() {
           <GrainOverlay />
           <PrideAmbience />
           <PaletteStripe />
-          <ScrollProgress />
+          <ScrollState />
           <Suspense fallback={<ChunkFallback />}>
             <Router root={ScrollResetRoot}>
               <Route path="/" component={Splash} />
@@ -186,6 +185,27 @@ export default function App() {
       </QueryClientProvider>
     </MotionPreference>
   );
+}
+
+/*
+ * The one thing left listening to scroll, and it is not an effect — it is what
+ * keeps the browser's own scrolling cheap.
+ *
+ * installScrollStateClass() toggles `html.is-scrolling`, which solid-motion.css
+ * uses to drop backdrop-filter on glass surfaces, hide the grain layer and
+ * pause decorative infinite animations for the duration of the gesture. Those
+ * are per-frame GPU costs the user cannot see while the page is moving, and
+ * paying them is what makes a native scroll feel like it stutters.
+ *
+ * It lives here rather than in Home because it used to be installed twice from
+ * two places: Home mounted it directly, and scroll-progress.js toggled the same
+ * class for every other route as a side effect of driving the progress bar.
+ * With the scroll-driven chrome gone, the guard needs one owner that covers
+ * every route.
+ */
+function ScrollState() {
+  onMount(() => onCleanup(installScrollStateClass()));
+  return null;
 }
 
 /*
