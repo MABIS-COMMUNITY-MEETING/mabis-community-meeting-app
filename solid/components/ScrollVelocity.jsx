@@ -1,19 +1,18 @@
-import { Index, Show } from "solid-js";
+import { onMount, onCleanup, Index, Show } from "solid-js";
+import { subscribeScrollProgress } from "@/lib/scroll-progress";
 
 const DEFAULT_ITEMS = ["MABIS", "COMMUNITY", "FRIDAY", "BANGKOK"];
 
 /*
- * Quiet typographic interlude — a static editorial rule.
+ * Quiet typographic interlude — port of src/components/ScrollVelocity.jsx.
  *
- * The band used to translate from 1% to -10% across page progress, driven by a
- * style.transform write on every scroll frame. That drift is gone: scrolling is
- * the browser's job and nothing here should move because the page moved. The
- * band keeps its position, type and spacing, so the section reads exactly as it
- * did at rest — which is where a reader saw it most of the time anyway.
+ * The band moves slowly with page progress instead of splitting into RGB ghost
+ * layers, so it reads as editorial punctuation.
  *
- * The second, aria-hidden copy of the sequence stays. It sat off the right edge
- * under overflow-hidden before and still does; it exists so the rule reaches the
- * full width on a wide viewport rather than stopping mid-line.
+ * framer's useTransform(scrollYProgress, [0,1], ["1%","-10%"]) becomes a direct
+ * style.transform write from the app's own scroll subscription. No signal is
+ * written per frame — that would push the whole reactive graph through every
+ * scroll tick for one translate.
  */
 function Sequence(props) {
   return (
@@ -35,14 +34,20 @@ function Sequence(props) {
 }
 
 export default function ScrollVelocity(props) {
+  let trackEl;
   const sequence = () => (props.items?.length > 0 ? props.items : DEFAULT_ITEMS);
+
+  onMount(() => {
+    const unsubscribe = subscribeScrollProgress((progress) => {
+      // 1% → -10% across the page, exactly the framer range.
+      if (trackEl) trackEl.style.transform = `translateX(${(1 + progress * -11).toFixed(3)}%)`;
+    });
+    onCleanup(() => unsubscribe?.());
+  });
 
   return (
     <div class={`relative overflow-hidden whitespace-nowrap ${props.class || ""}`}>
-      {/* No will-change: nothing animates this any more, and the hint alone
-          would keep the band on its own compositor layer for the life of the
-          page. */}
-      <div style={{ transform: "translateX(1%)" }} class="inline-flex items-center">
+      <div ref={trackEl} style={{ transform: "translateX(1%)" }} class="inline-flex items-center will-change-transform">
         <Sequence items={sequence()} />
         <span aria-hidden class="ml-[0.84em] inline-flex items-center">
           <span class="mr-[0.42em] inline-flex h-[0.72em] w-[0.72em] items-center justify-center shrink-0">

@@ -116,8 +116,48 @@ export default function DiscussionWidget(props) {
     }
   }));
 
+  /*
+   * The clock, as a reactive value.
+   *
+   * viewedWeek() below used to read `new Date()` straight out of a memo. A memo
+   * only recomputes when something it TRACKS changes, and the wall clock is not
+   * trackable — so the week was decided once, at mount, and then never moved.
+   * Leave the app open across Friday (or restore a PWA session, or wake a
+   * laptop) and it kept serving the previous week: last week's topics, last
+   * week's document.
+   *
+   * Worse than the stale view, new topics were WRITTEN with that stale label
+   * (see week_label below), filing this week's business under last week, while
+   * archiveWeek used a fresh getWeekLabel(new Date()) and so archived a week
+   * the screen was not showing. That is the mismatch behind "last week's stuff
+   * is affecting this week".
+   *
+   * A minute is far finer than a week boundary needs, and costs nothing: the
+   * memo re-runs but returns the SAME string, so its equality check stops the
+   * update there — no re-query, no re-render. The listeners are what actually
+   * matter, since a tab is usually hidden or unfocused when the boundary
+   * passes; the interval is only the backstop for a tab left open and visible.
+   */
+  const [clock, setClock] = createSignal(Date.now());
+  onMount(() => {
+    const tick = () => setClock(Date.now());
+    let timer = 0;
+    const start = () => { if (!timer) timer = window.setInterval(tick, 60_000); };
+    const stop = () => { if (timer) { clearInterval(timer); timer = 0; } };
+    const onVisibility = () => { tick(); document.hidden ? stop() : start(); };
+
+    if (!document.hidden) start();
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", tick);
+    onCleanup(() => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", tick);
+    });
+  });
+
   const viewedWeek = createMemo(() => {
-    const base = new Date();
+    const base = new Date(clock());
     const offset = weekOffset();
     const d = offset === 0 ? base : offset > 0 ? addWeeks(base, offset) : subWeeks(base, Math.abs(offset));
     return getWeekLabel(d);

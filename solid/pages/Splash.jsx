@@ -1,10 +1,10 @@
-import { createSignal, onMount, onCleanup, For, Show } from "solid-js";
+import { createSignal, createEffect, onMount, onCleanup, For, Show } from "solid-js";
 import { useNavigate } from "@solidjs/router";
+import { useAuth } from "~/lib/AuthContext";
 import { ArrowUpRight, Plus, ArrowDown } from "lucide-solid";
 import { subscribe } from "@/lib/physics/scheduler";
 import { integrateSpring } from "@/lib/physics/math";
 import { springFromFramer, finePointer } from "~/lib/motion";
-import { useAuth } from "~/lib/AuthContext";
 import {
   JapaneseText,
   KineticBackground,
@@ -12,8 +12,6 @@ import {
   MagneticButton,
   SplitChars,
 } from "~/components/primitives";
-import { useHomeLayout } from "~/lib/prefs";
-import SummerSplash from "~/components/home/SummerSplash";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 const EASE_CSS = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -78,20 +76,26 @@ function Enter(props) {
   return <div class={props.class} style={style()}>{props.children}</div>;
 }
 
-function EditorialSplash() {
+export default function Splash() {
   let bgRef;
   let titleRef;
 
-  // Real auth state now that AuthContext is ported. isAuthenticated() can
-  // read false for a moment on first paint if the cookie probe / offline
-  // recovery is still resolving (auth.isLoadingAuth() true) — that only
-  // matters if the user clicks Enter in that exact window, and even then
-  // TransitionedLogin (App.jsx) catches it: an already-authenticated user who
-  // lands on /login gets bounced straight to /home once auth resolves, so
-  // this can never strand someone on the login form.
+  // The React page reads auth to pick the button label. AuthContext has not
+  // been ported yet — that is its own migration task — so this slice renders
+  // the signed-out label. Everything visual is unaffected.
+  /*
+   * Real auth, not a stub.
+   *
+   * This was hardcoded to false, so Enter always went to /login and the button
+   * always read "ENTER LOG IN" — a signed-in reader was sent to a login screen
+   * they had no business seeing, every single time.
+   */
   const auth = useAuth();
-  const isAuthenticated = () => auth.isAuthenticated();
   const navigate = useNavigate();
+  const isAuthenticated = () => auth.isAuthenticated();
+
+  /* Set when Enter is pressed while the session probe is still in flight. */
+  const [waitingForAuth, setWaitingForAuth] = createSignal(false);
 
   onMount(() => {
     if (!finePointer()) return;
@@ -129,19 +133,33 @@ function EditorialSplash() {
     });
   });
 
+  const go = () => navigate(auth.isAuthenticated() ? "/home" : "/login");
+
+  /*
+   * Enter, without ever showing a signed-in reader the login screen.
+   *
+   * Two things had to change. `window.location.href` was a full page load: it
+   * threw away the running app and paid the whole boot again — re-fetching the
+   * HTML, re-parsing the bundle, re-applying theme and font, and redoing the
+   * auth check that had just finished. Client-side navigation keeps all of it.
+   *
+   * And the decision has to WAIT. isLoadingAuth() starts true, so a reader who
+   * presses Enter before the probe resolves reads as signed out and gets
+   * bounced to /login even though their session is perfectly good. Pressing
+   * Enter early now records the intent and the effect below routes the moment
+   * the answer arrives.
+   */
   const enter = () => {
-    // Client-side navigation, not window.location.href: a hard reload leaves
-    // the whole already-running app behind, so nothing of ours — including
-    // LoadingScreen — gets to render during the gap; the browser does its own
-    // blank native transition instead, then the ENTIRE boot sequence pays
-    // again from zero (re-fetch index.html, re-parse/execute the whole JS
-    // bundle, redo theme/font application, redo the auth check network call
-    // that has, in the overwhelmingly common case, already resolved by the
-    // time this click happens). Routing within the mounted Router instead
-    // means Protected's LoadingScreen fallback mounts instantly, and none of
-    // that boot cost gets paid twice.
-    navigate(isAuthenticated() ? "/home" : "/login");
+    if (auth.isLoadingAuth()) { setWaitingForAuth(true); return; }
+    go();
   };
+
+  createEffect(() => {
+    if (waitingForAuth() && !auth.isLoadingAuth()) {
+      setWaitingForAuth(false);
+      go();
+    }
+  });
 
   const marqueeRun = () => (
     <For each={Array.from({ length: 6 })}>
@@ -265,7 +283,11 @@ function EditorialSplash() {
             >
               <span class="tech-label">N° 02</span>
               <span class="text-lg sm:text-xl font-display font-normal tracking-tight">
-                {isAuthenticated() ? "ENTER START" : "ENTER LOG IN"}
+                <Show when={!waitingForAuth()} fallback="ENTER · CHECKING…">
+                  <Show when={!auth.isLoadingAuth()} fallback="ENTER">
+                    {isAuthenticated() ? "ENTER START" : "ENTER LOG IN"}
+                  </Show>
+                </Show>
               </span>
               <span class="relative flex h-8 w-8 items-center justify-center overflow-hidden">
                 <ArrowUpRight class="h-6 w-6" />
@@ -290,30 +312,5 @@ function EditorialSplash() {
         </Marquee>
       </div>
     </div>
-  );
-}
-
-/**
- * The landing page for whichever style is selected.
- *
- * Routed through <Show> rather than a branch inside one component, so the
- * editorial splash's pointer-parallax subscription and its kinetic background
- * never mount at all under Summer style — the cheapest version of that work
- * is the version that does not run.
- */
-export default function Splash() {
-  const auth = useAuth();
-  const navigate = useNavigate();
-  const layout = useHomeLayout();
-
-  const enter = () => navigate(auth.isAuthenticated() ? "/home" : "/login");
-
-  return (
-    <Show
-      when={layout() === "boss"}
-      fallback={<SummerSplash authenticated={auth.isAuthenticated()} onEnter={enter} />}
-    >
-      <EditorialSplash />
-    </Show>
   );
 }

@@ -1,4 +1,4 @@
-import { createSignal, createEffect, onCleanup, Show } from "solid-js";
+import { createSignal, createEffect, on, onCleanup, Show } from "solid-js";
 import { useQuery, useMutation } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
 import BlockNotesEditor from "~/components/notes/BlockNotesEditor";
@@ -25,6 +25,25 @@ export default function MeetingNotesEditor(props) {
   const notesRecord = () => allTopics().find(
     (t) => t.week_label === props.weekLabel && t.is_jobs_topic === true && t.title === "__meeting_notes__",
   );
+
+  /*
+   * Forget the id the moment the week changes.
+   *
+   * recordId used to be set and never cleared, because the effect below guards
+   * on `if (record)`. Open a week that HAS notes, switch to one that does not,
+   * and the id stayed pointing at the previous week's record — so the first
+   * keystroke in the new week ran update() against LAST week's document and
+   * overwrote it. Silently, and with no way to tell from the editor, which
+   * showed the correct (empty) week the whole time.
+   *
+   * Clearing on week change is deliberately a separate effect from the set
+   * below. Collapsing them into `recordId = notesRecord()?.id ?? null` looks
+   * tidier and reintroduces a different bug: between create() resolving and
+   * the topics query refetching, notesRecord() is briefly undefined, so the
+   * id would be wiped and the next autosave would create a SECOND record for
+   * the same week. Clear on week, set on record.
+   */
+  createEffect(on(() => props.weekLabel, () => { recordId = null; }));
 
   createEffect(() => {
     const record = notesRecord();

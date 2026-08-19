@@ -10,7 +10,6 @@ export default function AnnouncementsHistory() {
       archiveLabel=" ARCHIVE — 03"
       archiveJa="アーカイブ — 03"
       title={<>ANNOUNCE-<br />MENTS</>}
-      summerTitle="Announcements"
       titleClamp="text-[clamp(2.45rem,12vw,4.5rem)]"
       subtitleJa="お知らせ履歴"
       countJa="件の投稿"

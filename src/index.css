@@ -5,81 +5,6 @@
    licensed local copies. Every UI stack falls through GNU FreeFont. Maple Mono is
    loaded only for explicitly marked Chinese, Japanese, and Korean text.
    ────────────────────────────────────────────────────────────── */
-/*
- * MUST STAY AHEAD OF EVERY RULE IN THIS FILE.
- *
- * A CSS @import is only honoured when it precedes every rule other than
- * @charset and @layer statements. This sat 267 lines down, below the
- * @font-face block that opens the type system, so the browser and the bundler
- * both discarded it and Tailwind injected nothing at all: the shipped
- * stylesheet contained not one utility — no .flex, no .grid, no .p-4, no
- * .bg-card. Every element styled by a utility class lost its background,
- * spacing and layout, which is what "things are transparent and it is not
- * rendering correctly" looked like. Nothing errored: the build stayed green
- * and the stylesheet was simply half the size it should have been.
- *
- * check-tailwind-layer.mjs fails the build if the utility layer goes missing
- * again, whatever the cause.
- *
- * Tailwind v4 still reads the v3 JS config through @config, which is what
- * holds the custom tokens (colours, role hues, fonts) and the
- * tailwindcss-animate plugin without a rewrite to @theme.
- *
- * The borderRadius tokens are the one exception. v4's theme resolver
- * statically bakes `theme.extend.borderRadius.lg: 'var(--radius)'` from
- * @config into a fixed px value at build time (e.g. `border-radius:16px`)
- * instead of leaving it as a live `var(--radius)` reference — it can't tell
- * that value is meant to stay dynamic. That silently breaks every layout
- * that changes --radius per theme (see "the default layout redefines
- * --radius" below and check-solid-parity.mjs's radius-token check, which
- * exists specifically to catch this class of bug). Re-declaring just these
- * three as native v4 theme keys keeps them as real custom properties.
- */
-@import "tailwindcss";
-@config "../tailwind.config.js";
-@theme {
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) + 2px);
-  --radius-sm: calc(var(--radius) + 4px);
-}
-
-/*
- * OpenMoji, as THE emoji font.
- *
- * The contract requires OpenMoji glyphs and forbids relying on platform-native
- * emoji. OpenMoji.jsx already covers app-authored emoji with pinned SVGs, but
- * it cannot reach emoji TYPED BY PEOPLE: announcement bodies, news, meeting
- * minutes and topic titles are user HTML rendered through `innerHTML`, and any
- * emoji inside them fell through to Apple Color Emoji / Segoe / Noto — which
- * differs per OS and per version, ignores the palette, and cannot be pinned.
- *
- * A font fixes every surface at once, the Quill editor included, with no text
- * parsing and no JavaScript on the render path.
- *
- * COST: 2.63 MiB, and none of it on the critical path. `unicode-range` means a
- * browser fetches this only when it actually has a glyph from these blocks to
- * paint — the same mechanism the FreeMono remainder uses. A page with no emoji
- * never requests a byte of it.
- *
- * RANGE: the SMP pictograph planes and the emoji joiners, plus the BMP symbol
- * blocks MINUS U+2610 and U+2611. Those two are the ballot boxes the app
- * renders as TEXT in FreeMono (see scripts/build-font-subsets.py). Claiming
- * them here would restyle them and — worse — pull 2.63 MiB down on any page
- * that merely contains a checkbox.
- */
-@font-face {
-  font-family: 'OpenMojiColor';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/openmoji/OpenMoji-color.woff2') format('woff2');
-  unicode-range:
-    U+200D, U+20E3, U+FE0F,
-    U+2600-260F, U+2612-27BF,
-    U+2B00-2BFF,
-    U+1F000-1FAFF;
-}
-
 @font-face {
   font-family: 'torrefarfan';
   font-style: normal;
@@ -124,14 +49,6 @@
   font-display: swap;
   font-weight: 100 900;
   src: url('/fonts/lilex/Lilex-Variable.woff2?v=3') format('woff2');
-}
-
-@font-face {
-  font-family: 'SpaceGroteskUI';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 300 700;
-  src: url('/fonts/space-grotesk/SpaceGrotesk-Variable.woff2?v=1') format('woff2');
 }
 
 @font-face {
@@ -270,52 +187,19 @@
   unicode-range: U+0E00-0E7F;
 }
 
-/* ── The default UI face, split for first paint ──────────────────────────────
-   These two weights are the only fonts preloaded, and they are font-display:
-   block, so nothing paints until they arrive. Whole, GNU FreeMono is
-   pan-Unicode — 4160 codepoints, Greek through Georgian — and the pair weighed
-   287 KiB, more than three times the app's entire gzipped JS and CSS.
-
-   scripts/build-font-subsets.py splits each into the codepoints first paint can
-   reach plus everything else, and prints the two unicode-range values below.
-   The ranges do not overlap, so a browser fetches the 30 KiB subset for an
-   all-Latin page and the rest file only when a character it alone covers is
-   actually on screen. No glyph is lost. Preloaded bytes: 287 KiB -> 58 KiB.
-
-   Edit these ranges only by re-running the script; check:fonts fails the build
-   if they stop matching the files, or if the shipped bundle grows a character
-   that the subset does not cover. */
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: normal;
   font-display: block;
   font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMono-subset.woff2?v=3') format('woff2');
-  unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-36F, U+2000-206F, U+2070-209F, U+2190-21FF, U+2212, U+25BC, U+2610-2611, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'GNUFreeMonoUI';
-  font-style: normal;
-  font-display: block;
-  font-weight: 400;
-  src: url('/fonts/gnu-freefont/FreeMono-rest.woff2?v=3') format('woff2');
-  unicode-range: U+100-130, U+132-151, U+154-2BA, U+2BD-2C5, U+2C7-2D9, U+2DB, U+2DD-2FF, U+370-1FFF, U+20A0-218F, U+2200-2211, U+2213-25BB, U+25BD-260F, U+2612-FEFE, U+FF00-FFFC, U+FFFE-10FFFF;
+  src: url('/fonts/gnu-freefont/FreeMono.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
   font-style: normal;
   font-display: block;
   font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3') format('woff2');
-  unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-36F, U+2000-206F, U+2070-209F, U+2190-21FF, U+2212, U+25BC, U+2610-2611, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'GNUFreeMonoUI';
-  font-style: normal;
-  font-display: block;
-  font-weight: 700;
-  src: url('/fonts/gnu-freefont/FreeMonoBold-rest.woff2?v=3') format('woff2');
-  unicode-range: U+100-130, U+132-151, U+154-2BA, U+2BD-2C5, U+2C7-2D9, U+2DB, U+2DD-2FF, U+370-1FFF, U+20A0-218F, U+2200-2211, U+2213-25BB, U+25BD-260F, U+2612-FEFE, U+FF00-FFFC, U+FFFE-10FFFF;
+  src: url('/fonts/gnu-freefont/FreeMonoBold.woff2?v=2') format('woff2');
 }
 @font-face {
   font-family: 'GNUFreeMonoUI';
@@ -339,6 +223,10 @@
   font-weight: 400;
   src: url('/fonts/UnifontExMono.woff2?v=3') format('woff2');
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   :root {
@@ -368,17 +256,13 @@
     --ink: 222 22% 8%;
     --bone: 42 34% 96%;
 
-    /* 'OpenMojiColor' leads every stack. Its unicode-range covers emoji
-       codepoints only, so it can never affect a letter — but it does mean the
-       platform emoji font is never reached. themes.js prepends the same family
-       when a user picks a different face; see withGnuFallbacks(). */
-    --font-heading: 'OpenMojiColor', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
-    --font-body: 'OpenMojiColor', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
-    --font-display: 'OpenMojiColor', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
-    --font-mono: 'OpenMojiColor', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
-    --font-cjk: 'OpenMojiColor', 'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', monospace;
+    --font-heading: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-body: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-display: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-mono: 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', 'GNUFreeSerifThai', monospace;
+    --font-cjk: 'Maple Mono NF CN', 'Maple Mono CN', 'Maple Mono', 'GNUFreeMonoUI', 'GNUFreeSansUI', 'GNUFreeSerifUI', monospace;
     --font-multilingual: var(--font-cjk);
-    --font-thai: 'OpenMojiColor', 'GNUFreeSerifThai', 'GNUFreeSerifUI', serif;
+    --font-thai: 'GNUFreeSerifThai', 'GNUFreeSerifUI', serif;
     --role-student: 348 74% 30%;
     --role-teacher: 165 55% 32%;
     --role-chair: 38 78% 48%;
@@ -431,32 +315,12 @@
   .font-display, .font-heading { letter-spacing: -0.04em; }
   ::selection { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
 
-  /* Thin technical scrollbar — ONLY where the OS draws a classic one.
-
-     Styling ::-webkit-scrollbar opts a scroller out of the platform's overlay
-     scrollbars and into the legacy always-visible kind. On Windows and Linux
-     that is invisible, because those already are classic. On macOS it replaces
-     a bar that hides itself, fades, widens on hover and takes no layout width
-     with one that does none of those things — the site scrolled fine on Windows
-     and Linux and felt broken on a Mac for exactly this reason.
-
-     lib/scrollbar-mode.js measures whether a scrollbar consumes layout width
-     and sets .classic-scrollbars before first paint. It is a measurement, not a
-     platform check: Windows 11 and GNOME can be overlay, and a Mac set to
-     "Show scroll bars: Always" is classic.
-
-     Both selectors are needed. The document's own scrollbar belongs to <html>,
-     which the descendant form cannot reach. */
-  html.classic-scrollbars::-webkit-scrollbar,
-  html.classic-scrollbars ::-webkit-scrollbar { width: 6px; height: 6px; }
-  html.classic-scrollbars::-webkit-scrollbar-track,
-  html.classic-scrollbars ::-webkit-scrollbar-track { background: transparent; }
-  html.classic-scrollbars::-webkit-scrollbar-thumb,
-  html.classic-scrollbars ::-webkit-scrollbar-thumb { background: hsl(var(--foreground) / 0.18); }
-  html.classic-scrollbars::-webkit-scrollbar-thumb:hover,
-  html.classic-scrollbars ::-webkit-scrollbar-thumb:hover { background: hsl(var(--foreground) / 0.32); }
-  html.classic-scrollbars,
-  html.classic-scrollbars * { scrollbar-width: thin; scrollbar-color: hsl(var(--foreground) / 0.2) transparent; }
+  /* thin technical scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--foreground) / 0.18); }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--foreground) / 0.32); }
+  * { scrollbar-width: thin; scrollbar-color: hsl(var(--foreground) / 0.2) transparent; }
   :focus-visible { outline: 1px solid hsl(var(--primary)); outline-offset: 3px; }
 
   /* hide native cursor only on fine pointers w/ motion allowed — keep caret for text fields */
@@ -1646,15 +1510,12 @@ body.theme-frutigeraero hr {
 }
 
 /* Glassy scrollbar to finish the era look. */
-/* Gated like the base scrollbar rule above: any ::-webkit-scrollbar
-   declaration, even a purely cosmetic one, drops macOS out of overlay
-   scrollbars. See lib/scrollbar-mode.js. */
-html.classic-scrollbars body.theme-frutigeraero ::-webkit-scrollbar-thumb {
+body.theme-frutigeraero ::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background-image: linear-gradient(180deg, hsl(196 95% 72%) 0%, hsl(204 92% 46%) 50%, hsl(206 95% 34%) 100%);
   border: 1px solid hsl(0 0% 100% / 0.6);
 }
-html.classic-scrollbars body.theme-frutigeraero ::-webkit-scrollbar-track {
+body.theme-frutigeraero ::-webkit-scrollbar-track {
   background: hsl(200 60% 94%);
 }
 
@@ -2066,7 +1927,7 @@ body.pride-active .cursor-trail { background: var(--pride-highlight); mix-blend-
 /* selection, focus and scroll: theme light rather than theme fill */
 body.pride-active ::selection { background: var(--pride-glow); color: hsl(var(--background)); }
 body.pride-active :focus-visible { outline-color: var(--pride-edge); }
-html.classic-scrollbars body.pride-active ::-webkit-scrollbar-thumb { background: var(--pride-edge); }
+body.pride-active ::-webkit-scrollbar-thumb { background: var(--pride-edge); }
 
 /* micro-details — a hairline of theme light on the things you touch */
 body.pride-active button:not(:disabled):hover,
@@ -2096,15 +1957,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12p
 input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 0; background: hsl(var(--primary)); border: none; cursor: pointer; }
 
 @layer components {
-  /* editorial card polish — applies to all widget cards automatically.
-
-     NOTE: this matches the widget card's exact utility signature at
-     specificity (0,3,0), so it beats the element's own .rounded-2xl (0,1,0)
-     with no !important — which is why gating editorial-home.css alone did not
-     make the default layout's cards round again. It is also used by History
-     and ArchivePage, which are editorial and want it, so it cannot be gated on
-     the layout class. summer-home.css restores the original card there
-     instead; keep the two in step. */
+  /* editorial card polish — applies to all widget cards automatically */
   .bg-white.rounded-2xl.shadow-sm,
   .bg-card.rounded-2xl.shadow-sm {
     border: 1px solid hsl(var(--border) / 0.7);
@@ -2260,10 +2113,11 @@ html.performance-lite .cursor-trail,
 html.performance-lite .cursor-label { display: none !important; }
 html.performance-lite .pride-field-x:nth-child(n+3) { display: none !important; }
 html.performance-lite .pride-field-light { filter: blur(14px); }
-/* The lite tier's treatment of glass lives in styles/glass.css, with the
-   material it modifies. It used to be here, and it replaced the glass with an
-   opaque fill — which the design contract forbids outright. See the note
-   there. */
+html.performance-lite .lg-surface {
+  background: hsl(var(--background) / 0.96) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
 
 /* ── active-scroll compositor fast path ────────────────────────────
    Native scrolling stays in charge. While content is moving, pause only
@@ -2300,38 +2154,38 @@ html.is-scrolling .widget-loading-shell {
   from { background-position: 100% 0; }
   to { background-position: -100% 0; }
 }
-/* ── Why there is no content-visibility here ──────────────────────────────
+@supports (content-visibility: auto) {
+  main [data-gp-section] {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 720px;
+  }
+  .perf-list-item {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 180px;
+  }
 
-   `main [data-gp-section]` used to carry `content-visibility: auto` with
-   `contain-intrinsic-size: auto 720px`, and `.perf-list-item` the same at
-   180px. Both are removed, because they broke scrolling.
+  /* A section holding a fullscreen widget must drop its containment.
 
-   content-visibility: auto reports a skipped element at its intrinsic-size
-   estimate rather than its real height. Every Home section was estimated at
-   the same 720px, so as each one scrolled into view and rendered at its actual
-   height the document height changed underneath the reader: the scrollbar
-   jumped and the scroll position drifted. Scrolling back up un-rendered them
-   and did it again. `auto` in contain-intrinsic-size remembers the last real
-   size, which softens the second pass but not the first — and the first pass is
-   the one everybody sees.
+     content-visibility: auto implies contain: layout style paint, and a
+     paint-contained element becomes the containing block for any position:
+     fixed descendant. Announcements, Discussion, Jobs, Calendar, News and
+     Members all go fullscreen by adding `fixed inset-0` to themselves, so the
+     widget was being pinned to the section box rather than the viewport — it
+     looked as though the button did nothing.
 
-   It was also redundant. LazySection already refuses to mount an off-screen
-   widget at all and reserves the space with a per-section
-   contain-intrinsic-size derived from that section's own minHeight, which is a
-   real measurement rather than one flat guess for ten different widgets. The
-   skip-rendering saving was being paid for twice and only one of the two knew
-   the right height.
+     Two different fullscreen patterns are in play, so this matches the thing
+     they share rather than the element. Most widgets add `fixed inset-0` to
+     the .mabis-widget itself; Jobs early-returns a plain full-viewport div.
+     Keying on `.fixed.inset-0` catches both, and any future overlay too.
 
-   Removing it also retired a workaround: content-visibility implies
-   contain: layout style paint, and a paint-contained element becomes the
-   containing block for any `position: fixed` descendant, so every widget that
-   goes fullscreen by adding `fixed inset-0` was being pinned to its section box
-   instead of the viewport. That needed a
-   `main [data-gp-section]:has(.fixed.inset-0) { contain: none }` escape hatch,
-   which is gone with the cause.
-
-   If skip-rendering is ever wanted back, it belongs on LazySection's
-   placeholder, where the height is known — not on the section wrapper. */
+     Containment is only released for the one section that actually has a
+     fullscreen widget open, so the rest of the page keeps the skip-rendering
+     benefit. */
+  main [data-gp-section]:has(.fixed.inset-0) {
+    content-visibility: visible;
+    contain: none;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .widget-loading-shell { animation: none; }
 }
@@ -2346,9 +2200,7 @@ html.is-scrolling .widget-loading-shell {
   html { scroll-padding-top: calc(4.5rem + env(safe-area-inset-top)); }
   body { overflow-x: clip; }
 
-  /* Clears the boss layout's FIXED header. The default layout's bar is sticky
-     and in normal flow, so the same padding there would just be a gap. */
-  html.home-layout-boss .editorial-home > main {
+  .editorial-home > main {
     padding-top: calc(5rem + env(safe-area-inset-top)) !important;
   }
   .site-nav-panel {
@@ -2421,12 +2273,7 @@ html.is-scrolling .widget-loading-shell {
     min-height: 44px;
   }
 
-  /* Edge-to-edge mobile modules are an EDITORIAL rule — the boss layout's
-     content planes run to the screen edge. The default layout is the original
-     card interface, which kept its rounded, shadowed cards on a phone, so it
-     must not be flattened here. `.mabis-widget` only ever appears on Home, so
-     gating on the layout class is exact rather than approximate. */
-  html.home-layout-boss .mabis-widget {
+  .mabis-widget {
     border-left-width: 0 !important;
     border-right-width: 0 !important;
     border-radius: 0 !important;
@@ -2538,12 +2385,9 @@ html.is-scrolling .widget-loading-shell {
 
   .mobile-horizontal-scroll {
     overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
   }
-  /* Gated for the same reason as the base scrollbar rule: scrollbar-width
-     opts a scroller out of overlay scrollbars just as ::-webkit-scrollbar
-     does. See lib/scrollbar-mode.js. */
-  html.classic-scrollbars .mobile-horizontal-scroll { scrollbar-width: thin; }
 }
 
 /* ── reduced motion ── */

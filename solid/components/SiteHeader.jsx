@@ -6,7 +6,6 @@ import { preloadRoute } from "~/lib/routes";
 import Glass from "~/components/Glass";
 import SoundToggle from "~/components/SoundToggle";
 import { JapaneseText } from "~/components/primitives";
-import { lockBodyScroll } from "@/lib/scroll-lock";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 
@@ -79,11 +78,12 @@ export default function SiteHeader(props) {
     setOpen(false);
   });
 
-  // Lock background scroll while the overlay is up. Reference-counted — see
-  // lib/scroll-lock.js for why doing this inline leaves scrolling dead.
+  // Lock background scroll while the overlay is up.
   createEffect(() => {
     if (!open()) return;
-    onCleanup(lockBodyScroll());
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    onCleanup(() => { document.body.style.overflow = previous; });
   });
 
   const go = (to) => { setOpen(false); navigate(to); };

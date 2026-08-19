@@ -37,65 +37,19 @@
     <!-- preconnect before preload: the connection must exist before the font
          request can use it, and these are same-origin-critical for first paint -->
     <link rel="preconnect" href="https://media.base44.com" crossorigin />
-    <!-- The first-paint subsets, not the whole pan-Unicode faces: 287 KiB of
-         font-display:block became 58 KiB. index.css declares the rest of the
-         coverage on a second, non-preloaded unicode-range, which a browser
-         fetches only if a character outside the subset is on screen. -->
-    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMono-subset.woff2?v=3" />
-    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMono.woff2?v=2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/gnu-freefont/FreeMonoBold.woff2?v=2" />
 
-    <!-- Inline first-paint styles + boot splash. HTML comments ship, so the
-         reasoning lives in check-performance-contract.mjs, which pins both. -->
+    <!-- Inlined so the first paint has a background and correct box sizing
+         without waiting for the stylesheet; prevents a white flash on slow
+         connections, which Lighthouse scores as a poor FCP experience. -->
     <style>
       html, body, #root { min-height: 100%; margin: 0; background: #11131a; }
       #root:empty { min-height: 100vh; }
-
-      /* pointer-events:none unconditionally. This is a full-viewport fixed
-         overlay, and it is neutralised two ways — a sibling selector and a
-         removal in main.jsx. If either misses (a host that re-mounts #root,
-         a bundle that fails before render) it becomes an invisible trap that
-         eats every scroll and click on the page. It never needs to receive
-         input, so it should never be able to. */
-      #boot-splash {
-        position: fixed; inset: 0; z-index: 1; pointer-events: none;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center; gap: 1.5rem;
-        background: #11131a; color: #f7f3ea;
-        font-family: "GNUFreeMonoUI", "FreeMono", ui-monospace, monospace;
-        font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
-      }
-      #boot-splash > span:first-child { opacity: 0.5; }
-      #boot-splash-track {
-        position: relative; overflow: hidden;
-        width: min(220px, 44vw); height: 1px;
-        background: rgba(247, 243, 234, 0.15);
-      }
-      #boot-splash-track::after {
-        content: ""; position: absolute; inset: 0 auto 0 0;
-        width: 40%; background: #951E3A;
-        animation: boot-splash-sweep 1.15s ease-in-out infinite;
-      }
-      @keyframes boot-splash-sweep {
-        from { transform: translateX(-100%); }
-        to { transform: translateX(250%); }
-      }
-      /* The app is up: stand down. */
-      #root:not(:empty) + #boot-splash {
-        opacity: 0; visibility: hidden;
-        transition: opacity 0.18s linear, visibility 0s linear 0.18s;
-      }
-      @media (prefers-reduced-motion: reduce) {
-        #boot-splash-track::after { animation: none; width: 100%; opacity: 0.55; }
-        #root:not(:empty) + #boot-splash { transition: none; }
-      }
     </style>
   </head>
   <body>
     <div id="root"></div>
-    <div id="boot-splash" role="status" aria-label="Loading">
-      <span>Initialising</span>
-      <span id="boot-splash-track"></span>
-    </div>
     <noscript>
       <p style="color:#e8e3d8;font-family:monospace;padding:2rem">
         This app needs JavaScript enabled.
