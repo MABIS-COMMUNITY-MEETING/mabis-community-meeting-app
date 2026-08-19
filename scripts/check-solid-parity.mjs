@@ -44,7 +44,22 @@ const builtCss = fs.readdirSync(path.join(dist, "assets"))
   .filter((f) => f.endsWith(".css"))
   .map((f) => fs.readFileSync(path.join(dist, "assets", f), "utf8"))
   .join("\n");
-const entry = fs.readdirSync(path.join(dist, "assets")).find((f) => /^index-.*\.js$/.test(f));
+/*
+ * The entry bundle, resolved from Vite's own manifest rather than guessed by
+ * filename pattern. `/^index-.*\.js$/` used to be unambiguous because Vite's
+ * output only ever produced one file matching it, but that's an accident of
+ * how a given Vite version names shared/vendor chunks — it isn't guaranteed,
+ * and isn't true for every Vite version (some name anonymous shared chunks
+ * with the same "index-" prefix as the real entry, so the pattern matches
+ * several files and `.find()` silently grabs whichever readdir happens to
+ * list first). The manifest's `isEntry` flag is the actual source of truth
+ * for which file is the entry, independent of naming conventions.
+ */
+const manifestForEntry = JSON.parse(fs.readFileSync(path.join(dist, ".vite", "manifest.json"), "utf8"));
+const entryRecord = Object.values(manifestForEntry).find((item) => item.isEntry);
+const entry = entryRecord && fs.existsSync(path.join(dist, "assets", path.basename(entryRecord.file)))
+  ? path.basename(entryRecord.file)
+  : undefined;
 if (!entry) {
   console.error("No Solid entry bundle found. Build first.");
   process.exit(1);
