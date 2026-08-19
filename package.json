@@ -11,7 +11,7 @@
     "check:themes": "node scripts/check-theme-balance.mjs",
     "check:performance": "node scripts/check-performance-contract.mjs",
     "check:jobs": "node scripts/check-jobs-contract.mjs",
-    "prebuild": "npm run check:design && npm run check:themes && npm run check:performance && npm run check:jobs && npm run check:odt && npm run check:minutes && npm run check:auth && npm run check:realtime && npm run check:pacing",
+    "prebuild": "npm run check:design && npm run check:themes && npm run check:performance && npm run check:jobs && npm run check:odt && npm run check:minutes && npm run check:auth && npm run check:realtime && npm run check:pacing && npm run check:scroll-lock",
     "check:realtime": "node scripts/check-lazy-realtime.mjs",
     "check:pacing": "node scripts/check-frame-pacing.mjs",
     "check:csssplit": "node scripts/check-css-split.mjs",
