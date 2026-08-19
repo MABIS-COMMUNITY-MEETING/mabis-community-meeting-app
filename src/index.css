@@ -1645,13 +1645,16 @@ body.theme-frutigeraero hr {
   border-color: hsl(200 55% 84%);
 }
 
-/* Glassy scrollbar to finish the era look. */
-body.theme-frutigeraero ::-webkit-scrollbar-thumb {
+/* Glassy scrollbar to finish the era look.
+   Gated like the base scrollbar rule above: any ::-webkit-scrollbar
+   declaration, even a purely cosmetic one, drops macOS out of overlay
+   scrollbars. See lib/scrollbar-mode.js. */
+html.classic-scrollbars body.theme-frutigeraero ::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background-image: linear-gradient(180deg, hsl(196 95% 72%) 0%, hsl(204 92% 46%) 50%, hsl(206 95% 34%) 100%);
   border: 1px solid hsl(0 0% 100% / 0.6);
 }
-body.theme-frutigeraero ::-webkit-scrollbar-track {
+html.classic-scrollbars body.theme-frutigeraero ::-webkit-scrollbar-track {
   background: hsl(200 60% 94%);
 }
 
