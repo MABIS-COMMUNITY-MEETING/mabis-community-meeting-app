@@ -3,8 +3,6 @@ import { EditorialSection, HomeSectionIndex, HomeMasthead } from "~/components/h
 import SiteHeader from "~/components/SiteHeader";
 import BirthdayBanner from "~/components/BirthdayBanner";
 import { PageFooter } from "~/components/page-chrome";
-import { unlockCustomColorsLocally, isCustomColorsUnlockedLocally } from "@/lib/custom-color-access";
-import { toast } from "~/lib/toast";
 /*
  * Every rule in here is gated on `html.home-layout-boss`, so the default
  * layout matched none of it while still paying to download and parse it from
@@ -38,26 +36,6 @@ import "@/styles/editorial-home.css";
 
 const ScrollVelocity = lazy(() => import("~/components/ScrollVelocity"));
 const ScrollScaleRitual = lazy(() => import("~/components/home/ScrollScaleRitual"));
-
-// Custom color access is normally one named account (custom-color-access.js).
-// This is the second door: 19 clicks on the colophon logo, boss style only —
-// a plain component-level counter, not persisted, so it resets on reload same
-// as any other "tap N times" secret. Only the eventual unlock itself is
-// persisted (localStorage, in unlockCustomColorsLocally). Deliberately not
-// wired into SummerHome's footer too: the request was specifically for boss
-// style, and PageFooter's onLogoClick is opt-in per caller for exactly this
-// reason — see page-chrome.jsx.
-const UNLOCK_TAPS = 19;
-let logoTapCount = 0;
-
-function handleLogoTap() {
-  if (isCustomColorsUnlockedLocally()) return;
-  logoTapCount += 1;
-  if (logoTapCount < UNLOCK_TAPS) return;
-  logoTapCount = 0;
-  unlockCustomColorsLocally();
-  toast({ title: "Custom colors unlocked", description: "Open the color picker — \u201cMake your own colors\u201d is there now." });
-}
 
 /**
  * @param sections   the shared section list from Home
@@ -109,7 +87,7 @@ export default function BossHome(props) {
           </For>
         </div>
 
-        <PageFooter onLogoClick={handleLogoTap} />
+        <PageFooter />
       </main>
     </>
   );

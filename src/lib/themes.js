@@ -631,17 +631,6 @@ export function applyTheme(themeKey) {
   // into unreadable territory the way a flat opacity modifier could.
   root.style.setProperty("--primary-foreground-muted", mutedForeground(vars["--primary-foreground"], vars["--primary"]));
   document.body.classList.toggle("theme-is-dark", isDark);
-  /*
-   * Aero's rules live in their own stylesheet now, so switching TO it at
-   * runtime has to fetch them. Not awaited: this is a deliberate click, the
-   * file is cached for anyone who has used the theme before, and holding a UI
-   * interaction on a network round-trip would feel worse than the gloss
-   * arriving a frame late. The boot path in solid/main.jsx DOES await it, so a
-   * returning Aero user never sees the unstyled state.
-   */
-  if (resolvedThemeKey === "frutigeraero") {
-    void import("@/styles/frutiger-aero.css").catch(() => {});
-  }
   applyPalette(theme.swatches, !!theme.pride || !!theme.exact);
   applyCharacterTokens(theme.character);
   applyThemeBodyClass(theme.bodyClass);
@@ -755,20 +744,21 @@ export function clearCustomColors({ notify = true } = {}) {
 }
 
 /**
- * The themes the app offers.
+ * The themes the app offers. MABIS, and nothing else (Novesce, Aug 2026).
  *
- * Restored to the full catalogue 2026-08-19 — every key in THEMES (pride
- * flags, BFDI colourways, GMK keysets, Touhou, Sonic, Nintendo consoles,
- * Catppuccin, the pastels, Frutiger Aero, all of it) is selectable again.
- * `Object.keys(THEMES)` rather than an explicit list so nothing added to
- * THEMES above can go stale here by omission — it was exactly an explicit
- * list (`["default"]`) silently excluding everything else that this
- * replaces.
+ * THEMES below still holds the whole catalogue — the palettes back the pride
+ * ambience, the Frutiger Aero surface treatment in index.css and the
+ * contrast-safety fixtures in check-theme-balance.mjs, so deleting the data is
+ * a separate job from withdrawing the choice. Everything user-facing reads
+ * THIS list, never THEMES directly; read THEMES and you put all of them back
+ * in front of people.
  *
- * Everything user-facing reads THIS list, never THEMES directly — that part
- * of the contract is unchanged, it just no longer filters anything out.
+ * ~117 KiB of palette source is now unreachable by any UI path. It is lazy
+ * (ThemeSwitcher/SettingsModal only), so it costs no boot time, but it is dead
+ * weight and worth deleting once the couple of non-UI consumers above are
+ * untangled.
  */
-export const SELECTABLE_THEME_KEYS = Object.keys(THEMES);
+export const SELECTABLE_THEME_KEYS = ["default"];
 
 export const isSelectableTheme = (key) => SELECTABLE_THEME_KEYS.includes(key);
 

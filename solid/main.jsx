@@ -22,7 +22,7 @@ import "~/solid-motion.css";
  * Do not move these back here to "keep the imports together". check-css-split.mjs
  * fails the build if the glass rules reappear in the render-blocking sheet.
  */
-import { applyThemeSnapshot, getStoredThemeKey } from "@/lib/theme-boot";
+import { applyThemeSnapshot } from "@/lib/theme-boot";
 import { applyAnimationPreference } from "@/lib/motion-preference";
 import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
@@ -92,22 +92,6 @@ async function bootstrap() {
       themes.applyFont(themes.getStoredFont()),
       new Promise((resolve) => window.setTimeout(resolve, 800)),
     ]);
-  }
-
-  /*
-   * The one theme with its own stylesheet, awaited only by the people using it.
-   *
-   * Frutiger Aero is 37 KiB of source whose every selector is scoped to
-   * `body.theme-frutigeraero`, so it used to sit in the render-blocking sheet
-   * doing nothing for everyone else (see styles/frutiger-aero.css). It is
-   * awaited here rather than fired-and-forgotten because this is the returning
-   * Aero user's boot: the sheet has to be up before the first paint, or the
-   * page paints as flat pastel rectangles and re-paints as glass a frame later.
-   * getStoredThemeKey() is a bare localStorage read — it does not pull in the
-   * theme catalogue.
-   */
-  if (getStoredThemeKey() === "frutigeraero") {
-    await import("@/styles/frutiger-aero.css").catch(() => {});
   }
 
   document.documentElement.classList.add("ui-font-ready");

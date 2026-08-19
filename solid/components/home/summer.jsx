@@ -18,7 +18,7 @@ import BirthdayBanner from "~/components/BirthdayBanner";
  */
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
-export const APP_VERSION = "v67";
+export const APP_VERSION = "v6.9.9";
 
 /**
  * One stacked module.
