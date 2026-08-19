@@ -23,7 +23,14 @@
 }
 
 .lg-surface {
-  --glass_blur: 20px;
+  /* Radius is the single biggest GPU cost in this file: backdrop blur re-reads
+     the layer beneath every frame, and its raster cost scales with the radius,
+     not with how glassy it looks. Blur is perceptually non-linear — past
+     ~16px the surface reads as "frosted" and further radius buys almost
+     nothing visible while still costing linearly. Every variant below is
+     brought down on that basis (the mobile block already argued the same at
+     10px); tint carries the material instead, so nothing stops being glass. */
+  --glass_blur: 16px;
   --glass_saturation: 160%;
   --glass_brightness: 1.04;
   --glass_tint: 0.10;          /* base fill strength */
@@ -112,7 +119,6 @@
   border-radius: inherit;
   opacity: var(--glass-scroll-spec-opacity, 0.82);
   transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
-  will-change: transform, opacity;
   /* Safe here in the way the surface never was: a pseudo-element cannot have
      children, and this one is inset:0, so clipping to its own box is a no-op
      visually while still bounding the raster of a will-change layer. */
@@ -168,7 +174,6 @@
   box-shadow: 0 18px 34px -20px hsl(var(--ink) / 0.38);
   opacity: var(--glass-scroll-shadow-opacity, 0.12);
   transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
-  will-change: transform, opacity;
 }
 
 .lg-surface > .lg-content { position: relative; z-index: 1; }
@@ -177,7 +182,7 @@
 
 /* compact — icon buttons, toggles, glyph chips */
 .lg-compact {
-  --glass_blur: 14px;
+  --glass_blur: 12px;
   --glass_saturation: 145%;
   --glass_brightness: 1.03;
   --glass_tint: 0.09;
@@ -188,7 +193,7 @@
 
 /* regular — toolbars, contextual clusters */
 .lg-regular {
-  --glass_blur: 22px;
+  --glass_blur: 18px;
   --glass_saturation: 160%;
   --glass_brightness: 1.04;
   --glass_tint: 0.12;
@@ -198,7 +203,9 @@
 
 /* navigation — the persistent header strip */
 .lg-navigation {
-  --glass_blur: 26px;
+  /* The header is the widest glass in the app, so it pays this radius over the
+     most pixels of any surface — the best value cut in the file. */
+  --glass_blur: 20px;
   --glass_saturation: 168%;
   --glass_brightness: 1.05;
   --glass_tint: 0.11;
@@ -213,7 +220,7 @@
 
 /* controller — thin floating optical strip for the input prompts */
 .lg-controller {
-  --glass_blur: 20px;
+  --glass_blur: 16px;
   --glass_saturation: 165%;
   --glass_brightness: 1.05;
   --glass_tint: 0.13;
@@ -224,7 +231,7 @@
 
 /* panel / thick — large floating surfaces and overlays */
 .lg-panel {
-  --glass_blur: 30px;
+  --glass_blur: 22px;
   --glass_saturation: 170%;
   --glass_brightness: 1.05;
   --glass_tint: 0.15;
@@ -233,7 +240,7 @@
   --glass_shadow: 0 26px 70px -28px hsl(var(--ink) / 0.45);
 }
 .lg-thick {
-  --glass_blur: 38px;
+  --glass_blur: 26px;
   --glass_saturation: 178%;
   --glass_brightness: 1.06;
   --glass_tint: 0.18;
@@ -252,7 +259,7 @@
 
 /* clear — minimal tint, for glass over already-quiet backgrounds */
 .lg-clear {
-  --glass_blur: 16px;
+  --glass_blur: 13px;
   --glass_saturation: 150%;
   --glass_brightness: 1.02;
   --glass_tint: 0.05;
@@ -262,7 +269,7 @@
 
 /* overlay — full-bleed scrim behind a modal; carries no highlight */
 .lg-overlay {
-  --glass_blur: 18px;
+  --glass_blur: 14px;
   --glass_saturation: 120%;
   --glass_brightness: 0.92;
   --glass_tint: 0.06;
@@ -355,8 +362,26 @@
   mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.72) 38%, transparent 100%);
   opacity: var(--glass-scroll-edge-opacity, 0.52);
   transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
-  will-change: transform, opacity;
 }
+
+/* ── will-change is a hint, not a decoration ──────────────────────
+   These three layers each declared `will-change: transform, opacity`
+   permanently. will-change is documented as a LAST RESORT to be applied
+   shortly before a change and removed after: a permanent hint keeps a
+   dedicated compositor layer, and its GPU memory, alive for the entire
+   session on every glass surface on the page — the header, its scroll edge
+   and every depth layer — whether or not anything is moving. On a phone that
+   memory competes with the backdrop blur that actually needs it.
+
+   Nothing is lost by dropping it, because each of these already sets a 3D
+   transform (`translate3d`), which promotes the layer on its own for exactly
+   as long as it is needed — the hint was telling the compositor something the
+   transform had already told it.
+
+   It is deliberately NOT re-added under `html.is-scrolling`: the performance
+   contract forbids any `is-scrolling` rule that reaches into `.lg-surface`,
+   because that selector is how glass was once swapped for an opaque fill
+   mid-scroll. See the active-scroll note further down. */
 
 /* ── lite tier: cheaper glass, still glass ─────────────────────────
    This rule used to live in index.css as
