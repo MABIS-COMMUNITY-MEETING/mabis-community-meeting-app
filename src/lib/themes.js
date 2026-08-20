@@ -918,7 +918,32 @@ export function getSavedThemes() {
 export function saveCustomTheme(name, primaryHex, secondaryHex) {
   const themes = getSavedThemes();
   const idx = themes.findIndex(t => t.name === name);
-  const entry = { name, primary: primaryHex, secondary: secondaryHex };
+  const entry = { name, type: "custom", primary: primaryHex, secondary: secondaryHex };
+  if (idx >= 0) themes[idx] = entry;
+  else themes.push(entry);
+  localStorage.setItem("mabis-saved-themes", JSON.stringify(themes));
+  return themes;
+}
+
+/**
+ * Save the CURRENT Material You (photo/wallpaper) theme under a name, the
+ * same way saveCustomTheme() saves a plain primary/secondary pair.
+ *
+ * A material theme is a seed color + a light/dark choice, not a color pair,
+ * so the saved entry keeps the seed and re-derives everything else on load
+ * via applyMaterialSeed() — it is never flattened into just two swatches.
+ * `primary`/`secondary` are still stored, but only as display swatches for
+ * the saved-themes list (see materialSchemeSwatches), so the list can keep
+ * rendering every saved entry the same way regardless of its type.
+ */
+export function saveMaterialTheme(name, seedHex, dark) {
+  const themes = getSavedThemes();
+  const swatches = materialSchemeSwatches(seedHex, dark);
+  const idx = themes.findIndex(t => t.name === name);
+  const entry = {
+    name, type: "material", seed: seedHex, dark: !!dark,
+    primary: swatches[0], secondary: swatches[2],
+  };
   if (idx >= 0) themes[idx] = entry;
   else themes.push(entry);
   localStorage.setItem("mabis-saved-themes", JSON.stringify(themes));
