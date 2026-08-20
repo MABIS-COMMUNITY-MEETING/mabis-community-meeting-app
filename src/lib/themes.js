@@ -850,23 +850,15 @@ export function clearMaterialSeed() {
 }
 
 /**
- * The themes the app offers. MABIS, and nothing else (Novesce, Aug 2026).
+ * The themes offered before the Boss-catalogue easter egg is unlocked.
  *
- * THEMES below still holds the whole catalogue — the palettes back the pride
- * ambience, the Frutiger Aero surface treatment in index.css and the
- * contrast-safety fixtures in check-theme-balance.mjs, so deleting the data is
- * a separate job from withdrawing the choice. Everything user-facing reads
- * THIS list, never THEMES directly; read THEMES and you put all of them back
- * in front of people.
- *
- * ~117 KiB of palette source is now unreachable by any UI path. It is lazy
- * (ThemeSwitcher/SettingsModal only), so it costs no boot time, but it is dead
- * weight and worth deleting once the couple of non-UI consumers above are
- * untangled.
+ * MABIS is the only standard palette. The larger LGBTQ+, BFDI, Touhou, Linux,
+ * game and character catalogue remains lazy and becomes selectable only after
+ * the local 69-press Boss-style gesture. Picker surfaces ask
+ * getSelectableThemeKeys() for the allowed keys instead of enumerating THEMES
+ * themselves, so this gate stays centralized.
  */
 export const SELECTABLE_THEME_KEYS = ["default"];
-export const SPECIAL_THEME_EMAIL = "boss@montessoribkk.com";
-const SPECIAL_THEME_USER_ID = "6a7aabf39b668263ca8d6754";
 const BOSS_THEMES_UNLOCK_KEY = "mabis-boss-themes-unlocked";
 export const BOSS_THEMES_UNLOCKED_EVENT = "bossThemesUnlocked";
 
@@ -881,13 +873,11 @@ export function unlockBossThemesLocally() {
   window.dispatchEvent(new Event(BOSS_THEMES_UNLOCKED_EVENT));
 }
 
-export function getSelectableThemeKeys(user) {
-  const email = String(user?.email || "").trim().toLowerCase();
-  const isThemeOwner = user?.id === SPECIAL_THEME_USER_ID || email === SPECIAL_THEME_EMAIL;
-  return isThemeOwner || areBossThemesUnlockedLocally() ? Object.keys(THEMES) : SELECTABLE_THEME_KEYS;
+export function getSelectableThemeKeys() {
+  return areBossThemesUnlockedLocally() ? Object.keys(THEMES) : SELECTABLE_THEME_KEYS;
 }
 
-export const isSelectableTheme = (key, user) => getSelectableThemeKeys(user).includes(key);
+export const isSelectableTheme = (key) => getSelectableThemeKeys().includes(key);
 
 /**
  * The stored theme, coerced to one that is actually on offer.
@@ -897,9 +887,9 @@ export const isSelectableTheme = (key, user) => getSelectableThemeKeys(user).inc
  * withdrawn kept it forever, and no amount of resetting their account record
  * would move them. Coercing on read is what actually retires a theme.
  */
-export function getStoredTheme(user) {
+export function getStoredTheme() {
   const stored = localStorage.getItem("mabis-theme");
-  return isSelectableTheme(stored, user) ? stored : "default";
+  return isSelectableTheme(stored) ? stored : "default";
 }
 
 export function getStoredCustomColors() {
