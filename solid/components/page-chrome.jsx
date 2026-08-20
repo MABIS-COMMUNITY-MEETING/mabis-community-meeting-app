@@ -140,22 +140,7 @@ export function PageFooter(props) {
         <div class="flex flex-col items-center gap-5 text-center">
           <div class="relative flex h-16 w-16 items-center justify-center border border-foreground/20 bg-card overflow-hidden">
             <Plus class="absolute -top-1 -left-1 h-3 w-3 text-foreground/30" />
-            {/* onLogoClick: opt-in per caller (see boss.jsx). Every other
-                PageFooter — History, ArchivePage — passes nothing, so this
-                stays a plain, non-interactive image for them, unchanged. */}
-            <Show
-              when={props.onLogoClick}
-              fallback={<img src={MABIS_LOGO} alt="MABIS" class="h-11 w-11 object-contain" />}
-            >
-              <button
-                type="button"
-                onClick={props.onLogoClick}
-                class="h-11 w-11 cursor-default appearance-none border-0 bg-transparent p-0"
-                aria-label="MABIS"
-              >
-                <img src={MABIS_LOGO} alt="" class="h-11 w-11 object-contain" />
-              </button>
-            </Show>
+            <img src={MABIS_LOGO} alt="MABIS" class="h-11 w-11 object-contain" />
           </div>
           <div class="tech-label text-muted-foreground"> COLOPHON</div>
           <JapaneseText
