@@ -1,5 +1,6 @@
 import { createEffect, on, onCleanup } from "solid-js";
 import { useAuth } from "~/lib/AuthContext";
+import { markPrefsReady, resetPrefsReady } from "~/lib/prefs-ready";
 
 /**
  * Keeps theme / colour / font / motion preferences on the user account so they
@@ -24,21 +25,28 @@ export default function PrefsSync() {
   // Keyed on the user id, matching React's [user?.id] dependency: switching
   // account must re-pull, but an unrelated user-object update must not.
   createEffect(on(() => auth.user()?.id, (id) => {
+    resetPrefsReady();
     if (!id) return;
     let cancelled = false;
     // Registered synchronously — after an await it would land outside this
     // effect's tracking scope and never run.
-    onCleanup(() => { cancelled = true; ready = false; });
+    onCleanup(() => {
+      cancelled = true;
+      ready = false;
+      resetPrefsReady(id);
+    });
 
-    import("@/lib/prefs_sync").then(({ pullPrefs }) => {
-      if (cancelled) return;
-      pullPrefs()
-        .catch(() => {})
-        .finally(() => {
-          if (cancelled) return;
-          ready = true;
-        });
-    }).catch(() => {});
+    import("@/lib/prefs_sync")
+      .then(({ pullPrefs }) => {
+        if (cancelled) return;
+        return pullPrefs();
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (cancelled) return;
+        ready = true;
+        markPrefsReady(id);
+      });
   }));
 
   createEffect(on(() => auth.user()?.id, (id) => {
