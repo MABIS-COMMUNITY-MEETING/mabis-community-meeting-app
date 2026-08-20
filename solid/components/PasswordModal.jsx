@@ -66,7 +66,7 @@ export default function PasswordModal(props) {
               onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
               placeholder="Enter code..."
               aria-invalid={error()}
-              class={`w-full h-11 rounded-xl border-2 px-4 text-sm font-semibold tracking-widest text-center outline-none transition-colors ${
+              class={`w-full h-11 rounded-xl border-2 bg-background text-foreground placeholder:text-muted-foreground px-4 text-sm font-semibold tracking-widest text-center outline-none transition-colors ${
                 error() ? "border-destructive bg-destructive/5" : "border-border focus:border-primary/40"}`}
             />
 
