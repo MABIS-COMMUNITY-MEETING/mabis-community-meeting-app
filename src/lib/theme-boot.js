@@ -13,10 +13,11 @@
  * verbatim on every apply and replayed at boot. Replaying needs no catalogue and
  * no colour maths.
  *
- * The snapshot is a cache, never the source of truth. After first paint the
- * caller loads the real modules and re-applies, which is idempotent and repairs
- * a snapshot written by an older build. So a stale snapshot costs one extra
- * repaint, not a wrong-looking app.
+ * The snapshot is a cache, never the source of truth. solid/index.html carries
+ * a minimal blocking replay of the same validated snapshot so its critical
+ * loading surface gets saved custom colors before the first paint. This module
+ * replays again once body exists, then the caller loads the real theme module
+ * after first paint to repair snapshots written by an older build.
  */
 
 const SNAPSHOT_KEY = "mabis-theme-snapshot-v1";
