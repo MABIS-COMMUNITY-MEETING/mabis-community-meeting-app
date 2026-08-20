@@ -4,8 +4,9 @@
  * The Python reference uses Google's C++ Wu + Wsmeans implementation rather
  * than the TypeScript quantizer. This port preserves the observable C++
  * choices that differ in JavaScript: integer-truncated Wu centroids, glibc's
- * fixed srand(42688) sequence, 100 Wsmeans rounds, C++ Lab conversion
- * constants, duplicate-cluster population merging, and ordered output.
+ * fixed srand(42688) sequence, integer-truncated movement checks, 100 Wsmeans
+ * rounds, C++ Lab conversion constants, duplicate-cluster population merging,
+ * and ordered output.
  *
  * The underlying Material Color Utilities algorithms are Copyright Google LLC
  * and licensed under Apache-2.0.
@@ -181,12 +182,9 @@ function wsmeans(inputPixels, startingClusters, requestedMaxColors) {
       }
 
       if (newIndex !== -1) {
-        const movement = Math.abs(
+        const movement = Math.trunc(Math.abs(
           Math.sqrt(minimumDistance) - Math.sqrt(previousDistance),
-        );
-        if (iteration === 1 && (previousIndex >= 6 || newIndex >= 6)) {
-          console.error("material-quantizer candidate", pointIndex, previousIndex, newIndex, movement);
-        }
+        ));
         if (movement > MIN_DELTA_E) {
           colorMoved = true;
           clusterIndices[pointIndex] = newIndex;
@@ -220,10 +218,6 @@ function wsmeans(inputPixels, startingClusters, requestedMaxColors) {
             componentASums[clusterIndex] / count,
             componentBSums[clusterIndex] / count,
           ];
-    }
-    console.error("material-quantizer iteration", iteration, populationSums.join(" "));
-    if (iteration === 0) {
-      clusters.forEach((cluster, index) => console.error("material-quantizer cluster", index, ...cluster));
     }
   }
 
