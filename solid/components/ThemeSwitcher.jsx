@@ -434,6 +434,40 @@ export default function ThemeSwitcher(props) {
             <Show when={showCustom()}>
               <div class="mt-3 space-y-2.5">
                 <WallpaperColorPicker onSeed={handleWallpaperSeed} />
+                {/*
+                 * The photo/wallpaper theme's own light-or-dark choice. It is
+                 * stored and applied independently of every named catalogue
+                 * theme (see getStoredMaterialMode/applyMaterialSeed in
+                 * lib/themes.js) — picking Dark here can never be flipped by
+                 * visiting a dark theme like Catppuccin Mocha, and visiting a
+                 * dark theme can never make a photo theme go dark on its own.
+                 */}
+                <div class="rounded-lg border border-border p-2.5">
+                  <p class="mb-2 text-xs font-semibold text-foreground">Photo theme: light or dark</p>
+                  <div class="flex gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleMaterialModeChange("light")}
+                      aria-pressed={!materialDark()}
+                      class={`flex-1 min-h-9 rounded-lg border text-xs font-bold transition-colors ${
+                        !materialDark() ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:bg-muted"}`}
+                    >
+                      Light
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMaterialModeChange("dark")}
+                      aria-pressed={materialDark()}
+                      class={`flex-1 min-h-9 rounded-lg border text-xs font-bold transition-colors ${
+                        materialDark() ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:bg-muted"}`}
+                    >
+                      Dark
+                    </button>
+                  </div>
+                  <p class="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">
+                    Only changes the theme built from a photo above. Other themes keep their own look.
+                  </p>
+                </div>
                 <label class="flex items-center gap-3 cursor-pointer">
                   <input
                     type="color"
