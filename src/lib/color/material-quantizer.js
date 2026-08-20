@@ -218,6 +218,7 @@ function wsmeans(inputPixels, startingClusters, requestedMaxColors) {
             componentBSums[clusterIndex] / count,
           ];
     }
+    console.error("material-quantizer iteration", iteration, populationSums.join(" "));
   }
 
   const merged = new Map();
