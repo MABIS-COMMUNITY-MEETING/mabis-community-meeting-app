@@ -14,10 +14,13 @@ function check(condition, message) {
 }
 
 document.body.style.overflow = "auto";
+document.documentElement.style.overflow = "scroll";
 const releaseFirst = lockBodyScroll();
 const releaseSecond = lockBodyScroll();
 
 check(document.body.style.overflow === "hidden", "the first lock must hide body overflow");
+check(document.documentElement.style.overflow === "hidden", "the first lock must hide root overflow");
+check(document.documentElement.classList.contains("scroll-locked"), "the first lock must expose its active state");
 check(scrollLockDepth() === 2, "nested locks must be reference-counted");
 
 releaseFirst();
@@ -25,7 +28,9 @@ check(document.body.style.overflow === "hidden", "one nested release must keep s
 check(scrollLockDepth() === 1, "one nested release must leave one active lock");
 
 releaseSecond();
-check(document.body.style.overflow === "auto", "the final release must restore original overflow");
+check(document.body.style.overflow === "auto", "the final release must restore original body overflow");
+check(document.documentElement.style.overflow === "scroll", "the final release must restore original root overflow");
+check(!document.documentElement.classList.contains("scroll-locked"), "the final release must clear its active state");
 check(scrollLockDepth() === 0, "the final release must clear the lock depth");
 
 document.body.style.overflow = "";
@@ -42,9 +47,12 @@ check(document.body.style.overflow === "", "the current release must restore doc
 check(scrollLockDepth() === 0, "the current release must clear its generation");
 
 document.body.style.overflow = "hidden";
+document.documentElement.style.overflow = "hidden";
 const releaseResidue = lockBodyScroll();
 releaseResidue();
-check(document.body.style.overflow === "", "a stale preview overflow value must not be preserved");
+check(document.body.style.overflow === "", "stale preview body overflow must not be preserved");
+check(document.documentElement.style.overflow === "", "stale preview root overflow must not be preserved");
+check(!document.documentElement.classList.contains("scroll-locked"), "stale preview state must be cleared");
 
 releaseAllScrollLocks();
 console.log("Scroll lock lifecycle checks passed.");
