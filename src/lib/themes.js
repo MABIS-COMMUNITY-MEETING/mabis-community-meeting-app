@@ -768,26 +768,71 @@ export function clearCustomColors({ notify = true } = {}) {
    whatever the reader is already in. */
 const MATERIAL_SEED_KEY = "mabis-material-seed";
 
-export function applyMaterialSeed(seedHex, { persist = true } = {}) {
+/*
+ * Material You's own light/dark polarity, independent of the named theme
+ * catalogue.
+ *
+ * Previously this scheme just read `document.body.classList.contains("theme-is-dark")`
+ * — whatever the LAST NAMED THEME happened to leave behind. A material seed
+ * applied on top of a light theme looked light; the same seed applied after
+ * visiting a dark catalogue theme (e.g. Catppuccin Mocha) looked dark, with no
+ * way to choose otherwise, and the polarity flipped back and forth depending on
+ * what had been clicked before — not a real preference. This key makes it one.
+ */
+const MATERIAL_MODE_KEY = "mabis-material-mode";
+
+export function getStoredMaterialMode() {
+  try {
+    return localStorage.getItem(MATERIAL_MODE_KEY) === "dark" ? "dark" : "light";
+  } catch {
+    return "light";
+  }
+}
+
+export function setStoredMaterialMode(mode) {
+  try { localStorage.setItem(MATERIAL_MODE_KEY, mode === "dark" ? "dark" : "light"); }
+  catch { /* storage blocked: the in-memory choice still applies this session */ }
+}
+
+/**
+ * @param {string} seedHex
+ * @param {{ persist?: boolean, dark?: boolean }} [opts]
+ * @param {boolean} [opts.dark] explicit light/dark polarity; defaults to the
+ *   reader's own stored Material You preference (see getStoredMaterialMode),
+ *   never to whatever named theme happened to run last.
+ */
+export function applyMaterialSeed(seedHex, { persist = true, dark } = {}) {
   const root = document.documentElement;
-  const dark = document.body.classList.contains("theme-is-dark");
-  const vars = materialSchemeVars(seedHex, dark);
+  const isDark = dark ?? (getStoredMaterialMode() === "dark");
+  const vars = materialSchemeVars(seedHex, isDark);
   Object.assign(vars, readableSurfaceTokens(vars));
   Object.assign(vars, editorThemeTokens(vars));
 
   beginThemeCommit();
   Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value));
-  root.style.setProperty("--ink", dark ? vars["--background"] : vars["--foreground"]);
-  root.style.setProperty("--bone", dark ? vars["--foreground"] : vars["--background"]);
+  root.style.setProperty("--ink", isDark ? vars["--background"] : vars["--foreground"]);
+  root.style.setProperty("--bone", isDark ? vars["--foreground"] : vars["--background"]);
   root.style.setProperty("--destructive", vars["--primary"]);
   root.style.setProperty("--destructive-foreground", vars["--primary-foreground"]);
   root.style.setProperty("--primary-foreground-muted", mutedForeground(vars["--primary-foreground"], vars["--primary"]));
-  applyPalette(materialSchemeSwatches(seedHex, dark), true);
+  // Material owns its own polarity now — assert it on <body> too, so it wins
+  // over whatever a previously-applied named theme (dark or light) left set,
+  // instead of silently inheriting that leftover state.
+  document.body.classList.toggle("theme-is-dark", isDark);
+  applyPalette(materialSchemeSwatches(seedHex, isDark), true);
 
   if (persist) {
     localStorage.setItem(MATERIAL_SEED_KEY, seedHex);
+    setStoredMaterialMode(isDark ? "dark" : "light");
     localStorage.removeItem("mabis-custom-colors");
-    saveThemeSnapshot(null, null);
+    // A material seed is its own theme, not a layer over the last named
+    // catalogue pick. Without this, the named theme's key (e.g.
+    // catppuccin_mocha) stayed in mabis-theme, so the NEXT boot re-applied
+    // that theme's dark/light polarity for a moment before the seed
+    // overrode it — which is exactly how a dark catalogue theme kept
+    // "bleeding" into a Material You scheme that should stand on its own.
+    localStorage.setItem("mabis-theme", "default");
+    saveThemeSnapshot("default", null);
   }
   window.dispatchEvent(new Event("themeChanged"));
 }
