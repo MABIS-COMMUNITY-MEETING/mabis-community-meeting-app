@@ -9,7 +9,6 @@ import {
   getStoredMaterialMode, setStoredMaterialMode,
 } from "@/lib/themes";
 import { JapaneseText } from "~/components/primitives";
-import { useAuth } from "~/lib/AuthContext";
 import WallpaperColorPicker from "~/components/WallpaperColorPicker";
 
 const INITIAL_THEME_LIMIT = 20;
@@ -33,12 +32,11 @@ function paletteStripe(theme) {
 }
 
 /*
- * Both lists come from SELECTABLE_THEME_KEYS, never from THEMES.
+ * Both lists come from getSelectableThemeKeys(), never Object.keys(THEMES).
  *
- * THEMES still carries the retired catalogue for the pride ambience, the
- * Frutiger Aero treatment and the contrast fixtures. Enumerating it here is
- * what used to put ~140 themes in the picker, so the allow-list is the only
- * thing this file is permitted to read.
+ * The helper returns MABIS until the Boss-style easter egg is unlocked, then
+ * exposes the large themed catalogue. Keeping that decision out of this
+ * surface prevents the picker from bypassing the 69-press gate.
  */
 const EASY_THEME_LIMIT = 8;
 
@@ -99,7 +97,6 @@ export default function ThemeSwitcher(props) {
   // creation flow.
   const [materialSeedActive, setMaterialSeedActive] = createSignal(false);
   const [materialDark, setMaterialDark] = createSignal(getStoredMaterialMode() === "dark");
-  const auth = useAuth();
   const [bossThemesUnlocked, setBossThemesUnlocked] = createSignal(areBossThemesUnlockedLocally());
   const [themeName, setThemeName] = createSignal("");
   const [showCustom, setShowCustom] = createSignal(false);
@@ -108,7 +105,7 @@ export default function ThemeSwitcher(props) {
   const [themeSearch, setThemeSearch] = createSignal("");
   const themeEntries = createMemo(() => {
     bossThemesUnlocked();
-    return getSelectableThemeKeys(auth.user())
+    return getSelectableThemeKeys()
     .map((key) => [key, THEMES[key]])
     .filter(([, theme]) => theme);
   });
@@ -148,7 +145,7 @@ export default function ThemeSwitcher(props) {
     window.addEventListener(BOSS_THEMES_UNLOCKED_EVENT, onBossThemesUnlock);
     onCleanup(() => window.removeEventListener(BOSS_THEMES_UNLOCKED_EVENT, onBossThemesUnlock));
 
-    const storedTheme = getStoredTheme(auth.user());
+    const storedTheme = getStoredTheme();
     setCurrentTheme(storedTheme);
     if (storedTheme !== "default") applyTheme(storedTheme, { persist: false });
     const seed = getStoredMaterialSeed();
