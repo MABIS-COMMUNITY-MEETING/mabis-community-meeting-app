@@ -51,6 +51,7 @@ const LAYOUT_CHOICES = [
   },
 ];
 
+const BOSS_THEME_UNLOCK_PRESSES = 69;
 const SIMPLE_FONT_KEYS = ["gnu-free-mono", "gnu-free-sans", "go", "gnu-free-serif"];
 const SIMPLE_FONT_LABELS = {
   "gnu-free-mono": "Recommended · familiar MABIS look",
@@ -201,7 +202,7 @@ export default function SettingsModal(props) {
     if (choice.key === "boss") {
       const nextPressCount = bossStylePresses() + 1;
       setBossStylePresses(nextPressCount);
-      if (nextPressCount === 69) unlockBossThemesLocally();
+      if (nextPressCount === BOSS_THEME_UNLOCK_PRESSES) unlockBossThemesLocally();
     }
     setLayout(choice.key);
     setHomeLayout(choice.key);
