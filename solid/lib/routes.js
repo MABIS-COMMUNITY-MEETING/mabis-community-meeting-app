@@ -100,6 +100,7 @@ function loadHomeRoute() {
   const HOME_WARMUP_BUDGET_MS = 900;
   homeRoutePromise = (async () => {
     const chunk = homeChunk();
+    const moduleWarmup = startHomeModuleWarmup();
     const warm = import("~/lib/home-warmup")
       .then(({ warmHomeRoute }) => warmHomeRoute((p) => setLoadingState({
         progress: p.progress, label: "CACHING STUFF", detail: p.detail,
@@ -107,6 +108,11 @@ function loadHomeRoute() {
       .catch(() => undefined);
 
     const mod = await chunk;
+    // On capable connections all ten numbered section chunks began loading
+    // while auth was in flight. Await that same work here so nested Suspense
+    // boundaries resolve from the module cache instead of showing empty
+    // sections after the full-screen loader has already disappeared.
+    if (moduleWarmup) await moduleWarmup;
     await waitWithinBudget(warm, HOME_WARMUP_BUDGET_MS);
 
     setLoadingState({ progress: 100, label: "CACHING STUFF", detail: "SECTIONS READY" });
