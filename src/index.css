@@ -973,10 +973,20 @@ body .text-accent { color: hsl(var(--editor-ink-accent)) !important; }
    scripts/check-theme-balance.mjs enforces their contrast against --card for
    all themes, so these stay readable in every palette.
    Highlight rules follow the ink rules deliberately: when a span carries both,
-   the highlight's own guaranteed-readable foreground must win. */
-.theme-rich-text .ql-ink-primary { color: hsl(var(--editor-ink-primary)); }
-.theme-rich-text .ql-ink-secondary { color: hsl(var(--editor-ink-secondary)); }
-.theme-rich-text .ql-ink-accent { color: hsl(var(--editor-ink-accent)); }
+   the highlight's own guaranteed-readable foreground must win.
+   !important on every declaration here, not just the guard above: DocsEditor
+   used to ALSO write a literal computed color inline alongside this class (a
+   frozen snapshot of whichever theme was active at the moment someone picked
+   a colour), and without !important that inline style beats an unmarked class
+   selector regardless of source order — so the class was correct and the
+   editor still visibly stopped following theme changes the instant anyone
+   used it. DocsEditor no longer writes that inline colour, but existing
+   documents saved before this fix still carry it, and there is no migration
+   for stored HTML — !important here is what makes THOSE render correctly
+   under today's theme too, not only new ones written from now on. */
+.theme-rich-text .ql-ink-primary { color: hsl(var(--editor-ink-primary)) !important; }
+.theme-rich-text .ql-ink-secondary { color: hsl(var(--editor-ink-secondary)) !important; }
+.theme-rich-text .ql-ink-accent { color: hsl(var(--editor-ink-accent)) !important; }
 
 .theme-rich-text .ql-hl-primary,
 .theme-rich-text .ql-hl-secondary,
@@ -985,16 +995,16 @@ body .text-accent { color: hsl(var(--editor-ink-accent)) !important; }
   padding: 0 0.12em;
 }
 .theme-rich-text .ql-hl-primary {
-  background-color: hsl(var(--editor-highlight-primary));
-  color: hsl(var(--editor-highlight-primary-foreground));
+  background-color: hsl(var(--editor-highlight-primary)) !important;
+  color: hsl(var(--editor-highlight-primary-foreground)) !important;
 }
 .theme-rich-text .ql-hl-secondary {
-  background-color: hsl(var(--editor-highlight-secondary));
-  color: hsl(var(--editor-highlight-secondary-foreground));
+  background-color: hsl(var(--editor-highlight-secondary)) !important;
+  color: hsl(var(--editor-highlight-secondary-foreground)) !important;
 }
 .theme-rich-text .ql-hl-accent {
-  background-color: hsl(var(--editor-highlight-accent));
-  color: hsl(var(--editor-highlight-accent-foreground));
+  background-color: hsl(var(--editor-highlight-accent)) !important;
+  color: hsl(var(--editor-highlight-accent-foreground)) !important;
 }
 
 /* ── Docs-style toolbar chrome (DocsEditor) ──────────────────────────
