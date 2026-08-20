@@ -219,6 +219,9 @@ function wsmeans(inputPixels, startingClusters, requestedMaxColors) {
           ];
     }
     console.error("material-quantizer iteration", iteration, populationSums.join(" "));
+    if (iteration === 0) {
+      clusters.forEach((cluster, index) => console.error("material-quantizer cluster", index, ...cluster));
+    }
   }
 
   const merged = new Map();
