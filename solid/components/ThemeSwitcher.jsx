@@ -384,23 +384,22 @@ export default function ThemeSwitcher(props) {
 
           <div class="border-t border-border pt-3">
             <div
-              role="button"
-              tabindex="0"
-              aria-expanded={showCustom()}
-              onClick={() => setShowCustom((s) => !s)}
-              onKeyDown={(e) => {
-                if (e.key !== "Enter" && e.key !== " ") return;
-                e.preventDefault();
-                setShowCustom((s) => !s);
-              }}
-              class="w-full flex items-center justify-between p-2.5 rounded-xl border-2 transition-all cursor-pointer"
+              class="flex w-full items-center justify-between rounded-xl border-2 p-2.5 transition-all"
               style={{ "border-color": customActive() ? "hsl(var(--primary))" : "hsl(var(--border))" }}
             >
-              <span class="text-xs font-bold text-foreground">Create a Material theme · Advanced</span>
+              <button
+                type="button"
+                aria-expanded={showCustom()}
+                onClick={() => setShowCustom((s) => !s)}
+                class="min-h-8 flex-1 text-left text-xs font-bold text-foreground"
+              >
+                Create a Material theme · Advanced
+              </button>
               <Show when={customActive()}>
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleSelectTheme(currentTheme()); }}
-                  class="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground"
+                  type="button"
+                  onClick={() => handleSelectTheme(currentTheme())}
+                  class="flex min-h-8 items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground"
                 >
                   <RotateCcw class="w-3 h-3" /> Reset
                 </button>
