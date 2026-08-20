@@ -909,6 +909,12 @@ export function getStoredCustomColors() {
 }
 
 // ── Saved custom themes (user-named) ──
+export const SAVED_THEMES_CHANGED_EVENT = "savedThemesChanged";
+
+function notifySavedThemesChanged() {
+  window.dispatchEvent(new Event(SAVED_THEMES_CHANGED_EVENT));
+}
+
 export function getSavedThemes() {
   const stored = localStorage.getItem("mabis-saved-themes");
   if (!stored) return [];
@@ -922,6 +928,7 @@ export function saveCustomTheme(name, primaryHex, secondaryHex) {
   if (idx >= 0) themes[idx] = entry;
   else themes.push(entry);
   localStorage.setItem("mabis-saved-themes", JSON.stringify(themes));
+  notifySavedThemesChanged();
   return themes;
 }
 
@@ -947,12 +954,14 @@ export function saveMaterialTheme(name, seedHex, dark) {
   if (idx >= 0) themes[idx] = entry;
   else themes.push(entry);
   localStorage.setItem("mabis-saved-themes", JSON.stringify(themes));
+  notifySavedThemesChanged();
   return themes;
 }
 
 export function deleteSavedTheme(name) {
   const themes = getSavedThemes().filter(t => t.name !== name);
   localStorage.setItem("mabis-saved-themes", JSON.stringify(themes));
+  notifySavedThemesChanged();
   return themes;
 }
 
