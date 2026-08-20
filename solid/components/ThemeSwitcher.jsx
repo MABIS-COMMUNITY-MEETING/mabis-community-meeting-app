@@ -4,6 +4,7 @@ import {
   THEMES, getSelectableThemeKeys, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
+  areBossThemesUnlockedLocally, BOSS_THEMES_UNLOCKED_EVENT,
 } from "@/lib/themes";
 import { JapaneseText } from "~/components/primitives";
 import { useAuth } from "~/lib/AuthContext";
@@ -97,15 +98,19 @@ export default function ThemeSwitcher(props) {
   // mounted and open would not notice the unlock until it happened to
   // re-render for an unrelated reason.
   const [customColorsUnlocked, setCustomColorsUnlocked] = createSignal(isCustomColorsUnlockedLocally());
+  const [bossThemesUnlocked, setBossThemesUnlocked] = createSignal(areBossThemesUnlockedLocally());
   const hasCustomColorAccess = () => canUseCustomColors(auth.user()) || customColorsUnlocked();
   const [themeName, setThemeName] = createSignal("");
   const [showCustom, setShowCustom] = createSignal(false);
   const [themeLimit, setThemeLimit] = createSignal(INITIAL_THEME_LIMIT);
   const [showAllThemes, setShowAllThemes] = createSignal(false);
   const [themeSearch, setThemeSearch] = createSignal("");
-  const themeEntries = createMemo(() => getSelectableThemeKeys(auth.user())
+  const themeEntries = createMemo(() => {
+    bossThemesUnlocked();
+    return getSelectableThemeKeys(auth.user())
     .map((key) => [key, THEMES[key]])
-    .filter(([, theme]) => theme));
+    .filter(([, theme]) => theme);
+  });
   const simpleThemeEntries = createMemo(() => themeEntries().slice(0, EASY_THEME_LIMIT));
   const hasThemeCatalogue = () => themeEntries().length > 1;
 
@@ -141,6 +146,10 @@ export default function ThemeSwitcher(props) {
     const onUnlock = () => setCustomColorsUnlocked(true);
     window.addEventListener(CUSTOM_COLORS_UNLOCKED_EVENT, onUnlock);
     onCleanup(() => window.removeEventListener(CUSTOM_COLORS_UNLOCKED_EVENT, onUnlock));
+
+    const onBossThemesUnlock = () => setBossThemesUnlocked(true);
+    window.addEventListener(BOSS_THEMES_UNLOCKED_EVENT, onBossThemesUnlock);
+    onCleanup(() => window.removeEventListener(BOSS_THEMES_UNLOCKED_EVENT, onBossThemesUnlock));
 
     const storedTheme = getStoredTheme(auth.user());
     setCurrentTheme(storedTheme);

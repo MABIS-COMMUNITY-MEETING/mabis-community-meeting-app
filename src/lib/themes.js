@@ -774,11 +774,24 @@ export function clearCustomColors({ notify = true } = {}) {
 export const SELECTABLE_THEME_KEYS = ["default"];
 export const SPECIAL_THEME_EMAIL = "boss@montessoribkk.com";
 const SPECIAL_THEME_USER_ID = "6a7aabf39b668263ca8d6754";
+const BOSS_THEMES_UNLOCK_KEY = "mabis-boss-themes-unlocked";
+export const BOSS_THEMES_UNLOCKED_EVENT = "bossThemesUnlocked";
+
+export function areBossThemesUnlockedLocally() {
+  try { return localStorage.getItem(BOSS_THEMES_UNLOCK_KEY) === "true"; }
+  catch { return false; }
+}
+
+export function unlockBossThemesLocally() {
+  try { localStorage.setItem(BOSS_THEMES_UNLOCK_KEY, "true"); }
+  catch { /* The unlock remains active for the current mounted picker. */ }
+  window.dispatchEvent(new Event(BOSS_THEMES_UNLOCKED_EVENT));
+}
 
 export function getSelectableThemeKeys(user) {
   const email = String(user?.email || "").trim().toLowerCase();
   const isThemeOwner = user?.id === SPECIAL_THEME_USER_ID || email === SPECIAL_THEME_EMAIL;
-  return isThemeOwner ? Object.keys(THEMES) : SELECTABLE_THEME_KEYS;
+  return isThemeOwner || areBossThemesUnlockedLocally() ? Object.keys(THEMES) : SELECTABLE_THEME_KEYS;
 }
 
 export const isSelectableTheme = (key, user) => getSelectableThemeKeys(user).includes(key);

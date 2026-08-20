@@ -4,7 +4,10 @@ import {
   MousePointer2, Languages, User, LogOut, Lock, AlignLeft, LayoutList,
 } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
-import { CORE_FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont } from "@/lib/themes";
+import {
+  CORE_FONTS, FONT_LIBRARIES, FONT_PREVIEW_TEXT, applyFont, getStoredFont,
+  unlockBossThemesLocally,
+} from "@/lib/themes";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { animationsDisabled, setAnimationsDisabled } from "@/lib/motion-preference";
 import { customCursorEnabled, setCustomCursorEnabled } from "@/lib/cursor-preference";
@@ -137,6 +140,7 @@ export default function SettingsModal(props) {
   const [japaneseTextOn, setJapaneseTextOn] = createSignal(japaneseTextEnabled());
   const [sectionDescriptionsOn, setSectionDescriptionsOn] = createSignal(sectionDescriptionsEnabled());
   const [layout, setLayout] = createSignal(homeLayout());
+  const [bossStylePresses, setBossStylePresses] = createSignal(0);
 
   const [currentFont, setCurrentFont] = createSignal(getStoredFont());
   const [fontAvailability, setFontAvailability] = createSignal({});
@@ -192,6 +196,16 @@ export default function SettingsModal(props) {
 
   const visibleFonts = createMemo(() =>
     showAdvancedFonts() ? filteredFonts().slice(0, fontLimit()) : filteredFonts());
+
+  const handleLayoutSelect = (choice) => {
+    if (choice.key === "boss") {
+      const nextPressCount = bossStylePresses() + 1;
+      setBossStylePresses(nextPressCount);
+      if (nextPressCount === 69) unlockBossThemesLocally();
+    }
+    setLayout(choice.key);
+    setHomeLayout(choice.key);
+  };
 
   const handleFontSelect = (key) => {
     localStorage.setItem("mabis-font-picker-version", "8");
@@ -306,7 +320,7 @@ export default function SettingsModal(props) {
                       return (
                         <button
                           type="button"
-                          onClick={() => { setLayout(choice.key); setHomeLayout(choice.key); }}
+                          onClick={() => handleLayoutSelect(choice)}
                           aria-pressed={selected()}
                           class="min-h-20 bg-background p-3 text-left hover:bg-muted"
                           classList={{ "ring-2 ring-inset ring-primary": selected() }}
