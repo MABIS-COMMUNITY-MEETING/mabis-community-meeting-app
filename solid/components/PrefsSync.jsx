@@ -1,6 +1,5 @@
 import { createEffect, on, onCleanup } from "solid-js";
 import { useAuth } from "~/lib/AuthContext";
-import { canUseCustomColors } from "@/lib/custom-color-access";
 
 /**
  * Keeps theme / colour / font / motion preferences on the user account so they
@@ -38,38 +37,8 @@ export default function PrefsSync() {
         .finally(() => {
           if (cancelled) return;
           ready = true;
-          dropCustomColoursUnlessOwned();
         });
-    }).catch(() => {
-      /* prefs_sync failed to load, so no pull will happen and nothing will
-         overwrite local state. Reconcile anyway — the restriction must not
-         depend on an optional chunk arriving. */
-      if (!cancelled) dropCustomColoursUnlessOwned();
-    });
-
-    /*
-     * Custom colours belong to one account (lib/custom-color-access.js).
-     * Hiding the controls is not enough on its own: an account that set them
-     * before the restriction — or that pulled them from another device a
-     * moment ago — would keep colours it now has no way to change or reset.
-     *
-     * This runs AFTER pullPrefs, deliberately. Clearing first would simply be
-     * overwritten by the pull landing a moment later, which is the version of
-     * this that looks like it works and does not.
-     *
-     * themes.js is imported dynamically for the same reason the rest of this
-     * file does: a static import drags the whole palette catalogue onto the
-     * boot path.
-     */
-    function dropCustomColoursUnlessOwned() {
-      if (canUseCustomColors(auth.user())) return;
-      import("@/lib/themes")
-        .then(({ getStoredCustomColors, clearCustomColors }) => {
-          if (cancelled || !getStoredCustomColors()) return;
-          clearCustomColors();
-        })
-        .catch(() => {});
-    }
+    }).catch(() => {});
   }));
 
   createEffect(on(() => auth.user()?.id, (id) => {
