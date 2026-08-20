@@ -187,7 +187,7 @@ function Field(props) {
           onInput={(e) => props.onInput(e.currentTarget.value)}
           rows={2}
           placeholder="—"
-          class="w-full text-sm rounded-lg border border-border px-2.5 py-2 resize-none focus:outline-none focus:border-primary/50"
+          class="w-full text-sm rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground px-2.5 py-2 resize-none focus:outline-none focus:border-primary/50"
         />
       </Show>
     </div>
