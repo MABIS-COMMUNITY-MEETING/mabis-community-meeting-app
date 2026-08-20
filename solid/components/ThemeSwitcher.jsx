@@ -32,7 +32,7 @@ function paletteStripe(theme) {
 }
 
 /*
- * Both lists come from getSelectableThemeKeys(), never Object.keys(THEMES).
+ * Both lists come from getSelectableThemeKeys(), never direct catalogue enumeration.
  *
  * The helper returns MABIS until the Boss-style easter egg is unlocked, then
  * exposes the large themed catalogue. Keeping that decision out of this
