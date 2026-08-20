@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import path from "node:path";
+import { JSDOM } from "jsdom";
 import { createServer } from "vite";
 import { hctFromRgb, hexFromHct } from "../src/lib/color/hct.js";
 
@@ -220,6 +221,53 @@ try {
     scoreMaterialPopulation,
   } = await server.ssrLoadModule("/src/lib/color/wallpaper-palette.js");
 
+  const browser = new JSDOM("<!doctype html><html><body></body></html>", {
+    url: "https://app.test/home",
+  });
+  globalThis.window = browser.window;
+  globalThis.document = browser.window.document;
+  globalThis.localStorage = browser.window.localStorage;
+  globalThis.Event = browser.window.Event;
+  globalThis.getComputedStyle = browser.window.getComputedStyle.bind(browser.window);
+
+  const {
+    SAVED_THEMES_CHANGED_EVENT,
+    deleteSavedTheme,
+    getSavedThemes,
+    saveMaterialTheme,
+  } = await server.ssrLoadModule("/src/lib/themes.js");
+
+  let savedThemeEvents = 0;
+  window.addEventListener(SAVED_THEMES_CHANGED_EVENT, () => {
+    savedThemeEvents += 1;
+  });
+
+  const savedMaterialTheme = saveMaterialTheme("Golden hour", "#ffc107", true);
+  assertObject("saved Material theme record", savedMaterialTheme, [{
+    name: "Golden hour",
+    type: "material",
+    seed: "#ffc107",
+    dark: true,
+    primary: "#e1c387",
+    secondary: "#f4b78d",
+  }]);
+  assertEqual("saved Material theme sync event", savedThemeEvents, 1);
+
+  saveMaterialTheme("Golden hour", "#4181ee", false);
+  assertObject("saved Material theme overwrite", getSavedThemes(), [{
+    name: "Golden hour",
+    type: "material",
+    seed: "#4181ee",
+    dark: false,
+    primary: "#4a5f8b",
+    secondary: "#695781",
+  }]);
+  assertEqual("overwritten Material theme sync event", savedThemeEvents, 2);
+
+  deleteSavedTheme("Golden hour");
+  assertObject("saved Material theme deletion", getSavedThemes(), []);
+  assertEqual("deleted Material theme sync event", savedThemeEvents, 3);
+
   for (const fixture of schemeFixtures) {
     assertObject(
       `2025 Tonal Spot ${fixture.seed} ${fixture.dark ? "dark" : "light"}`,
@@ -271,5 +319,5 @@ try {
 
 console.log(
   `Material You: ${inverseRows.length} inverse HCT, ${forwardRows.length} forward HCT, ` +
-  `${schemeFixtures.length} schemes, ${scoreFixtures.length} scores and Celebi passed reference checks.`,
+  `${schemeFixtures.length} schemes, ${scoreFixtures.length} scores, saved-theme persistence and Celebi passed reference checks.`,
 );
