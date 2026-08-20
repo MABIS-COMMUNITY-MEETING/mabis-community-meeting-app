@@ -15,6 +15,45 @@
     <meta name="description" content="A shared working space for MABIS community meetings, announcements, schedules, jobs, notes and community records." />
     <meta name="theme-color" content="#951E3A" />
     <meta name="color-scheme" content="light dark" />
+
+    <!--
+      Pre-paint theme replay.
+
+      This deliberately runs before the critical style block and before any
+      external module. The full theme module is too large for this path, but
+      its last painted CSS variables are already cached as a tiny snapshot.
+      Replaying that cache here prevents the loading surface from painting one
+      frame of the default palette before a saved custom/Material theme lands.
+      solid/main.jsx validates and replays the same snapshot again, then
+      reconciles it from the authoritative theme module after first paint.
+    -->
+    <script id="mabis-theme-prepaint">
+      (() => {
+        try {
+          const storedTheme = localStorage.getItem("mabis-theme") || "default";
+          const storedFont = localStorage.getItem("mabis-font") || "";
+          const snapshot = JSON.parse(
+            localStorage.getItem("mabis-theme-snapshot-v1") || "null"
+          );
+          if (!snapshot?.style) return;
+          if (snapshot.themeKey !== storedTheme || snapshot.fontKey !== storedFont) return;
+
+          const root = document.documentElement;
+          root.setAttribute("style", snapshot.style);
+
+          const primary = root.style.getPropertyValue("--primary").trim();
+          const themeColor = document.querySelector('meta[name="theme-color"]');
+          if (primary && themeColor) themeColor.setAttribute("content", `hsl(${primary})`);
+
+          window.__mabisPrePaintTheme = {
+            bodyClasses: snapshot.bodyClasses || [],
+            themeClass: snapshot.themeClass || "",
+          };
+        } catch {
+          /* Missing, blocked or stale storage falls back to the safe dark boot. */
+        }
+      })();
+    </script>
     <link rel="manifest" href="/manifest.json" />
 
     <!-- Organization structured data, matching the React entry. Lighthouse's
@@ -47,7 +86,11 @@
     <!-- Inline first-paint styles + boot splash. HTML comments ship, so the
          reasoning lives in check-performance-contract.mjs, which pins both. -->
     <style>
-      html, body, #root { min-height: 100%; margin: 0; background: #11131a; }
+      html, body, #root {
+        min-height: 100%;
+        margin: 0;
+        background: hsl(var(--background, 228 21% 8%));
+      }
       #root:empty { min-height: 100vh; }
 
       /* pointer-events:none unconditionally. This is a full-viewport fixed
@@ -60,7 +103,8 @@
         position: fixed; inset: 0; z-index: 1; pointer-events: none;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center; gap: 1.5rem;
-        background: #11131a; color: #f7f3ea;
+        background: hsl(var(--background, 228 21% 8%));
+        color: hsl(var(--foreground, 40 32% 94%));
         font-family: "GNUFreeMonoUI", "FreeMono", ui-monospace, monospace;
         font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
       }
@@ -68,11 +112,11 @@
       #boot-splash-track {
         position: relative; overflow: hidden;
         width: min(220px, 44vw); height: 1px;
-        background: rgba(247, 243, 234, 0.15);
+        background: hsl(var(--foreground, 40 32% 94%) / 0.15);
       }
       #boot-splash-track::after {
         content: ""; position: absolute; inset: 0 auto 0 0;
-        width: 40%; background: #951E3A;
+        width: 40%; background: hsl(var(--primary, 345 67% 35%));
         animation: boot-splash-sweep 1.15s ease-in-out infinite;
       }
       @keyframes boot-splash-sweep {
@@ -89,8 +133,8 @@
         #root:not(:empty) + #boot-splash { transition: none; }
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-iLP-UCIH.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DXS4xlYF.css">
+    <script type="module" crossorigin src="/assets/index-FkYYNFrZ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Cdx-IK7x.css">
     <script type="module">
 if (window.self === window.top) {
   let lastPath = "";
@@ -125,6 +169,25 @@ if (window.self === window.top) {
 </script>
   </head>
   <body>
+    <script id="mabis-theme-body">
+      (() => {
+        try {
+          const snapshot = window.__mabisPrePaintTheme;
+          if (!snapshot) return;
+
+          const owned = new Set(["pride-active", "theme-is-dark"]);
+          for (const name of snapshot.bodyClasses) {
+            if (owned.has(name)) document.body.classList.add(name);
+          }
+          if (/^theme-[a-z0-9_-]+$/i.test(snapshot.themeClass)) {
+            document.body.classList.add(snapshot.themeClass);
+            document.body.dataset.mabisThemeClass = snapshot.themeClass;
+          }
+        } finally {
+          delete window.__mabisPrePaintTheme;
+        }
+      })();
+    </script>
     <div id="root"></div>
     <div id="boot-splash" role="status" aria-label="Loading">
       <span>Initialising</span>
