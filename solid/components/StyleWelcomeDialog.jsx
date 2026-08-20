@@ -81,9 +81,15 @@ export default function StyleWelcomeDialog() {
         <div class="pointer-events-none fixed inset-0 z-[120] flex items-center justify-center p-4">
           <KDialog.Content class="pointer-events-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xl">
             <header class="border-b border-border bg-background px-5 py-5 sm:px-7 sm:py-6">
-              <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-                First choice · 最初の設定
-              </p>
+              <JapaneseText
+                ja="最初の設定"
+                as="p"
+                layout="inline"
+                class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary"
+                japaneseClass="ml-1.5 inline font-normal tracking-normal opacity-75"
+              >
+                First choice
+              </JapaneseText>
               <KDialog.Title class="mt-2 font-display text-2xl font-bold leading-tight text-foreground sm:text-3xl">
                 <JapaneseText
                   ja="MABISのスタイルを選んでください"
@@ -128,9 +134,15 @@ export default function StyleWelcomeDialog() {
                   >
                     {choice.description}
                   </JapaneseText>
-                  <span class="mt-5 inline-block border-b border-primary pb-0.5 text-xs font-bold text-primary">
+                  <JapaneseText
+                    ja="このスタイルを選ぶ"
+                    as="span"
+                    layout="inline"
+                    class="mt-5 inline-block border-b border-primary pb-0.5 text-xs font-bold text-primary"
+                    japaneseClass="ml-1.5 inline font-normal opacity-75"
+                  >
                     Choose this style
-                  </span>
+                  </JapaneseText>
                 </button>
               ))}
             </div>
