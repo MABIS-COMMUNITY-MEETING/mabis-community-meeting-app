@@ -149,7 +149,7 @@ export default function FeedbackWidget() {
                     onInput={(e) => setMessage(e.currentTarget.value)}
                     rows={4}
                     placeholder={tab() === "feedback" ? "Tell us what you think..." : "What happened? What did you expect?"}
-                    class="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:border-primary/50 resize-none"
+                    class="w-full rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground px-3 py-2 text-sm focus:outline-none focus:border-primary/50 resize-none"
                   />
                   <Show
                     when={imageUrl()}
