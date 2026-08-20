@@ -6,6 +6,7 @@ import {
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
   areBossThemesUnlockedLocally, BOSS_THEMES_UNLOCKED_EVENT,
   applyMaterialSeed, getStoredMaterialSeed, clearMaterialSeed,
+  getStoredMaterialMode, setStoredMaterialMode,
 } from "@/lib/themes";
 import { JapaneseText } from "~/components/primitives";
 import { useAuth } from "~/lib/AuthContext";
@@ -93,6 +94,11 @@ export default function ThemeSwitcher(props) {
   const [customPrimary, setCustomPrimary] = createSignal("#951E3A");
   const [customSecondary, setCustomSecondary] = createSignal("#EACE54");
   const [savedThemes, setSavedThemes] = createSignal([]);
+  // Whether the active custom look came from a Material You seed (owns every
+  // surface, has its own light/dark) rather than the plain primary/secondary
+  // picker (keeps whatever surfaces the last theme left behind).
+  const [materialSeedActive, setMaterialSeedActive] = createSignal(false);
+  const [materialDark, setMaterialDark] = createSignal(getStoredMaterialMode() === "dark");
   const auth = useAuth();
   // canUseCustomColors(user) itself reads localStorage synchronously, but a
   // localStorage write elsewhere (the colophon-logo unlock in boss.jsx) is
@@ -159,8 +165,10 @@ export default function ThemeSwitcher(props) {
     const seed = getStoredMaterialSeed();
     if (seed) {
       setCustomActive(true);
+      setMaterialSeedActive(true);
       setCustomPrimary(seed);
-      applyMaterialSeed(seed, { persist: false });
+      setMaterialDark(getStoredMaterialMode() === "dark");
+      applyMaterialSeed(seed, { persist: false, dark: getStoredMaterialMode() === "dark" });
     } else {
       const custom = getStoredCustomColors();
       if (custom) {
@@ -188,6 +196,7 @@ export default function ThemeSwitcher(props) {
   const handleSelectTheme = (key) => {
     setCurrentTheme(key);
     setCustomActive(false);
+    setMaterialSeedActive(false);
     clearCustomColors({ notify: false });
     clearMaterialSeed();
     applyTheme(key);
@@ -200,6 +209,14 @@ export default function ThemeSwitcher(props) {
     if (which === "primary") setCustomPrimary(hex);
     else setCustomSecondary(hex);
     setCustomActive(true);
+    // A plain primary/secondary pick is a different, separate choice from a
+    // Material You seed (which owns every surface and its own light/dark).
+    // Without clearing the seed here, it lingered in storage and won the NEXT
+    // boot's restore check ahead of whatever the reader had just picked here.
+    if (materialSeedActive()) {
+      setMaterialSeedActive(false);
+      clearMaterialSeed();
+    }
     applyCustomColors(
       which === "primary" ? hex : customPrimary(),
       which === "secondary" ? hex : customSecondary(),
@@ -219,13 +236,28 @@ export default function ThemeSwitcher(props) {
   const handleWallpaperSeed = (seedHex) => {
     setCustomPrimary(seedHex);
     setCustomActive(true);
-    applyMaterialSeed(seedHex);
+    setMaterialSeedActive(true);
+    applyMaterialSeed(seedHex, { dark: materialDark() });
+  };
+
+  // The Material You scheme's own light/dark choice. Independent of every
+  // named theme's polarity — picking Dark here never depends on, and never
+  // gets overwritten by, a catalogue theme like Catppuccin Mocha.
+  const handleMaterialModeChange = (mode) => {
+    const isDark = mode === "dark";
+    setMaterialDark(isDark);
+    setStoredMaterialMode(mode);
+    if (materialSeedActive()) applyMaterialSeed(customPrimary(), { dark: isDark });
   };
 
   const handleLoadSaved = (theme) => {
     setCustomPrimary(theme.primary);
     setCustomSecondary(theme.secondary);
     setCustomActive(true);
+    if (materialSeedActive()) {
+      setMaterialSeedActive(false);
+      clearMaterialSeed();
+    }
     applyCustomColors(theme.primary, theme.secondary);
   };
 
