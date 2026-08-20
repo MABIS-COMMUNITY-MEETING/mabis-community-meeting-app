@@ -3,12 +3,14 @@ import { ImagePlus } from "lucide-solid";
 import { extractWallpaperPalette } from "@/lib/color/wallpaper-palette";
 
 /*
- * "Bring a wallpaper" — pick an image, get its Material You-style seed
- * colors as swatches. Extraction applies the two best colors immediately;
- * tapping a swatch afterwards makes THAT color the primary.
+ * "Bring a wallpaper" — pick an image, get its Material You seed colors.
  *
- * Everything stays on this device: the image is read into a canvas for
- * color statistics and never uploaded anywhere.
+ * A seed is not an accent: the best one is applied immediately and generates
+ * the ENTIRE scheme (page, cards, borders, text, accents) from its tonal
+ * palettes. Tapping another swatch re-seeds the whole scheme from that color.
+ *
+ * Everything stays on this device: the image is read into a canvas for color
+ * statistics and never uploaded anywhere.
  */
 export default function WallpaperColorPicker(props) {
   let inputEl;
@@ -24,7 +26,7 @@ export default function WallpaperColorPicker(props) {
       const palette = await extractWallpaperPalette(file, 6);
       if (palette.length === 0) throw new Error("empty");
       setSwatches(palette);
-      props.onPalette?.(palette[0], palette[1] || palette[0]);
+      props.onSeed?.(palette[0]);
     } catch {
       setError("Couldn't read colors from that image. Try another one.");
     } finally {
@@ -49,10 +51,10 @@ export default function WallpaperColorPicker(props) {
         class="flex w-full min-h-10 items-center justify-center gap-2 border border-border px-3 text-xs font-bold text-foreground hover:bg-muted disabled:opacity-50"
       >
         <ImagePlus class="w-3.5 h-3.5" />
-        {busy() ? "Reading colors…" : "Pick colors from an image"}
+        {busy() ? "Reading colors…" : "Make a theme from an image"}
       </button>
       <p class="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">
-        Choose a wallpaper or photo and the theme colors are made from it, right on your device.
+        Choose a wallpaper or photo and the whole theme — pages, cards and buttons — is made from it, right on your device.
       </p>
       <Show when={error()}>
         <p class="mt-1.5 text-[10px] text-destructive">{error()}</p>
@@ -63,17 +65,17 @@ export default function WallpaperColorPicker(props) {
             {(hex) => (
               <button
                 type="button"
-                onClick={() => props.onPickPrimary?.(hex)}
+                onClick={() => props.onSeed?.(hex)}
                 class="h-7 w-7 rounded-full border border-border transition-transform hover:scale-110"
                 style={{ background: hex }}
-                title={`Use ${hex.toUpperCase()} as primary`}
-                aria-label={`Use ${hex.toUpperCase()} as primary color`}
+                title={`Build the theme from ${hex.toUpperCase()}`}
+                aria-label={`Build the theme from ${hex.toUpperCase()}`}
               />
             )}
           </For>
         </div>
         <p class="mt-1.5 text-[10px] text-muted-foreground">
-          The two best colors were applied. Tap a swatch to make it the primary instead.
+          The best color was used. Tap another swatch to build the theme from that one instead.
         </p>
       </Show>
     </div>

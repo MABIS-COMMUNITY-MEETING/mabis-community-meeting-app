@@ -5,6 +5,7 @@ import {
   getStoredTheme, getStoredCustomColors, hslToHex,
   getSavedThemes, saveCustomTheme, deleteSavedTheme,
   areBossThemesUnlockedLocally, BOSS_THEMES_UNLOCKED_EVENT,
+  applyMaterialSeed, getStoredMaterialSeed, clearMaterialSeed,
 } from "@/lib/themes";
 import { JapaneseText } from "~/components/primitives";
 import { useAuth } from "~/lib/AuthContext";
@@ -155,11 +156,18 @@ export default function ThemeSwitcher(props) {
     const storedTheme = getStoredTheme(auth.user());
     setCurrentTheme(storedTheme);
     if (storedTheme !== "default") applyTheme(storedTheme, { persist: false });
-    const custom = getStoredCustomColors();
-    if (custom) {
+    const seed = getStoredMaterialSeed();
+    if (seed) {
       setCustomActive(true);
-      setCustomPrimary(custom.primary);
-      setCustomSecondary(custom.secondary);
+      setCustomPrimary(seed);
+      applyMaterialSeed(seed, { persist: false });
+    } else {
+      const custom = getStoredCustomColors();
+      if (custom) {
+        setCustomActive(true);
+        setCustomPrimary(custom.primary);
+        setCustomSecondary(custom.secondary);
+      }
     }
     setSavedThemes(getSavedThemes());
   });
@@ -181,6 +189,7 @@ export default function ThemeSwitcher(props) {
     setCurrentTheme(key);
     setCustomActive(false);
     clearCustomColors({ notify: false });
+    clearMaterialSeed();
     applyTheme(key);
     const theme = THEMES[key];
     setCustomPrimary(hslToHex(theme.vars["--primary"]));
@@ -204,11 +213,13 @@ export default function ThemeSwitcher(props) {
     setThemeName("");
   };
 
-  const handleWallpaperPalette = (primary, secondary) => {
-    setCustomPrimary(primary);
-    setCustomSecondary(secondary);
+  // A wallpaper seed is a WHOLE Material You scheme — page, cards, borders and
+  // accents — not a primary/secondary pair, so it never goes through
+  // applyCustomColors (which keeps the previous theme's surfaces).
+  const handleWallpaperSeed = (seedHex) => {
+    setCustomPrimary(seedHex);
     setCustomActive(true);
-    applyCustomColors(primary, secondary);
+    applyMaterialSeed(seedHex);
   };
 
   const handleLoadSaved = (theme) => {
@@ -390,10 +401,7 @@ export default function ThemeSwitcher(props) {
 
             <Show when={showCustom()}>
               <div class="mt-3 space-y-2.5">
-                <WallpaperColorPicker
-                  onPalette={handleWallpaperPalette}
-                  onPickPrimary={(hex) => handleCustomColor("primary", hex)}
-                />
+                <WallpaperColorPicker onSeed={handleWallpaperSeed} />
                 <label class="flex items-center gap-3 cursor-pointer">
                   <input
                     type="color"

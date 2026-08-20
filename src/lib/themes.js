@@ -4,6 +4,7 @@ import { catppuccin_flavours } from "@/lib/catppuccin_palettes";
 import { PRIDE_THEMES, prideTokens } from "@/lib/pride";
 import { balancedPalette, contrastSafeInk, contrastSafePair, mutedForeground, pickDistinctPaletteColor, spreadBalancedPalette } from "@/lib/color/themeBalance";
 import { saveThemeSnapshot } from "@/lib/theme-boot";
+import { materialSchemeVars, materialSchemeSwatches } from "@/lib/color/material-scheme";
 
 // Theme definitions for MABIS platform
 // MABIS Default is the original maroon + gold theme
@@ -754,6 +755,50 @@ export function applyCustomColors(primaryHex, secondaryHex) {
 export function clearCustomColors({ notify = true } = {}) {
   localStorage.removeItem("mabis-custom-colors");
   if (notify) window.dispatchEvent(new Event("themeChanged"));
+}
+
+/* ── Material You from a wallpaper seed ─────────────────────────────────
+   applyCustomColors() above deliberately KEEPS the current theme's surfaces
+   and repaints only the two accents, which is right for "make your own
+   colors" — but it is why a wallpaper theme used to look like the previous
+   theme wearing new buttons: the page, cards, muted fills and hairlines were
+   still whatever palette was selected before.
+   A Material You scheme owns every surface, so this writes the full token set
+   (see lib/color/material-scheme.js) instead. Light/dark polarity follows
+   whatever the reader is already in. */
+const MATERIAL_SEED_KEY = "mabis-material-seed";
+
+export function applyMaterialSeed(seedHex, { persist = true } = {}) {
+  const root = document.documentElement;
+  const dark = document.body.classList.contains("theme-is-dark");
+  const vars = materialSchemeVars(seedHex, dark);
+  Object.assign(vars, readableSurfaceTokens(vars));
+  Object.assign(vars, editorThemeTokens(vars));
+
+  beginThemeCommit();
+  Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value));
+  root.style.setProperty("--ink", dark ? vars["--background"] : vars["--foreground"]);
+  root.style.setProperty("--bone", dark ? vars["--foreground"] : vars["--background"]);
+  root.style.setProperty("--destructive", vars["--primary"]);
+  root.style.setProperty("--destructive-foreground", vars["--primary-foreground"]);
+  root.style.setProperty("--primary-foreground-muted", mutedForeground(vars["--primary-foreground"], vars["--primary"]));
+  applyPalette(materialSchemeSwatches(seedHex, dark), true);
+
+  if (persist) {
+    localStorage.setItem(MATERIAL_SEED_KEY, seedHex);
+    localStorage.removeItem("mabis-custom-colors");
+    saveThemeSnapshot(null, null);
+  }
+  window.dispatchEvent(new Event("themeChanged"));
+}
+
+export function getStoredMaterialSeed() {
+  const stored = localStorage.getItem(MATERIAL_SEED_KEY);
+  return /^#[0-9a-f]{6}$/i.test(stored || "") ? stored : null;
+}
+
+export function clearMaterialSeed() {
+  localStorage.removeItem(MATERIAL_SEED_KEY);
 }
 
 /**
