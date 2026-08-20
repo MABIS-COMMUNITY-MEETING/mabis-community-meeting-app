@@ -9,6 +9,7 @@ import {
 import { JapaneseText } from "~/components/primitives";
 import { useAuth } from "~/lib/AuthContext";
 import { canUseCustomColors, isCustomColorsUnlockedLocally, CUSTOM_COLORS_UNLOCKED_EVENT } from "@/lib/custom-color-access";
+import WallpaperColorPicker from "~/components/WallpaperColorPicker";
 
 const INITIAL_THEME_LIMIT = 20;
 const THEME_BATCH_SIZE = 20;
@@ -203,6 +204,13 @@ export default function ThemeSwitcher(props) {
     setThemeName("");
   };
 
+  const handleWallpaperPalette = (primary, secondary) => {
+    setCustomPrimary(primary);
+    setCustomSecondary(secondary);
+    setCustomActive(true);
+    applyCustomColors(primary, secondary);
+  };
+
   const handleLoadSaved = (theme) => {
     setCustomPrimary(theme.primary);
     setCustomSecondary(theme.secondary);
@@ -382,6 +390,10 @@ export default function ThemeSwitcher(props) {
 
             <Show when={showCustom()}>
               <div class="mt-3 space-y-2.5">
+                <WallpaperColorPicker
+                  onPalette={handleWallpaperPalette}
+                  onPickPrimary={(hex) => handleCustomColor("primary", hex)}
+                />
                 <label class="flex items-center gap-3 cursor-pointer">
                   <input
                     type="color"

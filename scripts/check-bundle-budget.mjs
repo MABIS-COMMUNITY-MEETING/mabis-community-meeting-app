@@ -52,7 +52,8 @@ budget("AnalyticsTab", 115);
   "CalendarWidget",
   "JobsWidget",
   "MembersWidget",
-  "MabisAIAssistant",
+  // MabisAIAssistant was removed from Home on 2026-08-19 (see
+  // docs/solid-migration.md), so nothing imports it and no chunk is emitted.
   "SettingsModal",
 ].forEach(requireChunk);
 
