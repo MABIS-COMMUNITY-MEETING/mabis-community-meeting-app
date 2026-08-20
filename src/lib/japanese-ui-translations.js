@@ -79,6 +79,7 @@ const EXACT_TRANSLATIONS = {
   "continue with your mabis google account": "MABISのGoogleアカウントで続けてください",
   "copy": "コピー",
   "create": "作成",
+  "create a material theme · advanced": "Material Youテーマを作る・上級",
   "create meeting": "ミーティングを作成",
   "current code is incorrect.": "現在のコードが正しくありません。",
   "current ui preview": "現在の表示プレビュー",
