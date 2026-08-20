@@ -880,12 +880,11 @@ export function getSelectableThemeKeys() {
 export const isSelectableTheme = (key) => getSelectableThemeKeys().includes(key);
 
 /**
- * The stored theme, coerced to one that is actually on offer.
+ * The stored theme, coerced to one that is currently available.
  *
- * applyTheme() already falls back for an UNKNOWN key, but every retired theme
- * is still a known key — so without this a reader who picked one before it was
- * withdrawn kept it forever, and no amount of resetting their account record
- * would move them. Coercing on read is what actually retires a theme.
+ * applyTheme() only rejects unknown keys, so a stored catalogue palette would
+ * otherwise bypass the Boss unlock. Coercing through isSelectableTheme() keeps
+ * MABIS in place until the local unlock flag is present.
  */
 export function getStoredTheme() {
   const stored = localStorage.getItem("mabis-theme");
