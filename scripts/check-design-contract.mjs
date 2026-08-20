@@ -101,8 +101,8 @@ const themes = read("src/lib/themes.js");
 const css = read("src/index.css");
 const editorialHomeCss = read("src/styles/editorial-home.css");
 const glassCss = read("src/styles/glass.css");
-const customColorAccess = read("src/lib/custom-color-access.js");
 const prefsSync = read("src/components/PrefsSync.jsx");
+const pageChrome = read("src/components/page-chrome.jsx");
 const home = read("src/pages/Home.jsx");
 const cursorPreference = read("src/lib/cursor-preference.js");
 const themeBalance = read("src/lib/color/themeBalance.js");
@@ -193,7 +193,7 @@ for (const [relativePath, content] of editorialContractFiles) {
 const richTextThemeRule = "Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.";
 const easyLayoutRule = "Keep Home easy to navigate: the default layout stacks the widgets as the original MABIS interface did, and the Boss style adds numbered editorial sections with a plain-language page guide; usability aids must clarify whichever layout is in use rather than bolt a generic dashboard onto either one.";
 const japaneseTextRule = "Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang=\"ja\"` so Maple Mono CJK fallback applies; the default remains off.";
-const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with the large font catalogue and the custom colour tools behind clearly labeled advanced controls. The colour theme is MABIS only — `SELECTABLE_THEME_KEYS` in `src/lib/themes.js` is the single source of truth and no surface may enumerate `THEMES` directly — and the custom colour tools are available to the owning account alone.";
+const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with the large font catalogue and the custom Material You tools behind clearly labeled advanced controls. The colour theme is MABIS only — `SELECTABLE_THEME_KEYS` in `src/lib/themes.js` is the single source of truth and no surface may enumerate `THEMES` directly — and the wallpaper/photo theme builder is available to everyone without a hidden unlock gesture or manual primary/secondary colour fields.";
 const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
 const homeLayoutRule = "The app has two styles, chosen in Settings and applied everywhere — Home, the splash, login and the archive pages. `Summer style` is the default and must ALWAYS stick to the style Summer wants — the original MABIS interface, as built in app `6a7f1d91128253fcdbf4f5a2`, which is the reference for it: the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding. Match that site; do not improve it, modernise it, tidy it, or drift it toward the editorial system or an AI's taste. An editorial flourish added to a Summer surface — an N° caption, tracked-out display type, a ruled plane, a square radius — is a bug exactly as a missing widget is. Summer style is the ONLY sanctioned exception to the Novesce UI mandate, and it is an exception to the editorial system alone, never to the tokens, fonts, OpenMoji, Google-only auth, cursor, glass or performance rules. `Boss style` is opt-in and must ALWAYS follow the Novesce design philosophy in full: the Japanese editorial system — numbered sections, tracked-out display type, ruled neutral planes, N° captions, restrained radii, the glass control plane — built from semantic tokens, the GNU FreeMono stack with Maple Mono for CJK, and pinned OpenMoji. A Boss surface that is not editorial, or that reaches for a generic dashboard look, is a bug. Every feature, widget, page, control and fix must exist in BOTH styles; adding something to one and not the other is a bug, not a variant. They are two presentations of one product, not two products.";
 for (const [relativePath, content] of editorialContractFiles) {
@@ -291,27 +291,23 @@ requireText("src/lib/themes.js", themes, "'Maple Mono NF CN', 'Maple Mono CN', '
  * text and pull itself onto the critical path.
  */
 /*
- * Custom colours belong to one account.
+ * Material theme creation is a direct, public path.
  *
- * The theme catalogue stays open to everyone; the make-your-own surface does
- * not (Novesce, Aug 2026 — see src/lib/custom-color-access.js). Three things
- * are pinned because the feature needs all three and losing any one of them
- * fails silently:
- *
- *   · the predicate, in one place, so the three call sites cannot drift;
- *   · the switcher gate — without it the controls simply reappear for
- *     everyone, with no error and nothing visibly wrong;
- *   · the reconcile — without it an account that already had custom colours
- *     keeps them with no way to change or reset them, which is worse than
- *     never having restricted it.
- *
- * This is a UI availability rule, not an authorisation boundary; the note in
- * custom-color-access.js says why that is the right weight here.
+ * Keep the advanced disclosure because it prevents the easy catalogue from
+ * becoming dense, but never hide it behind account identity or a secret
+ * gesture. New personal themes come from the full Material seed pipeline;
+ * the retired two-colour inputs must not return.
  */
-requireText("src/lib/custom-color-access.js", customColorAccess, "boss@montessoribkk.com");
-requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "canUseCustomColors(auth.user())");
-requireText("src/components/PrefsSync.jsx", prefsSync, "canUseCustomColors(auth.user())");
-requireText("src/components/PrefsSync.jsx", prefsSync, "clearCustomColors()");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "WallpaperColorPicker");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "saveMaterialTheme");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "Create a Material theme · Advanced");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "disabled={!themeName().trim() || !materialSeedActive()}");
+forbidText("src/components/ThemeSwitcher.jsx", themeSwitcher, 'type="color"');
+forbidText("src/components/ThemeSwitcher.jsx", themeSwitcher, "canUseCustomColors");
+forbidText("src/components/PrefsSync.jsx", prefsSync, "canUseCustomColors");
+forbidText("src/components/page-chrome.jsx", pageChrome, "onLogoClick");
+forbidText("solid/components/home/boss.jsx", bossHome, "UNLOCK_TAPS");
+forbidText("solid/components/home/boss.jsx", bossHome, "onLogoClick");
 
 requireText("src/index.css", css, "font-family: 'OpenMojiColor'");
 requireText("src/index.css", css, "unicode-range:");
