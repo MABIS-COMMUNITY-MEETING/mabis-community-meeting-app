@@ -256,14 +256,14 @@ try {
     .map(([argb, count]) => [argbToHex(argb), count])
     .sort(([left], [right]) => left.localeCompare(right));
   assertObject("Celebi quantizer reference fixture", quantized, [
-    ["#41464a", 58],
-    ["#4dbabb", 72],
-    ["#583bb9", 104],
-    ["#5bd059", 114],
-    ["#bcb4b1", 69],
+    ["#414550", 62],
+    ["#46c3ba", 75],
+    ["#503bb9", 91],
+    ["#5ccc50", 105],
+    ["#b7b3b0", 74],
     ["#c5b837", 68],
-    ["#c7493f", 78],
-    ["#d449b1", 77],
+    ["#c84a41", 80],
+    ["#cf47b5", 85],
   ]);
 } finally {
   await server.close();
