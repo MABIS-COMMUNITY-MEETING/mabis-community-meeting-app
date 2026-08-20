@@ -231,6 +231,15 @@ function wsmeans(inputPixels, startingClusters, requestedMaxColors) {
   return new Map([...merged].sort(([left], [right]) => left - right));
 }
 
+export function quantizeWuCpp(pixels, maxColors = 128) {
+  const capped = Math.min(MAX_COLORS, Math.max(0, Math.floor(maxColors)));
+  if (capped === 0 || pixels.length === 0) return [];
+  return new CppQuantizerWu().quantize(
+    Array.from(pixels, (pixel) => pixel >>> 0),
+    capped,
+  );
+}
+
 /**
  * Celebi = Wu starting clusters followed by the C++-compatible Wsmeans pass.
  */
@@ -239,9 +248,6 @@ export function quantizeCelebiCpp(pixels, maxColors = 128) {
   if (capped === 0 || pixels.length === 0) return new Map();
 
   const normalizedPixels = Array.from(pixels, (pixel) => pixel >>> 0);
-  const startingClusters = new CppQuantizerWu().quantize(
-    normalizedPixels,
-    capped,
-  );
+  const startingClusters = quantizeWuCpp(normalizedPixels, capped);
   return wsmeans(normalizedPixels, startingClusters, capped);
 }
