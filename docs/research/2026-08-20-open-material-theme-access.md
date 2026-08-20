@@ -45,3 +45,31 @@ Applicable principles: make one logical and reviewable change, remove unused sta
 - Show personal saved themes to their owner through the existing per-user preference sync.
 - Keep one Save action, disabled until a name and generated Material seed are present.
 - Verify design contract, Material regression coverage, lint, build, scroll checks, and a phone-width shell.
+
+## Boss catalogue follow-up — 2026-08-20
+
+### Clarified request
+
+The “Boss themes” are the large themed palette catalogue: LGBTQ+ flags, BFDI, Touhou, Linux, game-console, character, GMK, and related palettes. Boss style itself and the Material You wallpaper/photo builder are not part of this gate. The catalogue must unlock only after a person activates the Boss style control 69 times.
+
+### Current Japanese interaction references
+
+- Japan Digital Agency Design System, Button accessibility:
+  - https://design.digital.go.jp/dads/components/button/accessibility/
+  - Relevant finding: an action must remain a real button with a usable focus order and adequate target size. The existing Boss style choice already provides that semantic, keyboard-operable control and an 80px minimum target.
+- Japan Digital Agency Design System, Button overview:
+  - https://design.digital.go.jp/dads/components/button/
+  - Relevant finding: the button’s visible hierarchy should continue to communicate its primary function—choosing the page style—without extra decorative controls.
+- Japan Digital Agency Design System, Web accessibility policy:
+  - https://design.digital.go.jp/dads/webaccessibility/
+  - Relevant finding: essential functionality should target WCAG/JIS accessibility. The hidden catalogue is a deliberately requested, non-essential easter egg; standard MABIS colors and the Material You builder remain directly available.
+
+### Implementation constraints
+
+- Count activations of the existing Boss style button, including keyboard activation through its native button semantics.
+- Unlock on exactly 69 activations and persist the completed unlock through the existing `mabis-` preference sync.
+- Remove account ID and email bypasses so every person reaches the catalogue through the same gesture.
+- Keep `getSelectableThemeKeys()` as the only picker-facing catalogue gate and notify an already-mounted ThemeSwitcher through the existing unlock event.
+- Do not add visible progress, extra controls, or new copy; the page-layout choice must continue to look and behave normally.
+- Keep the Material You wallpaper/photo builder and named personal themes directly available to everyone.
+- Re-run the design, theme, Material, lint, build, scrolling, and phone-width checks.
