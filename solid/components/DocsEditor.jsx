@@ -9,7 +9,7 @@ import {
 import {
   Quill, FONTS, SIZE_PRESETS, LINE_HEIGHTS, ZOOM_LEVELS,
   THEME_TEXT_COLORS, THEME_HIGHLIGHTS, EDITOR_MODULES, EMPTY_FORMATS,
-  resolveThemeColor, stripHtml, safeFilename,
+  stripHtml, safeFilename,
 } from "~/lib/quill-setup";
 import { downloadOdt } from "@/lib/odt-export";
 import { lockBodyScroll } from "@/lib/scroll-lock";
