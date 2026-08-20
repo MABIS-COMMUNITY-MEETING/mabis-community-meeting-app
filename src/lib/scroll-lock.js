@@ -25,6 +25,7 @@
 
 let depth = 0;
 let original = null;
+let generation = 0;
 
 /**
  * Lock background scroll. Returns an idempotent release function.
@@ -42,6 +43,7 @@ export function lockBodyScroll() {
       ? ""
       : document.body.style.overflow;
   }
+  const lockGeneration = generation;
   depth += 1;
   document.body.style.overflow = "hidden";
 
@@ -49,6 +51,9 @@ export function lockBodyScroll() {
   return () => {
     if (released) return;
     released = true;
+    // A navigation or HMR reset invalidates every outstanding release. Without
+    // this guard, an old cleanup can decrement a newer overlay's lock.
+    if (lockGeneration !== generation) return;
     depth = Math.max(0, depth - 1);
     if (depth === 0) {
       document.body.style.overflow = original ?? "";
@@ -67,6 +72,7 @@ export function lockBodyScroll() {
  */
 export function releaseAllScrollLocks() {
   if (typeof document === "undefined") return;
+  generation += 1;
   depth = 0;
   document.body.style.overflow = original ?? "";
   original = null;
