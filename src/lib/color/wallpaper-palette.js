@@ -7,11 +7,11 @@
  */
 
 import {
-  QuantizerCelebi,
   Score,
   argbFromRgb,
   hexFromArgb,
 } from "@material/material-color-utilities";
+import { quantizeCelebiCpp } from "@/lib/color/material-quantizer";
 
 function loadImage(url) {
   return new Promise((resolve, reject) => {
@@ -37,7 +37,6 @@ function pixelsFromImage(img) {
   const pixels = [];
 
   for (let index = 0; index < imageBytes.length; index += 4) {
-    if (imageBytes[index + 3] < 255) continue;
     pixels.push(argbFromRgb(
       imageBytes[index],
       imageBytes[index + 1],
@@ -49,7 +48,7 @@ function pixelsFromImage(img) {
 }
 
 export function quantizeMaterialPixels(pixels, maxColors = 128) {
-  return QuantizerCelebi.quantize(pixels, maxColors);
+  return quantizeCelebiCpp(pixels, maxColors);
 }
 
 export function scoreMaterialPopulation(population, count = 6) {
