@@ -185,7 +185,11 @@ requireText("src/lib/routeLoaders.js", routeLoaders, "HOME_WARMUP_BUDGET_MS");
 requireText("src/lib/routeLoaders.js", routeLoaders, "waitWithinBudget");
 requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "isConstrainedNetwork()");
 requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "queryClientInstance.prefetchQuery");
+requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "return Promise.allSettled");
+requireText("src/lib/routeLoaders.js", routeLoaders, "if (moduleWarmup) await moduleWarmup");
 requireText("src/components/LoadingScreen.jsx", loadingScreen, "CACHING STUFF");
+requireText("src/components/LoadingScreen.jsx", loadingScreen, "lockBodyScroll()");
+requireText("src/components/LoadingScreen.jsx", loadingScreen, "overscroll-none touch-none");
 forbidText("src/lib/home-route-warmup.js", homeRouteWarmup, 'from "three"');
 forbidText("src/App.jsx", app, "<SmoothScroll />");
 forbidText("scroll implementation", smoothScroll, 'addEventListener("wheel"');
@@ -334,6 +338,13 @@ forbidText("src/index.css", css, "@import url('/fonts/by-womxn/fonts.css')");
  */
 requireText("solid/index.html", html, 'id="boot-splash"');
 requireText("solid/index.html", html, "#root:not(:empty) + #boot-splash");
+requireText("solid/index.html", html, 'id="mabis-theme-prepaint"');
+requireText("solid/index.html", html, 'localStorage.getItem("mabis-theme-snapshot-v1")');
+requireText("solid/index.html", html, 'root.setAttribute("style", snapshot.style)');
+requireText("solid/index.html", html, "background: hsl(var(--background");
+requireText("solid/index.html", html, "color: hsl(var(--foreground");
+requireText("solid/index.html", html, "background: hsl(var(--primary");
+requireText("package.json", packageJson, '"check:theme-prepaint": "node scripts/check-theme-prepaint.mjs"');
 
 requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono-subset.woff2?v=3");
 requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3");
