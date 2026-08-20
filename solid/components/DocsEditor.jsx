@@ -310,15 +310,22 @@ export default function DocsEditor(props) {
     focusAndFormat(name, !current[name]);
   };
 
-  // Belt and braces: the class is what the stylesheet targets and what exempts
-  // the span from the paste-sanitising guards; the inline colour is Quill's own
-  // core format. Either alone would colour the text, so one failing cannot
-  // leave the user with a control that does nothing.
+  // Class only — no redundant inline colour. That used to also be written
+  // here (quill.format on "color"/"background" via resolveThemeColor) as a
+  // "belt and braces" guard, but it is what broke theme-following in the
+  // first place: it wrote a frozen snapshot of whichever theme was active at
+  // the moment of the click, and since an inline style always beats a class
+  // selector, that snapshot silently overrode the class's live
+  // hsl(var(--editor-ink-*)) the instant it was applied — the text just never
+  // updated again on a theme switch. The class alone is correct:
+  // .theme-rich-text already wraps the live .ql-editor (see the div below),
+  // and the CSS rules for .ql-ink-*/.ql-hl-* are !important specifically so
+  // they win over any stray inline colour, including ones already baked into
+  // documents saved before this fix (index.css has the full account).
   const applyThemeInk = (color) => {
     if (!quill) return;
     quill.focus();
     quill.format("themeInk", color.value || false, "user");
-    quill.format("color", resolveThemeColor(color.token), "user");
     syncFormats();
   };
 
@@ -326,8 +333,6 @@ export default function DocsEditor(props) {
     if (!quill) return;
     quill.focus();
     quill.format("themeHighlight", highlight.value || false, "user");
-    quill.format("background", resolveThemeColor(highlight.token), "user");
-    quill.format("color", resolveThemeColor(highlight.token ? `${highlight.token}-foreground` : null), "user");
     syncFormats();
   };
 
