@@ -764,8 +764,9 @@ export function clearCustomColors({ notify = true } = {}) {
    theme wearing new buttons: the page, cards, muted fills and hairlines were
    still whatever palette was selected before.
    A Material You scheme owns every surface, so this writes the full token set
-   (see lib/color/material-scheme.js) instead. Light/dark polarity follows
-   whatever the reader is already in. */
+   (see lib/color/material-scheme.js) instead. Light/dark polarity is its own
+   stored preference (see getStoredMaterialMode below), not inherited from
+   whatever named theme was last applied. */
 const MATERIAL_SEED_KEY = "mabis-material-seed";
 
 /*
