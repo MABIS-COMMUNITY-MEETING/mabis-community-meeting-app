@@ -184,6 +184,9 @@ function wsmeans(inputPixels, startingClusters, requestedMaxColors) {
         const movement = Math.abs(
           Math.sqrt(minimumDistance) - Math.sqrt(previousDistance),
         );
+        if (iteration === 1 && (previousIndex >= 6 || newIndex >= 6)) {
+          console.error("material-quantizer candidate", pointIndex, previousIndex, newIndex, movement);
+        }
         if (movement > MIN_DELTA_E) {
           colorMoved = true;
           clusterIndices[pointIndex] = newIndex;
