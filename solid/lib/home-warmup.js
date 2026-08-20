@@ -58,25 +58,6 @@ const SECTION_MODULES = [
   { label: "SECTION 08 / 10", load: () => import("~/components/LunchMenuWidget") },
   { label: "SECTION 09 / 10", load: () => import("~/components/NewsWidget") },
   { label: "SECTION 10 / 10", load: () => import("~/components/MembersWidget") },
-  /*
-   * Not one of the 10 numbered sections — these two are nested lazy imports
-   * *inside* section 03. DiscussionWidget above is warmed like every other
-   * section, but it unconditionally renders <MeetingMinutes>, which
-   * unconditionally renders <DocsEditor> (Quill) — neither is gated behind
-   * scroll or interaction, so once DiscussionWidget mounts both start
-   * downloading anyway, just as a two-step network waterfall (mount →
-   * discover MeetingMinutes needs fetching → fetch it → discover DocsEditor
-   * needs fetching → fetch that) instead of in parallel with everything else
-   * during the loading screen. Warming them here turns that waterfall into
-   * one more concurrent download alongside the ten sections.
-   *
-   * Deliberately last in the list: on a constrained connection the slice(0, 3)
-   * below still cuts them, same as section chunks 4–10 — DocsEditor alone is
-   * ~70 KiB gzip, the single heaviest chunk in the app after the entry bundle,
-   * and that's real bandwidth cost on a slow link, not something to force.
-   */
-  { label: "DISCUSSION / MINUTES EDITOR", load: () => import("~/components/MeetingMinutes") },
-  { label: "DISCUSSION / DOCS ENGINE", load: () => import("~/components/DocsEditor") },
 ];
 
 function dataTasks() {
@@ -154,11 +135,19 @@ const asIo = (tasks) => tasks.map((task) => ({ ...task, io: true }));
  */
 export function warmHomeModules() {
   const constrained = isConstrainedNetwork();
-  for (const { load } of constrained ? SECTION_MODULES.slice(0, 3) : SECTION_MODULES) {
+  const modules = constrained ? SECTION_MODULES.slice(0, 3) : SECTION_MODULES;
+
+  // Return the real completion promise. ProtectedHome starts this while auth is
+  // in flight; loadHomeRoute later awaits the same promise so every numbered
+  // section chunk is settled before the loading screen stands down. Nested
+  // editor engines stay in deferredModuleTasks() and never hold first paint.
+  return Promise.allSettled(modules.map(({ load }) => {
     try {
-      void load().catch(() => {});
-    } catch { /* a warm-up failure must never break the page */ }
-  }
+      return load();
+    } catch {
+      return undefined;
+    }
+  }));
 }
 
 export async function warmHomeRoute(onProgress) {
