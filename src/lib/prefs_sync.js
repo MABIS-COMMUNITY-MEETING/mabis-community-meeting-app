@@ -1,5 +1,16 @@
 import { base44 } from "@/api/base44Client";
-import { applyTheme, applyCustomColors, applyFont, getStoredTheme, getStoredFont, getStoredCustomColors } from "@/lib/themes";
+import {
+  applyTheme,
+  applyCustomColors,
+  applyMaterialSeed,
+  applyFont,
+  getStoredTheme,
+  getStoredFont,
+  getStoredCustomColors,
+  getStoredMaterialSeed,
+  getStoredMaterialMode,
+  SAVED_THEMES_CHANGED_EVENT,
+} from "@/lib/themes";
 import {
   applyAnimationPreference,
   LEGACY_MOTION_STORAGE_KEY,
@@ -40,8 +51,16 @@ export function collectPrefs() {
 
 export function applyStoredPrefs(user) {
   applyTheme(getStoredTheme(user), { persist: false });
-  const custom = getStoredCustomColors();
-  if (custom) applyCustomColors(custom.primary, custom.secondary);
+  const materialSeed = getStoredMaterialSeed();
+  if (materialSeed) {
+    applyMaterialSeed(materialSeed, {
+      persist: false,
+      dark: getStoredMaterialMode() === "dark",
+    });
+  } else {
+    const custom = getStoredCustomColors();
+    if (custom) applyCustomColors(custom.primary, custom.secondary);
+  }
   applyFont(getStoredFont());
   const animationPreferenceChanged = normalizeAnimationPreference();
   applyAnimationPreference();
@@ -96,16 +115,24 @@ export async function pullPrefs() {
      * be stored centrally to undo it, and no amount of resetting someone's
      * record would put their browser back on the house palette.
      *
-     * Clearing these three when the account omits them makes the record the
-     * single source of truth: getStoredTheme() falls back to "default", and
-     * applyStoredPrefs() below repaints from that.
+     * Clearing the personal theme keys when the account omits them makes the
+     * record the single source of truth: getStoredTheme() falls back to
+     * "default", while Material seeds and named saved themes cannot leak from
+     * another account that previously used the same browser.
      *
-     * Deliberately just these three. The rest of the "mabis" bag holds
+     * Deliberately just these theme keys. The rest of the "mabis" bag holds
      * device-local state that was never meant to round-trip — burst-scheduler
      * timings, per-week meeting flags — and deleting those because the account
      * has not seen them would throw away working data to fix a palette.
      */
-    for (const key of ["mabis-theme", "mabis-custom-colors", "mabis-theme-snapshot-v1"]) {
+    for (const key of [
+      "mabis-theme",
+      "mabis-custom-colors",
+      "mabis-material-seed",
+      "mabis-material-mode",
+      "mabis-saved-themes",
+      "mabis-theme-snapshot-v1",
+    ]) {
       if (!(key in remote)) localStorage.removeItem(key);
     }
   }
@@ -123,4 +150,14 @@ export async function pushPrefs() {
   await base44.auth.updateMe({ ui_prefs: collectPrefs() });
 }
 
-export const PREF_EVENTS = ["themeChanged", "fontChanged", MOTION_EVENT, CURSOR_EVENT, JAPANESE_TEXT_EVENT, SECTION_DESCRIPTIONS_EVENT, HOME_LAYOUT_EVENT, "storage"];
+export const PREF_EVENTS = [
+  "themeChanged",
+  SAVED_THEMES_CHANGED_EVENT,
+  "fontChanged",
+  MOTION_EVENT,
+  CURSOR_EVENT,
+  JAPANESE_TEXT_EVENT,
+  SECTION_DESCRIPTIONS_EVENT,
+  HOME_LAYOUT_EVENT,
+  "storage",
+];
