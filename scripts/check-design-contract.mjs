@@ -102,6 +102,8 @@ const css = read("src/index.css");
 const editorialHomeCss = read("src/styles/editorial-home.css");
 const glassCss = read("src/styles/glass.css");
 const prefsSync = read("src/components/PrefsSync.jsx");
+const prefsReady = read("solid/lib/prefs-ready.js");
+const styleWelcomeDialog = read("solid/components/StyleWelcomeDialog.jsx");
 const pageChrome = read("src/components/page-chrome.jsx");
 const home = read("src/pages/Home.jsx");
 const cursorPreference = read("src/lib/cursor-preference.js");
@@ -196,6 +198,7 @@ const japaneseTextRule = "Japanese companion text is opt-in, shown alongside—n
 const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with the large font catalogue and the custom Material You tools behind clearly labeled advanced controls. The standard colour catalogue shows MABIS only; the large LGBTQ+, BFDI, Touhou, Linux, game, and other themed palette catalogue unlocks only after the same person activates the Boss style control 69 times, with no account or email bypass. `getSelectableThemeKeys()` in `src/lib/themes.js` is the single source of truth and no picker surface may enumerate `THEMES` directly. The wallpaper/photo Material You theme builder remains available to everyone without that unlock or manual primary/secondary colour fields.";
 const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
 const homeLayoutRule = "The app has two styles, chosen in Settings and applied everywhere — Home, the splash, login and the archive pages. `Summer style` is the default and must ALWAYS stick to the style Summer wants — the original MABIS interface, as built in app `6a7f1d91128253fcdbf4f5a2`, which is the reference for it: the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding. Match that site; do not improve it, modernise it, tidy it, or drift it toward the editorial system or an AI's taste. An editorial flourish added to a Summer surface — an N° caption, tracked-out display type, a ruled plane, a square radius — is a bug exactly as a missing widget is. Summer style is the ONLY sanctioned exception to the Novesce UI mandate, and it is an exception to the editorial system alone, never to the tokens, fonts, OpenMoji, Google-only auth, cursor, glass or performance rules. `Boss style` is opt-in and must ALWAYS follow the Novesce design philosophy in full: the Japanese editorial system — numbered sections, tracked-out display type, ruled neutral planes, N° captions, restrained radii, the glass control plane — built from semantic tokens, the GNU FreeMono stack with Maple Mono for CJK, and pinned OpenMoji. A Boss surface that is not editorial, or that reaches for a generic dashboard look, is a bug. Every feature, widget, page, control and fix must exist in BOTH styles; adding something to one and not the other is a bug, not a variant. They are two presentations of one product, not two products.";
+const newUserStyleRule = "After account preference sync finishes, an authenticated person with no explicit `mabis-home-layout` value must be prompted to choose Summer or Boss before using Home; choosing writes the standard layout preference, and a saved choice must not prompt again.";
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, richTextThemeRule);
     requireText(relativePath, content, easyLayoutRule);
@@ -203,6 +206,7 @@ for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, simpleCustomizationRule);
     requireText(relativePath, content, jobsPeriodRule);
     requireText(relativePath, content, homeLayoutRule);
+    requireText(relativePath, content, newUserStyleRule);
 }
 
 /*
@@ -218,6 +222,20 @@ requireText("src/lib/layout-preference.js", layoutPreference, 'DEFAULT_HOME_LAYO
 requireText("src/lib/layout-preference.js", layoutPreference, 'HOME_LAYOUTS = ["simple", "boss"]');
 requireText("src/pages/Home.jsx", home, ["const isBoss = () => layout() === \"boss\""]);
 requireText("src/components/SettingsModal.jsx", settingsModal, "Boss style");
+
+/*
+ * The first style choice waits for account prefs, then uses the normal layout
+ * setter so an explicit Summer choice is as durable as Boss. The saved layout
+ * key is the completion marker; a second onboarding-only flag would drift.
+ */
+requireText("src/pages/Home.jsx", home, "<StyleWelcomeDialog />");
+requireText("solid/components/StyleWelcomeDialog.jsx", styleWelcomeDialog, "arePrefsReady");
+requireText("solid/components/StyleWelcomeDialog.jsx", styleWelcomeDialog, "hasExplicitStyleChoice");
+requireText("solid/components/StyleWelcomeDialog.jsx", styleWelcomeDialog, "setHomeLayout(layout)");
+requireText("solid/components/StyleWelcomeDialog.jsx", styleWelcomeDialog, "Simple and familiar");
+requireText("solid/components/StyleWelcomeDialog.jsx", styleWelcomeDialog, "Modern and editorial");
+requireText("solid/lib/prefs-ready.js", prefsReady, "PREFS_READY_EVENT");
+requireText("src/components/PrefsSync.jsx", prefsSync, "markPrefsReady(id)");
 
 /* The editorial layer must stay gated, or the default layout silently becomes
    the editorial one again — flat cards, 2px radii, no elevation. */
