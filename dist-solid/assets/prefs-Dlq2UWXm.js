@@ -1,0 +1,1 @@
+import{p as s,aE as t,ag as n,z as r}from"./index-iLP-UCIH.js";function u(){const[o,a]=s(t()),e=()=>a(t());return window.addEventListener(n,e),window.addEventListener("storage",e),r(()=>{window.removeEventListener(n,e),window.removeEventListener("storage",e)}),o}export{u};
