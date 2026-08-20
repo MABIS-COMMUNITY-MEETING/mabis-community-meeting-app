@@ -199,6 +199,8 @@ const simpleCustomizationRule = "Customization surfaces show a small set of plai
 const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
 const homeLayoutRule = "The app has two styles, chosen in Settings and applied everywhere — Home, the splash, login and the archive pages. `Summer style` is the default and must ALWAYS stick to the style Summer wants — the original MABIS interface, as built in app `6a7f1d91128253fcdbf4f5a2`, which is the reference for it: the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding. Match that site; do not improve it, modernise it, tidy it, or drift it toward the editorial system or an AI's taste. An editorial flourish added to a Summer surface — an N° caption, tracked-out display type, a ruled plane, a square radius — is a bug exactly as a missing widget is. Summer style is the ONLY sanctioned exception to the Novesce UI mandate, and it is an exception to the editorial system alone, never to the tokens, fonts, OpenMoji, Google-only auth, cursor, glass or performance rules. `Boss style` is opt-in and must ALWAYS follow the Novesce design philosophy in full: the Japanese editorial system — numbered sections, tracked-out display type, ruled neutral planes, N° captions, restrained radii, the glass control plane — built from semantic tokens, the GNU FreeMono stack with Maple Mono for CJK, and pinned OpenMoji. A Boss surface that is not editorial, or that reaches for a generic dashboard look, is a bug. Every feature, widget, page, control and fix must exist in BOTH styles; adding something to one and not the other is a bug, not a variant. They are two presentations of one product, not two products.";
 const newUserStyleRule = "After account preference sync finishes, an authenticated person with no explicit `mabis-home-layout` value must be prompted to choose Summer or Boss before using Home; choosing writes the standard layout preference, and a saved choice must not prompt again.";
+const themePrepaintRule = "Saved theme snapshots—including Material You and custom colors—are replayed in the entry HTML before critical first-paint CSS; the loading surface uses the replayed semantic background, foreground, and primary tokens, then the app reconciles from the authoritative theme module after paint.";
+const loadingReadinessRule = "The full-screen loading state holds a shared, reference-counted document scroll lock and never leaves it behind; on capable connections, all ten numbered Home section modules settle before the loader exits, while heavy nested editors and below-fold data remain deferred.";
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, richTextThemeRule);
     requireText(relativePath, content, easyLayoutRule);
@@ -207,6 +209,8 @@ for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, jobsPeriodRule);
     requireText(relativePath, content, homeLayoutRule);
     requireText(relativePath, content, newUserStyleRule);
+    requireText(relativePath, content, themePrepaintRule);
+    requireText(relativePath, content, loadingReadinessRule);
 }
 
 /*
