@@ -2,15 +2,14 @@ import { createSignal, createMemo, onMount, onCleanup, createEffect, Show, For }
 import { Palette, Check, RotateCcw, Save, Trash2, Star, Search } from "lucide-solid";
 import {
   THEMES, getSelectableThemeKeys, applyTheme, applyCustomColors, clearCustomColors,
-  getStoredTheme, getStoredCustomColors, hslToHex,
-  getSavedThemes, saveCustomTheme, saveMaterialTheme, deleteSavedTheme,
+  getStoredTheme, getStoredCustomColors,
+  getSavedThemes, saveMaterialTheme, deleteSavedTheme,
   areBossThemesUnlockedLocally, BOSS_THEMES_UNLOCKED_EVENT,
   applyMaterialSeed, getStoredMaterialSeed, clearMaterialSeed,
   getStoredMaterialMode, setStoredMaterialMode,
 } from "@/lib/themes";
 import { JapaneseText } from "~/components/primitives";
 import { useAuth } from "~/lib/AuthContext";
-import { canUseCustomColors, isCustomColorsUnlockedLocally, CUSTOM_COLORS_UNLOCKED_EVENT } from "@/lib/custom-color-access";
 import WallpaperColorPicker from "~/components/WallpaperColorPicker";
 
 const INITIAL_THEME_LIMIT = 20;
@@ -95,19 +94,13 @@ export default function ThemeSwitcher(props) {
   const [customSecondary, setCustomSecondary] = createSignal("#EACE54");
   const [savedThemes, setSavedThemes] = createSignal([]);
   // Whether the active custom look came from a Material You seed (owns every
-  // surface, has its own light/dark) rather than the plain primary/secondary
-  // picker (keeps whatever surfaces the last theme left behind).
+  // surface and has its own light/dark mode). The plain pair path remains only
+  // for loading themes saved before the Material builder became the sole
+  // creation flow.
   const [materialSeedActive, setMaterialSeedActive] = createSignal(false);
   const [materialDark, setMaterialDark] = createSignal(getStoredMaterialMode() === "dark");
   const auth = useAuth();
-  // canUseCustomColors(user) itself reads localStorage synchronously, but a
-  // localStorage write elsewhere (the colophon-logo unlock in boss.jsx) is
-  // not reactive on its own — without this signal, a ThemeSwitcher already
-  // mounted and open would not notice the unlock until it happened to
-  // re-render for an unrelated reason.
-  const [customColorsUnlocked, setCustomColorsUnlocked] = createSignal(isCustomColorsUnlockedLocally());
   const [bossThemesUnlocked, setBossThemesUnlocked] = createSignal(areBossThemesUnlockedLocally());
-  const hasCustomColorAccess = () => canUseCustomColors(auth.user()) || customColorsUnlocked();
   const [themeName, setThemeName] = createSignal("");
   const [showCustom, setShowCustom] = createSignal(false);
   const [themeLimit, setThemeLimit] = createSignal(INITIAL_THEME_LIMIT);
@@ -150,10 +143,6 @@ export default function ThemeSwitcher(props) {
     };
     window.addEventListener("openThemeSwitcher", openFromSettings);
     onCleanup(() => window.removeEventListener("openThemeSwitcher", openFromSettings));
-
-    const onUnlock = () => setCustomColorsUnlocked(true);
-    window.addEventListener(CUSTOM_COLORS_UNLOCKED_EVENT, onUnlock);
-    onCleanup(() => window.removeEventListener(CUSTOM_COLORS_UNLOCKED_EVENT, onUnlock));
 
     const onBossThemesUnlock = () => setBossThemesUnlocked(true);
     window.addEventListener(BOSS_THEMES_UNLOCKED_EVENT, onBossThemesUnlock);
@@ -200,39 +189,12 @@ export default function ThemeSwitcher(props) {
     clearCustomColors({ notify: false });
     clearMaterialSeed();
     applyTheme(key);
-    const theme = THEMES[key];
-    setCustomPrimary(hslToHex(theme.vars["--primary"]));
-    setCustomSecondary(hslToHex(theme.vars["--secondary"]));
-  };
-
-  const handleCustomColor = (which, hex) => {
-    if (which === "primary") setCustomPrimary(hex);
-    else setCustomSecondary(hex);
-    setCustomActive(true);
-    // A plain primary/secondary pick is a different, separate choice from a
-    // Material You seed (which owns every surface and its own light/dark).
-    // Without clearing the seed here, it lingered in storage and won the NEXT
-    // boot's restore check ahead of whatever the reader had just picked here.
-    if (materialSeedActive()) {
-      setMaterialSeedActive(false);
-      clearMaterialSeed();
-    }
-    applyCustomColors(
-      which === "primary" ? hex : customPrimary(),
-      which === "secondary" ? hex : customSecondary(),
-    );
   };
 
   const handleSaveTheme = () => {
     const name = themeName().trim();
-    if (!name) return;
-    // Save whichever kind of custom look is actually active right now — a
-    // Material You seed (own light/dark, owns every surface) saves as its own
-    // seed + polarity so loading it later re-derives the whole scheme, rather
-    // than freezing it down to just the two swatches a plain pair would be.
-    const updated = materialSeedActive()
-      ? saveMaterialTheme(name, customPrimary(), materialDark())
-      : saveCustomTheme(name, customPrimary(), customSecondary());
+    if (!name || !materialSeedActive()) return;
+    const updated = saveMaterialTheme(name, customPrimary(), materialDark());
     setSavedThemes(updated);
     setThemeName("");
   };
@@ -384,14 +346,7 @@ export default function ThemeSwitcher(props) {
           </Show>
           </Show>
 
-          {/*
-            * Custom colours and the palettes saved from them belong to one
-            * account (see lib/custom-color-access.js). Everyone else keeps the
-            * full vetted theme catalogue above; only the make-your-own surface
-            * is withheld, which is also why this gate sits here and not around
-            * the whole panel.
-            */}
-          <Show when={hasCustomColorAccess() && savedThemes().length > 0}>
+          <Show when={savedThemes().length > 0}>
             <div class="border-t border-border pt-3 mb-4">
               <div class="flex items-center gap-1.5 mb-2">
                 <Star class="w-3 h-3 text-amber-500" />
@@ -427,20 +382,21 @@ export default function ThemeSwitcher(props) {
             </div>
           </Show>
 
-          <Show when={hasCustomColorAccess()}>
           <div class="border-t border-border pt-3">
             <div
+              role="button"
+              tabindex="0"
+              aria-expanded={showCustom()}
               onClick={() => setShowCustom((s) => !s)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                setShowCustom((s) => !s);
+              }}
               class="w-full flex items-center justify-between p-2.5 rounded-xl border-2 transition-all cursor-pointer"
               style={{ "border-color": customActive() ? "hsl(var(--primary))" : "hsl(var(--border))" }}
             >
-              <span class="flex items-center gap-2">
-                <div class="flex gap-1">
-                  <div class="w-4 h-4 rounded-full border border-border" style={{ background: customPrimary() }} />
-                  <div class="w-4 h-4 rounded-full border border-border" style={{ background: customSecondary() }} />
-                </div>
-                <span class="text-xs font-bold text-foreground">Make your own colors · Advanced</span>
-              </span>
+              <span class="text-xs font-bold text-foreground">Create a Material theme · Advanced</span>
               <Show when={customActive()}>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleSelectTheme(currentTheme()); }}
@@ -488,30 +444,6 @@ export default function ThemeSwitcher(props) {
                     Only changes the theme built from a photo above. Other themes keep their own look.
                   </p>
                 </div>
-                <label class="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="color"
-                    value={customPrimary()}
-                    onInput={(e) => handleCustomColor("primary", e.currentTarget.value)}
-                    class="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0"
-                  />
-                  <div>
-                    <p class="text-xs font-semibold text-foreground">Primary</p>
-                    <p class="text-[10px] text-muted-foreground">{customPrimary().toUpperCase()}</p>
-                  </div>
-                </label>
-                <label class="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="color"
-                    value={customSecondary()}
-                    onInput={(e) => handleCustomColor("secondary", e.currentTarget.value)}
-                    class="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0"
-                  />
-                  <div>
-                    <p class="text-xs font-semibold text-foreground">Secondary</p>
-                    <p class="text-[10px] text-muted-foreground">{customSecondary().toUpperCase()}</p>
-                  </div>
-                </label>
                 <div class="flex gap-1.5">
                   <input
                     type="text"
@@ -523,7 +455,7 @@ export default function ThemeSwitcher(props) {
                   />
                   <button
                     onClick={handleSaveTheme}
-                    disabled={!themeName().trim()}
+                    disabled={!themeName().trim() || !materialSeedActive()}
                     class="flex items-center gap-1 px-3 h-9 rounded-lg bg-primary text-primary-foreground text-xs font-bold disabled:opacity-40 hover:opacity-90 transition-colors"
                   >
                     <Save class="w-3 h-3" /> Save
@@ -532,7 +464,6 @@ export default function ThemeSwitcher(props) {
               </div>
             </Show>
           </div>
-          </Show>
         </div>
       </Show>
     </div>
