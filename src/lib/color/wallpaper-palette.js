@@ -48,6 +48,17 @@ function pixelsFromImage(img) {
   return pixels;
 }
 
+export function quantizeMaterialPixels(pixels, maxColors = 128) {
+  return QuantizerCelebi.quantize(pixels, maxColors);
+}
+
+export function scoreMaterialPopulation(population, count = 6) {
+  return Score.score(population, {
+    desired: Math.max(1, Math.floor(count)),
+    filter: true,
+  });
+}
+
 /**
  * @param {File|Blob} file an image the user picked
  * @param {number} count how many ranked seed colors to return
@@ -59,12 +70,8 @@ export async function extractWallpaperPalette(file, count = 6) {
   try {
     const image = await loadImage(url);
     const pixels = pixelsFromImage(image);
-    const quantized = QuantizerCelebi.quantize(pixels, 128);
-    const ranked = Score.score(quantized, {
-      desired: Math.max(1, Math.floor(count)),
-      filter: true,
-    });
-    return ranked.map(hexFromArgb);
+    const quantized = quantizeMaterialPixels(pixels);
+    return scoreMaterialPopulation(quantized, count).map(hexFromArgb);
   } finally {
     URL.revokeObjectURL(url);
   }
