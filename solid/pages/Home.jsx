@@ -21,7 +21,6 @@ import IdleMount from "~/components/IdleMount";
 const BossHome = lazy(() => import("~/components/home/boss"));
 
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
-const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
 const FeedbackWidget = lazy(() => import("~/components/FeedbackWidget"));
 const ProfileEditor = lazy(() => import("~/components/ProfileEditor"));
 const JobReminder = lazy(() => import("~/components/JobReminder"));
