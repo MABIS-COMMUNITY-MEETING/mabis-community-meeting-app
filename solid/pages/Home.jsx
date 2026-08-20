@@ -440,11 +440,12 @@ export default function Home() {
         </ErrorBoundary>
       </Show>
 
-      {/* Deferred until the browser is idle, as in React — same three, same order. */}
+      {/* Deferred until the browser is idle, as in React — JobReminder and
+          FeedbackWidget. (MabisAIAssistant removed 2026-08-19 — was the
+          third of these three; see docs/solid-migration.md.) */}
       <IdleMount timeout={1800}>
         <Suspense fallback={null}>
           <JobReminder />
-          <MabisAIAssistant />
           <FeedbackWidget />
         </Suspense>
       </IdleMount>
