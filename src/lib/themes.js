@@ -813,8 +813,10 @@ export function applyMaterialSeed(seedHex, { persist = true, dark } = {}) {
   Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value));
   root.style.setProperty("--ink", isDark ? vars["--background"] : vars["--foreground"]);
   root.style.setProperty("--bone", isDark ? vars["--foreground"] : vars["--background"]);
-  root.style.setProperty("--destructive", vars["--primary"]);
-  root.style.setProperty("--destructive-foreground", vars["--primary-foreground"]);
+  // Material's own error palette already produced --destructive /
+  // --destructive-foreground above (fixed hue 25, chroma 84 — never the
+  // seed's hue), so unlike applyTheme()/applyCustomColors() this does NOT
+  // fall back to reusing --primary for them.
   root.style.setProperty("--primary-foreground-muted", mutedForeground(vars["--primary-foreground"], vars["--primary"]));
   // Material owns its own polarity now — assert it on <body> too, so it wins
   // over whatever a previously-applied named theme (dark or light) left set,
