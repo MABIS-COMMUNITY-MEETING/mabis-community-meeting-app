@@ -407,6 +407,11 @@ export default function ThemeSwitcher(props) {
                           <div class="w-4 h-4 rounded-full border border-border" style={{ background: t.secondary }} />
                         </div>
                         <span class="text-xs font-semibold text-foreground truncate">{t.name}</span>
+                        <Show when={t.type === "material"}>
+                          <span class="shrink-0 rounded-full border border-border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-muted-foreground">
+                            Photo
+                          </span>
+                        </Show>
                       </button>
                       <button
                         onClick={() => setSavedThemes(deleteSavedTheme(t.name))}
