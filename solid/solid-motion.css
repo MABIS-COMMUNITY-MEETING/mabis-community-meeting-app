@@ -197,8 +197,13 @@ html.animations-disabled .page-curtain-mark,
 html.animations-disabled .page-content-lift,
 html.animations-disabled .success-pop { animation: none; }
 /* The curtain must still end up clipped away with motion off, or it would sit
- * over the page as an opaque sheet. Snap it instead of animating it. */
-html.animations-disabled .page-curtain {
+ * over the page as an opaque sheet. Snap it instead of animating it.
+ * performance-lite needs the same snap: index.css kills every animation under
+ * that class too, and without this the curtain stayed parked over the whole
+ * page — the site looked frozen and unscrollable even though the content was
+ * scrolling behind it. */
+html.animations-disabled .page-curtain,
+html.performance-lite .page-curtain {
   animation: none;
   clip-path: inset(0 0 100% 0);
 }
