@@ -1,1 +1,0 @@
-import{p as s,aJ as t,aj as n,z as r}from"./index-CiCCy3ZP.js";function u(){const[o,a]=s(t()),e=()=>a(t());return window.addEventListener(n,e),window.addEventListener("storage",e),r(()=>{window.removeEventListener(n,e),window.removeEventListener("storage",e)}),o}export{u};
