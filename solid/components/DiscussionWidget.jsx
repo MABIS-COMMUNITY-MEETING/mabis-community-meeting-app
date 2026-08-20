@@ -20,17 +20,19 @@ import {
 } from "~/lib/weeks";
 
 const DocsEditor = lazy(() => import("~/components/DocsEditor"));
-const MabisAIAssistant = lazy(() => import("~/components/MabisAIAssistant"));
 const MeetingMinutes = lazy(() => import("~/components/MeetingMinutes"));
 const MeetingNotesEditor = lazy(() => import("~/components/MeetingNotesEditor"));
+const JobsWidget = lazy(() => import("~/components/JobsWidget"));
 
 /*
  * DiscussionWidget — Solid port of src/components/DiscussionWidget.jsx.
  *
  * Meeting mode is a hub: the React version lazy-loads JobsWidget,
- * AnnouncementsWidget and CalendarWidget into it (the assistant and the meeting
- * notes editor are ported and mount for real). Those are not ported yet, so
- * they render through PendingWidget —
+ * AnnouncementsWidget and CalendarWidget into it. JobsWidget is ported and
+ * mounts for real (see below — re-wired 2026-08-19 after a prior wiring of it
+ * here was lost to a concurrent edit; re-verify this stays wired if this file
+ * shows up stale again). Announcements and Calendar are not ported yet, so
+ * they still render through PendingWidget —
  * reserved space carrying the same intrinsic height the real widget will take,
  * exactly like Home's WIDGETS map. Swapping each one in later shifts nothing.
  *
@@ -460,12 +462,13 @@ export default function DiscussionWidget(props) {
             </section>
 
             {/* Ports pending — reserved at the height each widget will occupy. */}
-            <PendingWidget name="Jobs" height={320} />
+            <Suspense fallback={<PendingWidget name="Jobs" height={320} />}>
+              <JobsWidget members={members()} isAdmin={props.isAdmin} />
+            </Suspense>
             <PendingWidget name="Announcements" height={280} />
             <PendingWidget name="Calendar" height={360} />
           </div>
         </div>
-        <Suspense fallback={null}><MabisAIAssistant /></Suspense>
       </Portal>
     }>
       {/* ── NORMAL MODE ────────────────────────────────────────────────────── */}
@@ -565,7 +568,9 @@ export default function DiscussionWidget(props) {
           </Suspense>
 
           <div class="border-t border-border pt-4">
-            <PendingWidget name="Jobs" height={240} />
+            <Suspense fallback={<PendingWidget name="Jobs" height={240} />}>
+              <JobsWidget members={members()} isAdmin={props.isAdmin} compact />
+            </Suspense>
           </div>
         </div>
       </div>
