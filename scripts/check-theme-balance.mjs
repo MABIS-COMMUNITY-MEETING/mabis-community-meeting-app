@@ -84,6 +84,7 @@ const server = await createServer({
     resolve: { alias: { "@": path.resolve("src") } },
     server: { middlewareMode: true, hmr: false },
     optimizeDeps: { noDiscovery: true },
+    ssr: { noExternal: ["@material/material-color-utilities"] },
     appType: "custom",
     logLevel: "silent",
 });
