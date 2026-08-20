@@ -1,6 +1,7 @@
 import { createSignal, onMount, onCleanup } from "solid-js";
 import { JapaneseText } from "~/components/primitives";
 import { getLoadingState, subscribeToLoadingState } from "@/lib/loading-state";
+import { lockBodyScroll } from "@/lib/scroll-lock";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 const clampProgress = (value) => Math.max(0, Math.min(100, Number(value) || 0));
@@ -35,8 +36,15 @@ export default function LoadingScreen() {
   // would then swallow every update after the first.
   const [loading, setLoading] = createSignal(getLoadingState(), { equals: false });
   onMount(() => {
+    // The fallback is a full-viewport state, so the document underneath must
+    // not accept wheel/touch input while it owns the screen. The shared lock
+    // is reference-counted and navigation-safe; cleanup always releases it.
+    const releaseScroll = lockBodyScroll();
     const unsubscribe = subscribeToLoadingState(() => setLoading(getLoadingState()));
-    onCleanup(() => unsubscribe?.());
+    onCleanup(() => {
+      unsubscribe?.();
+      releaseScroll();
+    });
   });
 
   // Read once and never again, exactly like React's lazy useState initialiser.
@@ -119,7 +127,7 @@ export default function LoadingScreen() {
 
   return (
     <div
-      class="loading-screen fixed inset-0 overflow-hidden bg-ink text-bone"
+      class="loading-screen fixed inset-0 z-[200] overflow-hidden overscroll-none touch-none bg-ink text-bone"
       style={{ "--loading-font": loadingFont }}
       aria-busy="true"
     >
