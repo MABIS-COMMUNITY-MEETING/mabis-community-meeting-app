@@ -49,8 +49,8 @@ export function collectPrefs() {
   return out;
 }
 
-export function applyStoredPrefs(user) {
-  applyTheme(getStoredTheme(user), { persist: false });
+export function applyStoredPrefs() {
+  applyTheme(getStoredTheme(), { persist: false });
   const materialSeed = getStoredMaterialSeed();
   if (materialSeed) {
     applyMaterialSeed(materialSeed, {
@@ -137,7 +137,7 @@ export async function pullPrefs() {
     }
   }
 
-  const animationPreferenceChanged = applyStoredPrefs(user);
+  const animationPreferenceChanged = applyStoredPrefs();
 
   // Repair older account-side preferences with the current device choice.
   if (keepLocalFont || keepLocalMotion || keepLocalJapaneseText || animationPreferenceChanged) {
