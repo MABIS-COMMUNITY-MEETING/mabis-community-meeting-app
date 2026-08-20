@@ -193,7 +193,7 @@ for (const [relativePath, content] of editorialContractFiles) {
 const richTextThemeRule = "Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.";
 const easyLayoutRule = "Keep Home easy to navigate: the default layout stacks the widgets as the original MABIS interface did, and the Boss style adds numbered editorial sections with a plain-language page guide; usability aids must clarify whichever layout is in use rather than bolt a generic dashboard onto either one.";
 const japaneseTextRule = "Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang=\"ja\"` so Maple Mono CJK fallback applies; the default remains off.";
-const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with the large font catalogue and the custom Material You tools behind clearly labeled advanced controls. The colour theme is MABIS only — `SELECTABLE_THEME_KEYS` in `src/lib/themes.js` is the single source of truth and no surface may enumerate `THEMES` directly — and the wallpaper/photo theme builder is available to everyone without a hidden unlock gesture or manual primary/secondary colour fields.";
+const simpleCustomizationRule = "Customization surfaces show a small set of plain-language default choices first, with the large font catalogue and the custom Material You tools behind clearly labeled advanced controls. The standard colour catalogue shows MABIS only; the large LGBTQ+, BFDI, Touhou, Linux, game, and other themed palette catalogue unlocks only after the same person activates the Boss style control 69 times, with no account or email bypass. `getSelectableThemeKeys()` in `src/lib/themes.js` is the single source of truth and no picker surface may enumerate `THEMES` directly. The wallpaper/photo Material You theme builder remains available to everyone without that unlock or manual primary/secondary colour fields.";
 const jobsPeriodRule = "Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.";
 const homeLayoutRule = "The app has two styles, chosen in Settings and applied everywhere — Home, the splash, login and the archive pages. `Summer style` is the default and must ALWAYS stick to the style Summer wants — the original MABIS interface, as built in app `6a7f1d91128253fcdbf4f5a2`, which is the reference for it: the original top bar, rounded white cards, coloured widget headers, no editorial scaffolding. Match that site; do not improve it, modernise it, tidy it, or drift it toward the editorial system or an AI's taste. An editorial flourish added to a Summer surface — an N° caption, tracked-out display type, a ruled plane, a square radius — is a bug exactly as a missing widget is. Summer style is the ONLY sanctioned exception to the Novesce UI mandate, and it is an exception to the editorial system alone, never to the tokens, fonts, OpenMoji, Google-only auth, cursor, glass or performance rules. `Boss style` is opt-in and must ALWAYS follow the Novesce design philosophy in full: the Japanese editorial system — numbered sections, tracked-out display type, ruled neutral planes, N° captions, restrained radii, the glass control plane — built from semantic tokens, the GNU FreeMono stack with Maple Mono for CJK, and pinned OpenMoji. A Boss surface that is not editorial, or that reaches for a generic dashboard look, is a bug. Every feature, widget, page, control and fix must exist in BOTH styles; adding something to one and not the other is a bug, not a variant. They are two presentations of one product, not two products.";
 for (const [relativePath, content] of editorialContractFiles) {
@@ -308,6 +308,23 @@ forbidText("src/components/PrefsSync.jsx", prefsSync, "canUseCustomColors");
 forbidText("src/components/page-chrome.jsx", pageChrome, "onLogoClick");
 forbidText("solid/components/home/boss.jsx", bossHome, "UNLOCK_TAPS");
 forbidText("solid/components/home/boss.jsx", bossHome, "onLogoClick");
+
+/*
+ * The large themed palette catalogue is a deliberate Boss-style easter egg.
+ *
+ * MABIS stays the only standard palette. The unlock is persistent and reactive,
+ * but it has no identity-based bypass: every person reaches the catalogue
+ * through the same 69 activations of the real Boss style button.
+ */
+requireText("src/components/SettingsModal.jsx", settingsModal, "const BOSS_THEME_UNLOCK_PRESSES = 69;");
+requireText("src/components/SettingsModal.jsx", settingsModal, "nextPressCount === BOSS_THEME_UNLOCK_PRESSES");
+requireText("src/components/SettingsModal.jsx", settingsModal, "unlockBossThemesLocally()");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "getSelectableThemeKeys()");
+requireText("src/components/ThemeSwitcher.jsx", themeSwitcher, "BOSS_THEMES_UNLOCKED_EVENT");
+requireText("src/lib/themes.js", themes, 'const BOSS_THEMES_UNLOCK_KEY = "mabis-boss-themes-unlocked";');
+requireText("src/lib/themes.js", themes, "return areBossThemesUnlockedLocally() ? Object.keys(THEMES) : SELECTABLE_THEME_KEYS;");
+forbidText("src/lib/themes.js", themes, "SPECIAL_THEME_EMAIL");
+forbidText("src/lib/themes.js", themes, "SPECIAL_THEME_USER_ID");
 
 requireText("src/index.css", css, "font-family: 'OpenMojiColor'");
 requireText("src/index.css", css, "unicode-range:");
