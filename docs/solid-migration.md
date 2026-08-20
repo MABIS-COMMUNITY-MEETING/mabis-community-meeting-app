@@ -302,6 +302,11 @@ running the Solid dev server. The React app remains fully editable.
   key and keeps the rest.
 - `font-display: block` (chosen to stop the font flash) is scored lower than
   `swap` by Lighthouse's font-display audit. Deliberate trade-off.
-- The theme catalogue (~71 KB of source) is in the boot chunk while only one
-  theme is applied at startup. Splitting it behind the theme switcher is the
-  largest remaining first-load win, and applies to both builds.
+- ~~The theme catalogue... is in the boot chunk~~ — stale even before the
+  2026-08-19 catalogue restoration above. `THEMES` (all 140 themes, ~117 KiB)
+  is only ever imported by `ThemeSwitcher.jsx` and `SettingsModal.jsx`, both
+  lazy; the boot path (`main.jsx` → `theme-boot.js`) replays a cached
+  painted-style snapshot on the common path and only imports `themes.js` on a
+  cold first visit or once `reconcileThemeAfterPaint()`'s idle callback runs.
+  Restoring `SELECTABLE_THEME_KEYS` to the full catalogue did not change any
+  of that — `check:bundle` budgets confirmed the boot chunk is unaffected.
