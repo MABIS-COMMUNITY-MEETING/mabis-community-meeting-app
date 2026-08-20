@@ -25,7 +25,16 @@
 
 let depth = 0;
 let original = null;
+let originalRoot = null;
 let generation = 0;
+
+function restoreDocumentScroll() {
+  document.body.style.overflow = original ?? "";
+  document.documentElement.style.overflow = originalRoot ?? "";
+  document.documentElement.classList.remove("scroll-locked");
+  original = null;
+  originalRoot = null;
+}
 
 /**
  * Lock background scroll. Returns an idempotent release function.
@@ -42,10 +51,15 @@ export function lockBodyScroll() {
     original = document.body.style.overflow === "hidden"
       ? ""
       : document.body.style.overflow;
+    originalRoot = document.documentElement.style.overflow === "hidden"
+      ? ""
+      : document.documentElement.style.overflow;
   }
   const lockGeneration = generation;
   depth += 1;
   document.body.style.overflow = "hidden";
+  document.documentElement.style.overflow = "hidden";
+  document.documentElement.classList.add("scroll-locked");
 
   let released = false;
   return () => {
@@ -55,10 +69,7 @@ export function lockBodyScroll() {
     // this guard, an old cleanup can decrement a newer overlay's lock.
     if (lockGeneration !== generation) return;
     depth = Math.max(0, depth - 1);
-    if (depth === 0) {
-      document.body.style.overflow = original ?? "";
-      original = null;
-    }
+    if (depth === 0) restoreDocumentScroll();
   };
 }
 
@@ -74,8 +85,7 @@ export function releaseAllScrollLocks() {
   if (typeof document === "undefined") return;
   generation += 1;
   depth = 0;
-  document.body.style.overflow = original ?? "";
-  original = null;
+  restoreDocumentScroll();
 }
 
 // Preview updates can replace this module while a menu or editor owns a lock.
