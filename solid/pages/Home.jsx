@@ -21,6 +21,7 @@ import IdleMount from "~/components/IdleMount";
 const BossHome = lazy(() => import("~/components/home/boss"));
 
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
+const StyleWelcomeDialog = lazy(() => import("~/components/StyleWelcomeDialog"));
 const FeedbackWidget = lazy(() => import("~/components/FeedbackWidget"));
 const ProfileEditor = lazy(() => import("~/components/ProfileEditor"));
 const JobReminder = lazy(() => import("~/components/JobReminder"));
@@ -380,6 +381,10 @@ export default function Home() {
       class="editorial-home min-h-screen bg-background overflow-x-clip"
       classList={{ "summer-home": !isBoss() }}
     >
+      <Suspense fallback={null}>
+        <StyleWelcomeDialog />
+      </Suspense>
+
       <Show when={!isBoss()}>
         <SummerHeader canSeeInbox={isAdmin()} rightSlot={summerControls} />
       </Show>
