@@ -3,7 +3,7 @@ import { Palette, Check, RotateCcw, Save, Trash2, Star, Search } from "lucide-so
 import {
   THEMES, getSelectableThemeKeys, applyTheme, applyCustomColors, clearCustomColors,
   getStoredTheme, getStoredCustomColors, hslToHex,
-  getSavedThemes, saveCustomTheme, deleteSavedTheme,
+  getSavedThemes, saveCustomTheme, saveMaterialTheme, deleteSavedTheme,
   areBossThemesUnlockedLocally, BOSS_THEMES_UNLOCKED_EVENT,
   applyMaterialSeed, getStoredMaterialSeed, clearMaterialSeed,
   getStoredMaterialMode, setStoredMaterialMode,
@@ -226,7 +226,14 @@ export default function ThemeSwitcher(props) {
   const handleSaveTheme = () => {
     const name = themeName().trim();
     if (!name) return;
-    setSavedThemes(saveCustomTheme(name, customPrimary(), customSecondary()));
+    // Save whichever kind of custom look is actually active right now — a
+    // Material You seed (own light/dark, owns every surface) saves as its own
+    // seed + polarity so loading it later re-derives the whole scheme, rather
+    // than freezing it down to just the two swatches a plain pair would be.
+    const updated = materialSeedActive()
+      ? saveMaterialTheme(name, customPrimary(), materialDark())
+      : saveCustomTheme(name, customPrimary(), customSecondary());
+    setSavedThemes(updated);
     setThemeName("");
   };
 
@@ -251,6 +258,14 @@ export default function ThemeSwitcher(props) {
   };
 
   const handleLoadSaved = (theme) => {
+    if (theme.type === "material") {
+      setCustomPrimary(theme.seed);
+      setMaterialSeedActive(true);
+      setMaterialDark(!!theme.dark);
+      setCustomActive(true);
+      applyMaterialSeed(theme.seed, { dark: !!theme.dark });
+      return;
+    }
     setCustomPrimary(theme.primary);
     setCustomSecondary(theme.secondary);
     setCustomActive(true);
