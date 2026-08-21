@@ -36,6 +36,8 @@ assert.match(discussionSource, /lockBodyScroll\(\)/, "Meeting Mode must own a ba
 assert.match(discussionSource, /<ErrorBoundary/, "meeting sections must not be able to crash the whole overlay");
 assert.match(notesSource, /saveQueue = operation\.catch/, "note writes must be serialized");
 assert.match(notesSource, /MeetingDocumentEditor/, "Meeting Mode must use its lightweight flowing document editor");
+assert.doesNotMatch(notesSource, /useQuery\(/, "meeting notes must reuse DiscussionWidget data instead of starting another document query");
+assert.match(discussionSource, /topics=\{topicsQuery\.data \|\| \[\]\}/, "DiscussionWidget must pass its resolved week data into meeting notes");
 assert.doesNotMatch(notesSource, /^import .*?(?:DiscussionDocumentEditor|DocsEditor|Quill)/m, "Meeting Mode must never load the heavy Discussion document engine");
 assert.doesNotMatch(meetingEditorSource, /^import .*?(?:quill|DocsEditor|DiscussionDocumentEditor)/m, "the meeting editor must stay independent from Quill");
 assert.match(meetingEditorSource, /contentEditable/, "meeting notes must remain one normal editable document");
