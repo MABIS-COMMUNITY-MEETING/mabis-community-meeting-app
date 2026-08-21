@@ -536,7 +536,11 @@ export default function DiscussionWidget(props) {
               <Show when={meetingNotesReady()} fallback={<PendingWidget name="Meeting notes" height={260} />}>
                 <ErrorBoundary fallback={(error, reset) => <MeetingSectionFailure name="Meeting notes" onRetry={reset} />}>
                   <Suspense fallback={<PendingWidget name="Meeting notes" height={260} />}>
-                    <MeetingNotesEditor weekLabel={viewedWeek()} />
+                    <MeetingNotesEditor
+                      weekLabel={viewedWeek()}
+                      topics={topicsQuery.data || []}
+                      loading={topicsQuery.isLoading}
+                    />
                   </Suspense>
                 </ErrorBoundary>
               </Show>
