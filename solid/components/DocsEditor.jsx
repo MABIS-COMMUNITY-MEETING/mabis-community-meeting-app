@@ -379,6 +379,18 @@ export default function DocsEditor(props) {
     syncFormats();
   };
 
+  const formatRememberedRange = (formatsToApply) => {
+    if (!quill) return;
+    const range = lastSelection || { index: 0, length: 0 };
+    quill.focus();
+    quill.setSelection(range.index, range.length, "silent");
+    for (const [name, value] of Object.entries(formatsToApply)) {
+      if (range.length) quill.formatText(range.index, range.length, name, value, "user");
+      else quill.format(name, value, "user");
+    }
+    syncFormats();
+  };
+
   const toggleFormat = (name) => {
     if (!quill) return;
     const current = quill.getFormat(quill.getSelection() || { index: 0, length: 0 });
@@ -398,17 +410,35 @@ export default function DocsEditor(props) {
   // they win over any stray inline colour, including ones already baked into
   // documents saved before this fix (index.css has the full account).
   const applyThemeInk = (color) => {
-    if (!quill) return;
-    quill.focus();
-    quill.format("themeInk", color.value || false, "user");
-    syncFormats();
+    formatRememberedRange({
+      color: false,
+      userPaint: false,
+      themeInk: color.value || false,
+    });
   };
 
   const applyThemeHighlight = (highlight) => {
-    if (!quill) return;
-    quill.focus();
-    quill.format("themeHighlight", highlight.value || false, "user");
-    syncFormats();
+    const clearing = !highlight.value;
+    formatRememberedRange({
+      background: false,
+      ...(clearing ? { color: false, userPaint: false } : {}),
+      themeHighlight: highlight.value || false,
+    });
+  };
+
+  const applyCustomInk = (hex) => {
+    setCustomInk(hex);
+    formatRememberedRange({ themeInk: false, color: hex, userPaint: "custom" });
+  };
+
+  const applyCustomHighlight = (hex) => {
+    setCustomHighlight(hex);
+    formatRememberedRange({
+      themeHighlight: false,
+      background: hex,
+      color: readableInkForHex(hex),
+      userPaint: "custom",
+    });
   };
 
   const setBlockStyle = (header) => focusAndFormat("header", header || false);
