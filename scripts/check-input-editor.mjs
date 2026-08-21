@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
 
 const dom = new JSDOM("<!doctype html><html><body></body></html>", {
@@ -17,6 +18,10 @@ globalThis.getComputedStyle = dom.window.getComputedStyle;
 
 const nav = await import("../solid/lib/input-navigation.js");
 const editor = await import("../solid/lib/quill-setup.js");
+const docsEditorSource = readFileSync(
+  new URL("../solid/components/DocsEditor.jsx", import.meta.url),
+  "utf8",
+);
 
 let checks = 0;
 const check = (condition, message) => {
@@ -78,5 +83,17 @@ check(editor.readableInkForHex("#000000") === "#ffffff",
   "Dark unrestricted highlights receive light readable ink");
 check(editor.readableInkForHex("#777777") === "#000000",
   "Mid-tone highlights choose the stronger WCAG foreground");
+
+check(/event\.dataTransfer\?\.files/.test(docsEditorSource)
+    && /onDrop=\{handleImageDrop\}/.test(docsEditorSource),
+  "The shared document editor accepts image files dropped from the desktop");
+check(/caretRangeFromPoint/.test(docsEditorSource)
+    && /caretPositionFromPoint/.test(docsEditorSource),
+  "Image drops preserve the pointer position in Chromium/WebKit and Firefox");
+check(/insertImageFiles\(files, insertionIndex\)/.test(docsEditorSource)
+    && /insertEmbed\(caret, "image", source, "user"\)/.test(docsEditorSource),
+  "Dropped images use the same saved Quill embed path as toolbar images");
+check(/type="file" accept="image\/\*" multiple/.test(docsEditorSource),
+  "The document image picker and drop path both support multiple images");
 
 console.log(`Input/editor contract: ${checks}/${checks} checks passed.`);
