@@ -10,6 +10,7 @@ import { useAuth } from "~/lib/AuthContext";
 import { useHomeLayout } from "~/lib/prefs";
 import { usePresenceHeartbeat } from "~/lib/usePresence";
 import { createJobWheelSession } from "~/lib/job-wheel-session";
+import { createMeetingModeSession } from "~/lib/meeting-mode-session";
 import ThemeSwitcher from "~/components/ThemeSwitcher";
 import IdleMount from "~/components/IdleMount";
 
@@ -145,6 +146,7 @@ const WIDGETS = {
 export default function Home() {
   const auth = useAuth();
   const wheelSession = createJobWheelSession();
+  const meetingSession = createMeetingModeSession();
   // "simple" by default; "boss" is the art-directed editorial front page,
   // opt-in from Settings. See src/lib/layout-preference.js.
   const layout = useHomeLayout();
@@ -343,7 +345,7 @@ export default function Home() {
   );
 
   const renderWidget = (s) => (
-    <LazySection minHeight={s.height}>
+    <LazySection minHeight={s.height} forceMount={s.index === "03" && meetingSession.isActive()}>
       <Show when={WIDGETS[s.index]} fallback={placeholder(s.height)}>
         {(Widget) => (
           <Suspense fallback={placeholder(s.height)}>
@@ -355,7 +357,8 @@ export default function Home() {
                   members={members()}
                   canChangeRoles={isAdmin()}
                   canStart={isAdmin()}
-                  onStartMeeting={() => window.dispatchEvent(new CustomEvent("startMeetingMode"))}
+                  onStartMeeting={meetingSession.start}
+                  meetingSession={meetingSession}
                   wheelSession={wheelSession}
                 />
               );
