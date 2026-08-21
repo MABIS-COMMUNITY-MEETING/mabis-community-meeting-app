@@ -605,7 +605,10 @@ export default function DocsEditor(props) {
         />
       </Show>
 
-      <div class="docs-toolbar relative flex flex-wrap items-center gap-0.5 rounded-t-lg border border-border bg-card px-2 py-1.5">
+      <div
+        class="docs-toolbar relative flex flex-wrap items-center gap-0.5 rounded-t-lg border border-border bg-card px-2 py-1.5"
+        style={{ top: fullscreen() ? "0px" : (props.stickyTop || "calc(64px + env(safe-area-inset-top))") }}
+      >
         <ToolButton title="Undo (Ctrl+Z)" onClick={undo}><Undo2 class="h-4 w-4" /></ToolButton>
         <ToolButton title="Redo (Ctrl+Y)" onClick={redo}><Redo2 class="h-4 w-4" /></ToolButton>
         <ToolButton title="Format painter" active={painterArmed()} onClick={handlePainter}><Paintbrush class="h-4 w-4" /></ToolButton>
@@ -659,6 +662,23 @@ export default function DocsEditor(props) {
           )}
         </Dropdown>
 
+        <Show when={unrestrictedColors()}>
+          <label
+            class="docs-native-color"
+            title="Any MABIS text color / MABISの任意の文字色"
+            onPointerDown={() => { if (quill?.getSelection()) lastSelection = quill.getSelection(); }}
+          >
+            <Palette class="h-4 w-4" />
+            <span class="docs-native-color-swatch" style={{ background: customInk() }} />
+            <input
+              type="color"
+              value={customInk()}
+              aria-label="Any MABIS text color / MABISの任意の文字色"
+              onInput={(event) => applyCustomInk(event.currentTarget.value)}
+            />
+          </label>
+        </Show>
+
         <Dropdown width="w-56" trigger={<Highlighter class="h-4 w-4" />}>
           {(close) => (
             <Index each={THEME_HIGHLIGHTS}>
@@ -673,6 +693,23 @@ export default function DocsEditor(props) {
             </Index>
           )}
         </Dropdown>
+
+        <Show when={unrestrictedColors()}>
+          <label
+            class="docs-native-color"
+            title="Any MABIS highlight color / MABISの任意のハイライト色"
+            onPointerDown={() => { if (quill?.getSelection()) lastSelection = quill.getSelection(); }}
+          >
+            <Highlighter class="h-4 w-4" />
+            <span class="docs-native-color-swatch" style={{ background: customHighlight() }} />
+            <input
+              type="color"
+              value={customHighlight()}
+              aria-label="Any MABIS highlight color / MABISの任意のハイライト色"
+              onInput={(event) => applyCustomHighlight(event.currentTarget.value)}
+            />
+          </label>
+        </Show>
 
         <ToolbarDivider />
         <ToolButton title="Superscript" active={f().script === "super"} onClick={() => focusAndFormat("script", f().script === "super" ? false : "super")}><Superscript class="h-4 w-4" /></ToolButton>
@@ -689,7 +726,7 @@ export default function DocsEditor(props) {
         <div class="relative shrink-0">
           <ToolButton title="Insert or edit link" active={linkOpen()} onClick={() => setLinkOpen((v) => !v)}><Link2 class="h-4 w-4" /></ToolButton>
           <Show when={linkOpen()}>
-            <LinkPopover getQuill={getQuill} onClose={() => setLinkOpen(false)} />
+            <LinkPopover getQuill={getQuill} getRange={() => lastSelection} onClose={() => setLinkOpen(false)} />
           </Show>
         </div>
         <ToolButton title="Insert image" disabled={uploading()} onClick={() => imageInputEl?.click()}><ImageIcon class="h-4 w-4" /></ToolButton>
