@@ -122,6 +122,13 @@ const lazySection = read("src/components/home/LazySection.jsx");
 const idleMount = read("src/components/IdleMount.jsx");
 const serviceWorkerGenerator = read("scripts/generate-service-worker.mjs");
 const packageJson = read("package.json");
+const inputNavigation = read("solid/components/InputNavigation.jsx");
+const spatialNavigation = read("solid/lib/input-navigation.js");
+const docsEditorSolid = read("solid/components/DocsEditor.jsx");
+const quillSetup = read("solid/lib/quill-setup.js");
+const meetingNotesEditor = read("solid/components/MeetingNotesEditor.jsx");
+const platformProfile = read("src/lib/platform-profile.js");
+const performanceTier = read("src/lib/performance-tier.js");
 /*
  * The SHIPPED entry, not the root one.
  *
@@ -345,6 +352,34 @@ requireText("solid/index.html", html, "background: hsl(var(--background");
 requireText("solid/index.html", html, "color: hsl(var(--foreground");
 requireText("solid/index.html", html, "background: hsl(var(--primary");
 requireText("package.json", packageJson, '"check:theme-prepaint": "node scripts/check-theme-prepaint.mjs"');
+requireText("src/components/LoadingScreen.jsx", loadingScreen, "bg-background text-foreground");
+requireText("src/index.css", css, "hsl(var(--secondary) / 0.1)");
+
+/* Global arrows and hidden controller navigation share one geometric engine,
+   but text editors retain their native arrow/caret behavior. */
+requireText("src/App.jsx", app, "<InputNavigation />");
+requireText("solid/components/InputNavigation.jsx", inputNavigation, "isEditingTarget(event.target)");
+requireText("solid/components/InputNavigation.jsx", inputNavigation, "navigator.getGamepads");
+requireText("solid/lib/input-navigation.js", spatialNavigation, "findDirectionalTarget");
+requireText("solid/lib/input-navigation.js", spatialNavigation, "gamecube|0079");
+
+/* The normal editor is shared by weekly and in-meeting notes. Paste colors are
+   sanitized before Quill sees them, while deliberate plain-MABIS paint is
+   marked so other themes can fall back to semantic document roles. */
+requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "sanitizePastedHtml(html)");
+requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "position: sticky");
+requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "readableInkForHex(hex)");
+requireText("solid/lib/quill-setup.js", quillSetup, "ql-user-paint");
+requireText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "<DocsEditor");
+forbidText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "BlockNotesEditor");
+requireText("package.json", packageJson, '"check:input-editor": "node scripts/check-input-editor.mjs"');
+
+/* Linux gets the complete visual tier, with only browser-exposed scheduling
+   and compositor hints—never pretend access to kernel/Vulkan APIs. */
+requireText("src/main.jsx", main, "applyPlatformProfile();");
+requireText("src/lib/platform-profile.js", platformProfile, "platform-linux");
+requireText("src/lib/performance-tier.js", performanceTier, "if (isLinuxPlatform()) return false;");
+requireText("src/lib/performance-tier.js", performanceTier, "if (isLinuxPlatform()) return () => {};");
 
 requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono-subset.woff2?v=3");
 requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3");
