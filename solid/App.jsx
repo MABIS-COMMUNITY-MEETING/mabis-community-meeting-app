@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "~/lib/AuthContext";
 import { Toaster } from "~/lib/toast";
 import { loadHomeRoute, startHomeModuleWarmup } from "~/lib/routes";
 import OptionalCustomCursor from "~/components/OptionalCustomCursor";
+import InputNavigation from "~/components/InputNavigation";
 import CjkFontLoader from "~/components/CjkFontLoader";
 import LoadingScreen from "~/components/LoadingScreen";
 import JapaneseUiCompanion from "~/components/JapaneseUiCompanion";
@@ -159,6 +160,7 @@ export default function App() {
               companion layer starts writing lang="ja" nodes into the DOM. */}
           <CjkFontLoader />
           <JapaneseUiCompanion />
+          <InputNavigation />
           <PrefsSync />
           <SoundEffects />
           <GrainOverlay />
