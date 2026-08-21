@@ -126,8 +126,7 @@ const inputNavigation = read("solid/components/InputNavigation.jsx");
 const spatialNavigation = read("solid/lib/input-navigation.js");
 const docsEditorSolid = read("solid/components/DocsEditor.jsx");
 const quillSetup = read("solid/lib/quill-setup.js");
-const meetingNotesEditor = read("solid/components/MeetingNotesEditor.jsx");
-const meetingDocumentEditor = read("solid/components/MeetingDocumentEditor.jsx");
+const meetingMinutes = read("solid/components/MeetingMinutes.jsx");
 const discussionDocumentEditor = read("solid/components/discussion/DiscussionDocumentEditor.jsx");
 const platformProfile = read("src/lib/platform-profile.js");
 const performanceTier = read("src/lib/performance-tier.js");
@@ -366,21 +365,22 @@ requireText("solid/components/InputNavigation.jsx", inputNavigation, "navigator.
 requireText("solid/lib/input-navigation.js", spatialNavigation, "findDirectionalTarget");
 requireText("solid/lib/input-navigation.js", spatialNavigation, "gamecube|0079");
 
-/* The full Discussion editor keeps its rich Quill contract. Meeting Mode uses
-   a native flowing editor with the same toolbar/color vocabulary so starting a
-   meeting never imports or initialises Quill on the main thread. */
+/* Home and Meeting Mode intentionally render the exact same MeetingMinutes
+   and DocsEditor path. Its nested lazy + idle boundaries keep Quill out of the
+   first-paint work while preventing the two document experiences from drifting. */
 requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "sanitizePastedHtml(html)");
 requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "props.stickyTop");
 requireText("src/index.css", css, ".docs-toolbar {\n  position: sticky;");
 requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "readableInkForHex(hex)");
+requireText("solid/components/DocsEditor.jsx", docsEditorSolid, 'toggleList("bullet")');
 requireText("solid/lib/quill-setup.js", quillSetup, "ql-user-paint");
-requireText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "<MeetingDocumentEditor");
-requireText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "One continuous document, matching the Discussion editor.");
-requireText("solid/components/MeetingDocumentEditor.jsx", meetingDocumentEditor, "sanitizeDocumentHtml");
-requireText("solid/components/MeetingDocumentEditor.jsx", meetingDocumentEditor, "contentEditable");
-forbidText("solid/components/MeetingDocumentEditor.jsx", meetingDocumentEditor, 'from "quill"');
-forbidText("solid/components/MeetingDocumentEditor.jsx", meetingDocumentEditor, "DiscussionDocumentEditor");
-forbidText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "BlockNotesEditor");
+requireText("solid/components/MeetingMinutes.jsx", meetingMinutes, 'lazy(() => import("~/components/DocsEditor"))');
+requireText("solid/components/MeetingMinutes.jsx", meetingMinutes, "<IdleMount timeout={1200}>");
+const meetingMinutesUses = discussion.match(/<MeetingMinutes\b/g)?.length || 0;
+if (meetingMinutesUses !== 2) {
+  failures.push("src/components/DiscussionWidget.jsx must use MeetingMinutes once in Home and once in Meeting Mode");
+}
+forbidText("src/components/DiscussionWidget.jsx", discussion, "MeetingNotesEditor");
 requireText("package.json", packageJson, '"check:input-editor": "node scripts/check-input-editor.mjs"');
 
 /* Linux gets the complete visual tier, with only browser-exposed scheduling
