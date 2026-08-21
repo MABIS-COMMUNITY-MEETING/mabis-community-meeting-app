@@ -141,7 +141,7 @@
           const snapshot = window.__mabisPrePaintTheme;
           if (!snapshot) return;
 
-          const owned = new Set(["pride-active", "theme-is-dark"]);
+          const owned = new Set(["pride-active", "theme-is-dark", "mabis-unrestricted-document-colors"]);
           for (const name of snapshot.bodyClasses) {
             if (owned.has(name)) document.body.classList.add(name);
           }
