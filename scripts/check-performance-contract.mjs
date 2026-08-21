@@ -127,6 +127,7 @@ const spatialNavigation = read("solid/lib/input-navigation.js");
 const docsEditorSolid = read("solid/components/DocsEditor.jsx");
 const quillSetup = read("solid/lib/quill-setup.js");
 const meetingNotesEditor = read("solid/components/MeetingNotesEditor.jsx");
+const discussionDocumentEditor = read("solid/components/discussion/DiscussionDocumentEditor.jsx");
 const platformProfile = read("src/lib/platform-profile.js");
 const performanceTier = read("src/lib/performance-tier.js");
 /*
@@ -153,7 +154,8 @@ requireText("src/pages/Home.jsx", home, "<IdleMount timeout={1800}>");
 
 requireText("src/pages/Home.jsx", home, ['const discussionModule = import("@/components/DiscussionWidget")', 'lazy(() => import("~/components/DiscussionWidget"))']);
 requireText("src/pages/Home.jsx", home, ["const DiscussionWidget = lazy(() => discussionModule)", 'const DiscussionWidget = lazy(() => import("~/components/DiscussionWidget"))']);
-requireText("src/components/DiscussionWidget.jsx", discussion, ['lazy(() => import("@/components/DocsEditor"))', 'lazy(() => import("~/components/DocsEditor"))']);
+requireText("src/components/DiscussionWidget.jsx", discussion, "DiscussionDocumentEditor");
+requireText("solid/components/discussion/DiscussionDocumentEditor.jsx", discussionDocumentEditor, 'lazy(() => import("~/components/DocsEditor"))');
 requireText("src/components/DiscussionWidget.jsx", discussion, ['queryKey: ["topics", viewedWeek]', 'queryKey: ["topics", viewedWeek()]']);
 requireText("src/components/DiscussionWidget.jsx", discussion, ['{ week_label: viewedWeek }', '{ week_label: viewedWeek() }']);
 forbidText("src/pages/Home.jsx", home, '<LazySection minHeight={560}>\n            <Suspense fallback={<WidgetFallback minHeight={560} />}>\n              <DiscussionWidget');
@@ -371,7 +373,8 @@ requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "props.stickyTop
 requireText("src/index.css", css, ".docs-toolbar {\n  position: sticky;");
 requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "readableInkForHex(hex)");
 requireText("solid/lib/quill-setup.js", quillSetup, "ql-user-paint");
-requireText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "<DocsEditor");
+requireText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "<DiscussionDocumentEditor");
+requireText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "One continuous document, matching the Discussion editor.");
 forbidText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "BlockNotesEditor");
 requireText("package.json", packageJson, '"check:input-editor": "node scripts/check-input-editor.mjs"');
 
