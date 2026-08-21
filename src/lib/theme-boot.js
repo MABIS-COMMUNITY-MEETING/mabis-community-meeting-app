@@ -104,6 +104,13 @@ export function applyThemeSnapshot() {
   const body = document.body;
   if (body) {
     const wanted = new Set(snapshot.bodyClasses || []);
+    try {
+      if (storedTheme === "default"
+        && !localStorage.getItem("mabis-custom-colors")
+        && !localStorage.getItem("mabis-material-seed")) {
+        wanted.add("mabis-unrestricted-document-colors");
+      }
+    } catch { /* storage already succeeded above; keep the snapshot classes */ }
     for (const name of OWNED_BODY_CLASSES) body.classList.toggle(name, wanted.has(name));
     if (snapshot.themeClass) {
       body.classList.add(snapshot.themeClass);
