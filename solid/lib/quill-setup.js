@@ -92,11 +92,57 @@ export const EDITOR_MODULES = {
   clipboard: { matchVisual: false },
 };
 
+export const Delta = Quill.import("delta");
+
 export const EMPTY_FORMATS = {
   bold: false, italic: false, underline: false, strike: false,
   blockquote: false, codeBlock: false, script: false, header: false,
   align: false, list: false, color: false, background: false,
 };
+
+/** Remove only foreign colour/highlight paint while preserving structure,
+ * emphasis, lists and links from Word, Google Docs and web pages. */
+export function sanitizePastedHtml(html) {
+  if (!html || typeof document === "undefined") return html || "";
+  const template = document.createElement("template");
+  template.innerHTML = html;
+
+  for (const element of template.content.querySelectorAll("*")) {
+    element.removeAttribute("bgcolor");
+    element.removeAttribute("color");
+    element.style?.removeProperty("color");
+    element.style?.removeProperty("background");
+    element.style?.removeProperty("background-color");
+    element.style?.removeProperty("text-shadow");
+  }
+
+  // <mark> paints yellow even with no style attribute. Unwrap it so external
+  // highlighting cannot silently become part of the document.
+  for (const mark of template.content.querySelectorAll("mark")) {
+    mark.replaceWith(...mark.childNodes);
+  }
+  return template.innerHTML;
+}
+
+function channel(hex, offset) {
+  const value = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+}
+
+/** Pick the stronger black/white foreground for an unrestricted highlight. */
+export function readableInkForHex(value) {
+  const raw = String(value || "").trim();
+  const expanded = /^#[0-9a-f]{3}$/i.test(raw)
+    ? `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`
+    : raw;
+  if (!/^#[0-9a-f]{6}$/i.test(expanded)) return "#000000";
+  const luminance = 0.2126 * channel(expanded, 1)
+    + 0.7152 * channel(expanded, 3)
+    + 0.0722 * channel(expanded, 5);
+  const blackContrast = (luminance + 0.05) / 0.05;
+  const whiteContrast = 1.05 / (luminance + 0.05);
+  return blackContrast >= whiteContrast ? "#000000" : "#ffffff";
+}
 
 /**
  * Resolve a theme token to a concrete colour at the moment it is applied.
