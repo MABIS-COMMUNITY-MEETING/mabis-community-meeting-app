@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "~/lib/AuthContext";
 import { useHomeLayout } from "~/lib/prefs";
 import { usePresenceHeartbeat } from "~/lib/usePresence";
+import { createJobWheelSession } from "~/lib/job-wheel-session";
 import ThemeSwitcher from "~/components/ThemeSwitcher";
 import IdleMount from "~/components/IdleMount";
 
@@ -143,6 +144,7 @@ const WIDGETS = {
 
 export default function Home() {
   const auth = useAuth();
+  const wheelSession = createJobWheelSession();
   // "simple" by default; "boss" is the art-directed editorial front page,
   // opt-in from Settings. See src/lib/layout-preference.js.
   const layout = useHomeLayout();
@@ -354,6 +356,7 @@ export default function Home() {
                   canChangeRoles={isAdmin()}
                   canStart={isAdmin()}
                   onStartMeeting={() => window.dispatchEvent(new CustomEvent("startMeetingMode"))}
+                  wheelSession={wheelSession}
                 />
               );
             })()}
