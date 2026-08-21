@@ -248,47 +248,15 @@ html.home-layout-boss .editorial-home .birthday-notice__close:hover {
   }
 }
 
-/* VOICE YOUR WORDS: the size follows actual viewport progress.
-   View timelines provide the smooth compositor path. The component updates
-   --voice-words-progress with IntersectionObserver on engines without them,
-   so Firefox and older browsers keep the same grow-on-scroll interaction. */
-html.home-layout-boss .voice-words-ritual {
-  --voice-words-progress: 0;
-}
-
-html.home-layout-boss .voice-words-ritual__line {
-  opacity: calc(0.18 + (var(--voice-words-progress) * 0.82));
-  transform: translateZ(0) scale(calc(0.82 + (var(--voice-words-progress) * 0.36)));
-  transform-origin: center;
-  will-change: transform, opacity;
-}
-
-@keyframes voice-words-scroll {
-  0% { opacity: 0; transform: translateZ(0) scale(0.82); }
-  45% { opacity: 1; transform: translateZ(0) scale(1.18); }
-  100% { opacity: 0.18; transform: translateZ(0) scale(0.9); }
-}
-
-@supports (animation-timeline: view()) {
-  html.home-layout-boss .voice-words-ritual {
-    --voice-words-progress: 1;
-  }
-
-  html.home-layout-boss .voice-words-ritual__line {
-    animation-name: voice-words-scroll;
-    animation-duration: 1ms;
-    animation-timing-function: linear;
-    animation-fill-mode: both;
-    animation-timeline: view(block);
-    animation-range: entry 0% exit 100%;
-  }
-}
+/* VOICE YOUR WORDS is driven by the shared fixed-timestep physics scheduler.
+   The component owns its inline transform and opacity so partial or falsely
+   reported scroll-timeline support can never leave the line static. */
 
 @media (prefers-reduced-motion: reduce) {
   html.home-layout-boss .voice-words-ritual__line {
     animation: none !important;
-    opacity: 0.82;
-    transform: none;
+    opacity: 0.82 !important;
+    transform: none !important;
     will-change: auto;
   }
 
