@@ -91,6 +91,7 @@ export default function DiscussionWidget(props) {
   const [meetingPaused, setMeetingPaused] = createSignal(false);
   const [meetingNotesReady, setMeetingNotesReady] = createSignal(false);
   const [meetingJobsReady, setMeetingJobsReady] = createSignal(false);
+  const [normalContentReady, setNormalContentReady] = createSignal(true);
   const meetingMode = () => props.meetingSession?.isActive?.() ?? localMeetingMode();
   const [weekOffset, setWeekOffset] = createSignal(0);
   const [fullscreen, setFullscreen] = createSignal(false);
@@ -155,11 +156,20 @@ export default function DiscussionWidget(props) {
   // jobs surface in separate browser-idle slices. Previously all three were
   // created in one click task, which could hold the main thread long enough to
   // look like a random freeze on Linux and lower-clocked devices.
+  let hasEnteredMeeting = meetingMode();
   createEffect(on(meetingMode, (inMeeting) => {
     setMeetingNotesReady(false);
     setMeetingJobsReady(false);
-    if (!inMeeting) return;
 
+    if (!inMeeting) {
+      if (!hasEnteredMeeting) return;
+      const cancelNormal = whenIdle(() => setNormalContentReady(true), 900);
+      onCleanup(cancelNormal);
+      return;
+    }
+
+    hasEnteredMeeting = true;
+    setNormalContentReady(false);
     let cancelled = false;
     let secondFrame = 0;
     let cancelJobs = () => {};
@@ -548,6 +558,7 @@ export default function DiscussionWidget(props) {
       </Portal>
     }>
       {/* ── NORMAL MODE ────────────────────────────────────────────────────── */}
+      <Show when={normalContentReady()} fallback={<PendingWidget name="Discussion" height={560} />}>
       <div class={fullscreen() ? "fixed inset-0 z-50 bg-card overflow-y-auto" : "mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden"}>
         <div class="mabis-widget-header bg-primary px-4 py-4 flex flex-col items-stretch gap-3 sticky top-0 z-10 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex items-center gap-3">
@@ -650,6 +661,7 @@ export default function DiscussionWidget(props) {
           </div>
         </div>
       </div>
+      </Show>
     </Show>
   );
 }
