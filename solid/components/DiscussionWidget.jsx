@@ -23,7 +23,6 @@ import {
 } from "~/lib/weeks";
 
 const MeetingMinutes = lazy(() => import("~/components/MeetingMinutes"));
-const MeetingNotesEditor = lazy(() => import("~/components/MeetingNotesEditor"));
 const JobsWidget = lazy(() => import("~/components/JobsWidget"));
 
 /*
@@ -536,10 +535,10 @@ export default function DiscussionWidget(props) {
               <Show when={meetingNotesReady()} fallback={<PendingWidget name="Meeting notes" height={260} />}>
                 <ErrorBoundary fallback={(error, reset) => <MeetingSectionFailure name="Meeting notes" onRetry={reset} />}>
                   <Suspense fallback={<PendingWidget name="Meeting notes" height={260} />}>
-                    <MeetingNotesEditor
+                    <MeetingMinutes
                       weekLabel={viewedWeek()}
-                      topics={topicsQuery.data || []}
-                      loading={topicsQuery.isLoading}
+                      weekTitle={`Minutes — ${formatWeekFull(viewedWeek())}`}
+                      canEdit={isCurrentWeek()}
                     />
                   </Suspense>
                 </ErrorBoundary>
