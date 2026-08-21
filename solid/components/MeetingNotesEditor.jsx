@@ -1,10 +1,10 @@
 import { createSignal, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { useQuery, useQueryClient } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
-import DiscussionDocumentEditor from "~/components/discussion/DiscussionDocumentEditor";
+import MeetingDocumentEditor from "~/components/MeetingDocumentEditor";
 
 /*
- * Autosaving meeting notes in the shared flowing-document editor.
+ * Autosaving meeting notes in the lightweight flowing meeting editor.
  *
  * The record id lives in a plain variable, not a signal: it is written during a
  * create→update transition and must never re-trigger a render, because that
@@ -129,10 +129,9 @@ export default function MeetingNotesEditor(props) {
       when={!topicsQuery.isLoading}
       fallback={<div class="border border-border bg-card px-4 py-6 text-sm text-muted-foreground">Loading notes…</div>}
     >
-      {/* This is deliberately the exact document surface used by Discussion
-          topic creation/editing. There is one flowing editor—never note cards,
-          blocks, grids or columns. `keyed` keeps each week isolated because
-          Quill seeds initialHtml only on mount. */}
+      {/* One flowing document—never note cards, blocks, grids or columns.
+          Meeting Mode uses the native meeting editor so opening notes never
+          imports or initialises the much heavier Discussion/Quill engine. */}
       <div class="rounded-lg border border-border bg-background p-3.5 shadow-lg sm:p-5">
         <div class="min-w-0 space-y-4">
           <div>
@@ -141,8 +140,7 @@ export default function MeetingNotesEditor(props) {
           </div>
           <Show when={props.weekLabel} keyed>
             {() => (
-              <DiscussionDocumentEditor
-                fallbackHeight="360px"
+              <MeetingDocumentEditor
                 title="Meeting Notes / ミーティングノート"
                 initialHtml={notesRecord()?.description || ""}
                 onChange={handleChange}
