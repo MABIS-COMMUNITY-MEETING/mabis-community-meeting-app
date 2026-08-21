@@ -12,7 +12,7 @@ The custom cursor's core dot must follow browser `clientX`/`clientY` in CSS pixe
 
 Preserve the Home editorial normalization in `src/styles/editorial-home.css`: neutral ruled content planes, restrained radii, no widget elevation, and edge-to-edge mobile modules.
 
-Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.
+Rich-text editors and rendered rich text pair semantic card/ink tokens. Catalogue, saved custom, and Material themes expose only contrast-safe live theme roles; only the plain built-in MABIS palette may expose unrestricted author colors, custom highlights choose a readable foreground, and marked MABIS colors fall back to semantic ink under every other theme.
 
 Keep Home easy to navigate: the default layout stacks the widgets as the original MABIS interface did, and the Boss style adds numbered editorial sections with a plain-language page guide; usability aids must clarify whichever layout is in use rather than bolt a generic dashboard onto either one.
 - Japanese companion text is opt-in, shown alongside—not instead of—the English interface, stored per user, and marked with `lang="ja"` so Maple Mono CJK fallback applies; the default remains off.
@@ -23,6 +23,10 @@ Keep Home easy to navigate: the default layout stacks the widgets as the origina
 - After account preference sync finishes, an authenticated person with no explicit `mabis-home-layout` value must be prompted to choose Summer or Boss before using Home; choosing writes the standard layout preference, and a saved choice must not prompt again.
 - Saved theme snapshots—including Material You and custom colors—are replayed in the entry HTML before critical first-paint CSS; the loading surface uses the replayed semantic background, foreground, and primary tokens, then the app reconciles from the authoritative theme module after paint.
 - The full-screen loading state holds a shared, reference-counted document scroll lock and never leaves it behind; on capable connections, all ten numbered Home section modules settle before the loader exits, while heavy nested editors and below-fold data remain deferred.
+- The loading surface consumes the pre-painted live `--background`, `--foreground`, `--primary`, and `--secondary` theme tokens; it must never fall back to fixed ink/bone colors after a custom or Material theme has been restored.
+- Arrow keys provide global spatial focus navigation outside text editors. The hidden Gamepad API path maps standard PS5, Xbox, and Nintendo controllers plus raw GameCube USB adapters to the same directions, primary activation, and back behavior.
+- Document toolbars stay sticky; external paste keeps structure and links but drops foreign color/highlight paint; links preserve their selection and can open; and meeting mode uses the normal document editor rather than the retired block editor.
+- Linux uses a quality-first platform profile: keep animations, glass, grain, and cursor effects enabled, never enter `performance-lite`, and use only browser-exposed refresh pacing, cooperative scheduling, containment, and compositor hints—not pretend kernel or Vulkan access.
 
 Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.
 
