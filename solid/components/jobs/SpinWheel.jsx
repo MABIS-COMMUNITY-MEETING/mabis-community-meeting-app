@@ -4,6 +4,9 @@ import { displayName } from "@/lib/names";
 import { playWheelTick, playWheelStart, playWheelWin } from "@/lib/wheel_sound";
 import { Button } from "~/components/ui";
 
+const TAU = Math.PI * 2;
+const normalizeRotation = (value) => ((value % TAU) + TAU) % TAU;
+
 /*
  * SpinWheel — Solid port from src/components/JobsWidget.jsx.
  *
@@ -29,6 +32,8 @@ export default function SpinWheel(props) {
   let spinning = false;
   let raf = null;
   let appearanceRaf = null;
+  let spinGeneration = 0;
+  let mounted = false;
 
   const [isSpinning, setIsSpinning] = createSignal(false);
 
@@ -131,6 +136,7 @@ export default function SpinWheel(props) {
   };
 
   onMount(() => {
+    mounted = true;
     refreshAppearance();
     drawWheel(rotation);
 
@@ -149,6 +155,9 @@ export default function SpinWheel(props) {
     window.addEventListener("resize", redraw, { passive: true });
 
     onCleanup(() => {
+      mounted = false;
+      spinGeneration += 1;
+      spinning = false;
       window.removeEventListener("themeChanged", scheduleAppearanceRedraw);
       window.removeEventListener("fontChanged", scheduleAppearanceRedraw);
       window.removeEventListener("resize", redraw);
@@ -172,11 +181,12 @@ export default function SpinWheel(props) {
     const list = members();
     if (spinning || list.length === 0 || props.disabled) return;
     spinning = true;
+    const currentSpinGeneration = ++spinGeneration;
     setIsSpinning(true);
     playWheelStart();
 
     const fullRotations = 5 + Math.random() * 3;
-    const totalRot = Math.PI * 2 * fullRotations;
+    const totalRot = TAU * fullRotations;
     const duration = 5500 + Math.random() * 1500; // 5.5–7s
     const start = performance.now();
     const startRot = rotation;
@@ -186,8 +196,8 @@ export default function SpinWheel(props) {
     const easeOut = (t) => 1 - Math.pow(1 - t, 5);
 
     const segmentAt = (rot) => {
-      let diff = (POINTER_ANGLE - rot) % (2 * Math.PI);
-      while (diff < 0) diff += 2 * Math.PI;
+      let diff = (POINTER_ANGLE - rot) % TAU;
+      while (diff < 0) diff += TAU;
       return Math.floor(diff / arc) % list.length;
     };
 
@@ -195,6 +205,7 @@ export default function SpinWheel(props) {
     let lastSeg = segmentAt(startRot);
 
     const animate = (now) => {
+      if (!mounted || currentSpinGeneration !== spinGeneration) return;
       const p = Math.min((now - start) / duration, 1);
       rotation = startRot + totalRot * easeOut(p);
       drawWheel(rotation);
@@ -206,10 +217,16 @@ export default function SpinWheel(props) {
       if (p < 1) {
         raf = requestAnimationFrame(animate);
       } else {
+        const winnerIndex = segmentAt(rotation);
+        // Keep the angle bounded after every run. Without normalization it
+        // grows forever and eventually loses precision after enough spins.
+        rotation = normalizeRotation(rotation);
+        drawWheel(rotation);
+        raf = null;
         spinning = false;
         setIsSpinning(false);
         playWheelWin();
-        props.onSpinComplete(list[segmentAt(rotation)]);
+        props.onSpinComplete?.(list[winnerIndex]);
       }
     };
     raf = requestAnimationFrame(animate);
