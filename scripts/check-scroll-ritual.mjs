@@ -4,15 +4,17 @@ import fs from "node:fs";
 const component = fs.readFileSync("solid/components/home/ScrollScaleRitual.jsx", "utf8");
 const styles = fs.readFileSync("src/styles/editorial-home.css", "utf8");
 
-assert.match(component, /new IntersectionObserver/, "Voice Your Words needs a scroll-progress fallback outside view-timeline browsers");
-assert.match(component, /SCROLL_SCALE_THRESHOLDS/, "the fallback must track progress densely enough to visibly grow while scrolling");
-assert.match(component, /--voice-words-progress/, "the fallback must hand progress to CSS without writing transforms from JavaScript");
-assert.doesNotMatch(component, /addEventListener\(["']scroll/, "Voice Your Words must not install its own scroll handler");
-assert.match(component, /CSS\?\.supports\?\.\("animation-timeline: view\(\)"\)/, "native view-timeline browsers must stay on the compositor path");
-assert.match(styles, /--voice-words-progress/, "the fallback progress variable must drive the visual treatment");
-assert.match(styles, /scale\(calc\([^)]*--voice-words-progress/, "fallback progress must make Voice Your Words grow");
-assert.match(styles, /animation-timeline:\s*view\(block\)/, "supported browsers must tie the scale animation to scroll progress");
-assert.match(styles, /@keyframes voice-words-scroll/, "the scroll animation keyframes must exist");
+assert.match(component, /getBoundingClientRect\(\)/, "Voice Your Words must measure real viewport progress");
+assert.match(component, /\(viewport - rect\.top\) \/ \(rect\.height \+ viewport\)/, "progress must follow the full start-end viewport travel");
+assert.match(component, /lerp\(0\.82, 1\.28, state\.x\)/, "scrolling down must grow the words through the original scale range");
+assert.match(component, /opacityFor\(state\.x\)/, "the original scroll-linked fade must remain");
+assert.match(component, /integrateSpring\(state, target, omega, zeta, dt\)/, "scroll progress must retain the original spring response");
+assert.match(component, /sample:\s*\(\) =>/, "geometry reads must stay in the scheduler sample phase");
+assert.match(component, /wake\(\)/, "every scroll change must wake a scheduler that has settled");
+assert.match(component, /addEventListener\("scroll", markForMeasure, \{ passive: true \}\)/, "the progress listener must be passive");
+assert.match(component, /MOTION_EVENT/, "the animation must respond when the user changes the motion setting");
+assert.doesNotMatch(component, /CSS\?\.supports|animation-timeline/, "browser support guesses must never bypass the working path again");
+assert.doesNotMatch(styles, /animation-timeline:[\s\S]*voice-words/, "CSS timelines must not compete with measured scroll progress");
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*voice-words-ritual__line/, "reduced-motion users need a stable readable line");
 
 console.log("Voice Your Words animation contract checks passed.");
