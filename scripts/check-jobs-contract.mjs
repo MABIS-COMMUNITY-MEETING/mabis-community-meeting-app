@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   assignmentIsCurrent,
   formatMonthLabel,
@@ -11,6 +12,7 @@ import {
   scheduledDaysFor,
   timeKeeperKeysForYear,
 } from "../src/lib/jobsRotation.js";
+import { TAU, normalizeRotation } from "../solid/lib/wheel-math.js";
 
 const august = new Date(2026, 7, 14, 12);
 assert.equal(getMonthLabel(august), "2026-08");
@@ -39,4 +41,28 @@ assert.equal(assignmentIsCurrent({ job_title: "Time Keeper (1)", month_label: "2
 assert.equal(assignmentIsCurrent({ job_title: "Time Taker (2)", week_label: "2026-W33" }, "2026-W33", "2026-08"), true);
 assert.equal(assignmentIsCurrent({ job_title: "Clean Lounge (1)", week_label: "2026-W32" }, "2026-W33", "2026-08"), false);
 
-console.log("Jobs contract: weekly defaults, configurable periods, monthly Time Keepers, dated tracking, legacy compatibility, and annual exclusion passed.");
+// A completed spin normalizes its angle, so repeated spins never accumulate a
+// huge floating-point value. Exercise far more spins than a real meeting will.
+let rotation = 0;
+for (let i = 0; i < 250_000; i += 1) {
+  rotation = normalizeRotation(rotation + TAU * (5 + (i % 300) / 100));
+  assert.ok(rotation >= 0 && rotation < TAU);
+}
+
+const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const homeSource = source("solid/pages/Home.jsx");
+const discussionSource = source("solid/components/DiscussionWidget.jsx");
+const jobsSource = source("solid/components/JobsWidget.jsx");
+const meetingNotesSource = source("solid/components/MeetingNotesEditor.jsx");
+const announcementSource = source("solid/components/AnnouncementsWidget.jsx");
+
+assert.match(homeSource, /createJobWheelSession\(\)/);
+assert.match(homeSource, /wheelSession=\{wheelSession\}/);
+assert.match(discussionSource, /wheelSession=\{props\.wheelSession\}/);
+assert.match(jobsSource, /props\.wheelSession\?\.winner/);
+assert.match(meetingNotesSource, /DiscussionDocumentEditor/);
+assert.doesNotMatch(meetingNotesSource, /BlockNotesEditor|NoteBlock|grid-cols/);
+assert.match(announcementSource, /memberForAuthor\(announcement\.author_name\)\?\.avatar_url/);
+assert.doesNotMatch(announcementSource, /avatar_url:\s*auth\.user\(\)\?\.avatar_url\s*\|\|\s*author\?\.avatar_url/);
+
+console.log("Jobs and meeting UI contract: scheduling, mirrored Home wheel state, unlimited bounded spins, one flowing notes editor, and announcement avatars passed.");
