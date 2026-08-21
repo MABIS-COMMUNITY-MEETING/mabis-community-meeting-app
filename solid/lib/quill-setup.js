@@ -65,8 +65,16 @@ Quill.register(LineHeightAttr, true);
  */
 const ThemeInkClass = new Parchment.ClassAttributor("themeInk", "ql-ink", { scope: Parchment.Scope.INLINE });
 const ThemeHighlightClass = new Parchment.ClassAttributor("themeHighlight", "ql-hl", { scope: Parchment.Scope.INLINE });
+// Marker for an unrestricted colour deliberately chosen in the plain MABIS
+// palette. It lets the rich-text CSS distinguish author paint from foreign
+// inline colour pasted from another document.
+const UserPaintClass = new Parchment.ClassAttributor("userPaint", "ql-user-paint", {
+  scope: Parchment.Scope.INLINE,
+  whitelist: ["custom"],
+});
 Quill.register(ThemeInkClass, true);
 Quill.register(ThemeHighlightClass, true);
+Quill.register(UserPaintClass, true);
 
 export const SIZE_PRESETS = [8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96];
 export const LINE_HEIGHTS = ["1", "1.15", "1.5", "2"];
