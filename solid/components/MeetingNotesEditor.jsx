@@ -1,8 +1,7 @@
-import { createSignal, createEffect, onCleanup, lazy, Suspense, Show } from "solid-js";
+import { createSignal, createEffect, onCleanup, Show } from "solid-js";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
-
-const DocsEditor = lazy(() => import("~/components/DocsEditor"));
+import DiscussionDocumentEditor from "~/components/discussion/DiscussionDocumentEditor";
 
 /*
  * Autosaving meeting notes in the shared flowing-document editor.
@@ -91,25 +90,34 @@ export default function MeetingNotesEditor(props) {
       when={!topicsQuery.isLoading}
       fallback={<div class="border border-border bg-card px-4 py-6 text-sm text-muted-foreground">Loading notes…</div>}
     >
-      {/* One normal document, not the old block/column editor. `keyed` keeps
-          each week isolated because Quill seeds initialHtml only on mount. */}
-      <Suspense fallback={<div class="min-h-[360px] border border-border bg-card" aria-label="Meeting notes editor loading" />}>
-        <Show when={props.weekLabel} keyed>
-          {() => (
-            <DocsEditor
-              title="Meeting Notes / ミーティングノート"
-              initialHtml={notesRecord()?.description || ""}
-              onChange={handleChange}
-              onSave={flushPending}
-              saving={saveMutation.isPending}
-              saved={savedFlash()}
-              minHeight="360px"
-              stickyTop="0px"
-              placeholder="Write meeting notes like a normal document… / 通常の文書として議事録を書いてください…"
-            />
-          )}
-        </Show>
-      </Suspense>
+      {/* This is deliberately the exact document surface used by Discussion
+          topic creation/editing. There is one flowing editor—never note cards,
+          blocks, grids or columns. `keyed` keeps each week isolated because
+          Quill seeds initialHtml only on mount. */}
+      <div class="rounded-lg border border-border bg-background p-3.5 shadow-lg sm:p-5">
+        <div class="min-w-0 space-y-4">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Editing meeting notes</p>
+            <p class="mt-0.5 text-xs text-muted-foreground">One continuous document, matching the Discussion editor.</p>
+          </div>
+          <Show when={props.weekLabel} keyed>
+            {() => (
+              <DiscussionDocumentEditor
+                fallbackHeight="360px"
+                title="Meeting Notes / ミーティングノート"
+                initialHtml={notesRecord()?.description || ""}
+                onChange={handleChange}
+                onSave={flushPending}
+                saving={saveMutation.isPending}
+                saved={savedFlash()}
+                minHeight="360px"
+                stickyTop="0px"
+                placeholder="Write meeting notes like a normal document… / 通常の文書として議事録を書いてください…"
+              />
+            )}
+          </Show>
+        </div>
+      </div>
     </Show>
   );
 }
