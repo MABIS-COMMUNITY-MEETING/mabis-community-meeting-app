@@ -24,7 +24,7 @@ const SNAPSHOT_KEY = "mabis-theme-snapshot-v1";
 
 /* Classes applyTheme()/applyFont() own on <body>. Anything not in this list is
    left alone, so replaying cannot clobber classes another module set. */
-const OWNED_BODY_CLASSES = ["pride-active", "theme-is-dark"];
+const OWNED_BODY_CLASSES = ["pride-active", "theme-is-dark", "mabis-unrestricted-document-colors"];
 
 /**
  * The stored theme key, without importing the catalogue.
