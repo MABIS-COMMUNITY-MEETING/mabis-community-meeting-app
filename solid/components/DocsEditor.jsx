@@ -237,8 +237,7 @@ export default function DocsEditor(props) {
   const plainMabisTheme = () => {
     try {
       return getStoredThemeKey() === "default"
-        && !localStorage.getItem("mabis-custom-colors")
-        && !localStorage.getItem("mabis-material-seed");
+        && document.body.classList.contains("mabis-unrestricted-document-colors");
     } catch {
       return true;
     }
