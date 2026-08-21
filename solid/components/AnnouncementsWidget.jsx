@@ -119,7 +119,7 @@ export default function AnnouncementsWidget(props) {
     const signedInUser = auth.user();
     const isSignedInAuthor = !!signedInUser && (
       (author?.email && signedInUser.email && normalizedName(author.email) === normalizedName(signedInUser.email))
-      || normalizedName(displayName(signedInUser)) === normalizedName(authorName())
+      || normalizedName(signedInUser.name || signedInUser.full_name) === normalizedName(authorName())
     );
     add.mutate({
       title: title().trim(),
