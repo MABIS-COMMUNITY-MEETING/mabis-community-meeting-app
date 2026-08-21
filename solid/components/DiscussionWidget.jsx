@@ -539,6 +539,7 @@ export default function DiscussionWidget(props) {
                       weekLabel={viewedWeek()}
                       weekTitle={`Minutes — ${formatWeekFull(viewedWeek())}`}
                       canEdit={isCurrentWeek()}
+                      stickyTop="0px"
                     />
                   </Suspense>
                 </ErrorBoundary>
