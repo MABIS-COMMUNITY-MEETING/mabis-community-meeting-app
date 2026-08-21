@@ -376,6 +376,8 @@ requireText("solid/components/DocsEditor.jsx", docsEditorSolid, 'toggleList("bul
 requireText("solid/lib/quill-setup.js", quillSetup, "ql-user-paint");
 requireText("solid/components/MeetingMinutes.jsx", meetingMinutes, 'lazy(() => import("~/components/DocsEditor"))');
 requireText("solid/components/MeetingMinutes.jsx", meetingMinutes, "<IdleMount timeout={1200}>");
+requireText("solid/components/MeetingMinutes.jsx", meetingMinutes, "stickyTop={props.stickyTop}");
+requireText("src/components/DiscussionWidget.jsx", discussion, 'stickyTop="0px"');
 const meetingMinutesUses = discussion.match(/<MeetingMinutes\b/g)?.length || 0;
 if (meetingMinutesUses !== 2) {
   failures.push("src/components/DiscussionWidget.jsx must use MeetingMinutes once in Home and once in Meeting Mode");
