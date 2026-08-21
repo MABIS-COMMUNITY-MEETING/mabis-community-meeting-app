@@ -127,7 +127,7 @@ export default function LoadingScreen() {
 
   return (
     <div
-      class="loading-screen fixed inset-0 z-[200] overflow-hidden overscroll-none touch-none bg-ink text-bone"
+      class="loading-screen fixed inset-0 z-[200] overflow-hidden overscroll-none touch-none bg-background text-foreground"
       style={{ "--loading-font": loadingFont }}
       aria-busy="true"
     >
@@ -137,13 +137,13 @@ export default function LoadingScreen() {
       </div>
       <div class="loading-frame pointer-events-none corner-bracket" aria-hidden />
 
-      <div class="loading-meta tech-label text-bone/50" aria-hidden>
+      <div class="loading-meta tech-label text-foreground/50" aria-hidden>
         <span>INITIALISING</span>
         <span>MABIS 2026</span>
       </div>
 
       <div class="loading-center relative z-10 flex flex-col items-center justify-center">
-        <span class="loading-wordmark font-display font-normal tracking-ultra text-bone/8 leading-none select-none" aria-hidden>
+        <span class="loading-wordmark font-display font-normal tracking-ultra text-foreground/8 leading-none select-none" aria-hidden>
           COMMUNITY
         </span>
 
@@ -159,7 +159,7 @@ export default function LoadingScreen() {
         </div>
 
         <div
-          class="loading-progress-track relative mt-6 h-px overflow-hidden bg-bone/15"
+          class="loading-progress-track relative mt-6 h-px overflow-hidden bg-foreground/15"
           role="progressbar"
           aria-label="Loading application"
           aria-valuemin={0}
@@ -174,20 +174,20 @@ export default function LoadingScreen() {
         </div>
 
         <div
-          class="loading-status mt-5 flex items-center gap-3 tech-label text-bone/45"
+          class="loading-status mt-5 flex items-center gap-3 tech-label text-foreground/45"
           role="status"
           aria-live="polite"
           aria-atomic="true"
         >
-          <span class="loading-spinner inline-block h-2.5 w-2.5 shrink-0 border border-bone/40 border-t-primary" aria-hidden />
+          <span class="loading-spinner inline-block h-2.5 w-2.5 shrink-0 border border-foreground/40 border-t-primary" aria-hidden />
           <span class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-            <span class="text-bone/70">CACHING STUFF</span>
+            <span class="text-foreground/70">CACHING STUFF</span>
             <span class="min-w-0 tabular-nums">{loading().detail}</span>
           </span>
         </div>
       </div>
 
-      <div class="loading-footer tech-label text-bone/40">
+      <div class="loading-footer tech-label text-foreground/40">
         <img src={LOGO} alt="" decoding="async" fetchpriority="low" class="inline-block h-5 w-5 object-contain opacity-70" />
         <JapaneseText ja="セカンダリー・コミュニティ・ミーティング" japaneseClass="ml-1.5 inline normal-case tracking-normal text-[0.85em]" layout="inline">SECONDARY COMMUNITY MEETING</JapaneseText>
       </div>
