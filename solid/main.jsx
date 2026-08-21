@@ -28,6 +28,7 @@ import { applyJapaneseTextPreference } from "@/lib/japanese-text-preference";
 import { applySectionDescriptionsPreference } from "@/lib/section-descriptions-preference";
 import { applyHomeLayoutPreference, syncHomeLayoutCache } from "@/lib/layout-preference";
 import { preloadRoute } from "~/lib/routes";
+import { applyPlatformProfile } from "@/lib/platform-profile";
 
 /*
  * Same visual result as src/main.jsx, reached with less work before first paint.
@@ -74,6 +75,7 @@ async function bootstrap() {
     preloadRoute("/home");
   }
 
+  applyPlatformProfile();
   applyAnimationPreference();
   applyJapaneseTextPreference();
   applySectionDescriptionsPreference();
