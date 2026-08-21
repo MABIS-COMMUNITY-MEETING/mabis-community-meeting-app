@@ -6,8 +6,8 @@ const homeSource = fs.readFileSync("solid/pages/Home.jsx", "utf8");
 const lazySource = fs.readFileSync("solid/components/home/LazySection.jsx", "utf8");
 const meetingCardSource = fs.readFileSync("solid/components/MeetingModeWidget.jsx", "utf8");
 const discussionSource = fs.readFileSync("solid/components/DiscussionWidget.jsx", "utf8");
-const notesSource = fs.readFileSync("solid/components/MeetingNotesEditor.jsx", "utf8");
-const meetingEditorSource = fs.readFileSync("solid/components/MeetingDocumentEditor.jsx", "utf8");
+const minutesSource = fs.readFileSync("solid/components/MeetingMinutes.jsx", "utf8");
+const docsEditorSource = fs.readFileSync("solid/components/DocsEditor.jsx", "utf8");
 const { createRoot } = await import("solid-js");
 const { createMeetingModeSession } = await import("../solid/lib/meeting-mode-session.js");
 
@@ -34,15 +34,17 @@ assert.match(discussionSource, /setMeetingNotesReady\(true\)/, "the notes editor
 assert.match(discussionSource, /whenIdle\(\(\) => setNormalContentReady\(true\)/, "pause/end must not remount the normal editor and jobs table in the same click");
 assert.match(discussionSource, /lockBodyScroll\(\)/, "Meeting Mode must own a balanced document scroll lock");
 assert.match(discussionSource, /<ErrorBoundary/, "meeting sections must not be able to crash the whole overlay");
-assert.match(notesSource, /saveQueue = operation\.catch/, "note writes must be serialized");
-assert.match(notesSource, /MeetingDocumentEditor/, "Meeting Mode must use its lightweight flowing document editor");
-assert.doesNotMatch(notesSource, /useQuery\(/, "meeting notes must reuse DiscussionWidget data instead of starting another document query");
-assert.match(discussionSource, /topics=\{topicsQuery\.data \|\| \[\]\}/, "DiscussionWidget must pass its resolved week data into meeting notes");
-assert.doesNotMatch(notesSource, /^import .*?(?:DiscussionDocumentEditor|DocsEditor|Quill)/m, "Meeting Mode must never load the heavy Discussion document engine");
-assert.doesNotMatch(meetingEditorSource, /^import .*?(?:quill|DocsEditor|DiscussionDocumentEditor)/m, "the meeting editor must stay independent from Quill");
-assert.match(meetingEditorSource, /contentEditable/, "meeting notes must remain one normal editable document");
-assert.match(meetingEditorSource, /insertUnorderedList/, "the lightweight toolbar must retain bullet lists");
-assert.match(meetingEditorSource, /createLink/, "the lightweight toolbar must retain working links");
-assert.doesNotMatch(notesSource, /saveMutation\.mutate\(html\)/, "cleanup must not launch a disposed query mutation");
+assert.equal(
+  (discussionSource.match(/<MeetingMinutes\b/g) || []).length,
+  2,
+  "Home and Meeting Mode must render the same MeetingMinutes component",
+);
+assert.doesNotMatch(discussionSource, /MeetingNotesEditor/, "Meeting Mode must not drift into a separate document implementation");
+assert.match(minutesSource, /lazy\(\(\) => import\("~\/components\/DocsEditor"\)\)/, "shared minutes must use Home's real DocsEditor");
+assert.match(minutesSource, /<IdleMount timeout=\{1200\}>/, "the shared Home editor must remain deferred so Meeting Mode stays responsive");
+assert.match(minutesSource, /queryKey: \["topics", props\.weekLabel\]/, "the shared document must reuse the same cached week query");
+assert.match(minutesSource, /const createdIds = new Map\(\)/, "quick saves must not create duplicate minutes records");
+assert.match(docsEditorSource, /toggleList\("bullet"\)/, "bullet controls must apply Quill's bullet format, not ordered numbering");
+assert.match(docsEditorSource, /toggleList\("ordered"\)/, "numbered lists must remain a separate explicit control");
 
 console.log("Meeting Mode lifecycle contract checks passed.");
