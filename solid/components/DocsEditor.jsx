@@ -218,8 +218,10 @@ export default function DocsEditor(props) {
   let copiedFormats = null;
   let searchFrom = 0;
   let lastSelection = { index: 0, length: 0 };
+  let imageDragDepth = 0;
 
   const [uploading, setUploading] = createSignal(false);
+  const [imageDragActive, setImageDragActive] = createSignal(false);
   /* Reflects what the caret is sitting in: "UI font" normally, or the family
      a legacy document pinned before the picker was removed. */
   const [fontLabel, setFontLabel] = createSignal("UI font");
@@ -556,22 +558,123 @@ export default function DocsEditor(props) {
     try { await navigator.clipboard.writeText(quill.getText()); } catch { /* denied */ }
   };
 
-  const handleImage = async (event) => {
-    const file = event.currentTarget.files?.[0];
-    if (!file || !quill) return;
+  const isImageFile = (file) => Boolean(
+    file && (
+      file.type?.startsWith("image/")
+      || /\.(?:avif|bmp|gif|heic|heif|jpe?g|png|svg|webp)$/i.test(file.name || "")
+    )
+  );
+
+  const readImageAsDataUrl = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => typeof reader.result === "string"
+      ? resolve(reader.result)
+      : reject(new Error("Image could not be read"));
+    reader.onerror = () => reject(reader.error || new Error("Image could not be read"));
+    reader.onabort = () => reject(new Error("Image reading was cancelled"));
+    reader.readAsDataURL(file);
+  });
+
+  const insertImageFiles = async (files, requestedIndex) => {
+    const imageFiles = Array.from(files || []).filter(isImageFile);
+    if (!quill || imageFiles.length === 0) return;
+
+    const documentEnd = Math.max(0, quill.getLength() - 1);
+    let caret = Number.isInteger(requestedIndex)
+      ? Math.max(0, Math.min(requestedIndex, documentEnd))
+      : (quill.getSelection(true)?.index ?? lastSelection.index ?? documentEnd);
+
     setUploading(true);
     try {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const selection = quill.getSelection(true);
-        quill.insertEmbed(selection ? selection.index : quill.getLength(), "image", reader.result, "user");
-        setUploading(false);
-      };
-      reader.readAsDataURL(file);
+      for (const file of imageFiles) {
+        const source = await readImageAsDataUrl(file);
+        if (!quill) break;
+        quill.insertEmbed(caret, "image", source, "user");
+        caret += 1;
+        quill.insertText(caret, "\n", "user");
+        caret += 1;
+      }
+      if (quill) {
+        quill.setSelection(caret, 0, "silent");
+        lastSelection = { index: caret, length: 0 };
+        syncFormats();
+      }
     } catch {
+      // A failed or unreadable image leaves the document and its saved HTML intact.
+    } finally {
       setUploading(false);
     }
+  };
+
+  const handleImage = async (event) => {
+    const files = Array.from(event.currentTarget.files || []);
+    const insertionIndex = quill?.getSelection(true)?.index ?? lastSelection.index;
     event.currentTarget.value = "";
+    await insertImageFiles(files, insertionIndex);
+  };
+
+  const transferHasImage = (dataTransfer) => Array.from(dataTransfer?.items || []).some(
+    (item) => item.kind === "file" && (!item.type || item.type.startsWith("image/")),
+  );
+
+  const dropIndexAtPoint = (clientX, clientY) => {
+    if (!quill) return 0;
+    const ownerDocument = quill.root.ownerDocument;
+    let nativeRange = null;
+
+    if (typeof ownerDocument.caretRangeFromPoint === "function") {
+      nativeRange = ownerDocument.caretRangeFromPoint(clientX, clientY);
+    } else if (typeof ownerDocument.caretPositionFromPoint === "function") {
+      const position = ownerDocument.caretPositionFromPoint(clientX, clientY);
+      if (position) {
+        nativeRange = ownerDocument.createRange();
+        nativeRange.setStart(position.offsetNode, position.offset);
+        nativeRange.collapse(true);
+      }
+    }
+
+    if (nativeRange && quill.root.contains(nativeRange.startContainer)) {
+      const nativeSelection = ownerDocument.defaultView?.getSelection();
+      nativeSelection?.removeAllRanges();
+      nativeSelection?.addRange(nativeRange);
+      const range = quill.getSelection();
+      if (range) return range.index;
+    }
+
+    return quill.getSelection()?.index
+      ?? lastSelection.index
+      ?? Math.max(0, quill.getLength() - 1);
+  };
+
+  const handleImageDragEnter = (event) => {
+    if (!transferHasImage(event.dataTransfer)) return;
+    event.preventDefault();
+    imageDragDepth += 1;
+    setImageDragActive(true);
+  };
+
+  const handleImageDragOver = (event) => {
+    if (!transferHasImage(event.dataTransfer)) return;
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+    setImageDragActive(true);
+  };
+
+  const handleImageDragLeave = () => {
+    imageDragDepth = Math.max(0, imageDragDepth - 1);
+    if (imageDragDepth === 0) setImageDragActive(false);
+  };
+
+  const handleImageDrop = async (event) => {
+    const files = Array.from(event.dataTransfer?.files || []).filter(isImageFile);
+    imageDragDepth = 0;
+    setImageDragActive(false);
+    if (files.length === 0) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const insertionIndex = dropIndexAtPoint(event.clientX, event.clientY);
+    await insertImageFiles(files, insertionIndex);
   };
 
   const f = () => formats();
@@ -729,7 +832,7 @@ export default function DocsEditor(props) {
           </Show>
         </div>
         <ToolButton title="Insert image" disabled={uploading()} onClick={() => imageInputEl?.click()}><ImageIcon class="h-4 w-4" /></ToolButton>
-        <input ref={imageInputEl} type="file" accept="image/*" class="hidden" onChange={handleImage} />
+        <input ref={imageInputEl} type="file" accept="image/*" multiple class="hidden" onChange={handleImage} />
         <ToolButton title="Clear formatting" onClick={clearFormatting}><Eraser class="h-4 w-4" /></ToolButton>
 
         <ToolbarDivider />
@@ -811,15 +914,29 @@ export default function DocsEditor(props) {
       </Show>
 
       <div
-        class="docs-editor-content theme-rich-text rounded-b-lg border border-t-0 border-border"
+        class={`docs-editor-content theme-rich-text relative rounded-b-lg border border-t-0 transition-colors ${imageDragActive() ? "border-primary ring-2 ring-inset ring-primary/30" : "border-border"}`}
         style={{ "min-height": props.minHeight || "180px", zoom: `${zoom()}%` }}
+        onDragEnter={handleImageDragEnter}
+        onDragOver={handleImageDragOver}
+        onDragLeave={handleImageDragLeave}
+        onDrop={handleImageDrop}
       >
         <div ref={editorEl} />
+        <Show when={imageDragActive()}>
+          <div
+            role="status"
+            aria-live="polite"
+            class="pointer-events-none absolute inset-2 z-30 flex items-center justify-center rounded-lg border-2 border-dashed border-primary bg-card/90 px-4 text-center text-sm font-medium text-primary shadow-sm"
+          >
+            Drop image to insert / ここに画像をドロップ
+          </div>
+        </Show>
       </div>
 
       <div class="mt-1.5 flex items-center gap-3 text-[10px] text-muted-foreground">
         <span>{stats().words} words</span>
         <span>{stats().characters} characters</span>
+        <Show when={uploading()}><span>Adding image…</span></Show>
         <Show when={props.saving}><span>Saving…</span></Show>
         <Show when={props.saved && !props.saving}><span>Saved</span></Show>
       </div>
