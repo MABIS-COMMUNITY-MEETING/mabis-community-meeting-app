@@ -108,7 +108,10 @@ export default function MeetingDocumentEditor(props) {
 
     const span = document.createElement("span");
     span.className = className;
-    Object.assign(span.style, style);
+    for (const [property, value] of Object.entries(style)) {
+      if (property.includes("-")) span.style.setProperty(property, value);
+      else span.style[property] = value;
+    }
     try {
       range.surroundContents(span);
     } catch {
@@ -213,7 +216,7 @@ export default function MeetingDocumentEditor(props) {
         ref={editorEl}
         class="meeting-document-surface theme-rich-text rounded-b-lg border border-t-0 border-border bg-card text-card-foreground"
         style={{ "min-height": props.minHeight || "360px" }}
-        contenteditable
+        contentEditable
         role="textbox"
         aria-multiline="true"
         aria-label={props.title || "Meeting notes"}
