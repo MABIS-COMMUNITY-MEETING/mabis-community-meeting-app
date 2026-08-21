@@ -484,8 +484,9 @@ export const THEMES = {
 };
 
 /* The Pride palettes are the app's flagship collection: they are art-directed in
-   OKLCh with their own lighting geometry, light AND dark treatments and cursor
-   materials (see lib/pride.js), and replace the earlier three-variable versions. */
+   OKLCh with their own lighting geometry and light AND dark treatments (see
+   lib/pride.js), and replace the earlier three-variable versions. The cursor is
+   intentionally theme-independent. */
 Object.assign(THEMES, PRIDE_THEMES);
 
 function readableSurfaceTokens(vars) {
