@@ -106,6 +106,7 @@ export default function MeetingModeWidget(props) {
   const [showUnlockPassword, setShowUnlockPassword] = createSignal(false);
   const [showDateConfirm, setShowDateConfirm] = createSignal(false);
   const [pendingDate, setPendingDate] = createSignal(format(new Date(), "yyyy-MM-dd"));
+  const [starting, setStarting] = createSignal(false);
 
   const canStart = () => props.canStart !== false;
   const todayStr = format(new Date(), "yyyy-MM-dd");
@@ -130,6 +131,7 @@ export default function MeetingModeWidget(props) {
     localStorage.removeItem(getMeetingEndedKey());
     setMeetingEnded(false);
     setMeetingStatus(null);
+    props.meetingSession?.clear?.();
     window.dispatchEvent(new CustomEvent("meetingStatus", { detail: { status: null } }));
     window.dispatchEvent(new CustomEvent("meetingUndo"));
   };
@@ -140,7 +142,8 @@ export default function MeetingModeWidget(props) {
   const isLocked = () => !meetingEnded() && !isFridayToday;
 
   const status = () => {
-    const s = meetingStatus();
+    const sessionStatus = props.meetingSession?.status?.();
+    const s = sessionStatus && sessionStatus !== "idle" ? sessionStatus : meetingStatus();
     if (!s || s === "ended") return null;
     if (s === "active") return { label: "Meeting Active", ja: "ミーティング進行中", icon: Circle, bg: "bg-green-500", text: "text-primary-foreground", style: {} };
     return { label: "Meeting Paused", ja: "ミーティング一時停止", icon: Pause, bg: "", text: "", style: { "background-color": "hsl(var(--secondary))", color: "hsl(var(--primary))" } };
@@ -152,19 +155,28 @@ export default function MeetingModeWidget(props) {
     else localStorage.removeItem("mabis_meeting_date");
   };
 
-  const handleStartFromPopup = async () => {
-    handleDateChange(pendingDate());
+  const persistUnlockedMeetingDate = async (date) => {
+    const d = new Date(date);
+    if (isFriday(d)) return;
+    const wl = weekLabelForDate(d);
+    try {
+      const existing = await base44.entities.Attendance.filter({ week_label: wl });
+      if (existing.length > 0) await base44.entities.Attendance.update(existing[0].id, { meeting_date: date });
+      else await base44.entities.Attendance.create({ week_label: wl, meeting_date: date, present_names: [] });
+    } catch { /* Starting the meeting must never depend on this best-effort sync. */ }
+  };
+
+  const handleStartFromPopup = () => {
+    if (starting()) return;
+    setStarting(true);
+    const date = pendingDate();
+    handleDateChange(date);
     setShowDateConfirm(false);
-    const d = new Date(pendingDate());
-    if (!isFriday(d)) {
-      const wl = weekLabelForDate(d);
-      try {
-        const existing = await base44.entities.Attendance.filter({ week_label: wl });
-        if (existing.length > 0) await base44.entities.Attendance.update(existing[0].id, { meeting_date: pendingDate() });
-        else await base44.entities.Attendance.create({ week_label: wl, meeting_date: pendingDate(), present_names: [] });
-      } catch { /* ignore */ }
-    }
+
+    // Open synchronously. The old flow awaited an Attendance round-trip first,
+    // which made Start Meeting look randomly frozen on a slow connection.
     props.onStartMeeting?.();
+    void persistUnlockedMeetingDate(date).finally(() => setStarting(false));
   };
 
   const handleWidgetClick = () => {
@@ -320,9 +332,10 @@ export default function MeetingModeWidget(props) {
                 </button>
                 <button
                   onClick={handleStartFromPopup}
-                  class="flex-1 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm"
+                  disabled={starting()}
+                  class="flex-1 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm disabled:opacity-60"
                 >
-                  Start Meeting
+                  {starting() ? "Starting…" : "Start Meeting"}
                 </button>
               </div>
             </KDialog.Content>
