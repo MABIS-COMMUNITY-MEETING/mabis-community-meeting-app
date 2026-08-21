@@ -248,7 +248,50 @@ html.home-layout-boss .editorial-home .birthday-notice__close:hover {
   }
 }
 
+/* VOICE YOUR WORDS: view-timeline where available, one-shot reveal fallback
+   everywhere else. Both paths animate only opacity and transform. */
+html.home-layout-boss .voice-words-ritual__line {
+  opacity: 0;
+  transform: translateZ(0) scale(0.82);
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+html.home-layout-boss .voice-words-ritual.is-visible .voice-words-ritual__line {
+  animation: voice-words-enter 1.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes voice-words-enter {
+  0% { opacity: 0; transform: translateZ(0) scale(0.82); }
+  68% { opacity: 1; transform: translateZ(0) scale(1.1); }
+  100% { opacity: 0.82; transform: translateZ(0) scale(1); }
+}
+
+@keyframes voice-words-scroll {
+  0% { opacity: 0; transform: translateZ(0) scale(0.82); }
+  45% { opacity: 1; transform: translateZ(0) scale(1.18); }
+  100% { opacity: 0.18; transform: translateZ(0) scale(0.9); }
+}
+
+@supports (animation-timeline: view()) {
+  html.home-layout-boss .voice-words-ritual.is-visible .voice-words-ritual__line {
+    animation-name: voice-words-scroll;
+    animation-duration: 1ms;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: view(block);
+    animation-range: entry 0% exit 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html.home-layout-boss .voice-words-ritual__line {
+    animation: none !important;
+    opacity: 0.82;
+    transform: none;
+    will-change: auto;
+  }
+
   html.home-layout-boss .editorial-home .mabis-widget,
   html.home-layout-boss .editorial-home .mabis-widget *,
   html.home-layout-boss .editorial-home .birthday-notice,
