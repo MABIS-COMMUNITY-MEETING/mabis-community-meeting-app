@@ -221,12 +221,14 @@ requireText("src/App.jsx", app, "installScrollStateClass()");
 requireText("scroll implementation", smoothScroll, 'classList.add("is-scrolling")');
 forbidText("solid/components/chrome.jsx", chrome, "subscribeScrollProgress");
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
-/* Scroll-driven without taking scroll away from the browser. Native CSS view
-   timelines own the smooth path; an IntersectionObserver progress fallback
-   covers engines without them. Never restore the old per-scroll rect reads,
-   spring loop or direct transform writes. */
-forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, 'addEventListener("scroll"');
-forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "lineEl.style.transform");
+/* Voice Your Words deliberately follows scroll again, but the event handler
+   only marks one sample stale and wakes the shared fixed-timestep scheduler.
+   Geometry is read in the scheduler's sample phase and transform/opacity are
+   written together in render, preserving read-before-write frame ordering. */
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, 'addEventListener("scroll", markForMeasure, { passive: true })');
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "sample: () =>");
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "wake();");
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "settled: () => !needsMeasure");
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
 /* A cache-first worker that never skips waiting serves the previous build to
    every open tab until all of them close. That turned into shipped fixes that
