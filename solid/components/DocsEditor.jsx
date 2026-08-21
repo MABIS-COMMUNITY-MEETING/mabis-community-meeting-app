@@ -7,10 +7,11 @@ import {
   Maximize2, Minimize2, Save, Printer, Download,
 } from "lucide-solid";
 import {
-  Quill, FONTS, SIZE_PRESETS, LINE_HEIGHTS, ZOOM_LEVELS,
+  Quill, Delta, FONTS, SIZE_PRESETS, LINE_HEIGHTS, ZOOM_LEVELS,
   THEME_TEXT_COLORS, THEME_HIGHLIGHTS, EDITOR_MODULES, EMPTY_FORMATS,
-  stripHtml, safeFilename,
+  readableInkForHex, sanitizePastedHtml, stripHtml, safeFilename,
 } from "~/lib/quill-setup";
+import { getStoredThemeKey } from "@/lib/theme-boot";
 import { downloadOdt } from "@/lib/odt-export";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import "quill/dist/quill.snow.css";
@@ -122,11 +123,13 @@ function Dropdown(props) {
 function LinkPopover(props) {
   const [url, setUrl] = createSignal("");
   let inputEl;
+  let savedRange = { index: 0, length: 0 };
 
   onMount(() => {
     const quill = props.getQuill();
     if (quill) {
-      const format = quill.getFormat(quill.getSelection() || { index: 0, length: 0 });
+      savedRange = props.getRange?.() || quill.getSelection(true) || savedRange;
+      const format = quill.getFormat(savedRange);
       if (typeof format.link === "string") setUrl(format.link);
     }
     inputEl?.focus();
@@ -138,11 +141,18 @@ function LinkPopover(props) {
     quill.focus();
     const raw = url().trim();
     if (!raw) {
-      quill.format("link", false);
+      if (savedRange.length) quill.formatText(savedRange.index, savedRange.length, "link", false, "user");
+      else quill.format("link", false, "user");
       return props.onClose();
     }
     const normalized = /^(https?|mailto|tel):/i.test(raw) ? raw : `https://${raw}`;
-    quill.format("link", normalized);
+    if (savedRange.length) {
+      quill.formatText(savedRange.index, savedRange.length, "link", normalized, "user");
+      quill.setSelection(savedRange.index, savedRange.length, "silent");
+    } else {
+      quill.insertText(savedRange.index, raw, { link: normalized }, "user");
+      quill.setSelection(savedRange.index + raw.length, 0, "silent");
+    }
     props.onClose();
   };
 
@@ -167,19 +177,34 @@ function LinkPopover(props) {
             e.preventDefault();
             const quill = props.getQuill();
             quill?.focus();
-            quill?.format("link", false);
+            if (savedRange.length) quill?.formatText(savedRange.index, savedRange.length, "link", false, "user");
+            else quill?.format("link", false, "user");
             props.onClose();
           }}
           class="h-8 rounded-md px-3 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           Remove
         </button>
+        <Show when={url().trim()}>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              const raw = url().trim();
+              const normalized = /^(https?|mailto|tel):/i.test(raw) ? raw : `https://${raw}`;
+              window.open(normalized, "_blank", "noopener,noreferrer");
+            }}
+            class="h-8 rounded-md px-3 text-xs text-primary hover:bg-muted"
+          >
+            Open / 開く
+          </button>
+        </Show>
         <button
           type="button"
           onMouseDown={(e) => { e.preventDefault(); applyLink(); }}
           class="h-8 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
         >
-          Apply
+          Apply / 適用
         </button>
       </div>
     </div>
