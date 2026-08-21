@@ -1,5 +1,5 @@
-import { createSignal, createEffect, onCleanup, Show } from "solid-js";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
+import { createSignal, createEffect, onMount, onCleanup, Show } from "solid-js";
+import { useQuery, useQueryClient } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
 import DiscussionDocumentEditor from "~/components/discussion/DiscussionDocumentEditor";
 
@@ -13,10 +13,16 @@ import DiscussionDocumentEditor from "~/components/discussion/DiscussionDocument
 export default function MeetingNotesEditor(props) {
   const queryClient = useQueryClient();
   const [savedFlash, setSavedFlash] = createSignal(false);
+  const [saving, setSaving] = createSignal(false);
+  const [saveError, setSaveError] = createSignal("");
   let saveTimer;
   let flashTimer;
   let recordId = null;
+  let recordWeek = props.weekLabel;
   let pendingHtml = null;
+  let disposed = false;
+  let outstandingSaves = 0;
+  let saveQueue = Promise.resolve();
 
   const topicsQuery = useQuery(() => ({
     queryKey: ["topics", props.weekLabel],
@@ -31,39 +37,63 @@ export default function MeetingNotesEditor(props) {
   );
 
   createEffect(() => {
+    const week = props.weekLabel;
+    if (recordWeek !== week) {
+      recordWeek = week;
+      recordId = null;
+    }
     const record = notesRecord();
-    recordId = record?.id || null;
+    if (record?.id) recordId = record.id;
   });
 
-  const saveMutation = useMutation(() => ({
-    mutationFn: async (html) => {
-      if (recordId) {
-        return base44.entities.DiscussionTopic.update(recordId, { description: html });
-      }
-      const created = await base44.entities.DiscussionTopic.create({
-        title: "__meeting_notes__",
-        submitted_by: "system",
-        week_label: props.weekLabel,
-        is_jobs_topic: true,
-        description: html,
-      });
-      recordId = created.id;
-      return created;
-    },
-    onSuccess: () => {
+  const persistHtml = async (html) => {
+    if (recordId) {
+      return base44.entities.DiscussionTopic.update(recordId, { description: html });
+    }
+    const created = await base44.entities.DiscussionTopic.create({
+      title: "__meeting_notes__",
+      submitted_by: "system",
+      week_label: props.weekLabel,
+      is_jobs_topic: true,
+      description: html,
+    });
+    recordId = created.id;
+    return created;
+  };
+
+  const enqueueSave = (html) => {
+    outstandingSaves += 1;
+    if (!disposed) {
+      setSaving(true);
+      setSaveError("");
+    }
+
+    // A second debounce/pagehide/cleanup flush waits for the first create to
+    // supply recordId, so it becomes an update instead of a duplicate record.
+    const operation = saveQueue.then(() => persistHtml(html));
+    saveQueue = operation.catch(() => {});
+    void operation.then(() => {
+      outstandingSaves -= 1;
+      if (disposed) return;
+      setSaving(outstandingSaves > 0);
       setSavedFlash(true);
       clearTimeout(flashTimer);
       flashTimer = setTimeout(() => setSavedFlash(false), 2200);
       queryClient.invalidateQueries({ queryKey: ["topics"] });
-    },
-  }));
+    }).catch((error) => {
+      outstandingSaves -= 1;
+      if (disposed) return;
+      setSaving(outstandingSaves > 0);
+      setSaveError(error?.message || "Could not save meeting notes. Your text is still on this screen.");
+    });
+  };
 
   const flushPending = () => {
     if (pendingHtml === null) return;
     clearTimeout(saveTimer);
     const html = pendingHtml;
     pendingHtml = null;
-    saveMutation.mutate(html);
+    enqueueSave(html);
   };
 
   const handleChange = (html) => {
@@ -75,14 +105,23 @@ export default function MeetingNotesEditor(props) {
   const flushOnExit = () => {
     if (document.visibilityState === "hidden") flushPending();
   };
-  document.addEventListener("visibilitychange", flushOnExit);
-  window.addEventListener("pagehide", flushPending);
+  onMount(() => {
+    document.addEventListener("visibilitychange", flushOnExit);
+    window.addEventListener("pagehide", flushPending);
 
-  onCleanup(() => {
-    document.removeEventListener("visibilitychange", flushOnExit);
-    window.removeEventListener("pagehide", flushPending);
-    clearTimeout(flashTimer);
-    flushPending();
+    onCleanup(() => {
+      document.removeEventListener("visibilitychange", flushOnExit);
+      window.removeEventListener("pagehide", flushPending);
+      clearTimeout(saveTimer);
+      clearTimeout(flashTimer);
+      const finalHtml = pendingHtml;
+      pendingHtml = null;
+      disposed = true;
+      // Persist the last edit directly through the serialized queue. Calling a
+      // Solid Query mutation after its owner was disposed was the old
+      // pause/end race and could leave Meeting Mode stuck.
+      if (finalHtml !== null) enqueueSave(finalHtml);
+    });
   });
 
   return (
@@ -108,13 +147,16 @@ export default function MeetingNotesEditor(props) {
                 initialHtml={notesRecord()?.description || ""}
                 onChange={handleChange}
                 onSave={flushPending}
-                saving={saveMutation.isPending}
+                saving={saving()}
                 saved={savedFlash()}
                 minHeight="360px"
                 stickyTop="0px"
                 placeholder="Write meeting notes like a normal document… / 通常の文書として議事録を書いてください…"
               />
             )}
+          </Show>
+          <Show when={saveError()}>
+            <p class="text-xs text-destructive" role="alert">{saveError()}</p>
           </Show>
         </div>
       </div>
