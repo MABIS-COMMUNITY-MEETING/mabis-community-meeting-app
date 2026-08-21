@@ -73,10 +73,18 @@ export default function JobsWidget(props) {
   const auth = useAuth();
   const queryClient = useQueryClient();
 
-  const [selectedJobId, setSelectedJobId] = createSignal(JOBS[0].id);
+  // Home and Meeting Mode receive the same session from Home, so their
+  // wheels mirror the chosen job, winner, and temporary removals. Standalone
+  // mounts still get a private session for tests and any future reuse.
+  const localWheelSession = {
+    selectedJobId: createSignal(JOBS[0].id),
+    winner: createSignal(null),
+    removedIds: createSignal([]),
+  };
+  const [selectedJobId, setSelectedJobId] = props.wheelSession?.selectedJobId || localWheelSession.selectedJobId;
+  const [winner, setWinner] = props.wheelSession?.winner || localWheelSession.winner;
+  const [removedIds, setRemovedIds] = props.wheelSession?.removedIds || localWheelSession.removedIds;
   const [fullscreen, setFullscreen] = createSignal(false);
-  const [winner, setWinner] = createSignal(null);
-  const [removedIds, setRemovedIds] = createSignal([]);
   const [showStudentMgr, setShowStudentMgr] = createSignal(false);
   const [showAddJob, setShowAddJob] = createSignal(false);
   const [newJob, setNewJob] = createStore({ title: "", period: "weekly", schedule: "every_weekday" });
