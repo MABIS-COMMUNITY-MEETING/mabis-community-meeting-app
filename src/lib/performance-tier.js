@@ -1,5 +1,6 @@
 import { refreshIntervalMs, resetFrameChain, sampleFrame } from "@/lib/physics/refresh-rate";
 import { isSoftwareRendered } from "@/lib/software-rendering";
+import { isLinuxPlatform } from "@/lib/platform-profile";
 
 export const PERFORMANCE_TIER_EVENT = "mabis-performance-tier";
 
@@ -21,6 +22,10 @@ export function isConstrainedNetwork() {
 
 export function detectLowPowerDevice() {
   if (typeof navigator === "undefined") return false;
+  // Linux uses the quality-first profile requested for this app. Network
+  // constraint handling remains independent through isConstrainedNetwork(),
+  // but hardware heuristics must not silently remove motion, glass or grain.
+  if (isLinuxPlatform()) return false;
   const capabilities = browserNavigator();
   const memory = capabilities.deviceMemory;
   const cores = capabilities.hardwareConcurrency;
@@ -94,6 +99,11 @@ const STALL_MS = 200;
  * not the size of the frame rate.
  */
 export function monitorFrameBudget(onLowPower) {
+  // Keep the complete visual treatment on Linux. The browser still benefits
+  // from compositor containment, refresh-aware physics and cooperative task
+  // yielding; it simply never falls into the visual-reduction tier.
+  if (isLinuxPlatform()) return () => {};
+
   /*
    * A software rasteriser is a capability fact, not a symptom, so it is read
    * directly rather than inferred from dropped frames. Without this the page
