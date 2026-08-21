@@ -33,7 +33,7 @@ export default function MeetingNotesEditor(props) {
 
   createEffect(() => {
     const record = notesRecord();
-    if (record) recordId = record.id;
+    recordId = record?.id || null;
   });
 
   const saveMutation = useMutation(() => ({
@@ -97,7 +97,7 @@ export default function MeetingNotesEditor(props) {
         <Show when={props.weekLabel} keyed>
           {() => (
             <DocsEditor
-              title="Meeting Notes"
+              title="Meeting Notes / ミーティングノート"
               initialHtml={notesRecord()?.description || ""}
               onChange={handleChange}
               onSave={flushPending}
@@ -105,7 +105,7 @@ export default function MeetingNotesEditor(props) {
               saved={savedFlash()}
               minHeight="360px"
               stickyTop="0px"
-              placeholder="Write meeting notes like a normal document…"
+              placeholder="Write meeting notes like a normal document… / 通常の文書として議事録を書いてください…"
             />
           )}
         </Show>
