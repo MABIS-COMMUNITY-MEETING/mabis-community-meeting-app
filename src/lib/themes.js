@@ -632,6 +632,7 @@ export function applyTheme(themeKey, { persist = true } = {}) {
   // into unreadable territory the way a flat opacity modifier could.
   root.style.setProperty("--primary-foreground-muted", mutedForeground(vars["--primary-foreground"], vars["--primary"]));
   document.body.classList.toggle("theme-is-dark", isDark);
+  document.body.classList.toggle("mabis-unrestricted-document-colors", resolvedThemeKey === "default");
   /*
    * Aero's rules live in their own stylesheet now, so switching TO it at
    * runtime has to fetch them. Not awaited: this is a deliberate click, the
@@ -736,6 +737,7 @@ export function applyCustomColors(primaryHex, secondaryHex) {
   root.style.setProperty("--destructive-foreground", primaryPair.foreground);
   root.style.setProperty("--primary-foreground-muted", mutedForeground(primaryPair.foreground, primaryPair.fill));
   applyPalette([primaryHex, secondaryHex]);
+  document.body.classList.remove("mabis-unrestricted-document-colors");
   localStorage.setItem("mabis-custom-colors", JSON.stringify({ primary: primaryHex, secondary: secondaryHex }));
   // Without this, the boot snapshot (theme-boot.js) never learns custom
   // colors happened: applyTheme()/applyResolvedFont() both snapshot their
@@ -754,6 +756,9 @@ export function applyCustomColors(primaryHex, secondaryHex) {
 
 export function clearCustomColors({ notify = true } = {}) {
   localStorage.removeItem("mabis-custom-colors");
+  if (!getStoredMaterialSeed() && getStoredTheme() === "default") {
+    document.body.classList.add("mabis-unrestricted-document-colors");
+  }
   if (notify) window.dispatchEvent(new Event("themeChanged"));
 }
 
@@ -822,6 +827,7 @@ export function applyMaterialSeed(seedHex, { persist = true, dark } = {}) {
   // over whatever a previously-applied named theme (dark or light) left set,
   // instead of silently inheriting that leftover state.
   document.body.classList.toggle("theme-is-dark", isDark);
+  document.body.classList.remove("mabis-unrestricted-document-colors");
   applyPalette(materialSchemeSwatches(seedHex, isDark), true);
 
   if (persist) {
