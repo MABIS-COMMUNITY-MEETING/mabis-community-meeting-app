@@ -114,7 +114,7 @@ The base design uses ink, bone, MABIS maroon, and gold, while the theme system m
 - Preserve the recognizable source colors of themed palettes while maintaining contrast.
 - For feminine or transfeminine treatments, deliberate pink accents are preferred over generic pastel gradients.
 - Never hard-code a color when a semantic token already expresses its role.
-- Rich-text editors and rendered rich text must pair semantic card/ink tokens; selectable letter colors and highlights use contrast-safe theme roles, never fixed black, white, or raw swatches.
+- Rich-text editors and rendered rich text pair semantic card/ink tokens. Catalogue, saved custom, and Material themes expose only contrast-safe live theme roles; only the plain built-in MABIS palette may expose unrestricted author colors, custom highlights choose a readable foreground, and marked MABIS colors fall back to semantic ink under every other theme.
 
 ### Font contract
 
@@ -192,6 +192,10 @@ Novesce prefers direct manipulation over page jumps and detached forms.
 - After account preference sync finishes, an authenticated person with no explicit `mabis-home-layout` value must be prompted to choose Summer or Boss before using Home; choosing writes the standard layout preference, and a saved choice must not prompt again.
 - Saved theme snapshots—including Material You and custom colors—are replayed in the entry HTML before critical first-paint CSS; the loading surface uses the replayed semantic background, foreground, and primary tokens, then the app reconciles from the authoritative theme module after paint.
 - The full-screen loading state holds a shared, reference-counted document scroll lock and never leaves it behind; on capable connections, all ten numbered Home section modules settle before the loader exits, while heavy nested editors and below-fold data remain deferred.
+- The loading surface consumes the pre-painted live `--background`, `--foreground`, `--primary`, and `--secondary` theme tokens; it must never fall back to fixed ink/bone colors after a custom or Material theme has been restored.
+- Arrow keys provide global spatial focus navigation outside text editors. The hidden Gamepad API path maps standard PS5, Xbox, and Nintendo controllers plus raw GameCube USB adapters to the same directions, primary activation, and back behavior.
+- Document toolbars stay sticky; external paste keeps structure and links but drops foreign color/highlight paint; links preserve their selection and can open; and meeting mode uses the normal document editor rather than the retired block editor.
+- Linux uses a quality-first platform profile: keep animations, glass, grain, and cursor effects enabled, never enter `performance-lite`, and use only browser-exposed refresh pacing, cooperative scheduling, containment, and compositor hints—not pretend kernel or Vulkan access.
 - Built-in jobs remain weekly except Time Keepers, who serve monthly and cannot be selected again in the same calendar year; custom jobs may choose weekly or monthly periods.
 
 ### AI enforcement procedure
