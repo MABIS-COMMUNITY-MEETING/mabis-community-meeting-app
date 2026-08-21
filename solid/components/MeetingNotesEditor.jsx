@@ -1,7 +1,8 @@
-import { createSignal, createEffect, onCleanup, Show } from "solid-js";
-import { useQuery, useMutation } from "@tanstack/solid-query";
+import { createSignal, createEffect, onCleanup, lazy, Suspense, Show } from "solid-js";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
-import BlockNotesEditor from "~/components/notes/BlockNotesEditor";
+
+const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 
 /*
  * Autosaving meeting notes — 1:1 port of src/components/MeetingNotesEditor.jsx.
@@ -11,14 +12,18 @@ import BlockNotesEditor from "~/components/notes/BlockNotesEditor";
  * would remount the editor mid-typing. React used a ref for the same reason.
  */
 export default function MeetingNotesEditor(props) {
+  const queryClient = useQueryClient();
   const [savedFlash, setSavedFlash] = createSignal(false);
   let saveTimer;
   let flashTimer;
   let recordId = null;
+  let pendingHtml = null;
 
   const topicsQuery = useQuery(() => ({
-    queryKey: ["topics"],
-    queryFn: () => base44.entities.DiscussionTopic.list("-created_date", 500),
+    queryKey: ["topics", props.weekLabel],
+    queryFn: () => base44.entities.DiscussionTopic.filter(
+      { week_label: props.weekLabel }, "-created_date", 100,
+    ),
   }));
 
   const allTopics = () => topicsQuery.data || [];
@@ -50,37 +55,61 @@ export default function MeetingNotesEditor(props) {
       setSavedFlash(true);
       clearTimeout(flashTimer);
       flashTimer = setTimeout(() => setSavedFlash(false), 2200);
+      queryClient.invalidateQueries({ queryKey: ["topics"] });
     },
   }));
 
-  const handleChange = (html) => {
+  const flushPending = () => {
+    if (pendingHtml === null) return;
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => saveMutation.mutate(html), 600);
+    const html = pendingHtml;
+    pendingHtml = null;
+    saveMutation.mutate(html);
   };
 
-  onCleanup(() => { clearTimeout(saveTimer); clearTimeout(flashTimer); });
+  const handleChange = (html) => {
+    pendingHtml = html;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(flushPending, 600);
+  };
 
-  const status = () => (saveMutation.isPending ? "SAVING…" : savedFlash() ? "✓ SAVED" : "AUTOSAVE ON");
+  const flushOnExit = () => {
+    if (document.visibilityState === "hidden") flushPending();
+  };
+  document.addEventListener("visibilitychange", flushOnExit);
+  window.addEventListener("pagehide", flushPending);
+
+  onCleanup(() => {
+    document.removeEventListener("visibilitychange", flushOnExit);
+    window.removeEventListener("pagehide", flushPending);
+    clearTimeout(flashTimer);
+    flushPending();
+  });
 
   return (
     <Show
       when={!topicsQuery.isLoading}
       fallback={<div class="border border-border bg-card px-4 py-6 text-sm text-muted-foreground">Loading notes…</div>}
     >
-      {/* `keyed` reproduces React's key={weekLabel}: changing week must build a
-          fresh editor, because BlockNotesEditor parses initialHtml once at
-          creation. Gating on isLoading first means it is only ever created with
-          the loaded record, never with an empty string it would then keep. */}
-      <Show when={props.weekLabel} keyed>
-        {(week) => (
-          <BlockNotesEditor
-            initialHtml={notesRecord()?.description || ""}
-            onChange={handleChange}
-            status={status()}
-            data-week={week}
-          />
-        )}
-      </Show>
+      {/* One normal document, not the old block/column editor. `keyed` keeps
+          each week isolated because Quill seeds initialHtml only on mount. */}
+      <Suspense fallback={<div class="min-h-[360px] border border-border bg-card" aria-label="Meeting notes editor loading" />}>
+        <Show when={props.weekLabel} keyed>
+          {() => (
+            <DocsEditor
+              title="Meeting Notes"
+              initialHtml={notesRecord()?.description || ""}
+              onChange={handleChange}
+              onSave={flushPending}
+              saving={saveMutation.isPending}
+              saved={savedFlash()}
+              minHeight="360px"
+              stickyTop="0px"
+              placeholder="Write meeting notes like a normal document…"
+            />
+          )}
+        </Show>
+      </Suspense>
     </Show>
   );
 }
