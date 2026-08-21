@@ -7,6 +7,7 @@ const lazySource = fs.readFileSync("solid/components/home/LazySection.jsx", "utf
 const meetingCardSource = fs.readFileSync("solid/components/MeetingModeWidget.jsx", "utf8");
 const discussionSource = fs.readFileSync("solid/components/DiscussionWidget.jsx", "utf8");
 const notesSource = fs.readFileSync("solid/components/MeetingNotesEditor.jsx", "utf8");
+const meetingEditorSource = fs.readFileSync("solid/components/MeetingDocumentEditor.jsx", "utf8");
 const { createRoot } = await import("solid-js");
 const { createMeetingModeSession } = await import("../solid/lib/meeting-mode-session.js");
 
@@ -34,6 +35,12 @@ assert.match(discussionSource, /whenIdle\(\(\) => setNormalContentReady\(true\)/
 assert.match(discussionSource, /lockBodyScroll\(\)/, "Meeting Mode must own a balanced document scroll lock");
 assert.match(discussionSource, /<ErrorBoundary/, "meeting sections must not be able to crash the whole overlay");
 assert.match(notesSource, /saveQueue = operation\.catch/, "note writes must be serialized");
+assert.match(notesSource, /MeetingDocumentEditor/, "Meeting Mode must use its lightweight flowing document editor");
+assert.doesNotMatch(notesSource, /DiscussionDocumentEditor|DocsEditor|Quill/, "Meeting Mode must never load the heavy Discussion document engine");
+assert.doesNotMatch(meetingEditorSource, /from ["\']quill|DocsEditor|DiscussionDocumentEditor/, "the meeting editor must stay independent from Quill");
+assert.match(meetingEditorSource, /contentEditable/, "meeting notes must remain one normal editable document");
+assert.match(meetingEditorSource, /insertUnorderedList/, "the lightweight toolbar must retain bullet lists");
+assert.match(meetingEditorSource, /createLink/, "the lightweight toolbar must retain working links");
 assert.doesNotMatch(notesSource, /saveMutation\.mutate\(html\)/, "cleanup must not launch a disposed query mutation");
 
 console.log("Meeting Mode lifecycle contract checks passed.");
