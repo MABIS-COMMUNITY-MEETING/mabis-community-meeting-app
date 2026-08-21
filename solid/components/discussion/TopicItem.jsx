@@ -1,20 +1,9 @@
-import { lazy, Suspense, Show, For, Index } from "solid-js";
+import { Show, Index } from "solid-js";
 import { X, Loader2, Pencil, Trash2 } from "lucide-solid";
 import { Button, Input } from "~/components/ui";
 import { Select } from "~/components/ui/select";
 import { PRIORITY_COLORS, PRIORITY_LABELS, PRIORITY_DOT } from "~/lib/weeks";
-
-const DocsEditor = lazy(() => import("~/components/DocsEditor"));
-
-function ChunkFallback(props) {
-  return (
-    <div
-      class="widget-loading-shell"
-      style={{ "--widget-fallback-height": `${props.height ?? 160}px` }}
-      aria-hidden
-    />
-  );
-}
+import DiscussionDocumentEditor from "~/components/discussion/DiscussionDocumentEditor";
 
 /*
  * TopicItem — Solid port of the TopicItem in src/components/DiscussionWidget.jsx.
@@ -171,16 +160,15 @@ function EditingView(props) {
           />
         </div>
 
-        <Suspense fallback={<ChunkFallback height={props.compact ? 140 : 180} />}>
-          <DocsEditor
-            title={props.editTitle}
-            onTitleChange={props.onTitleChange}
-            placeholder="Write your topic description, paste screenshots, add context…"
-            onChange={props.onDescriptionChange}
-            minHeight={props.compact ? "140px" : "180px"}
-            initialHtml={props.editDescription}
-          />
-        </Suspense>
+        <DiscussionDocumentEditor
+          fallbackHeight={props.compact ? "140px" : "180px"}
+          title={props.editTitle}
+          onTitleChange={props.onTitleChange}
+          placeholder="Write your topic description, paste screenshots, add context…"
+          onChange={props.onDescriptionChange}
+          minHeight={props.compact ? "140px" : "180px"}
+          initialHtml={props.editDescription}
+        />
 
         <Show when={props.error}>
           <p
