@@ -1,5 +1,5 @@
 import { createSignal, createEffect, onMount, onCleanup, Show } from "solid-js";
-import { useQuery, useQueryClient } from "@tanstack/solid-query";
+import { useQueryClient } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
 import MeetingDocumentEditor from "~/components/MeetingDocumentEditor";
 
@@ -24,14 +24,9 @@ export default function MeetingNotesEditor(props) {
   let outstandingSaves = 0;
   let saveQueue = Promise.resolve();
 
-  const topicsQuery = useQuery(() => ({
-    queryKey: ["topics", props.weekLabel],
-    queryFn: () => base44.entities.DiscussionTopic.filter(
-      { week_label: props.weekLabel }, "-created_date", 100,
-    ),
-  }));
-
-  const allTopics = () => topicsQuery.data || [];
+  // DiscussionWidget already owns the current week query. Reusing its result
+  // avoids a second observer/fetch before the meeting document can appear.
+  const allTopics = () => props.topics || [];
   const notesRecord = () => allTopics().find(
     (t) => t.week_label === props.weekLabel && t.is_jobs_topic === true && t.title === "__meeting_notes__",
   );
@@ -126,7 +121,7 @@ export default function MeetingNotesEditor(props) {
 
   return (
     <Show
-      when={!topicsQuery.isLoading}
+      when={!props.loading}
       fallback={<div class="border border-border bg-card px-4 py-6 text-sm text-muted-foreground">Loading notes…</div>}
     >
       {/* One flowing document—never note cards, blocks, grids or columns.
