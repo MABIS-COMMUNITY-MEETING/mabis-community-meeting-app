@@ -499,7 +499,10 @@ html.platform-linux .widget-rise {
   transform-style: preserve-3d;
 }
 
-/* ── custom cursor ── */
+/* ── theme-independent custom cursor ────────────────────────────────
+   Its fixed monochrome material is deliberately outside the theme system.
+   Material, saved custom, catalogue and Pride themes may repaint the page,
+   but must never add a theme-scoped override for these cursor classes. */
 .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; mix-blend-mode: difference; contain: strict; will-change: transform, opacity; }
 .cursor-dot { width: 5px; height: 5px; background: #fff; transform: translate(-50%,-50%); }
 .cursor-ring { width: 34px; height: 34px; border: 1px solid rgb(255 255 255 / 0.82); transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:9px; letter-spacing:0.08em; color:#fff; text-transform:uppercase; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
@@ -1242,20 +1245,6 @@ html.theme-committing *::after {
   transition: none !important;
 }
 
-body.pride-active .cursor-dot {
-  background: var(--pride-glow);
-  mix-blend-mode: normal;
-  box-shadow: 0 0 10px 3px color-mix(in srgb, var(--pride-glow) 55%, transparent);
-}
-body.pride-active .cursor-ring {
-  border-color: var(--pride-edge);
-  box-shadow: 0 0 18px 4px color-mix(in srgb, var(--pride-highlight) 40%, transparent),
-              inset 0 0 12px color-mix(in srgb, var(--pride-highlight) 22%, transparent);
-  mix-blend-mode: normal;
-  color: var(--pride-highlight);
-}
-body.pride-active .cursor-trail { background: var(--pride-highlight); mix-blend-mode: normal; }
-
 /* Pride ambience uses compositor transforms instead of Framer's perpetual JS
    animation loop. The expensive blur is constant and rasterized only inside
    each bounded light, while x/y retain independent drift periods. */
@@ -1305,13 +1294,6 @@ body.pride-active .bg-card.rounded-2xl.shadow-sm:hover,
 body.pride-active .bg-white.rounded-2xl.shadow-sm:hover {
   border-color: var(--pride-edge);
   box-shadow: 0 1px 0 var(--pride-glow), 0 18px 40px -32px var(--pride-glow);
-}
-
-/* wide-gamut accents where the display supports them, sRGB everywhere else */
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    body.pride-active .cursor-ring { box-shadow: 0 0 16px -2px color-mix(in oklab, var(--pride-glow) 92%, white); }
-  }
 }
 
 /* range slider */
