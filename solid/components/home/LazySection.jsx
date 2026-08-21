@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { createEffect, createSignal, Show } from "solid-js";
 import { createVisibility } from "~/lib/perf";
 
 /* ── LazySection ───────────────────────────────────────────────────────────
@@ -19,11 +19,19 @@ import { createVisibility } from "~/lib/perf";
  */
 export function LazySection(props) {
   const [ref, visible] = createVisibility();
+  const [forcedMount, setForcedMount] = createSignal(false);
+
+  // A programmatic surface (Meeting Mode) can need a section before it is
+  // near the viewport. Latch that request: once a widget has mounted, tearing
+  // it back down as the overlay closes would create another expensive burst.
+  createEffect(() => {
+    if (props.forceMount) setForcedMount(true);
+  });
 
   return (
     <div ref={ref}>
       <Show
-        when={visible()}
+        when={visible() || forcedMount()}
         fallback={
           <div
             class="lazy-section-placeholder"
