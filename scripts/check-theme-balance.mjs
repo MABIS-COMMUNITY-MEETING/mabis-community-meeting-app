@@ -1,4 +1,5 @@
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import { createServer } from "vite";
 import {
     balancedPalette,
@@ -92,6 +93,15 @@ const server = await createServer({
 const failures = [];
 let themesChecked = 0;
 
+const css = readFileSync(path.resolve("src/index.css"), "utf8");
+const cssWithoutComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+const themedCursorRules = cssWithoutComments.match(
+    /(?:pride-active|theme-(?!committing)[a-z0-9_-]+|material[a-z0-9_-]*)[^{}]*\.cursor-(?:dot|ring|trail|label)[^{}]*\{/gi,
+) || [];
+if (themedCursorRules.length > 0) {
+    failures.push(`cursor styling must be theme-independent: ${themedCursorRules.join(" | ")}`);
+}
+
 try {
     const { THEMES, resolveThemeVars } = await server.ssrLoadModule("/src/lib/themes.js");
 
@@ -168,4 +178,4 @@ if (failures.length > 0) {
     process.exit(1);
 }
 
-console.log(`Theme balance: ${themesChecked} themes passed semantic hue, role, editor palette, slot and contrast checks.`);
+console.log(`Theme balance: ${themesChecked} themes passed semantic hue, role, editor palette, slot, contrast and theme-independent cursor checks.`);
