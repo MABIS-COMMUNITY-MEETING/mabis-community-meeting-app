@@ -7,6 +7,7 @@ import {
 } from "lucide-solid";
 import { format } from "date-fns";
 import { base44 } from "@/api/base44Client";
+import { displayName } from "@/lib/names";
 import { useAuth } from "~/lib/AuthContext";
 import { Button, Input } from "~/components/ui";
 import { Select } from "~/components/ui/select";
@@ -49,6 +50,14 @@ export default function AnnouncementsWidget(props) {
   const [uploading, setUploading] = createSignal(false);
 
   const members = () => props.members || [];
+  const normalizedName = (value) => String(value || "").trim().toLocaleLowerCase();
+  const memberForAuthor = (name) => members().find((member) =>
+    normalizedName(displayName(member)) === normalizedName(name)
+    || normalizedName(member.name) === normalizedName(name));
+  const avatarUrlFor = (announcement) =>
+    memberForAuthor(announcement.author_name)?.avatar_url || announcement.avatar_url || "";
+  const avatarColorFor = (announcement) =>
+    memberForAuthor(announcement.author_name)?.avatar_color || announcement.avatar_color || "";
 
   const announcementsQuery = useQuery(() => ({
     queryKey: ["announcements"],
@@ -106,7 +115,12 @@ export default function AnnouncementsWidget(props) {
     } finally {
       setUploading(false);
     }
-    const author = members().find((m) => m.name === authorName());
+    const author = memberForAuthor(authorName());
+    const signedInUser = auth.user();
+    const isSignedInAuthor = !!signedInUser && (
+      (author?.email && signedInUser.email && normalizedName(author.email) === normalizedName(signedInUser.email))
+      || normalizedName(displayName(signedInUser)) === normalizedName(authorName())
+    );
     add.mutate({
       title: title().trim(),
       body: body().trim(),
@@ -114,8 +128,12 @@ export default function AnnouncementsWidget(props) {
       image_url,
       video_url,
       pinned: false,
-      avatar_url: auth.user()?.avatar_url || author?.avatar_url || "",
-      avatar_color: author?.avatar_color || auth.user()?.avatar_color || "",
+      // The selected author is the source of truth. Only fall back to the
+      // signed-in profile when that selected member really is the signed-in
+      // user; otherwise an admin posting for someone else would show the
+      // admin's picture.
+      avatar_url: author?.avatar_url || (isSignedInAuthor ? signedInUser.avatar_url : "") || "",
+      avatar_color: author?.avatar_color || (isSignedInAuthor ? signedInUser.avatar_color : "") || "",
     });
   };
 
@@ -276,9 +294,24 @@ export default function AnnouncementsWidget(props) {
                 <div class="flex items-start gap-3">
                   <div
                     class="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0 mt-0.5 bg-card"
-                    style={{ border: "2px solid hsl(var(--primary))" }}
+                    style={{ border: `2px solid ${avatarColorFor(ann) || "hsl(var(--primary))"}` }}
                   >
-                    <img src={ann.avatar_url || MABIS_LOGO} alt="" class="w-full h-full object-contain p-0.5" />
+                    <Show
+                      when={avatarUrlFor(ann)}
+                      fallback={<img src={MABIS_LOGO} alt="" class="h-full w-full object-contain p-0.5" />}
+                    >
+                      <img
+                        src={avatarUrlFor(ann)}
+                        alt={`${ann.author_name || "Announcement author"} profile`}
+                        loading="lazy"
+                        class="h-full w-full object-cover"
+                        onError={(event) => {
+                          event.currentTarget.onerror = null;
+                          event.currentTarget.src = MABIS_LOGO;
+                          event.currentTarget.className = "h-full w-full object-contain p-0.5";
+                        }}
+                      />
+                    </Show>
                   </div>
 
                   <div class="flex-1 min-w-0">
