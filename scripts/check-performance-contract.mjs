@@ -367,7 +367,8 @@ requireText("solid/lib/input-navigation.js", spatialNavigation, "gamecube|0079")
    sanitized before Quill sees them, while deliberate plain-MABIS paint is
    marked so other themes can fall back to semantic document roles. */
 requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "sanitizePastedHtml(html)");
-requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "position: sticky");
+requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "props.stickyTop");
+requireText("src/index.css", css, ".docs-toolbar {\n  position: sticky;");
 requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "readableInkForHex(hex)");
 requireText("solid/lib/quill-setup.js", quillSetup, "ql-user-paint");
 requireText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "<DocsEditor");
