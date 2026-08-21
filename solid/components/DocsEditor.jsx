@@ -217,6 +217,7 @@ export default function DocsEditor(props) {
   let quill = null;
   let copiedFormats = null;
   let searchFrom = 0;
+  let lastSelection = { index: 0, length: 0 };
 
   const [uploading, setUploading] = createSignal(false);
   /* Reflects what the caret is sitting in: "UI font" normally, or the family
@@ -231,6 +232,18 @@ export default function DocsEditor(props) {
   const [findResult, setFindResult] = createSignal("");
   const [zoom, setZoom] = createSignal(100);
   const [fullscreen, setFullscreen] = createSignal(false);
+  const [customInk, setCustomInk] = createSignal("#202124");
+  const [customHighlight, setCustomHighlight] = createSignal("#fff176");
+  const plainMabisTheme = () => {
+    try {
+      return getStoredThemeKey() === "default"
+        && !localStorage.getItem("mabis-custom-colors")
+        && !localStorage.getItem("mabis-material-seed");
+    } catch {
+      return true;
+    }
+  };
+  const [unrestrictedColors, setUnrestrictedColors] = createSignal(plainMabisTheme());
   // Computed eagerly, not passed as a function: React's useState treats a
   // function argument as a lazy initialiser, Solid's createSignal does not —
   // it would store the function itself as the value.
@@ -253,8 +266,8 @@ export default function DocsEditor(props) {
         header: format.header || false,
         align: format.align || false,
         list: format.list || false,
-        color: format.themeInk || false,
-        background: format.themeHighlight || false,
+        color: format.themeInk || format.color || false,
+        background: format.themeHighlight || format.background || false,
       });
 
       if (format.size) {
@@ -302,12 +315,49 @@ export default function DocsEditor(props) {
       quill.clipboard.dangerouslyPasteHTML(props.initialHtml, "silent");
     }
 
-    quill.on("selection-change", syncFormats);
-    quill.on("text-change", () => { syncFormats(); emitChange(); });
+    const handleSelectionChange = (range) => {
+      if (range) lastSelection = { index: range.index, length: range.length };
+      syncFormats();
+    };
+    const handleTextChange = () => { syncFormats(); emitChange(); };
+    const handlePaste = (event) => {
+      const html = event.clipboardData?.getData("text/html");
+      if (!html) return;
+      event.preventDefault();
+      const range = quill.getSelection(true) || lastSelection;
+      const delta = quill.clipboard.convert({
+        html: sanitizePastedHtml(html),
+        text: event.clipboardData?.getData("text/plain") || "",
+      });
+      const change = new Delta().retain(range.index).delete(range.length).concat(delta);
+      quill.updateContents(change, "user");
+      const caret = range.index + Math.max(0, delta.length() - 1);
+      quill.setSelection(caret, 0, "silent");
+      lastSelection = { index: caret, length: 0 };
+    };
+    const handleLinkOpen = (event) => {
+      const anchor = event.target.closest?.("a[href]");
+      if (!anchor || (event.type !== "dblclick" && !event.ctrlKey && !event.metaKey)) return;
+      event.preventDefault();
+      window.open(anchor.href, "_blank", "noopener,noreferrer");
+    };
+    const syncUnrestrictedColors = () => setUnrestrictedColors(plainMabisTheme());
+
+    quill.on("selection-change", handleSelectionChange);
+    quill.on("text-change", handleTextChange);
+    quill.root.addEventListener("paste", handlePaste);
+    quill.root.addEventListener("click", handleLinkOpen);
+    quill.root.addEventListener("dblclick", handleLinkOpen);
+    window.addEventListener("themeChanged", syncUnrestrictedColors);
     syncFormats();
 
     onCleanup(() => {
-      quill?.off("selection-change", syncFormats);
+      quill?.off("selection-change", handleSelectionChange);
+      quill?.off("text-change", handleTextChange);
+      quill?.root.removeEventListener("paste", handlePaste);
+      quill?.root.removeEventListener("click", handleLinkOpen);
+      quill?.root.removeEventListener("dblclick", handleLinkOpen);
+      window.removeEventListener("themeChanged", syncUnrestrictedColors);
       quill = null;
     });
   });
