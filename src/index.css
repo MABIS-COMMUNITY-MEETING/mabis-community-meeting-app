@@ -1038,6 +1038,14 @@ body .text-accent { color: hsl(var(--editor-ink-accent)) !important; }
   color: hsl(var(--editor-highlight-accent-foreground)) !important;
 }
 
+/* Unrestricted author colours belong only to the literal built-in MABIS
+   palette. Saved custom/Material and catalogue themes fall back to their live
+   semantic document ink instead of inheriting arbitrary MABIS paint. */
+body:not(.mabis-unrestricted-document-colors) .theme-rich-text .ql-user-paint-custom {
+  color: hsl(var(--card-foreground)) !important;
+  background-color: transparent !important;
+}
+
 .theme-rich-text a[href] {
   color: hsl(var(--editor-ink-primary));
   text-decoration: underline;
