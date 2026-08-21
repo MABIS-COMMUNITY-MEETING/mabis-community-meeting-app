@@ -4,7 +4,7 @@
  * These are not "the default site with different CSS variables". Each palette is
  * art-directed: a hand-chosen dominant / secondary / accent relationship, its own
  * lighting geometry (where the coloured light sits on the page and how slowly it
- * drifts), its own surface undertone, and its own cursor material.
+ * drifts), its own surface undertone, and its own ambient light material.
  *
  * Composition follows a 60 / 25 / 10 / 5 discipline — neutral surface, secondary
  * tone, strong accent, highlight — so flag colours read as deliberate accents
@@ -357,7 +357,7 @@ function buildTheme(s) {
     flag: s.flag,
     dark: s.mode === "dark",
     pride: s,
-    /* cursor + glass material, expressed as light rather than flag stripes */
+    /* glass + micro-detail lighting, expressed as light rather than flag stripes */
     character: s.exact
       ? { character_primary: s.dominant, character_secondary: s.secondary, character_highlight: s.accent }
       : {
@@ -381,11 +381,11 @@ export function setPrideMode(mode) {
   localStorage.setItem("mabis-pride-mode", mode);
 }
 
-/** Tokens the ambience layer, cursor and micro-details read. */
+/** Tokens the ambience layer and themed micro-details read. */
 export function prideTokens(theme, dark) {
   const s = theme.pride;
   const L = dark ? 0.74 : 0.54;
-  // exact palettes keep their published flag hexes in the cursor + light layer
+  // exact palettes keep their published flag hexes in the ambient light layer
   if (s.exact) {
     return {
       "--pride-glow": s.accent,
