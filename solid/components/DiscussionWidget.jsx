@@ -14,12 +14,12 @@ import { Select } from "~/components/ui/select";
 import { JapaneseText } from "~/components/primitives";
 import TopicItem from "~/components/discussion/TopicItem";
 import AttendancePanel from "~/components/discussion/AttendancePanel";
+import DiscussionDocumentEditor from "~/components/discussion/DiscussionDocumentEditor";
 import {
   getWeekLabel, weekLabelToDate, formatWeekLabel, formatWeekFull,
   PRIORITY_COLORS, PRIORITY_LABELS,
 } from "~/lib/weeks";
 
-const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 const MeetingMinutes = lazy(() => import("~/components/MeetingMinutes"));
 const MeetingNotesEditor = lazy(() => import("~/components/MeetingNotesEditor"));
 const JobsWidget = lazy(() => import("~/components/JobsWidget"));
@@ -45,12 +45,6 @@ const JobsWidget = lazy(() => import("~/components/JobsWidget"));
  *     __meeting_ended__ marker is always written so history exists even when
  *     nothing was completed.
  */
-
-function ChunkFallback(props) {
-  return (
-    <div class="widget-loading-shell" style={{ "--widget-fallback-height": `${props.height ?? 160}px` }} aria-hidden />
-  );
-}
 
 /** Placeholder for a widget that has not been ported to Solid yet. */
 function PendingWidget(props) {
@@ -314,16 +308,15 @@ export default function DiscussionWidget(props) {
         />
       </div>
 
-      <Suspense fallback={<ChunkFallback height={formProps.editorHeight ?? 180} />}>
-        <DocsEditor
-          title={title()}
-          onTitleChange={setTitle}
-          placeholder="Write your topic description, paste screenshots, add context…"
-          onChange={setDescription}
-          minHeight={`${formProps.editorHeight ?? 180}px`}
-          initialHtml={description()}
-        />
-      </Suspense>
+      <DiscussionDocumentEditor
+        fallbackHeight={`${formProps.editorHeight ?? 180}px`}
+        title={title()}
+        onTitleChange={setTitle}
+        placeholder="Write your topic description, paste screenshots, add context…"
+        onChange={setDescription}
+        minHeight={`${formProps.editorHeight ?? 180}px`}
+        initialHtml={description()}
+      />
 
       <div class="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -463,7 +456,7 @@ export default function DiscussionWidget(props) {
 
             {/* Ports pending — reserved at the height each widget will occupy. */}
             <Suspense fallback={<PendingWidget name="Jobs" height={320} />}>
-              <JobsWidget members={members()} isAdmin={props.isAdmin} />
+              <JobsWidget members={members()} isAdmin={props.isAdmin} wheelSession={props.wheelSession} />
             </Suspense>
             <PendingWidget name="Announcements" height={280} />
             <PendingWidget name="Calendar" height={360} />
