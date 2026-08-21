@@ -262,6 +262,7 @@ export default function MeetingMinutes(props) {
                 saving={saveMutation.isPending}
                 saved={savedFlash()}
                 minHeight="420px"
+                stickyTop={props.stickyTop}
                 placeholder="Write the minutes for this week…"
               />
             )}
