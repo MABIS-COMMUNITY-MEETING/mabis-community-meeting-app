@@ -127,6 +127,7 @@ const spatialNavigation = read("solid/lib/input-navigation.js");
 const docsEditorSolid = read("solid/components/DocsEditor.jsx");
 const quillSetup = read("solid/lib/quill-setup.js");
 const meetingNotesEditor = read("solid/components/MeetingNotesEditor.jsx");
+const meetingDocumentEditor = read("solid/components/MeetingDocumentEditor.jsx");
 const discussionDocumentEditor = read("solid/components/discussion/DiscussionDocumentEditor.jsx");
 const platformProfile = read("src/lib/platform-profile.js");
 const performanceTier = read("src/lib/performance-tier.js");
@@ -365,16 +366,20 @@ requireText("solid/components/InputNavigation.jsx", inputNavigation, "navigator.
 requireText("solid/lib/input-navigation.js", spatialNavigation, "findDirectionalTarget");
 requireText("solid/lib/input-navigation.js", spatialNavigation, "gamecube|0079");
 
-/* The normal editor is shared by weekly and in-meeting notes. Paste colors are
-   sanitized before Quill sees them, while deliberate plain-MABIS paint is
-   marked so other themes can fall back to semantic document roles. */
+/* The full Discussion editor keeps its rich Quill contract. Meeting Mode uses
+   a native flowing editor with the same toolbar/color vocabulary so starting a
+   meeting never imports or initialises Quill on the main thread. */
 requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "sanitizePastedHtml(html)");
 requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "props.stickyTop");
 requireText("src/index.css", css, ".docs-toolbar {\n  position: sticky;");
 requireText("solid/components/DocsEditor.jsx", docsEditorSolid, "readableInkForHex(hex)");
 requireText("solid/lib/quill-setup.js", quillSetup, "ql-user-paint");
-requireText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "<DiscussionDocumentEditor");
+requireText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "<MeetingDocumentEditor");
 requireText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "One continuous document, matching the Discussion editor.");
+requireText("solid/components/MeetingDocumentEditor.jsx", meetingDocumentEditor, "sanitizeDocumentHtml");
+requireText("solid/components/MeetingDocumentEditor.jsx", meetingDocumentEditor, "contentEditable");
+forbidText("solid/components/MeetingDocumentEditor.jsx", meetingDocumentEditor, 'from "quill"');
+forbidText("solid/components/MeetingDocumentEditor.jsx", meetingDocumentEditor, "DiscussionDocumentEditor");
 forbidText("solid/components/MeetingNotesEditor.jsx", meetingNotesEditor, "BlockNotesEditor");
 requireText("package.json", packageJson, '"check:input-editor": "node scripts/check-input-editor.mjs"');
 
