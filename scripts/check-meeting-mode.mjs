@@ -42,6 +42,8 @@ assert.equal(
 assert.doesNotMatch(discussionSource, /MeetingNotesEditor/, "Meeting Mode must not drift into a separate document implementation");
 assert.match(minutesSource, /lazy\(\(\) => import\("~\/components\/DocsEditor"\)\)/, "shared minutes must use Home's real DocsEditor");
 assert.match(minutesSource, /<IdleMount timeout=\{1200\}>/, "the shared Home editor must remain deferred so Meeting Mode stays responsive");
+assert.match(minutesSource, /stickyTop=\{props\.stickyTop\}/, "the shared minutes component must forward its sticky toolbar offset");
+assert.match(discussionSource, /stickyTop="0px"/, "Meeting Mode must pin the toolbar directly below its header with no scroll gap");
 assert.match(minutesSource, /queryKey: \["topics", props\.weekLabel\]/, "the shared document must reuse the same cached week query");
 assert.match(minutesSource, /const createdIds = new Map\(\)/, "quick saves must not create duplicate minutes records");
 assert.match(docsEditorSource, /toggleList\("bullet"\)/, "bullet controls must apply Quill's bullet format, not ordered numbering");
