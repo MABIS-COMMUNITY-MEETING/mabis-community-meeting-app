@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 const DocsEditor = lazy(() => import("~/components/DocsEditor"));
 
 /*
- * Autosaving meeting notes — 1:1 port of src/components/MeetingNotesEditor.jsx.
+ * Autosaving meeting notes in the shared flowing-document editor.
  *
  * The record id lives in a plain variable, not a signal: it is written during a
  * create→update transition and must never re-trigger a render, because that
