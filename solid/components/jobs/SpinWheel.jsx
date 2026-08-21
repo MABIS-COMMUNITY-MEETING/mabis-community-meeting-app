@@ -3,9 +3,7 @@ import { Loader2 } from "lucide-solid";
 import { displayName } from "@/lib/names";
 import { playWheelTick, playWheelStart, playWheelWin } from "@/lib/wheel_sound";
 import { Button } from "~/components/ui";
-
-const TAU = Math.PI * 2;
-const normalizeRotation = (value) => ((value % TAU) + TAU) % TAU;
+import { TAU, normalizeRotation } from "~/lib/wheel-math";
 
 /*
  * SpinWheel — Solid port from src/components/JobsWidget.jsx.
