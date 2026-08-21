@@ -45,8 +45,14 @@
           const themeColor = document.querySelector('meta[name="theme-color"]');
           if (primary && themeColor) themeColor.setAttribute("content", `hsl(${primary})`);
 
+          const plainMabis = storedTheme === "default"
+            && !localStorage.getItem("mabis-custom-colors")
+            && !localStorage.getItem("mabis-material-seed");
           window.__mabisPrePaintTheme = {
-            bodyClasses: snapshot.bodyClasses || [],
+            bodyClasses: [...new Set([
+              ...(snapshot.bodyClasses || []),
+              ...(plainMabis ? ["mabis-unrestricted-document-colors"] : []),
+            ])],
             themeClass: snapshot.themeClass || "",
           };
         } catch {
