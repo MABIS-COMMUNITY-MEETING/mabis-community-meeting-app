@@ -1,4 +1,4 @@
-import { createSignal, createMemo, createEffect, on, onMount, onCleanup, lazy, Suspense, Show, For, Index } from "solid-js";
+import { createSignal, createMemo, createEffect, on, onMount, onCleanup, lazy, Suspense, Show, For, Index, ErrorBoundary } from "solid-js";
 import { Portal } from "solid-js/web";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
 import { A, useLocation } from "@solidjs/router";
@@ -9,6 +9,8 @@ import {
 import { addWeeks, subWeeks, format } from "date-fns";
 import { base44 } from "@/api/base44Client";
 import { dedupeByIdentity } from "@/lib/memberIdentity";
+import { lockBodyScroll } from "@/lib/scroll-lock";
+import { whenIdle } from "~/lib/perf";
 import { Button, Input } from "~/components/ui";
 import { Select } from "~/components/ui/select";
 import { JapaneseText } from "~/components/primitives";
@@ -52,8 +54,23 @@ function PendingWidget(props) {
     <div
       class="lazy-section-placeholder"
       style={{ "--lazy-min-height": `${props.height ?? 240}px`, "contain-intrinsic-size": `auto ${props.height ?? 240}px` }}
-      aria-label={`${props.name} (not yet migrated)`}
+      aria-label={`${props.name} loading`}
     />
+  );
+}
+
+function MeetingScrollLock(props) {
+  onMount(() => onCleanup(lockBodyScroll()));
+  return props.children;
+}
+
+function MeetingSectionFailure(props) {
+  return (
+    <div class="rounded-lg border border-border bg-card p-4 text-sm text-foreground" role="alert">
+      <p class="font-semibold">{props.name} could not load.</p>
+      <p class="mt-1 text-xs text-muted-foreground">The meeting is still active; the other sections are safe to use.</p>
+      <Button size="sm" variant="outline" class="mt-3" onClick={props.onRetry}>Retry section</Button>
+    </div>
   );
 }
 
@@ -70,16 +87,24 @@ export default function DiscussionWidget(props) {
   // A save that fails must say so. Previously both the validation guard and a
   // rejected request returned silently, so the form sat there looking unsaved.
   const [saveError, setSaveError] = createSignal("");
-  const [meetingMode, setMeetingMode] = createSignal(location.state?.startMeeting === true);
+  const [localMeetingMode, setLocalMeetingMode] = createSignal(location.state?.startMeeting === true);
   const [meetingPaused, setMeetingPaused] = createSignal(false);
+  const [meetingNotesReady, setMeetingNotesReady] = createSignal(false);
+  const [meetingJobsReady, setMeetingJobsReady] = createSignal(false);
+  const meetingMode = () => props.meetingSession?.isActive?.() ?? localMeetingMode();
   const [weekOffset, setWeekOffset] = createSignal(0);
   const [fullscreen, setFullscreen] = createSignal(false);
 
   const members = () => props.members || [];
 
   onMount(() => {
-    const start = () => { setMeetingPaused(false); setMeetingMode(true); };
+    const start = () => {
+      setMeetingPaused(false);
+      if (props.meetingSession) props.meetingSession.start();
+      else setLocalMeetingMode(true);
+    };
     const undo = () => archiveWeek.mutate({ weekLabel: getWeekLabel(new Date()), archive: false });
+    if (location.state?.startMeeting === true) start();
     window.addEventListener("startMeetingMode", start);
     window.addEventListener("meetingUndo", undo);
     onCleanup(() => {
@@ -92,15 +117,17 @@ export default function DiscussionWidget(props) {
   let wasInMeeting = false;
   let pendingAction = null; // "pause" | "end"
 
-  createEffect(on([meetingMode, meetingPaused], ([inMeeting, paused]) => {
+  const meetingStatus = () => props.meetingSession?.status?.() || (meetingPaused() ? "paused" : meetingMode() ? "active" : "idle");
+
+  createEffect(on([meetingMode, meetingStatus], ([inMeeting, status]) => {
     const currentWeek = getWeekLabel(new Date());
     if (inMeeting) {
       wasInMeeting = true;
       localStorage.removeItem(`mabis_meeting_ended_${currentWeek}`);
-      window.dispatchEvent(new CustomEvent("meetingStatus", { detail: { status: paused ? "paused" : "active" } }));
+      window.dispatchEvent(new CustomEvent("meetingStatus", { detail: { status: status === "paused" ? "paused" : "active" } }));
     } else if (wasInMeeting) {
       wasInMeeting = false;
-      if (pendingAction === "pause") {
+      if (pendingAction === "pause" || status === "paused") {
         // Paused — do not archive; meeting stays locked and returns home.
         window.dispatchEvent(new CustomEvent("meetingStatus", { detail: { status: "paused" } }));
       } else {
@@ -110,6 +137,48 @@ export default function DiscussionWidget(props) {
       }
       pendingAction = null;
     }
+  }));
+
+  const leaveMeetingMode = (action) => {
+    if (!meetingMode()) return;
+    pendingAction = action;
+    setMeetingPaused(action === "pause");
+    if (props.meetingSession) {
+      if (action === "pause") props.meetingSession.pause();
+      else props.meetingSession.end();
+    } else {
+      setLocalMeetingMode(false);
+    }
+  };
+
+  // Give the overlay shell a paint of its own, then mount Quill and the full
+  // jobs surface in separate browser-idle slices. Previously all three were
+  // created in one click task, which could hold the main thread long enough to
+  // look like a random freeze on Linux and lower-clocked devices.
+  createEffect(on(meetingMode, (inMeeting) => {
+    setMeetingNotesReady(false);
+    setMeetingJobsReady(false);
+    if (!inMeeting) return;
+
+    let cancelled = false;
+    let secondFrame = 0;
+    let cancelJobs = () => {};
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        if (cancelled) return;
+        setMeetingNotesReady(true);
+        cancelJobs = whenIdle(() => {
+          if (!cancelled) setMeetingJobsReady(true);
+        }, 2200);
+      });
+    });
+
+    onCleanup(() => {
+      cancelled = true;
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+      cancelJobs();
+    });
   }));
 
   const viewedWeek = createMemo(() => {
@@ -388,7 +457,8 @@ export default function DiscussionWidget(props) {
   return (
     <Show when={!meetingMode()} fallback={
       <Portal>
-        <div class="fixed inset-0 bg-background text-foreground z-[80] flex flex-col overflow-x-hidden">
+        <MeetingScrollLock>
+        <div class="fixed inset-0 bg-background text-foreground z-[80] flex flex-col overflow-x-clip">
           <div class="bg-primary px-4 sm:px-6 py-4 flex flex-col items-start gap-3 shrink-0 sm:flex-row sm:items-center sm:justify-between">
             <div class="min-w-0">
               <JapaneseText
@@ -409,7 +479,7 @@ export default function DiscussionWidget(props) {
                 size="sm"
                 variant="outline"
                 class="border-primary-foreground/40 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 text-xs gap-1.5"
-                onClick={() => { pendingAction = "pause"; setMeetingPaused(true); setMeetingMode(false); }}
+                onClick={() => leaveMeetingMode("pause")}
               >
                 <Pause class="w-3.5 h-3.5" /> Pause
               </Button>
@@ -417,7 +487,7 @@ export default function DiscussionWidget(props) {
                 size="sm"
                 variant="outline"
                 class="border-primary-foreground/40 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 text-xs gap-1.5"
-                onClick={() => { pendingAction = "end"; setMeetingMode(false); }}
+                onClick={() => leaveMeetingMode("end")}
               >
                 <Square class="w-3.5 h-3.5" /> End meeting
               </Button>
@@ -425,7 +495,9 @@ export default function DiscussionWidget(props) {
           </div>
 
           <div class="flex-1 overflow-y-auto p-4 space-y-4 sm:p-6">
-            <AttendancePanel members={members()} weekLabel={viewedWeek()} />
+            <ErrorBoundary fallback={(error, reset) => <MeetingSectionFailure name="Attendance" onRetry={reset} />}>
+              <AttendancePanel members={members()} weekLabel={viewedWeek()} />
+            </ErrorBoundary>
 
             <Show when={showForm() && !editingTopicId()}>
               <TopicForm editorHeight={140} />
@@ -440,7 +512,9 @@ export default function DiscussionWidget(props) {
               </Button>
             </div>
 
-            <TopicList compact />
+            <ErrorBoundary fallback={(error, reset) => <MeetingSectionFailure name="Topics" onRetry={reset} />}>
+              <TopicList compact />
+            </ErrorBoundary>
 
             {/* Meeting Notes */}
             <section>
@@ -449,19 +523,28 @@ export default function DiscussionWidget(props) {
                 <h3 class="font-display font-bold text-foreground text-xl">Meeting Notes</h3>
                 <span class="text-xs text-muted-foreground">{formatWeekLabel(viewedWeek())}</span>
               </div>
-              <Suspense fallback={<PendingWidget name="Meeting notes" height={260} />}>
-                <MeetingNotesEditor weekLabel={viewedWeek()} />
-              </Suspense>
+              <Show when={meetingNotesReady()} fallback={<PendingWidget name="Meeting notes" height={260} />}>
+                <ErrorBoundary fallback={(error, reset) => <MeetingSectionFailure name="Meeting notes" onRetry={reset} />}>
+                  <Suspense fallback={<PendingWidget name="Meeting notes" height={260} />}>
+                    <MeetingNotesEditor weekLabel={viewedWeek()} />
+                  </Suspense>
+                </ErrorBoundary>
+              </Show>
             </section>
 
             {/* Ports pending — reserved at the height each widget will occupy. */}
-            <Suspense fallback={<PendingWidget name="Jobs" height={320} />}>
-              <JobsWidget members={members()} isAdmin={props.isAdmin} wheelSession={props.wheelSession} />
-            </Suspense>
+            <Show when={meetingJobsReady()} fallback={<PendingWidget name="Jobs" height={320} />}>
+              <ErrorBoundary fallback={(error, reset) => <MeetingSectionFailure name="Jobs wheel" onRetry={reset} />}>
+                <Suspense fallback={<PendingWidget name="Jobs" height={320} />}>
+                  <JobsWidget members={members()} isAdmin={props.isAdmin} wheelSession={props.wheelSession} />
+                </Suspense>
+              </ErrorBoundary>
+            </Show>
             <PendingWidget name="Announcements" height={280} />
             <PendingWidget name="Calendar" height={360} />
           </div>
         </div>
+        </MeetingScrollLock>
       </Portal>
     }>
       {/* ── NORMAL MODE ────────────────────────────────────────────────────── */}
