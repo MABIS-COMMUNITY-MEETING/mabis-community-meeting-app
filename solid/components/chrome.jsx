@@ -1,3 +1,5 @@
+import { Portal } from "solid-js/web";
+
 /*
  * Fixed decorative chrome — GrainOverlay and PaletteStripe.
  *
@@ -23,14 +25,18 @@ export function GrainOverlay() {
 /**
  * Hairline band of the ACTIVE theme's full palette — pride flags and presets
  * carry more colours than the two UI tokens, so this puts the rest on screen.
+ * It shares the body's stacking context with the portaled header so the glass
+ * surface cannot cover the theme colours.
  */
 export function PaletteStripe() {
   return (
-    <div
-      aria-hidden
-      class="pointer-events-none fixed left-0 top-0 z-[61] h-[3px] w-full"
-      style={{ "background-image": "var(--palette-stripes, none)" }}
-    />
+    <Portal>
+      <div
+        aria-hidden
+        class="pointer-events-none fixed left-0 top-0 z-[61] h-[3px] w-full"
+        style={{ "background-image": "var(--palette-stripes, none)" }}
+      />
+    </Portal>
   );
 }
 
