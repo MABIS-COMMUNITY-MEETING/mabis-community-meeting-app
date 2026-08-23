@@ -19,8 +19,16 @@ import IdleMount from "~/components/IdleMount";
  * glass header and its index overlay, the masthead, the section index, the
  * editorial section frame and the scroll interludes. Statically imported it
  * was downloaded, parsed and evaluated on every visit to reach a false branch.
+ *
+ * Export the memoised loader so auth warm-up can fetch the selected Boss shell
+ * before Home's full-screen loader leaves. lazy() and every hover/focus warm-up
+ * reuse this one browser module promise.
  */
-const BossHome = lazy(() => import("~/components/home/boss"));
+let bossHomePromise;
+export function preloadBossHome() {
+  return (bossHomePromise ||= import("~/components/home/boss"));
+}
+const BossHome = lazy(preloadBossHome);
 
 const SettingsModal = lazy(() => import("~/components/SettingsModal"));
 const StyleWelcomeDialog = lazy(() => import("~/components/StyleWelcomeDialog"));
