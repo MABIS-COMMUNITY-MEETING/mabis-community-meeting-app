@@ -93,6 +93,7 @@ function forbidText(relativePath, content, text) {
 }
 
 const app = read("src/App.jsx");
+const appErrorBoundary = read("solid/components/AppErrorBoundary.jsx");
 const home = read("src/pages/Home.jsx");
 const discussion = read("src/components/DiscussionWidget.jsx");
 const feedback = read("src/pages/Feedback.jsx");
@@ -234,13 +235,17 @@ requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "sam
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "wake();");
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "settled: () => !needsMeasure");
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
-/* A cache-first worker that never skips waiting serves the previous build to
-   every open tab until all of them close. That turned into shipped fixes that
-   users could not see, so both halves of the handover are pinned: the worker
-   takes over, and the page reloads once when it does. */
-requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "self.skipWaiting();");
+/* A service-worker handoff must never replace an active meeting/document
+   with the boot screen. The new worker waits until old tabs close, keeping its
+   hashed chunks paired with the page that loaded them; activation may still
+   claim the next normal visit. Chunk failures also require an explicit click. */
+forbidText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "self.skipWaiting();");
 requireText("scripts/generate-service-worker.mjs", serviceWorkerGenerator, "await self.clients.claim();");
-requireText("src/main.jsx", main, 'navigator.serviceWorker.addEventListener("controllerchange"');
+forbidText("src/main.jsx", main, 'navigator.serviceWorker.addEventListener("controllerchange"');
+forbidText("src/main.jsx", main, "window.location.reload()");
+requireText("src/App.jsx", app, "resolvedOnce");
+forbidText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "claimReloadAttempt");
+requireText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "onClick={() => window.location.reload()}");
 
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
@@ -251,8 +256,13 @@ requireText("src/lib/liquid-glass-js.js", liquidGlass, "https://github.com/dashe
 requireText("src/lib/liquid-glass-js.js", liquidGlass, 'import html2canvas from "html2canvas"');
 requireText("src/lib/liquid-glass-js.js", liquidGlass, "requestAnimationFrame");
 requireText("src/lib/liquid-glass-js.js", liquidGlass, "destroy()");
+requireText("src/lib/liquid-glass-js.js", liquidGlass, "const float SAMPLE_RANGE = 4.0;");
+requireText("src/lib/liquid-glass-js.js", liquidGlass, "const float POWER_EXPONENT = 6.0;");
+forbidText("src/lib/liquid-glass-js.js", liquidGlass, "for(float x = 0.0; x < 1.0; x += 0.05)");
 requireText("src/styles/glass.css", glass, ".lg-webgl-ready");
 requireText("src/styles/glass.css", glass, "--liquid-glass-overlay-opacity");
+requireText("src/styles/glass.css", glass, ".lg-navigation.lg-on-light");
+requireText("src/styles/glass.css", glass, "inset 2px 2px 1px 0");
 forbidText("src/styles/glass.css", glass, ".lg-surface.lg-webgl-ready {\n  background: transparent");
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, 'import { Portal } from "solid-js/web"');
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, '<Portal>\n      <header class="site-header-shell fixed top-0 left-0 right-0 z-50">');
