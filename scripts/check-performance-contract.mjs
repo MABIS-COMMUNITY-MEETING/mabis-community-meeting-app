@@ -105,7 +105,6 @@ const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
 const glass = read("src/styles/glass.css");
 const glassComponentSolid = read("solid/components/Glass.jsx");
-const liquidGlass = read("src/lib/liquid-glass-js.js");
 const siteHeaderSolid = read("solid/components/SiteHeader.jsx");
 const themeSwitcherSolid = read("solid/components/ThemeSwitcher.jsx");
 const jobs = read("src/components/JobsWidget.jsx");
@@ -254,22 +253,15 @@ requireText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "onClick=
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'import("@/lib/liquid-glass-js")');
-requireText("solid/components/Glass.jsx", glassComponentSolid, "timeout: 450");
-forbidText("solid/components/Glass.jsx", glassComponentSolid, "timeout: 1400");
-requireText("solid/components/Glass.jsx", glassComponentSolid, "liquidGlass?.destroy()");
-requireText("src/lib/liquid-glass-js.js", liquidGlass, "https://github.com/dashersw/liquid-glass-js");
-requireText("src/lib/liquid-glass-js.js", liquidGlass, 'import html2canvas from "html2canvas"');
-requireText("src/lib/liquid-glass-js.js", liquidGlass, "requestAnimationFrame");
-requireText("src/lib/liquid-glass-js.js", liquidGlass, "destroy()");
-requireText("src/lib/liquid-glass-js.js", liquidGlass, "const float SAMPLE_RANGE = 4.0;");
-requireText("src/lib/liquid-glass-js.js", liquidGlass, "const float POWER_EXPONENT = 6.0;");
-forbidText("src/lib/liquid-glass-js.js", liquidGlass, "for(float x = 0.0; x < 1.0; x += 0.05)");
-requireText("src/styles/glass.css", glass, ".lg-webgl-ready");
-requireText("src/styles/glass.css", glass, "--liquid-glass-overlay-opacity");
-requireText("src/styles/glass.css", glass, ".lg-navigation.lg-on-light");
-requireText("src/styles/glass.css", glass, "inset 2px 2px 1px 0");
-forbidText("src/styles/glass.css", glass, ".lg-surface.lg-webgl-ready {\n  background: transparent");
+/* Glass is CSS-only. A document snapshot plus a WebGL canvas on every glass
+   surface caused long tasks and scroll hitching, especially in the persistent
+   menu. Keep the native backdrop material and prevent that renderer from being
+   wired back into the component or stylesheet. */
+requireText("solid/components/Glass.jsx", glassComponentSolid, "onCleanup(() => unregister?.());");
+forbidText("solid/components/Glass.jsx", glassComponentSolid, 'import("@/lib/liquid-glass-js")');
+forbidText("src/styles/glass.css", glass, ".lg-liquid-canvas");
+forbidText("src/styles/glass.css", glass, ".lg-webgl-ready");
+forbidText("src/styles/glass.css", glass, "--liquid-glass-overlay-opacity");
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, 'import { Portal } from "solid-js/web"');
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, '<Portal>\n      <header class="site-header-shell fixed top-0 left-0 right-0 z-50">');
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, "0.03 + i * 0.035");
