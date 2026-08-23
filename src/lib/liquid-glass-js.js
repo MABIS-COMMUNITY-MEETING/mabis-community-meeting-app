@@ -424,8 +424,11 @@ export class LiquidGlassContainer {
           shapeNormal = normalize(coord - center);
         } else {
           distFromEdgeShape = -roundedRectDistance(coord, u_resolution, u_borderRadius);
-      vec2 center = vec2(0.5, 0.5);
-          shapeNormal = normalize(coord - center);
+          vec2 center = vec2(0.5, 0.5);
+          vec2 centerVector = coord - center;
+          shapeNormal = length(centerVector) > 0.0001
+            ? normalize(centerVector)
+            : vec2(0.0, 1.0);
         }
         distFromEdgeShape = max(distFromEdgeShape, 0.0);
         
@@ -616,17 +619,20 @@ export class LiquidGlassContainer {
     // Set uniforms
     gl.uniform2f(resolutionLoc, this.canvas.width, this.canvas.height)
     gl.uniform2f(textureSizeLoc, image.width, image.height)
-    gl.uniform1f(blurRadiusLoc, window.glassControls?.blurRadius || 5.0)
+    gl.uniform1f(blurRadiusLoc, window.glassControls?.blurRadius ?? 5.0)
     gl.uniform1f(borderRadiusLoc, this.borderRadius)
     gl.uniform1f(warpLoc, this.warp ? 1.0 : 0.0)
-    gl.uniform1f(edgeIntensityLoc, window.glassControls?.edgeIntensity || 0.01)
-    gl.uniform1f(rimIntensityLoc, window.glassControls?.rimIntensity || 0.05)
-    gl.uniform1f(baseIntensityLoc, window.glassControls?.baseIntensity || 0.01)
-    gl.uniform1f(edgeDistanceLoc, window.glassControls?.edgeDistance || 0.15)
-    gl.uniform1f(rimDistanceLoc, window.glassControls?.rimDistance || 0.8)
-    gl.uniform1f(baseDistanceLoc, window.glassControls?.baseDistance || 0.1)
-    gl.uniform1f(cornerBoostLoc, window.glassControls?.cornerBoost || 0.02)
-    gl.uniform1f(rippleEffectLoc, window.glassControls?.rippleEffect || 0.1)
+    // Strong enough to read as a lens, restrained enough to keep the fixed
+    // menu legible. The old 0.1 tangent ripple displaced the snapshot by ten
+    // percent of its full texture and looked like a torn/stale header.
+    gl.uniform1f(edgeIntensityLoc, window.glassControls?.edgeIntensity ?? 0.004)
+    gl.uniform1f(rimIntensityLoc, window.glassControls?.rimIntensity ?? 0.018)
+    gl.uniform1f(baseIntensityLoc, window.glassControls?.baseIntensity ?? 0.006)
+    gl.uniform1f(edgeDistanceLoc, window.glassControls?.edgeDistance ?? 0.15)
+    gl.uniform1f(rimDistanceLoc, window.glassControls?.rimDistance ?? 0.8)
+    gl.uniform1f(baseDistanceLoc, window.glassControls?.baseDistance ?? 0.1)
+    gl.uniform1f(cornerBoostLoc, window.glassControls?.cornerBoost ?? 0.008)
+    gl.uniform1f(rippleEffectLoc, window.glassControls?.rippleEffect ?? 0.004)
     gl.uniform1f(tintOpacityLoc, this.tintOpacity)
 
     // Set initial position (will be updated in render loop)
