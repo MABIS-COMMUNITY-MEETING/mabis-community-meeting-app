@@ -37,6 +37,17 @@ const box = { cx: 0, cy: 0, sigma: 0, depth: 0 };
 const candBox = { cx: 0, cy: 0, sigma: 0, depth: 0 };
 
 const SELECTOR = "a, button, [role='button'], [data-cursor], [data-magnet], input, textarea, select, label";
+const LITE_SELECTOR = "[data-cursor-lite]";
+
+/**
+ * Dense menus can contain dozens of adjacent controls. Measuring a new
+ * magnetic target on every row crossing forces layout during pointer motion.
+ * They keep the smooth custom cursor, but skip magnet/label geometry entirely.
+ */
+function cursorTargetAt(el) {
+  if (!el?.closest || el.closest(LITE_SELECTOR)) return null;
+  return el.closest(SELECTOR) || null;
+}
 
 /** Well depth by element role — a CTA should out-pull a metadata link. */
 function depthFor(el) {
@@ -184,7 +195,7 @@ export function startPointerEngine() {
     latestX = latest.clientX;
     latestY = latest.clientY;
     latestT = latest.timeStamp / 1000;
-    latestEl = e.target.closest?.(SELECTOR) || null;
+    latestEl = cursorTargetAt(e.target);
     inputDirty = true;
     pointer.inside = true;
     wake();
@@ -200,7 +211,7 @@ export function startPointerEngine() {
     }
     sample(latestX, latestY, latestT);
     if (retarget) {
-      latestEl = document.elementFromPoint(latestX, latestY)?.closest?.(SELECTOR) || null;
+      latestEl = cursorTargetAt(document.elementFromPoint(latestX, latestY));
       retarget = false;
     }
     if (geometryDirty && heldEl?.isConnected && measure(heldEl, box)) geometryDirty = false;
