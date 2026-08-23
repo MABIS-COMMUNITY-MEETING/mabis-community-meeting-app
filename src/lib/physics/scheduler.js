@@ -22,6 +22,7 @@ const MAX_FRAME = 0.1; // never simulate more than 100ms of catch-up in one fram
 
 const subs = new Set();
 const primed = new WeakSet();
+const activeSubs = [];
 let raf = null;
 let last = 0;
 let acc = 0;
@@ -39,18 +40,18 @@ function frame(now) {
   // DOM writes, preventing read/write interleaving from forcing layout.
   // Settled subscribers still sample so input can wake them, but they do not
   // keep integrating or writing DOM while another effect is moving.
-  const active = [];
+  activeSubs.length = 0;
   for (const s of subs) {
     if (s.sample) s.sample(now);
     const initial = !primed.has(s);
     if (initial) primed.add(s);
-    if (initial || !s.settled || !s.settled()) active.push(s);
+    if (initial || !s.settled || !s.settled()) activeSubs.push(s);
   }
 
   acc += elapsed;
   let steps = 0;
   while (acc >= FIXED_DT && steps < 12) {
-    for (const s of active) s.step(FIXED_DT);
+    for (const s of activeSubs) s.step(FIXED_DT);
     acc -= FIXED_DT;
     steps++;
   }
@@ -58,12 +59,12 @@ function frame(now) {
 
   let allSettled = true;
   const alpha = acc / FIXED_DT;
-  for (const s of active) {
+  for (const s of activeSubs) {
     s.render(alpha);
     if (!s.settled || !s.settled()) allSettled = false;
   }
 
-  if (allSettled || active.length === 0 || subs.size === 0 || document.hidden) {
+  if (allSettled || activeSubs.length === 0 || subs.size === 0 || document.hidden) {
     raf = null;
     return;
   }
