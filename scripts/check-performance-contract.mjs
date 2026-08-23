@@ -240,6 +240,9 @@ forbidText("src/lib/physics/pointer.js", pointer, "latestEl = cursorTargetAt(e.t
 requireText("src/lib/physics/pointer.js", pointer, "if (pointer.inside) return;");
 requireText("src/lib/physics/scheduler.js", physicsScheduler, "const primed = new WeakSet()");
 requireText("src/lib/physics/scheduler.js", physicsScheduler, "const activeSubs = []");
+requireText("src/lib/physics/scheduler.js", physicsScheduler, "const runAll = firstWakeFrame");
+requireText("src/lib/physics/scheduler.js", physicsScheduler, "firstWakeFrame = true");
+requireText("src/lib/physics/scheduler.js", physicsScheduler, "if (runAll || initial || !s.settled || !s.settled())");
 requireText("src/lib/physics/scheduler.js", physicsScheduler, "for (const s of activeSubs) s.step(FIXED_DT)");
 requireText("src/lib/physics/scheduler.js", physicsScheduler, "for (const s of activeSubs) {\n    s.render(alpha);");
 requireText("src/lib/physics/pointer.js", pointer, 'const LITE_SELECTOR = "[data-cursor-lite]"');
