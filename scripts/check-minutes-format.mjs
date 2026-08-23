@@ -208,6 +208,7 @@ check("compareWeeksDesc orders across years", compareWeeksDesc("2025-W51", "2026
  */
 const minutesSource = fs.readFileSync("solid/components/MeetingMinutes.jsx", "utf8");
 const editorSource = fs.readFileSync("solid/components/DocsEditor.jsx", "utf8");
+const historySource = fs.readFileSync("solid/pages/History.jsx", "utf8");
 
 check("the minutes editor is keyed by week",
   minutesSource.includes("<Show when={props.weekLabel} keyed>"),
@@ -225,6 +226,13 @@ check("DocsEditor still seeds only on mount",
   editorSource.includes("quill.clipboard.dangerouslyPasteHTML(props.initialHtml")
   && !/createEffect\(\s*on\(\s*\(\)\s*=>\s*props\.initialHtml/.test(editorSource),
   "a reseed effect would fight the caret on every save round-trip");
+check("Meeting History loads Quill's document formatting rules",
+  historySource.includes('import "quill/dist/quill.snow.css";'));
+check("Meeting History renders saved HTML through the same ql-editor document model",
+  historySource.includes('class="ql-editor docs-history-document"'));
+check("Meeting History no longer forces every ol to look numbered",
+  !historySource.includes("[&_ol]:list-decimal"),
+  "Quill stores bullet and ordered list identity in data-list attributes");
 
 console.log(`\nMinutes conversion: ${count - failures.length}/${count} checks passed\n`);
 if (failures.length) {
