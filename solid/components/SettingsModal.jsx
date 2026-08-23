@@ -198,7 +198,12 @@ export default function SettingsModal(props) {
   const visibleFonts = createMemo(() =>
     showAdvancedFonts() ? filteredFonts().slice(0, fontLimit()) : filteredFonts());
 
+  const preloadLayout = (choice) => {
+    if (choice.key === "boss") void import("~/components/home/boss");
+  };
+
   const handleLayoutSelect = (choice) => {
+    preloadLayout(choice);
     if (choice.key === "boss") {
       const nextPressCount = bossStylePresses() + 1;
       setBossStylePresses(nextPressCount);
@@ -321,6 +326,9 @@ export default function SettingsModal(props) {
                       return (
                         <button
                           type="button"
+                          onPointerEnter={() => preloadLayout(choice)}
+                          onFocus={() => preloadLayout(choice)}
+                          onPointerDown={() => preloadLayout(choice)}
                           onClick={() => handleLayoutSelect(choice)}
                           aria-pressed={selected()}
                           class="min-h-20 bg-background p-3 text-left hover:bg-muted"
