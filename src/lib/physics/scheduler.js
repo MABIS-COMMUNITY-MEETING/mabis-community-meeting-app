@@ -26,9 +26,12 @@ const activeSubs = [];
 let raf = null;
 let last = 0;
 let acc = 0;
+let firstWakeFrame = false;
 
 function frame(now) {
   sampleFrame(now);
+  const runAll = firstWakeFrame;
+  firstWakeFrame = false;
 
   const t = now / 1000;
   let elapsed = t - last;
@@ -45,7 +48,7 @@ function frame(now) {
     if (s.sample) s.sample(now);
     const initial = !primed.has(s);
     if (initial) primed.add(s);
-    if (initial || !s.settled || !s.settled()) activeSubs.push(s);
+    if (runAll || initial || !s.settled || !s.settled()) activeSubs.push(s);
   }
 
   acc += elapsed;
@@ -79,6 +82,7 @@ export function wake() {
   /* The loop has been parked for an unknown time; the next timestamp is not a
    * frame delta and must not be measured as one. */
   resetFrameChain();
+  firstWakeFrame = true;
   raf = requestAnimationFrame(frame);
 }
 
