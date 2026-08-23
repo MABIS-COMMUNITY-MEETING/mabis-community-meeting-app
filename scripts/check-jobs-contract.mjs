@@ -12,7 +12,7 @@ import {
   scheduledDaysFor,
   timeKeeperKeysForYear,
 } from "../src/lib/jobsRotation.js";
-import { TAU, normalizeRotation } from "../solid/lib/wheel-math.js";
+import { TAU, normalizeRotation, seededShuffle } from "../solid/lib/wheel-math.js";
 
 const august = new Date(2026, 7, 14, 12);
 assert.equal(getMonthLabel(august), "2026-08");
@@ -49,6 +49,13 @@ for (let i = 0; i < 250_000; i += 1) {
   assert.ok(rotation >= 0 && rotation < TAU);
 }
 
+const originalOrder = ["A", "B", "C", "D", "E"];
+const firstShuffle = seededShuffle(originalOrder, 1);
+assert.deepEqual(originalOrder, ["A", "B", "C", "D", "E"]);
+assert.deepEqual(seededShuffle(originalOrder, 1), firstShuffle);
+assert.notDeepEqual(seededShuffle(originalOrder, 2), firstShuffle);
+assert.deepEqual([...firstShuffle].sort(), [...originalOrder].sort());
+
 const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const homeSource = source("solid/pages/Home.jsx");
 const discussionSource = source("solid/components/DiscussionWidget.jsx");
@@ -66,7 +73,7 @@ assert.match(discussionSource, /wheelSession=\{props\.wheelSession\}/);
 assert.match(jobsSource, /props\.wheelSession\?\.winner/);
 assert.match(wheelSessionSource, /shuffleSeed:\s*createSignal\(0\)/);
 assert.match(jobsSource, /props\.wheelSession\?\.shuffleSeed/);
-assert.match(jobsSource, /function shuffledMembers\(list, seed\)/);
+assert.match(jobsSource, /seededShuffle\(ordered, seed\)/);
 assert.match(jobsSource, /onShuffle=\{handleShuffleWheel\}/);
 assert.match(spinWheelSource, /aria-label="Shuffle wheel order"/);
 assert.match(memberSchemaSource, /"job_rotation_enabled"/);
