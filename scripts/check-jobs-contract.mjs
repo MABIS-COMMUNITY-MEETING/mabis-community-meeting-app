@@ -53,6 +53,8 @@ const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "u
 const homeSource = source("solid/pages/Home.jsx");
 const discussionSource = source("solid/components/DiscussionWidget.jsx");
 const jobsSource = source("solid/components/JobsWidget.jsx");
+const jobTablesSource = source("solid/components/jobs/tables.jsx");
+const memberSchemaSource = source("base44/entities/Member.jsonc");
 const docsEditorSource = source("solid/components/DocsEditor.jsx");
 const announcementSource = source("solid/components/AnnouncementsWidget.jsx");
 
@@ -60,10 +62,17 @@ assert.match(homeSource, /createJobWheelSession\(\)/);
 assert.match(homeSource, /wheelSession=\{wheelSession\}/);
 assert.match(discussionSource, /wheelSession=\{props\.wheelSession\}/);
 assert.match(jobsSource, /props\.wheelSession\?\.winner/);
+assert.match(memberSchemaSource, /"job_rotation_enabled"/);
+assert.match(jobsSource, /base44\.entities\.Member\.update\(member\.id, \{ job_rotation_enabled: enabled \}\)/);
+assert.match(jobsSource, /studentMembers\(\)\.filter\(\(m\) => m\.job_rotation_enabled !== false\)/);
+assert.match(jobsSource, /data-cursor-lite/);
+assert.match(jobsSource, /onDelete=\{handleRemoveAssignment\}/);
+assert.match(jobTablesSource, /props\.onDelete\(a\)/);
+assert.match(jobTablesSource, /<span>Remove<\/span>/);
 assert.equal((discussionSource.match(/<MeetingMinutes\b/g) || []).length, 2);
 assert.doesNotMatch(discussionSource, /MeetingNotesEditor/);
 assert.match(docsEditorSource, /toggleList\("bullet"\)/);
 assert.match(announcementSource, /memberForAuthor\(announcement\.author_name\)\?\.avatar_url/);
 assert.doesNotMatch(announcementSource, /avatar_url:\s*auth\.user\(\)\?\.avatar_url\s*\|\|\s*author\?\.avatar_url/);
 
-console.log("Jobs and meeting UI contract: scheduling, mirrored Home wheel and document state, unlimited bounded spins, bullet formatting, and announcement avatars passed.");
+console.log("Jobs and meeting UI contract: persistent job-list membership, exact assignment removal, scheduling, mirrored Home state, unlimited bounded spins, bullet formatting, and announcement avatars passed.");
