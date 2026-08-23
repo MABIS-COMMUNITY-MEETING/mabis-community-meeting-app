@@ -65,6 +65,10 @@ function base44ForSolid(options) {
 
 export default defineConfig({
   logLevel: "error",
+  // Keep dependency lookup tables as JS escapes instead of literal glyphs. This
+  // prevents non-UI data (for example html2canvas's list-marker alphabets) from
+  // looking like first-paint text to the font-subset verifier.
+  esbuild: { charset: "ascii" },
   root: path.resolve(process.cwd(), "solid"),
   // Fonts, logo and manifest are shared rather than copied.
   publicDir: path.resolve(process.cwd(), "public"),
