@@ -335,6 +335,51 @@
   border-color: hsl(var(--ink) / 0.12);
 }
 
+/*
+ * The persistent menu uses the thicker, milky frost from the supplied
+ * references: diffuse backdrop, translucent theme-derived tint, a bright
+ * rounded inner rim and a soft lower shadow. Bone/background keep the pane
+ * correct on every saved/custom theme instead of hard-coding white/black.
+ */
+.lg-navigation.lg-on-light {
+  --glass_blur: 26px;
+  --glass_saturation: 146%;
+  --glass_brightness: 1.08;
+  --glass_tint: 0.18;
+  --glass_spec: 0.38;
+  --liquid-glass-overlay-opacity: 0.30;
+  background:
+    linear-gradient(180deg,
+      hsl(var(--bone) / 0.38) 0%,
+      hsl(var(--bone) / 0.22) 48%,
+      hsl(var(--background) / 0.32) 100%),
+    linear-gradient(90deg,
+      hsl(var(--primary) / 0.08),
+      hsl(var(--secondary) / 0.06));
+  border-bottom-color: hsl(var(--bone) / 0.52);
+  box-shadow:
+    inset 2px 2px 1px 0 hsl(var(--bone) / 0.48),
+    inset -1px -1px 1px 1px hsl(var(--bone) / 0.34),
+    0 8px 8px hsl(var(--ink) / 0.16),
+    0 0 24px hsl(var(--ink) / 0.10);
+}
+
+.lg-navigation.lg-on-light::before {
+  background:
+    radial-gradient(
+      180px 110px at var(--glass_pointer_x) var(--glass_pointer_y),
+      hsl(var(--bone) / var(--glass_spec)),
+      hsl(var(--bone) / 0.10) 32%,
+      transparent 62%
+    ),
+    linear-gradient(
+      to bottom,
+      hsl(var(--bone) / 0.36),
+      hsl(var(--bone) / 0.08) 38%,
+      transparent 72%
+    );
+}
+
 /* press — physical compression, released with a spring-ish ease */
 .lg-surface[data-glass-press="1"] {
   transform: scale(0.988);
@@ -384,11 +429,11 @@
   right: 0;
   left: 0;
   z-index: 0;
-  height: 22px;
+  height: 26px;
   pointer-events: none;
-  background: linear-gradient(to bottom, hsl(var(--background) / 0.20), transparent 92%);
-  -webkit-backdrop-filter: blur(8px) saturate(112%);
-  backdrop-filter: blur(8px) saturate(112%);
+  background: linear-gradient(to bottom, hsl(var(--bone) / 0.24), transparent 92%);
+  -webkit-backdrop-filter: blur(12px) saturate(118%);
+  backdrop-filter: blur(12px) saturate(118%);
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.72) 38%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.72) 38%, transparent 100%);
   opacity: var(--glass-scroll-edge-opacity, 0.52);
@@ -486,6 +531,11 @@ html.animations-disabled .lg-scroll-edge {
     --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
   }
   .lg-thick { --glass_blur: 12px; }
+  .lg-navigation {
+    --glass_blur: 16px;
+    --glass_tint: 0.22;
+    --liquid-glass-overlay-opacity: 0.26;
+  }
   .lg-surface::after { display: none; }
   .lg-scroll-edge {
     height: 14px;
