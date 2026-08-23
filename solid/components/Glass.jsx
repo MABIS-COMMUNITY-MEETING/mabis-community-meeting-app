@@ -58,7 +58,8 @@ export default function Glass(props) {
         borderRadius: local.variant === "navigation"
           ? 0
           : (Number.parseFloat(getComputedStyle(el).borderRadius) || 0),
-        tintOpacity: local.variant === "navigation" ? 0.12 : 0.2,
+        tintOpacity: local.variant === "navigation" ? 0.18 : 0.2,
+        warp: true,
       });
     };
 
