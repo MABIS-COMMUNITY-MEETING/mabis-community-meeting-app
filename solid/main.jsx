@@ -134,63 +134,11 @@ async function bootstrap() {
   // The worker is a progressive enhancement and never intercepts Base44 APIs.
   if (import.meta.env.PROD && "serviceWorker" in navigator) {
     /*
-     * The worker calls skipWaiting(), so a new build can take control of this
-     * page while it is open. This page's own lazy chunks belong to the build
-     * it loaded, and the new worker has just evicted them from the cache, so
-     * the next route or widget import could 404. One reload lands cleanly on
-     * the new build.
-     *
-     * Only when there WAS a controller: on a first visit controllerchange
-     * fires because the very first worker took over, and reloading there
-     * would be a pointless flash on every new device.
+     * Updates are deliberately non-disruptive. A newly installed worker waits
+     * while this tab is open, so its hashed chunks remain paired with the page
+     * that loaded them. It activates on the next normal reopen/navigation;
+     * never hard-reload a meeting or document behind the reader's back.
      */
-    const hadController = Boolean(navigator.serviceWorker.controller);
-    let reloading = false;
-    /*
-     * Reload once a new build takes over — but not mid-scroll and not while
-     * the reader is typing into something. This used to reload the instant
-     * controllerchange fired, which happens whenever this tab is open across
-     * a deploy (not rare during active development, or for anyone who just
-     * leaves the site open). Yanking the page out from under a scroll or an
-     * in-progress edit reads exactly like a crash: the page just resets
-     * itself with no warning while the reader is mid-gesture.
-     *
-     * `scrolling` mirrors installScrollStateClass()'s own signal rather than
-     * depending on it directly, since this runs before Home (and its
-     * onMount) exists. Cheap and self-contained: one passive listener, no
-     * reactive graph involved.
-     */
-    let scrolling = false;
-    let scrollIdleTimer = 0;
-    window.addEventListener("scroll", () => {
-      scrolling = true;
-      clearTimeout(scrollIdleTimer);
-      scrollIdleTimer = window.setTimeout(() => { scrolling = false; }, 400);
-    }, { passive: true });
-
-    const isEditing = () => {
-      const el = document.activeElement;
-      if (!el) return false;
-      const tag = el.tagName;
-      return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable === true;
-    };
-
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (!hadController || reloading) return;
-      reloading = true;
-      const attemptReload = () => {
-        if (scrolling || isEditing()) {
-          window.setTimeout(attemptReload, 500);
-          return;
-        }
-        window.location.reload();
-      };
-      // A five-second grace period before the first check, so a controller
-      // handoff that lands mid-gesture doesn't reload the instant the
-      // gesture happens to pause for a frame.
-      window.setTimeout(attemptReload, 5000);
-    });
-
     const register = () => {
       const run = () => navigator.serviceWorker
         .register("/sw.js", { scope: "/", updateViaCache: "none" })
