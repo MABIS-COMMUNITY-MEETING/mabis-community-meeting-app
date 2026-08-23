@@ -53,7 +53,7 @@ const savedDate = (list) =>
 export default function JobListStudio(props) {
   const queryClient = useQueryClient();
   const assignments = () => props.assignments || [];
-  const initialTitle = () => `MABIS Jobs - ${safePeriod(props.periodLabel)}`;
+  const initialTitle = () => "MABIS Jobs";
 
   const [title, setTitle] = createSignal(initialTitle());
   const [notes, setNotes] = createSignal("");
@@ -340,11 +340,11 @@ export default function JobListStudio(props) {
           </div>
           <JapaneseText
             as="p"
-            ja="PDFには日本語を含めず、現在のテーマ色と選択中のUIフォントを使用します。"
+            ja="PDFには日本語を含めず、現在のテーマ色と選択中のUIフォントを使用します。管理者でなくても、誰でも出力できます。"
             class="mt-2 block text-[11px] leading-relaxed text-muted-foreground"
             japaneseClass="mt-1 block text-[0.86em]"
           >
-            The PDF is English-only and uses the current theme colors and selected UI font.
+            The PDF is English-only and uses the current theme colors and selected UI font. Anyone can export it; admin access is not required.
           </JapaneseText>
         </div>
 
