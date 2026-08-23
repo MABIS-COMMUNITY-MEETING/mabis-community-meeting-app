@@ -234,6 +234,8 @@ requireText("src/lib/physics/pointer.js", pointer, 'const LITE_SELECTOR = "[data
 requireText("solid/components/ui/select.jsx", selectSolid, "createMemo(() => normalise(local.options))");
 requireText("solid/components/ui/select.jsx", selectSolid, "data-cursor-lite");
 requireText("src/components/JobsWidget.jsx", jobs, "data-cursor-lite");
+requireText("src/components/JobsWidget.jsx", jobs, 'lazy(() => import("~/components/jobs/JobListStudio"))');
+forbidText("src/components/JobsWidget.jsx", jobs, 'import JobListStudio from "~/components/jobs/JobListStudio"');
 const cursorMaterialStart = css.indexOf(".cursor-dot, .cursor-ring");
 const cursorMaterialEnd = css.indexOf(".cursor-label", cursorMaterialStart);
 const cursorMaterial = cursorMaterialStart === -1 || cursorMaterialEnd === -1
