@@ -1,5 +1,5 @@
 import { createSignal, createEffect, on, onMount, onCleanup, Show } from "solid-js";
-import { Loader2 } from "lucide-solid";
+import { Loader2, Shuffle } from "lucide-solid";
 import { displayName } from "@/lib/names";
 import { playWheelTick, playWheelStart, playWheelWin } from "@/lib/wheel_sound";
 import { Button } from "~/components/ui";
@@ -255,16 +255,30 @@ export default function SpinWheel(props) {
         />
       </div>
 
-      <Button
-        onClick={handleSpin}
-        disabled={isSpinning() || members().length === 0 || props.disabled}
-        class="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-10 text-base font-bold w-full"
-        size="lg"
-      >
-        <Show when={isSpinning()} fallback={"Spin"}>
-          <Loader2 class="w-4 h-4 animate-spin mr-2" />Spinning...
-        </Show>
-      </Button>
+      <div class="grid w-full grid-cols-[minmax(0,1fr)_auto] gap-2">
+        <Button
+          onClick={handleSpin}
+          disabled={isSpinning() || members().length === 0 || props.disabled}
+          class="w-full rounded-xl bg-primary px-10 text-base font-bold text-primary-foreground hover:bg-primary/90"
+          size="lg"
+        >
+          <Show when={isSpinning()} fallback={"Spin"}>
+            <Loader2 class="mr-2 h-4 w-4 animate-spin" />Spinning...
+          </Show>
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          onClick={() => props.onShuffle?.()}
+          disabled={isSpinning() || members().length < 2 || props.disabled}
+          class="rounded-xl px-4 font-bold"
+          title="Shuffle the slice order without assigning anyone"
+          aria-label="Shuffle wheel order"
+        >
+          <Shuffle class="mr-2 h-4 w-4" /> Shuffle
+        </Button>
+      </div>
     </div>
   );
 }
