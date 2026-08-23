@@ -1,4 +1,5 @@
 import { createSignal, createMemo, onMount, onCleanup, createEffect, Show, For } from "solid-js";
+import { Portal } from "solid-js/web";
 import { Palette, Check, RotateCcw, Save, Trash2, Star, Search } from "lucide-solid";
 import {
   THEMES, getSelectableThemeKeys, applyTheme, applyCustomColors, clearCustomColors,
@@ -258,14 +259,15 @@ export default function ThemeSwitcher(props) {
       </button>
 
       <Show when={open()}>
-        <div class="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-        <div
-          ref={menuEl}
-          role="dialog"
-          aria-label="Choose a theme"
-          class="fixed left-1/2 -translate-x-1/2 top-16 w-[min(20rem,calc(100vw-1.5rem))] sm:absolute sm:left-auto sm:translate-x-0 sm:top-full sm:right-0 sm:mt-2 sm:w-80 bg-popover text-popover-foreground border border-border p-4 z-50 max-h-[75vh] overflow-y-auto overscroll-contain shadow-xl"
-          style={{ contain: "layout style" }}
-        >
+        <Portal>
+          <div class="fixed inset-0 z-[140]" onClick={() => setOpen(false)} />
+          <div
+            ref={menuEl}
+            role="dialog"
+            aria-label="Choose a theme"
+            class="fixed left-1/2 top-[calc(4.5rem+env(safe-area-inset-top))] z-[150] max-h-[75vh] w-[min(20rem,calc(100vw-1.5rem))] -translate-x-1/2 overflow-y-auto overscroll-contain border border-border bg-popover p-4 text-popover-foreground shadow-xl"
+            style={{ contain: "layout style" }}
+          >
           <div class="mb-4 border-b border-border pb-3">
             <div class="flex items-center gap-2">
               <Palette class="w-4 h-4 text-primary" />
@@ -459,8 +461,9 @@ export default function ThemeSwitcher(props) {
                 </div>
               </div>
             </Show>
+            </div>
           </div>
-        </div>
+        </Portal>
       </Show>
     </div>
   );
