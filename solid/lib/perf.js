@@ -152,33 +152,45 @@ export function createQualityTier() {
  */
 export function installScrollStateClass() {
   const root = document.documentElement;
+  const idleDelay = 140;
   let scrolling = false;
-  let queued = false;
+  let classFrame = 0;
   let idleTimer = 0;
+  let lastScrollAt = 0;
 
   const settle = () => {
     scrolling = false;
     root.classList.remove("is-scrolling");
   };
 
+  const settleAfterInactivity = () => {
+    const remaining = idleDelay - (performance.now() - lastScrollAt);
+    if (remaining > 1) {
+      idleTimer = setTimeout(settleAfterInactivity, remaining);
+      return;
+    }
+    idleTimer = 0;
+    settle();
+  };
+
   const onScroll = () => {
+    lastScrollAt = performance.now();
     if (!scrolling) {
       scrolling = true;
-      if (!queued) {
-        queued = true;
-        requestAnimationFrame(() => {
-          queued = false;
+      if (!classFrame) {
+        classFrame = requestAnimationFrame(() => {
+          classFrame = 0;
           root.classList.add("is-scrolling");
         });
       }
     }
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(settle, 140);
+    if (!idleTimer) idleTimer = setTimeout(settleAfterInactivity, idleDelay);
   };
 
   window.addEventListener("scroll", onScroll, { passive: true });
   return () => {
     window.removeEventListener("scroll", onScroll);
+    if (classFrame) cancelAnimationFrame(classFrame);
     clearTimeout(idleTimer);
     settle();
   };
