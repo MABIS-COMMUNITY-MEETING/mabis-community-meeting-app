@@ -49,6 +49,17 @@ const SCHEDULE_OPTIONS = [
   { value: "tue_thu", label: "Tue/Thu" },
 ];
 
+function shuffledMembers(list, seed) {
+  const shuffled = [...list];
+  let state = seed >>> 0;
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    const j = state % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 /*
  * JobsWidget — Solid port of src/components/JobsWidget.jsx (1,060 lines).
  *
@@ -80,10 +91,12 @@ export default function JobsWidget(props) {
     selectedJobId: createSignal(JOBS[0].id),
     winner: createSignal(null),
     removedIds: createSignal([]),
+    shuffleSeed: createSignal(0),
   };
   const [selectedJobId, setSelectedJobId] = props.wheelSession?.selectedJobId || localWheelSession.selectedJobId;
   const [winner, setWinner] = props.wheelSession?.winner || localWheelSession.winner;
   const [removedIds, setRemovedIds] = props.wheelSession?.removedIds || localWheelSession.removedIds;
+  const [shuffleSeed, setShuffleSeed] = props.wheelSession?.shuffleSeed || localWheelSession.shuffleSeed;
   const [fullscreen, setFullscreen] = createSignal(false);
   const [showStudentMgr, setShowStudentMgr] = createSignal(false);
   const [showAddJob, setShowAddJob] = createSignal(false);
@@ -169,10 +182,13 @@ export default function JobsWidget(props) {
     !selectingTimeKeeper() && assignmentEligibleStudents().length === 0 && rotationMembers().length > 0;
   const spinCandidates = createMemo(() => repeatSpinMode() ? rotationMembers() : assignmentEligibleStudents());
 
-  const wheelMembers = createMemo(() =>
-    spinCandidates()
+  const wheelMembers = createMemo(() => {
+    const ordered = spinCandidates()
       .filter((m) => !removedIds().includes(m.id))
-      .sort((a, b) => displayName(a).localeCompare(displayName(b))));
+      .sort((a, b) => displayName(a).localeCompare(displayName(b)));
+    const seed = shuffleSeed();
+    return seed ? shuffledMembers(ordered, seed) : ordered;
+  });
   const directPickOptions = createMemo(() =>
     wheelMembers().map((m) => ({ value: m.id, label: displayName(m) })));
 
@@ -439,6 +455,13 @@ export default function JobsWidget(props) {
     setWinner(null);
   };
 
+  const handleShuffleWheel = () => {
+    if (wheelMembers().length < 2 || winner()) return;
+    setShuffleSeed((seed) => ((seed + 1) >>> 0) || 1);
+    setJobActionMessage("Wheel order shuffled. No one was assigned.");
+    window.setTimeout(() => setJobActionMessage(""), 3000);
+  };
+
   const WheelAndTable = (p) => (
     <div class="space-y-6">
       <Show when={jobActionMessage()}>
@@ -556,6 +579,7 @@ export default function JobsWidget(props) {
                 <SpinWheel
                   members={wheelMembers()}
                   onSpinComplete={handleSpinComplete}
+                  onShuffle={handleShuffleWheel}
                   disabled={!isAdmin() || !!winner()}
                   size={p.fullscreen ? 440 : 360}
                 />
