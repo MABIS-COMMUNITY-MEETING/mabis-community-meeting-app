@@ -56,14 +56,22 @@
  * else is treated as work that lands on the thread, and is sequenced.
  */
 
-/* BORE: sched_burst_penalty_offset = 24, against a nanosecond log2 scale.
-   Rebased to milliseconds: bursts under ~1ms score nothing. That is roughly
-   the point below which a task cannot cause a dropped frame on its own. */
-const PENALTY_OFFSET_MS = 1;
+import { refreshIntervalMs } from "../../src/lib/physics/refresh-rate.js";
+
+/*
+ * BORE 6.8.0 stores burst time in nanoseconds and compares its fixed-point
+ * log2p1 value with sched_burst_penalty_offset = 24. log2p1 is approximately
+ * log2(ns) + 1, so the zero-penalty tolerance begins at 2^23 ns (8.388608 ms).
+ * Keeping the units explicit avoids the old browser port's inaccurate 1 ms
+ * reinterpretation of the kernel constant.
+ */
+const NS_PER_MS = 1_000_000;
+const PENALTY_OFFSET_BITS = 24;
+const PENALTY_TOLERANCE_MS = (2 ** (PENALTY_OFFSET_BITS - 1)) / NS_PER_MS;
 
 /* BORE: sched_burst_penalty_scale = 1536, applied as (penalty * scale) >> 10,
-   i.e. x1.5. Kept, so the curve's shape matches the original. */
-const PENALTY_SCALE = 1.5;
+   i.e. x1.5. Kept, so the curve's shape matches the supplied 6.8.0 patch. */
+const PENALTY_SCALE = 1536 / 1024;
 
 /* BORE: sched_burst_smoothness = 1, used as a right-shift — each round closes
    half the remaining gap. Kept exactly. */
@@ -76,15 +84,25 @@ const MAX_PENALTY = 40;
 /*
  * How much synchronous thread time may accumulate before handing back.
  *
- * BORE's slice is a preemption budget; this is a cooperative one. 5ms sits
- * under a 144Hz frame (6.9ms) with room for the browser's own work, so a full
- * slice still cannot drop a frame on the displays this app is tuned for.
+ * BORE's kernel slice is a preemption budget; JavaScript cannot preempt a
+ * running function, so this is a cooperative budget between tasks. It tracks
+ * the panel instead of assuming 60 or 144 Hz: at most 30% of a measured frame
+ * is offered to warm-up work, capped at 5 ms for throughput and floored at
+ * 1 ms so high-refresh displays do not spend more time scheduling than doing.
  *
- * Note this counts SYNCHRONOUS time only (see below), so a batch of cheap
- * tasks runs back-to-back in one burst rather than yielding between each —
- * which is the entire point of preferring bursty scheduling to fair.
+ * Before the refresh estimator has enough evidence, refreshIntervalMs() is
+ * given a conservative 120 Hz fallback. This protects 120/144/240 Hz first
+ * loads instead of spending a 60 Hz-sized slice before the panel is measured.
  */
-const SLICE_MS = 5;
+const SLICE_SHARE = 0.30;
+const MIN_SLICE_MS = 1;
+const MAX_SLICE_MS = 5;
+
+export function cooperativeSliceMs(intervalMs = refreshIntervalMs(1000 / 120)) {
+  const interval = Number(intervalMs);
+  const safeInterval = Number.isFinite(interval) && interval > 0 ? interval : 1000 / 120;
+  return Math.max(MIN_SLICE_MS, Math.min(MAX_SLICE_MS, safeInterval * SLICE_SHARE));
+}
 
 /* Bounds what gets persisted. Labels are stable, but a rename or a new section
    would otherwise leave the old key in localStorage forever. */
@@ -103,11 +121,14 @@ export function burstPenalty(burstMs) {
    * never reach the log and poison the result. */
   const burst = Number(burstMs);
   if (Number.isNaN(burst) || burst <= 0) return 0;
-  const greed = Math.log2(burst + 1);
-  const tolerance = Math.log2(PENALTY_OFFSET_MS + 1);
-  const raw = greed - tolerance;
-  if (raw <= 0) return 0;
-  return Math.min(raw * PENALTY_SCALE, MAX_PENALTY);
+  if (burst === Infinity) return MAX_PENALTY;
+  if (burst <= PENALTY_TOLERANCE_MS) return 0;
+
+  /* Kernel log2p1_u64_u32fp(ns, 8) is a fixed-point approximation of
+   * log2(ns) + 1. Math.log2 gives the same curve without integer quantisation. */
+  const greed = Math.log2(burst * NS_PER_MS) + 1;
+  const raw = greed - PENALTY_OFFSET_BITS;
+  return Math.min(Math.max(raw, 0) * PENALTY_SCALE, MAX_PENALTY);
 }
 
 /*
@@ -137,11 +158,74 @@ function penaltyOf(memory, label) {
   return Math.min(value, MAX_PENALTY);
 }
 
-/* scheduler.yield() resumes at the FRONT of the task queue, so yielding does
-   not send this work to the back behind unrelated tasks. Chrome 129+. */
-const yieldToBrowser = typeof scheduler !== "undefined" && typeof scheduler.yield === "function"
-  ? () => scheduler.yield()
-  : () => new Promise((resolve) => setTimeout(resolve, 0));
+/*
+ * The supplied BORE 6.8.0 patch lets a more interactive wake-up bypass a
+ * CPU-bound task's protected slice. A page cannot alter CFS/EEVDF weights, but
+ * it can submit this continuation at background priority so input, rendering
+ * and user-visible tasks stay ahead. scheduler.postTask is feature-detected;
+ * scheduler.yield is the next-best cooperative primitive.
+ *
+ * A bare rAF promise is not enough as a fallback: promise continuations run as
+ * microtasks before paint. rAF -> setTimeout guarantees a rendering opportunity
+ * before the next burst. Hidden tabs use a timer because rAF is suspended.
+ */
+function yieldToBrowser() {
+  const taskScheduler = globalThis.scheduler;
+  if (typeof taskScheduler?.postTask === "function") {
+    return taskScheduler.postTask(() => {}, { priority: "background" });
+  }
+  if (typeof taskScheduler?.yield === "function") return taskScheduler.yield();
+  if (typeof document !== "undefined" && !document.hidden
+      && typeof requestAnimationFrame === "function") {
+    return new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+  }
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+/* Browser equivalent of BORE's wake-up preemption check. It cannot interrupt
+ * a function already executing, but it can cancel slice protection at the
+ * next task boundary when input is waiting. */
+function hasPendingInput() {
+  try {
+    return globalThis.navigator?.scheduling?.isInputPending?.({ includeContinuous: true }) === true;
+  } catch {
+    return false;
+  }
+}
+
+/*
+ * BORE's default inheritance type samples an ancestor hub, preventing newly
+ * forked work from escaping its family's learned burst penalty. Browser tasks
+ * have no process tree, so callers may provide a group; an unseen label starts
+ * from that group's persisted average. Known labels retain their own history.
+ */
+const GROUP_PREFIX = "@bore-group:";
+const GROUP_SAMPLE_LIMIT = 63;
+function groupKey(task) {
+  const group = typeof task?.group === "string" ? task.group.trim() : "";
+  return group ? GROUP_PREFIX + group : "";
+}
+function inheritedPenalty(memory, task) {
+  if (memory.has(task.label)) return penaltyOf(memory, task.label);
+  const key = groupKey(task);
+  return key ? penaltyOf(memory, key) : 0;
+}
+function updateGroupPenalty(memory, queue, task) {
+  const key = groupKey(task);
+  if (!key) return;
+  const values = [];
+  for (const sibling of queue) {
+    if (groupKey(sibling) !== key || !memory.has(sibling.label)) continue;
+    values.push(penaltyOf(memory, sibling.label));
+    if (values.length >= GROUP_SAMPLE_LIMIT) break;
+  }
+  const positive = values.filter((value) => value > 0);
+  if (!positive.length) {
+    memory.delete(key);
+    return;
+  }
+  memory.set(key, positive.reduce((sum, value) => sum + value, 0) / positive.length);
+}
 
 /**
  * Run warm-up tasks bursty-first, learning each task's cost as it goes.
@@ -150,21 +234,17 @@ const yieldToBrowser = typeof scheduler !== "undefined" && typeof scheduler.yiel
  * so a task that proved greedy last time starts behind — that is the whole
  * point of BORE, and it is why this is worth more on the second visit.
  *
- * Two different numbers are measured, because they answer two different
- * questions and conflating them is what made the first version useless:
+ * Two different numbers are reported, but only CPU burst time changes rank:
  *
- *   • TOTAL (kickoff through settle) drives the penalty, because "how long
- *     until this is actually usable" is what you want to sort by — cheap
- *     things first means more of the page is warm sooner.
+ *   • SYNCHRONOUS (kickoff until it returns) drives both BORE penalty and slice
+ *     accounting. That matches update_curr_bore(delta_exec): time asleep or
+ *     waiting on I/O is not CPU runtime and must not demote an interactive task.
  *
- *   • SYNCHRONOUS (kickoff until it returns) drives yielding, because only
- *     thread-holding time can delay input. Awaiting already unwinds the stack
- *     and hands the thread back, so time spent inside an await needs no yield.
+ *   • TOTAL (kickoff through settle) is retained as diagnostics for "time until
+ *     usable", but never affects priority.
  *
- * A slow network can inflate a cheap module's total on first load. That is
- * exactly the case BORE's asymmetric smoothing exists for: the inflated score
- * decays instantly the moment a warm cache proves it cheap, while a genuinely
- * greedy task takes several observations to climb.
+ * A task that becomes expensive climbs gradually through binary_smooth; one
+ * that becomes cheap is promoted immediately, matching restart_burst_bore().
  *
  * Resolves once every task has settled. Failures are swallowed — a warm-up is
  * an optimisation, and must never be able to break the page it is warming.
@@ -175,7 +255,8 @@ export async function runBurstOrdered(tasks, options = {}) {
     memory = loadPenalties(storage),
     now = () => performance.now(),
     yieldNow = yieldToBrowser,
-    sliceMs = SLICE_MS,
+    sliceMs = cooperativeSliceMs(),
+    inputPending = hasPendingInput,
     persist = true,
     onTask,
   } = options;
@@ -197,7 +278,7 @@ export async function runBurstOrdered(tasks, options = {}) {
 
   const queue = tasks
     .filter((task) => task && !task.io)
-    .sort((a, b) => penaltyOf(memory, a.label) - penaltyOf(memory, b.label));
+    .sort((a, b) => inheritedPenalty(memory, a) - inheritedPenalty(memory, b));
 
   let slice = 0;
 
@@ -217,10 +298,21 @@ export async function runBurstOrdered(tasks, options = {}) {
     } catch { /* see above: warm-up failures are not the page's problem */ }
 
     const total = Math.max(sync, now() - started);
-    const penalty = smoothPenalty(burstPenalty(total), penaltyOf(memory, task.label));
+    const currentPenalty = burstPenalty(sync);
+    const previousPenalty = inheritedPenalty(memory, task);
+    const penalty = smoothPenalty(currentPenalty, previousPenalty);
     memory.set(task.label, penalty);
+    updateGroupPenalty(memory, queue, task);
 
-    onTask?.({ label: task.label, sync, total, penalty });
+    onTask?.({
+      label: task.label,
+      group: task.group || null,
+      sync,
+      total,
+      currentPenalty,
+      previousPenalty,
+      penalty,
+    });
 
     slice += sync;
 
@@ -233,7 +325,7 @@ export async function runBurstOrdered(tasks, options = {}) {
      * back-to-back and paying a single yield when the budget is gone is the
      * bursty alternative.
      */
-    if (slice >= sliceMs) {
+    if (slice >= sliceMs || inputPending()) {
       slice = 0; /* BORE's restart_burst: accounting is per-slice. */
       await yieldNow();
     }
