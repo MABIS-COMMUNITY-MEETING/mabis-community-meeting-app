@@ -8,7 +8,7 @@ import {
   WEEKDAYS, assignmentIsCurrent, formatMonthLabel, formatWeekLabel,
   getCurrentWeekLabel, getMonthLabel, getNextMonthLabel, getNextWeekLabel,
   getScheduledDatesForMonth, getVisibleWeekDates, isTimeKeeperJob, jobPeriod,
-  memberRotationKey, normalizeJobTitle, scheduledDaysFor, timeKeeperKeysForYear,
+  memberRotationKey, normalizeJobTitle, scheduledDaysFor,
 } from "@/lib/jobsRotation";
 import { useAuth } from "~/lib/AuthContext";
 import { Button } from "~/components/ui";
@@ -101,7 +101,6 @@ export default function JobsWidget(props) {
 
   const currentWeek = getCurrentWeekLabel();
   const currentMonth = getMonthLabel();
-  const currentYear = currentMonth.slice(0, 4);
 
   const members = () => props.members || [];
   const isAdmin = () => props.isAdmin;
@@ -164,13 +163,16 @@ export default function JobsWidget(props) {
 
   const selectedJob = createMemo(() =>
     allJobs().find((j) => j.id === selectedJobId()) || allJobs()[0] || JOBS[0]);
-  const servedTimeKeeperKeys = createMemo(() => timeKeeperKeysForYear(assignments(), currentYear));
   const selectingTimeKeeper = () => isTimeKeeperJob(selectedJob()?.label);
 
+  // Time Keepers stay on the wheel after being selected. They may be picked
+  // again for another Time Keeper slot or a later month; the exact job slot
+  // still cannot be assigned twice.
   const assignmentEligibleStudents = createMemo(() =>
-    rotationMembers().filter((m) =>
-      !assignedMemberKeys().has(memberRotationKey(m))
-      && (!selectingTimeKeeper() || !servedTimeKeeperKeys().has(memberRotationKey(m)))));
+    selectingTimeKeeper()
+      ? rotationMembers()
+      : rotationMembers().filter((m) =>
+        !assignedMemberKeys().has(memberRotationKey(m))));
 
   const repeatSpinMode = () =>
     !selectingTimeKeeper() && assignmentEligibleStudents().length === 0 && rotationMembers().length > 0;
@@ -189,9 +191,8 @@ export default function JobsWidget(props) {
   const winnerCanBeAssigned = () => {
     const w = winner();
     return !!w
-      && !assignedMemberKeys().has(memberRotationKey(w.member))
-      && !assignedJobLabels().includes(normalizeJobTitle(w.jobLabel))
-      && (!isTimeKeeperJob(w.jobLabel) || !servedTimeKeeperKeys().has(memberRotationKey(w.member)));
+      && (isTimeKeeperJob(w.jobLabel) || !assignedMemberKeys().has(memberRotationKey(w.member)))
+      && !assignedJobLabels().includes(normalizeJobTitle(w.jobLabel));
   };
 
   createEffect(() => {
@@ -537,6 +538,16 @@ export default function JobsWidget(props) {
                 {repeatSpinMode() ? " · extra spins are unlimited" : ""}
               </JapaneseText>
             </Show>
+            <Show when={selectingTimeKeeper() && wheelMembers().length > 0}>
+              <JapaneseText
+                as="p"
+                ja="タイムキーパーに選ばれた人もホイールに残り、もう一度選ばれることがあります。"
+                class="block text-center text-[11px] leading-relaxed text-primary"
+                japaneseClass="mt-0.5 block text-[0.9em]"
+              >
+                Time Keepers stay on the wheel after being picked and can be picked again.
+              </JapaneseText>
+            </Show>
 
             {/* Pick someone directly instead of spinning. Routed through the
                 same handler as a spin, so the confirm step, eligibility rules
@@ -586,9 +597,7 @@ export default function JobsWidget(props) {
                     <div class="h-40 flex flex-col items-center justify-center text-center gap-2">
                       <CheckCircle2 class="w-10 h-10 text-green-400" />
                       <p class="text-green-700 font-semibold text-sm">
-                        {selectingTimeKeeper()
-                          ? "Everyone eligible has already served as Time Keeper this year."
-                          : "No students are available for this spin."}
+                        No students are available for this spin.
                       </p>
                     </div>
                   </Show>
