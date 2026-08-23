@@ -15,6 +15,7 @@ export class LiquidGlassContainer {
   static pageSnapshot = null
   static isCapturing = false
   static waitingForSnapshot = []
+  static captureGeneration = 0
 
   constructor(options = {}) {
     this.width = 0 // Will be set from DOM
@@ -215,6 +216,7 @@ export class LiquidGlassContainer {
   }
 
   capturePageSnapshot() {
+    const generation = ++LiquidGlassContainer.captureGeneration
     html2canvas(document.body, {
       scale: 1,
       useCORS: true,
@@ -230,6 +232,7 @@ export class LiquidGlassContainer {
       }
     })
       .then(snapshot => {
+        if (generation !== LiquidGlassContainer.captureGeneration) return
         LiquidGlassContainer.pageSnapshot = snapshot
         LiquidGlassContainer.isCapturing = false
 
@@ -244,6 +247,7 @@ export class LiquidGlassContainer {
         })
       })
       .catch(error => {
+        if (generation !== LiquidGlassContainer.captureGeneration) return
         console.error('html2canvas error:', error)
         LiquidGlassContainer.isCapturing = false
         LiquidGlassContainer.waitingForSnapshot = []
