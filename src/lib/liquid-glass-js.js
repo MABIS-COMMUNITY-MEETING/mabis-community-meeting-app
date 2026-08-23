@@ -19,7 +19,7 @@ export class LiquidGlassContainer {
   constructor(options = {}) {
     this.width = 0 // Will be set from DOM
     this.height = 0 // Will be set from DOM
-    this.borderRadius = options.borderRadius || 48
+    this.borderRadius = options.borderRadius ?? 48
     this.type = options.type || 'rounded' // "rounded", "circle", or "pill"
     this.tintOpacity = options.tintOpacity !== undefined ? options.tintOpacity : 0.2
 
@@ -51,7 +51,7 @@ export class LiquidGlassContainer {
     }
 
     // If child is a button, set up nested glass
-    if (child instanceof Button) {
+    if (typeof globalThis.Button === "function" && child instanceof globalThis.Button) {
       child.setupAsNestedGlass()
     }
 
@@ -79,6 +79,7 @@ export class LiquidGlassContainer {
   updateSizeFromDOM() {
     // Wait for next frame to ensure DOM layout is complete
     requestAnimationFrame(() => {
+      if (!this.element || !this.canvas) return
       const rect = this.element.getBoundingClientRect()
       let newWidth = Math.ceil(rect.width)
       let newHeight = Math.ceil(rect.height)
@@ -121,7 +122,10 @@ export class LiquidGlassContainer {
 
         // Update any nested glass children when container size changes
         this.children.forEach(child => {
-          if (child instanceof Button && child.isNestedGlass && child.gl_refs.gl) {
+          if (typeof globalThis.Button === "function"
+              && child instanceof globalThis.Button
+              && child.isNestedGlass
+              && child.gl_refs.gl) {
             const gl = child.gl_refs.gl
 
             // Update child's texture to match new container size
@@ -187,7 +191,7 @@ export class LiquidGlassContainer {
     this.canvas.style.left = '0'
     this.canvas.style.width = '100%'
     this.canvas.style.height = '100%'
-    this.canvas.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.25)'
+    this.canvas.style.boxShadow = 'none'
     this.canvas.style.zIndex = '0' // Canvas behind .lg-content, above the CSS fallback
 
     this.element.prepend(this.canvas)
@@ -211,7 +215,6 @@ export class LiquidGlassContainer {
   }
 
   capturePageSnapshot() {
-    console.log('Capturing page snapshot...')
     html2canvas(document.body, {
       scale: 1,
       useCORS: true,
@@ -227,7 +230,6 @@ export class LiquidGlassContainer {
       }
     })
       .then(snapshot => {
-        console.log('Page snapshot captured')
         LiquidGlassContainer.pageSnapshot = snapshot
         LiquidGlassContainer.isCapturing = false
 
@@ -252,8 +254,13 @@ export class LiquidGlassContainer {
     if (!LiquidGlassContainer.pageSnapshot || !this.gl) return
 
     const img = new Image()
-    img.src = LiquidGlassContainer.pageSnapshot.toDataURL()
+    try {
+      img.src = LiquidGlassContainer.pageSnapshot.toDataURL()
+    } catch {
+      return
+    }
     img.onload = () => {
+      if (!this.gl || !this.element) return
       this.setupShader(img)
       this.webglInitialized = true
     }
@@ -700,6 +707,7 @@ export class LiquidGlassContainer {
     window.removeEventListener('scroll', this.handleScroll)
     this.cancelScrollFrame?.()
     this.resizeObserver?.disconnect()
+    LiquidGlassContainer.waitingForSnapshot = LiquidGlassContainer.waitingForSnapshot.filter((item) => item !== this)
     this.element?.classList.remove('lg-webgl-ready')
     this.canvas?.remove()
     const index = LiquidGlassContainer.instances.indexOf(this)
