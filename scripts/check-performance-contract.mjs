@@ -103,6 +103,10 @@ const motionCss = read("solid/solid-motion.css");
 const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
 const glass = read("src/styles/glass.css");
+const glassComponentSolid = read("solid/components/Glass.jsx");
+const liquidGlass = read("src/lib/liquid-glass-js.js");
+const siteHeaderSolid = read("solid/components/SiteHeader.jsx");
+const themeSwitcherSolid = read("solid/components/ThemeSwitcher.jsx");
 const jobs = read("src/components/JobsWidget.jsx");
 const settings = read("src/components/SettingsModal.jsx");
 const themeSwitcher = read("src/components/ThemeSwitcher.jsx");
@@ -241,6 +245,16 @@ requireText("src/main.jsx", main, 'navigator.serviceWorker.addEventListener("con
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'import("@/lib/liquid-glass-js")');
+requireText("solid/components/Glass.jsx", glassComponentSolid, "liquidGlass?.destroy()");
+requireText("src/lib/liquid-glass-js.js", liquidGlass, "https://github.com/dashersw/liquid-glass-js");
+requireText("src/lib/liquid-glass-js.js", liquidGlass, 'import html2canvas from "html2canvas"');
+requireText("src/lib/liquid-glass-js.js", liquidGlass, "requestAnimationFrame");
+requireText("src/lib/liquid-glass-js.js", liquidGlass, "destroy()");
+requireText("src/styles/glass.css", glass, ".lg-webgl-ready");
+requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, 'import { Portal } from "solid-js/web"');
+requireText("solid/components/ThemeSwitcher.jsx", themeSwitcherSolid, 'import { Portal } from "solid-js/web"');
+requireText("solid/components/ThemeSwitcher.jsx", themeSwitcherSolid, "z-[150]");
 
 /*
  * .lg-surface must never declare containment.
