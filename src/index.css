@@ -503,9 +503,9 @@ html.platform-linux .widget-rise {
    Its fixed monochrome material is deliberately outside the theme system.
    Material, saved custom, catalogue and Pride themes may repaint the page,
    but must never add a theme-scoped override for these cursor classes. */
-.cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; mix-blend-mode: difference; contain: strict; will-change: transform, opacity; }
-.cursor-dot { width: 5px; height: 5px; background: #fff; transform: translate(-50%,-50%); }
-.cursor-ring { width: 34px; height: 34px; border: 1px solid rgb(255 255 255 / 0.82); transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:9px; letter-spacing:0.08em; color:#fff; text-transform:uppercase; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+.cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; contain: strict; will-change: transform, opacity; }
+.cursor-dot { width: 5px; height: 5px; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.72), 0 1px 3px rgb(0 0 0 / 0.35); transform: translate(-50%,-50%); }
+.cursor-ring { width: 34px; height: 34px; border: 1px solid rgb(255 255 255 / 0.9); box-shadow: 0 0 0 1px rgb(0 0 0 / 0.55), 0 2px 8px rgb(0 0 0 / 0.2); transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:9px; letter-spacing:0.08em; color:#fff; text-transform:uppercase; }
 .cursor-label { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; white-space: nowrap; }
 .cursor-trail { position: fixed; top: 0; left: 0; width: 5px; height: 5px; pointer-events: none; z-index: 9999; border-radius: 999px; background: #fff; mix-blend-mode: difference; transform: translate(-50%,-50%); }
 .cursor-ring.is-hover { width: 40px; height: 40px; background:transparent; }
