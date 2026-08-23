@@ -32,6 +32,10 @@ const statusCopy = {
     en: "Allow pop-ups for this site, then choose Save as PDF again.",
     ja: "このサイトのポップアップを許可してから、もう一度「PDFとして保存」を選んでください。",
   },
+  pdfError: {
+    en: "The PDF could not be prepared. Please try again.",
+    ja: "PDFを準備できませんでした。もう一度お試しください。",
+  },
 };
 
 const safePeriod = (value) => value || "Current assignments";
@@ -134,7 +138,7 @@ export default function JobListStudio(props) {
       await printJobList(list);
       setStatus(statusCopy.pdfReady);
     } catch (error) {
-      setStatus(error?.message === "POPUP_BLOCKED" ? statusCopy.popupBlocked : statusCopy.popupBlocked);
+      setStatus(error?.message === "POPUP_BLOCKED" ? statusCopy.popupBlocked : statusCopy.pdfError);
     } finally {
       setExportingId("");
     }
@@ -153,7 +157,15 @@ export default function JobListStudio(props) {
     >
       <header class="grid gap-5 border-b border-foreground px-3 py-5 sm:px-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <div>
-          <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">N° 04 / Document Studio</p>
+          <JapaneseText
+            as="p"
+            ja="文書作成"
+            class="text-[10px] font-bold uppercase tracking-[0.18em] text-primary"
+            japaneseClass="ml-1.5 inline font-normal tracking-normal"
+            layout="inline"
+          >
+            N° 04 / Document Studio
+          </JapaneseText>
           <JapaneseText
             as="h3"
             id="job-list-studio-title"
@@ -338,7 +350,15 @@ export default function JobListStudio(props) {
 
         <aside class="p-3 sm:p-5">
           <div class="border-b border-foreground pb-3">
-            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Archive / 係</p>
+            <JapaneseText
+              as="p"
+              ja="保存一覧"
+              class="text-[10px] font-bold uppercase tracking-[0.18em] text-primary"
+              japaneseClass="ml-1.5 inline font-normal tracking-normal"
+              layout="inline"
+            >
+              Archive
+            </JapaneseText>
             <JapaneseText
               as="h4"
               ja="保存済みリスト"
@@ -349,7 +369,7 @@ export default function JobListStudio(props) {
             </JapaneseText>
           </div>
 
-          <Show when={!listsQuery.isLoading} fallback={<WidgetSpinner label="Loading saved job lists" />}>
+          <Show when={!listsQuery.isLoading} fallback={<WidgetSpinner label="Loading saved job lists / 保存済み係リストを読み込み中" />}>
             <div class="divide-y divide-border">
               <For
                 each={listsQuery.data || []}
@@ -370,9 +390,15 @@ export default function JobListStudio(props) {
                       <FileText class="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <div class="min-w-0 flex-1">
                         <h5 class="break-words text-sm font-bold leading-snug">{list.title}</h5>
-                        <p class="mt-1 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                        <JapaneseText
+                          as="p"
+                          ja={`${savedDate(list)}・${(list.items || []).length}件`}
+                          class="mt-1 block text-[10px] uppercase tracking-[0.1em] text-muted-foreground"
+                          japaneseClass="ml-1.5 inline normal-case tracking-normal"
+                          layout="inline"
+                        >
                           {savedDate(list)} · {(list.items || []).length} jobs
-                        </p>
+                        </JapaneseText>
                         <Show when={list.notes}>
                           <p class="mt-2 line-clamp-3 whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
                             {list.notes}
