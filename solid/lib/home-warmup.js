@@ -154,7 +154,7 @@ export async function warmHomeRoute(onProgress) {
   const constrained = isConstrainedNetwork();
 
   const modules = (constrained ? SECTION_MODULES.slice(0, 3) : SECTION_MODULES)
-    .map(({ label, load }) => ({ label, run: load }));
+    .map(({ label, load }) => ({ label, group: "sections", run: load }));
   /*
    * Data tasks stay un-sliced even when constrained. dataTasks() is already
    * the trimmed-down, first-view-critical set (see the comment above it) —
@@ -259,8 +259,8 @@ export async function warmHomeRoute(onProgress) {
  */
 function deferredModuleTasks() {
   return [
-    { label: "EDITOR / MINUTES", run: () => import("~/components/MeetingMinutes") },
-    { label: "EDITOR / DOCUMENT", run: () => import("~/components/DocsEditor") },
+    { label: "EDITOR / MINUTES", group: "editors", run: () => import("~/components/MeetingMinutes") },
+    { label: "EDITOR / DOCUMENT", group: "editors", run: () => import("~/components/DocsEditor") },
   ];
 }
 
