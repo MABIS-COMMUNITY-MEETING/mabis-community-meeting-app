@@ -252,7 +252,10 @@ requireText("src/lib/liquid-glass-js.js", liquidGlass, 'import html2canvas from 
 requireText("src/lib/liquid-glass-js.js", liquidGlass, "requestAnimationFrame");
 requireText("src/lib/liquid-glass-js.js", liquidGlass, "destroy()");
 requireText("src/styles/glass.css", glass, ".lg-webgl-ready");
+requireText("src/styles/glass.css", glass, "--liquid-glass-overlay-opacity");
+forbidText("src/styles/glass.css", glass, ".lg-surface.lg-webgl-ready {\n  background: transparent");
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, 'import { Portal } from "solid-js/web"');
+requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, '<Portal>\n      <header class="site-header-shell fixed top-0 left-0 right-0 z-50">');
 requireText("solid/components/ThemeSwitcher.jsx", themeSwitcherSolid, 'import { Portal } from "solid-js/web"');
 requireText("solid/components/ThemeSwitcher.jsx", themeSwitcherSolid, "z-[150]");
 
