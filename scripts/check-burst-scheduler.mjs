@@ -22,8 +22,10 @@
  *
  * Run: node scripts/check-burst-scheduler.mjs
  */
-const { runBurstOrdered, burstPenalty, smoothPenalty, loadPenalties, savePenalties } =
-  await import("../solid/lib/burst-scheduler.js");
+const {
+  runBurstOrdered, burstPenalty, smoothPenalty, cooperativeSliceMs,
+  loadPenalties, savePenalties,
+} = await import("../solid/lib/burst-scheduler.js");
 
 const failures = [];
 let count = 0;
@@ -65,25 +67,26 @@ function harness() {
   };
 }
 
-/* ── 1. BORE's penalty curve ─────────────────────────────────────────────── */
-/* Exact values, not approximations: the curve is log2(burst+1) - log2(offset+1)
-   scaled by 1.5, with the offset at 1ms. Picking bursts of 3 and 7 makes the
-   logs land on integers, which pins the SHAPE and not just the direction. */
-check("burst at the tolerance scores zero", burstPenalty(1) === 0);
-check("burst below the tolerance scores zero", burstPenalty(0.5) === 0);
+/* ── 1. BORE 6.8.0's penalty curve ───────────────────────────────────────── */
+/* The supplied kernel patch uses log2p1(ns) with offset 24 and scale 1536/1024.
+   Its zero boundary is 2^23 ns; each doubling above it adds exactly 1.5 score. */
+const toleranceMs = (2 ** 23) / 1_000_000;
+check("burst at the kernel tolerance scores zero", burstPenalty(toleranceMs) === 0);
+check("burst below the kernel tolerance scores zero", burstPenalty(toleranceMs / 2) === 0);
 check("zero burst scores zero", burstPenalty(0) === 0);
 check("negative burst scores zero", burstPenalty(-5) === 0);
 check("NaN burst scores zero", burstPenalty(NaN) === 0);
 check("Infinity burst is clamped, not NaN", burstPenalty(Infinity) === 40);
-check("3ms scores 1.5", near(burstPenalty(3), 1.5), String(burstPenalty(3)));
-check("7ms scores 3.0", near(burstPenalty(7), 3), String(burstPenalty(7)));
-check("15ms scores 4.5", near(burstPenalty(15), 4.5), String(burstPenalty(15)));
-check("the curve is logarithmic, not linear",
-  near(burstPenalty(7) - burstPenalty(3), burstPenalty(15) - burstPenalty(7)));
-check("doubling a small burst costs less than doubling a large one",
-  burstPenalty(2) - burstPenalty(1) < burstPenalty(64) - burstPenalty(32));
+check("2^24ns scores 1.5", near(burstPenalty((2 ** 24) / 1_000_000), 1.5));
+check("2^25ns scores 3.0", near(burstPenalty((2 ** 25) / 1_000_000), 3));
+check("2^26ns scores 4.5", near(burstPenalty((2 ** 26) / 1_000_000), 4.5));
+check("each doubling adds the same logarithmic penalty",
+  near(
+    burstPenalty((2 ** 26) / 1_000_000) - burstPenalty((2 ** 25) / 1_000_000),
+    burstPenalty((2 ** 25) / 1_000_000) - burstPenalty((2 ** 24) / 1_000_000),
+  ));
 check("the penalty is clamped at the worst rank", burstPenalty(2 ** 40) === 40);
-check("the penalty is monotonic", burstPenalty(2) < burstPenalty(4) && burstPenalty(4) < burstPenalty(8));
+check("the penalty is monotonic", burstPenalty(10) < burstPenalty(20) && burstPenalty(20) < burstPenalty(40));
 
 /* ── 2. binary_smooth: gradual up, instant down ──────────────────────────── */
 check("a rise closes half the gap", smoothPenalty(3, 1) === 2);
@@ -92,8 +95,8 @@ check("a fall applies immediately", smoothPenalty(1, 3) === 1);
 check("a fall to zero applies immediately", smoothPenalty(0, 9) === 0);
 check("an unchanged penalty stays put", smoothPenalty(2, 2) === 2);
 check("rising never overshoots the target", smoothPenalty(3, 1) < 3);
-/* The reason the asymmetry is here at all: one slow network response must not
-   pin a cheap module at the back of the queue for the rest of the session. */
+/* The reason the asymmetry is here at all: one long CPU burst should not pin
+   a task at the back after a later run proves it became cheap. */
 let settling = 0;
 for (let i = 0; i < 6; i += 1) settling = smoothPenalty(4, settling);
 check("a repeatedly-slow task does converge upward", settling > 3.9);
@@ -165,7 +168,29 @@ check("...and one cheap observation undoes all of it", smoothPenalty(0.1, settli
     h.state.yields === 1, `yields=${h.state.yields}`);
 }
 
-/* ── 5. Awaited time is not charged to the slice ─────────────────────────── */
+/* ── 5. Refresh-paced slices and wake-up protection ─────────────────────── */
+check("30 Hz uses the throughput cap", near(cooperativeSliceMs(1000 / 30), 5));
+check("60 Hz uses the throughput cap", near(cooperativeSliceMs(1000 / 60), 5));
+check("120 Hz reserves 70% of the frame for rendering", near(cooperativeSliceMs(1000 / 120), 2.5));
+check("144 Hz receives a display-relative slice", near(cooperativeSliceMs(1000 / 144), (1000 / 144) * 0.30));
+check("240 Hz receives a display-relative slice", near(cooperativeSliceMs(1000 / 240), 1.25));
+check("extreme refresh rates keep a 1ms scheduling floor", near(cooperativeSliceMs(1000 / 1000), 1));
+check("invalid refresh evidence uses the conservative 120 Hz fallback", near(cooperativeSliceMs(NaN), 2.5));
+
+{
+  const h = harness();
+  await runBurstOrdered(
+    [h.task("a", 0), h.task("b", 0), h.task("c", 0)],
+    {
+      memory: new Map(), now: h.now, yieldNow: h.yieldNow,
+      inputPending: () => true, sliceMs: 5, persist: false,
+    },
+  );
+  check("pending input bypasses slice protection at every task boundary",
+    h.state.yields === 3, `yields=${h.state.yields}`);
+}
+
+/* ── 6. Awaited time is neither CPU burst nor slice time ─────────────────── */
 {
   const h = harness();
   await runBurstOrdered(
@@ -176,14 +201,20 @@ check("...and one cheap observation undoes all of it", smoothPenalty(0.1, settli
   check("the awaited tail really did advance the clock", h.state.t === 2000, String(h.state.t));
 }
 {
-  /* ...but it IS what the penalty is learned from, because the penalty ranks
-     "time until usable" while the slice protects "time holding the thread". */
   const h = harness();
-  const memory = await runBurstOrdered([h.task("slowNet", 0, 15)],
+  const memory = await runBurstOrdered([h.task("slowNet", 0, 500)],
     { memory: new Map(), now: h.now, yieldNow: h.yieldNow, persist: false });
-  check("the penalty is learned from total time, not synchronous time",
-    near(memory.get("slowNet"), smoothPenalty(burstPenalty(15), 0)), String(memory.get("slowNet")));
-  check("...and a task that waited is penalised at all", memory.get("slowNet") > 0);
+  check("time asleep or waiting on I/O never becomes BORE CPU penalty",
+    memory.get("slowNet") === 0, String(memory.get("slowNet")));
+}
+{
+  const h = harness();
+  const burst = (2 ** 24) / 1_000_000;
+  const memory = await runBurstOrdered([h.task("cpuThenWait", burst, 500)],
+    { memory: new Map(), now: h.now, yieldNow: h.yieldNow, persist: false });
+  check("penalty follows synchronous burst even when the awaited tail is much longer",
+    near(memory.get("cpuThenWait"), smoothPenalty(burstPenalty(burst), 0)),
+    String(memory.get("cpuThenWait")));
 }
 {
   const h = harness();
@@ -204,7 +235,36 @@ check("...and one cheap observation undoes all of it", smoothPenalty(0.1, settli
   check("...and never past it", memory.get("greedy") <= burstPenalty(30));
 }
 
-/* ── 6. I/O tasks are fired, not sequenced ───────────────────────────────── */
+/* ── 7. BORE family inheritance ─────────────────────────────────────────── */
+{
+  const h = harness();
+  const memory = new Map([
+    ["@bore-group:editors", 6],
+    ["known-cheap", 1],
+  ]);
+  await runBurstOrdered(
+    [
+      h.task("new-editor", 0, 0, { group: "editors" }),
+      h.task("known-cheap", 0),
+    ],
+    { memory, now: h.now, yieldNow: h.yieldNow, persist: false },
+  );
+  check("new work inherits its BORE family history instead of escaping to the front",
+    h.state.order.join(",") === "known-cheap,new-editor", h.state.order.join(","));
+  check("a newly inherited task is promoted immediately after a cheap burst",
+    memory.get("new-editor") === 0);
+}
+{
+  const h = harness();
+  const memory = await runBurstOrdered(
+    [h.task("editor-a", 40, 0, { group: "editors" })],
+    { memory: new Map(), now: h.now, yieldNow: h.yieldNow, persist: false },
+  );
+  check("observed family burst history is cached for future siblings",
+    memory.get("@bore-group:editors") > 0);
+}
+
+/* ── 8. I/O tasks are fired, not sequenced ───────────────────────────────── */
 {
   const h = harness();
   const started = [];
@@ -237,7 +297,7 @@ check("...and one cheap observation undoes all of it", smoothPenalty(0.1, settli
   check("I/O keeps its declared order regardless of penalty", started.join(",") === "expensive,cheap");
 }
 
-/* ── 7. A warm-up may never break the page ───────────────────────────────── */
+/* ── 9. A warm-up may never break the page ───────────────────────────────── */
 {
   const h = harness();
   const boom = { label: "throws", run: () => { throw new Error("sync"); } };
@@ -253,7 +313,7 @@ check("...and one cheap observation undoes all of it", smoothPenalty(0.1, settli
   check("work queued after a failure still runs", h.state.order.includes("after"));
 }
 
-/* ── 8. Persistence ──────────────────────────────────────────────────────── */
+/* ── 10. Persistence ─────────────────────────────────────────────────────── */
 {
   const storage = fakeStorage();
   savePenalties(new Map([["kept", 3], ["zero", 0], ["bad", NaN], ["neg", -2], ["", 5]]), storage);
@@ -341,7 +401,7 @@ for (const [name, raw] of [
     second.state.order.join(",") === "light,heavy", second.state.order.join(","));
 }
 
-/* ── 9. Degenerate input ─────────────────────────────────────────────────── */
+/* ── 11. Degenerate input ────────────────────────────────────────────────── */
 {
   const h = harness();
   let threw = false;
