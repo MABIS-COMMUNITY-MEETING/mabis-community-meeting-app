@@ -198,13 +198,13 @@
   opacity: 0;
   transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.lg-surface.lg-webgl-ready {
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
+/* The upstream canvas is a distortion/highlight pass, not a replacement for
+   the browser's live backdrop. A one-time html2canvas texture can be stale or
+   exceed a GPU's texture limit on this very long page; replacing the native
+   material with it made the menu bar turn muddy/blank while scrolling. Keep
+   the live CSS glass painted and blend the liquid pass gently above it. */
 .lg-surface.lg-webgl-ready > .lg-liquid-canvas {
-  opacity: 1;
+  opacity: var(--liquid-glass-overlay-opacity, 0.30);
 }
 
 /* ── variants: thickness by role ─────────────────────────────── */
@@ -240,6 +240,8 @@
   --glass_tint: 0.11;
   --glass_lens: 1.8px;
   --glass_spec: 0.22;
+  /* Full-width snapshot distortion must stay subordinate to the live glass. */
+  --liquid-glass-overlay-opacity: 0.24;
   --glass_shadow: 0 14px 40px -22px hsl(var(--ink) / 0.40);
   border-left: none;
   border-right: none;
