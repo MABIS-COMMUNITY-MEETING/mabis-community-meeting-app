@@ -135,7 +135,9 @@ export function JobScheduleTable(props) {
               <th class="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase">Person</th>
               <th class="text-center px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase">This Week</th>
               <th class="text-center px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase">Carry</th>
-              <Show when={props.isAdmin}><th class="w-8" /></Show>
+              <Show when={props.isAdmin}>
+                <th class="w-24 px-2 py-2.5 text-center text-xs font-semibold uppercase text-muted-foreground">Remove</th>
+              </Show>
             </tr>
           </thead>
           <tbody class="divide-y divide-border">
@@ -195,10 +197,15 @@ export function JobScheduleTable(props) {
                     <Show when={props.isAdmin}>
                       <td class="px-2 py-3">
                         <button
-                          onClick={() => props.onDelete(a.id)}
-                          class="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                          type="button"
+                          onClick={() => props.onDelete(a)}
+                          disabled={props.deletePending}
+                          aria-label={`Remove ${normalizeJobTitle(a.job_title)} from ${a.assigned_to_name}`}
+                          title="Remove only this job assignment"
+                          class="inline-flex min-h-9 items-center gap-1 rounded-lg border border-primary/25 px-2 text-[10px] font-bold text-primary transition-colors hover:bg-primary/10 disabled:cursor-wait disabled:opacity-50"
                         >
-                          <Trash2 class="w-3.5 h-3.5" />
+                          <Trash2 class="h-3.5 w-3.5" />
+                          <span>Remove</span>
                         </button>
                       </td>
                     </Show>
