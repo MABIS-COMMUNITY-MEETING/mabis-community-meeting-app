@@ -83,6 +83,8 @@ assert.match(pdfHtml, /--pdf-secondary: #fedcba;/);
 assert.match(pdfHtml, /font-family: 'MABIS Test UI', system-ui;/);
 assert.match(pdfHtml, /Prepared by/);
 assert.match(pdfHtml, /Week of August 17/);
+assert.match(pdfHtml, /<h1>MABIS Jobs<\/h1>/);
+assert.doesNotMatch(pdfHtml, /<h1>[^<]*Week of August 17/);
 
 const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const homeSource = source("solid/pages/Home.jsx");
@@ -117,6 +119,16 @@ assert.match(jobTablesSource, /<span>Remove<\/span>/);
 assert.match(jobListSchemaSource, /"name": "JobList"/);
 assert.match(jobsSource, /lazy\(\(\) => import\("\~\/components\/jobs\/JobListStudio"\)\)/);
 assert.match(jobListStudioSource, /base44\.entities\.JobList\.create/);
+assert.match(jobListStudioSource, /const initialTitle = \(\) => "MABIS Jobs"/);
+assert.equal((jobsSource.match(/Print \/ Save Schedule/g) || []).length, 2);
+const publicPrintHandler = 'onClick={() => handlePdf(draftList(), "draft")}';
+const publicPrintIndex = jobListStudioSource.indexOf(publicPrintHandler);
+assert.ok(publicPrintIndex >= 0, "current schedule PDF action must be available");
+const publicPrintButton = jobListStudioSource.slice(
+  jobListStudioSource.lastIndexOf("<Button", publicPrintIndex),
+  jobListStudioSource.indexOf("</Button>", publicPrintIndex),
+);
+assert.doesNotMatch(publicPrintButton, /isAdmin/);
 assert.match(jobListStudioSource, /printJobList/);
 assert.match(jobListPdfSource, /token\("--font-body"\)/);
 assert.match(jobListPdfSource, /token\("--primary"\)/);
@@ -127,4 +139,4 @@ assert.match(docsEditorSource, /toggleList\("bullet"\)/);
 assert.match(announcementSource, /memberForAuthor\(announcement\.author_name\)\?\.avatar_url/);
 assert.doesNotMatch(announcementSource, /avatar_url:\s*auth\.user\(\)\?\.avatar_url\s*\|\|\s*author\?\.avatar_url/);
 
-console.log("Jobs and meeting UI contract: persistent job-list membership, exact assignment removal, shared wheel shuffle, saved lists, English-only theme/font-aware PDF export, scheduling, mirrored Home state, unlimited bounded spins, bullet formatting, and announcement avatars passed.");
+console.log("Jobs and meeting UI contract: persistent job-list membership, exact assignment removal, shared wheel shuffle, saved lists, public schedule printing, fixed MABIS Jobs PDF title, English-only theme/font-aware PDF export, scheduling, mirrored Home state, unlimited bounded spins, bullet formatting, and announcement avatars passed.");
