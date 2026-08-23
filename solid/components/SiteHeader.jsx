@@ -185,7 +185,7 @@ export default function SiteHeader(props) {
                       onMouseEnter={playHover}
                       data-cursor="OPEN"
                       class="nav-item group relative flex shrink-0 items-baseline gap-3 text-left sm:gap-8"
-                      style={{ "animation-delay": `${0.12 + i * 0.07}s` }}
+                      style={{ "animation-delay": `${0.03 + i * 0.035}s` }}
                     >
                       <span class="w-7 pt-2 tech-label text-bone/40 sm:w-10 sm:pt-4">{item().n}</span>
                       <span class="relative flex-1 flex items-center gap-3 border-b border-bone/15 py-2 sm:py-3 overflow-hidden">
