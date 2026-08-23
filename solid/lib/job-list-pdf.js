@@ -1,4 +1,5 @@
 const JAPANESE_SCRIPT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}々〆ヵヶー]/gu;
+const PDF_TITLE = "MABIS Jobs";
 
 const escapeHtml = (value) => String(value ?? "")
   .replaceAll("&", "&amp;")
@@ -20,11 +21,11 @@ const safeCssValue = (value, fallback) => {
   return cleaned || fallback;
 };
 
-const safeFilename = (value) => englishOnly(value, "MABIS Job List")
+const safeFilename = (value) => englishOnly(value, PDF_TITLE)
   .replace(/[^a-z0-9._ -]+/gi, "")
   .replace(/\s+/g, " ")
   .trim()
-  .slice(0, 80) || "MABIS Job List";
+  .slice(0, 80) || PDF_TITLE;
 
 const asCssColor = (value, fallback) => {
   const cleaned = safeCssValue(value, "");
@@ -77,7 +78,7 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
     mutedForeground: safeCssValue(appearance.mutedForeground, "#6c6161"),
   };
   const fontFamily = safeCssValue(appearance.fontFamily, "'GNUFreeMonoUI', monospace");
-  const title = englishOnly(jobList?.title, "MABIS Job List");
+  const title = PDF_TITLE;
   const notes = englishOnly(jobList?.notes);
   const period = englishOnly(jobList?.period_label, "Current assignments");
   const author = englishOnly(jobList?.created_by_name, "MABIS Community");
@@ -277,7 +278,7 @@ export async function printJobList(jobList, doc = document) {
     });
   }));
   await popup.document.fonts?.ready;
-  popup.document.title = safeFilename(jobList?.title);
+  popup.document.title = safeFilename(PDF_TITLE);
   popup.focus();
   popup.print();
 }
