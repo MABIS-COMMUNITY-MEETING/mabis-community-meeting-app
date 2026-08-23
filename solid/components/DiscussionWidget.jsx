@@ -563,7 +563,7 @@ export default function DiscussionWidget(props) {
     }>
       {/* ── NORMAL MODE ────────────────────────────────────────────────────── */}
       <Show when={normalContentReady()} fallback={<PendingWidget name="Discussion" height={560} />}>
-      <div class={fullscreen() ? "fixed inset-0 z-50 bg-card overflow-y-auto" : "mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-hidden"}>
+      <div class={fullscreen() ? "fixed inset-0 z-50 bg-card overflow-y-auto" : "mabis-widget bg-card rounded-2xl border border-border shadow-sm overflow-clip"}>
         <div class="mabis-widget-header bg-primary px-4 py-4 flex flex-col items-stretch gap-3 sticky top-0 z-10 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex items-center gap-3">
             <MessagesSquare class="w-5 h-5 text-primary-foreground" />
