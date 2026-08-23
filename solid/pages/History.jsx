@@ -9,6 +9,7 @@ import { weekLabelToDate, formatWeekFull, getWeekLabel } from "~/lib/weeks";
 import { PageNav, PageFooter, OpenMoji, SummerPageNav, SummerPageFooter } from "~/components/page-chrome";
 import { JapaneseText } from "~/components/primitives";
 import { useHomeLayout } from "~/lib/prefs";
+import "quill/dist/quill.snow.css";
 
 /*
  * History — Solid port of src/pages/History.jsx.
@@ -310,10 +311,14 @@ export default function History() {
                           <p class="text-xs font-bold text-primary uppercase mb-3">
                             Minutes <span lang="ja" class="normal-case text-[0.85em] font-normal">議事録</span>
                           </p>
-                          <div
-                            class="docs-editor-content theme-rich-text rounded-lg border border-border px-4 py-3 text-sm leading-relaxed [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-                            innerHTML={displayHtml()}
-                          />
+                          <div class="docs-editor-content theme-rich-text overflow-hidden rounded-lg border border-border text-sm">
+                            <div
+                              class="ql-editor docs-history-document"
+                              role="document"
+                              aria-label={`Minutes for ${formatWeekFull(week)}`}
+                              innerHTML={displayHtml()}
+                            />
+                          </div>
                         </div>
                       </Show>
                     </div>
