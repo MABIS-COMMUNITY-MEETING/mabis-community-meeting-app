@@ -62,7 +62,12 @@ export default function StyleWelcomeDialog() {
     setOpen(!hasExplicitStyleChoice());
   });
 
+  const preloadStyle = (layout) => {
+    if (layout === "boss") void import("~/components/home/boss");
+  };
+
   const choose = (layout) => {
+    preloadStyle(layout);
     setHomeLayout(layout);
     setOpen(false);
   };
@@ -112,6 +117,9 @@ export default function StyleWelcomeDialog() {
               {STYLE_CHOICES.map((choice) => (
                 <button
                   type="button"
+                  onPointerEnter={() => preloadStyle(choice.key)}
+                  onFocus={() => preloadStyle(choice.key)}
+                  onPointerDown={() => preloadStyle(choice.key)}
                   onClick={() => choose(choice.key)}
                   class="group min-h-44 border border-border bg-background p-5 text-left text-foreground transition-colors hover:border-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card sm:min-h-52"
                 >
