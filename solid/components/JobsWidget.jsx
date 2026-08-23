@@ -90,6 +90,7 @@ export default function JobsWidget(props) {
   const [newJob, setNewJob] = createStore({ title: "", period: "weekly", schedule: "every_weekday" });
   const [addJobError, setAddJobError] = createSignal("");
   const [jobActionMessage, setJobActionMessage] = createSignal("");
+  const [rotationBusy, setRotationBusy] = createSignal(false);
 
   const currentWeek = getCurrentWeekLabel();
   const currentMonth = getMonthLabel();
@@ -144,6 +145,10 @@ export default function JobsWidget(props) {
 
   const allJobs = createMemo(() => [...JOBS, ...customJobs()]);
   const studentMembers = createMemo(() => members().filter((m) => !m.role || m.role === "student"));
+  const rotationMembers = createMemo(() =>
+    studentMembers().filter((m) => m.job_rotation_enabled !== false));
+  const sortedStudentMembers = createMemo(() =>
+    [...studentMembers()].sort((a, b) => displayName(a).localeCompare(displayName(b))));
   const currentAssignments = createMemo(() =>
     assignments().filter((a) => assignmentIsCurrent(a, currentWeek, currentMonth)));
   const assignedJobLabels = createMemo(() => currentAssignments().map((a) => normalizeJobTitle(a.job_title)));
@@ -156,18 +161,20 @@ export default function JobsWidget(props) {
   const selectingTimeKeeper = () => isTimeKeeperJob(selectedJob()?.label);
 
   const assignmentEligibleStudents = createMemo(() =>
-    studentMembers().filter((m) =>
+    rotationMembers().filter((m) =>
       !assignedMemberKeys().has(memberRotationKey(m))
       && (!selectingTimeKeeper() || !servedTimeKeeperKeys().has(memberRotationKey(m)))));
 
   const repeatSpinMode = () =>
-    !selectingTimeKeeper() && assignmentEligibleStudents().length === 0 && studentMembers().length > 0;
-  const spinCandidates = createMemo(() => repeatSpinMode() ? studentMembers() : assignmentEligibleStudents());
+    !selectingTimeKeeper() && assignmentEligibleStudents().length === 0 && rotationMembers().length > 0;
+  const spinCandidates = createMemo(() => repeatSpinMode() ? rotationMembers() : assignmentEligibleStudents());
 
   const wheelMembers = createMemo(() =>
     spinCandidates()
       .filter((m) => !removedIds().includes(m.id))
       .sort((a, b) => displayName(a).localeCompare(displayName(b))));
+  const directPickOptions = createMemo(() =>
+    wheelMembers().map((m) => ({ value: m.id, label: displayName(m) })));
 
   const winnerCanBeAssigned = () => {
     const w = winner();
@@ -206,9 +213,25 @@ export default function JobsWidget(props) {
   }));
 
   const removeAssignment = useMutation(() => ({
-    mutationFn: (id) => base44.entities.JobAssignment.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["assignments"] }),
+    mutationFn: (assignment) => base44.entities.JobAssignment.delete(assignment.id),
+    onSuccess: (_, assignment) => {
+      queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      setJobActionMessage(
+        `Removed "${normalizeJobTitle(assignment.job_title)}" from ${assignment.assigned_to_name}. Only that assignment was removed.`,
+      );
+      window.setTimeout(() => setJobActionMessage(""), 5000);
+    },
+    onError: () => setJobActionMessage("Could not remove that job assignment."),
   }));
+
+  const handleRemoveAssignment = (assignment) => {
+    if (!assignment || removeAssignment.isPending) return;
+    const jobTitle = normalizeJobTitle(assignment.job_title);
+    if (!window.confirm(
+      `Remove "${jobTitle}" from ${assignment.assigned_to_name}? This removes only this job assignment.`,
+    )) return;
+    removeAssignment.mutate(assignment);
+  };
 
   const updateAssignment = useMutation(() => ({
     mutationFn: ({ id, data }) => base44.entities.JobAssignment.update(id, data),
@@ -340,6 +363,44 @@ export default function JobsWidget(props) {
     });
   };
 
+  const setRotationForMembers = async (targets, enabled) => {
+    if (rotationBusy()) return;
+    const changed = targets.filter((member) =>
+      member?.id && (member.job_rotation_enabled !== false) !== enabled);
+    if (changed.length === 0) return;
+
+    const targetIds = new Set(changed.map((member) => member.id));
+    const previousMembers = queryClient.getQueryData(["members"]);
+    setRotationBusy(true);
+    queryClient.setQueryData(["members"], (current = []) =>
+      current.map((member) =>
+        targetIds.has(member.id) ? { ...member, job_rotation_enabled: enabled } : member));
+
+    if (enabled) {
+      setRemovedIds((ids) => ids.filter((id) => !targetIds.has(id)));
+    } else if (winner() && targetIds.has(winner().member.id)) {
+      setWinner(null);
+    }
+
+    try {
+      await Promise.all(changed.map((member) =>
+        base44.entities.Member.update(member.id, { job_rotation_enabled: enabled })));
+      const subject = changed.length === 1 ? displayName(changed[0]) : `${changed.length} students`;
+      setJobActionMessage(
+        `${subject} ${enabled ? "added to" : "removed from"} the job list.`,
+      );
+      window.setTimeout(() => setJobActionMessage(""), 4000);
+    } catch {
+      if (previousMembers !== undefined) {
+        queryClient.setQueryData(["members"], previousMembers);
+      }
+      setJobActionMessage("Could not update the job list. Please try again.");
+    } finally {
+      await queryClient.invalidateQueries({ queryKey: ["members"] });
+      setRotationBusy(false);
+    }
+  };
+
   const handleClearAll = async () => {
     if (!window.confirm("Clear all current weekly and monthly job assignments?")) return;
     try {
@@ -451,7 +512,7 @@ export default function JobsWidget(props) {
                     const picked = wheelMembers().find((m) => m.id === v);
                     if (picked) handleSpinComplete(picked);
                   }}
-                  options={wheelMembers().map((m) => ({ value: m.id, label: displayName(m) }))}
+                  options={directPickOptions()}
                   placeholder="Pick a person…"
                   aria-label="Pick a person directly"
                   triggerClass="mt-0.5 h-10 w-full rounded-lg"
@@ -470,14 +531,24 @@ export default function JobsWidget(props) {
                     </div>
                   }
                 >
-                  <div class="h-40 flex flex-col items-center justify-center text-center gap-2">
-                    <CheckCircle2 class="w-10 h-10 text-green-400" />
-                    <p class="text-green-700 font-semibold text-sm">
-                      {selectingTimeKeeper()
-                        ? "Everyone eligible has already served as Time Keeper this year."
-                        : "No students are available for this spin."}
-                    </p>
-                  </div>
+                  <Show
+                    when={rotationMembers().length > 0}
+                    fallback={
+                      <div class="h-40 flex flex-col items-center justify-center text-center gap-2 text-muted-foreground text-sm">
+                        <p>No students are included in the job list.</p>
+                        <p class="text-xs">Use Manage Students to add someone.</p>
+                      </div>
+                    }
+                  >
+                    <div class="h-40 flex flex-col items-center justify-center text-center gap-2">
+                      <CheckCircle2 class="w-10 h-10 text-green-400" />
+                      <p class="text-green-700 font-semibold text-sm">
+                        {selectingTimeKeeper()
+                          ? "Everyone eligible has already served as Time Keeper this year."
+                          : "No students are available for this spin."}
+                      </p>
+                    </div>
+                  </Show>
                 </Show>
               }
             >
@@ -492,43 +563,64 @@ export default function JobsWidget(props) {
             </Show>
 
             <Show when={showStudentMgr()}>
-              <div class="w-full max-w-[420px] rounded-xl border border-border bg-card p-3">
+              <div data-cursor-lite class="w-full max-w-[420px] rounded-xl border border-border bg-card p-3">
                 <div class="mb-2 flex items-center justify-between gap-2">
-                  <p class="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                    {studentMembers().length} Students
-                  </p>
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                      {rotationMembers().length}/{studentMembers().length} on job list
+                    </p>
+                    <p class="text-[10px] text-muted-foreground">Removing someone here does not delete their profile.</p>
+                  </div>
                   <div class="flex gap-1.5">
                     <button
-                      onClick={() => setRemovedIds([])}
-                      class="flex-1 text-[9px] font-bold text-primary-foreground bg-primary rounded py-1 px-2 hover:bg-primary/90 transition-colors"
+                      type="button"
+                      onClick={() => setRotationForMembers(studentMembers(), true)}
+                      disabled={rotationBusy() || rotationMembers().length === studentMembers().length}
+                      class="rounded bg-primary px-2 py-1 text-[9px] font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-45"
                     >
                       Add all
                     </button>
                     <button
-                      onClick={() => setRemovedIds(studentMembers().map((m) => m.id))}
-                      class="flex-1 text-[9px] font-bold text-primary bg-primary/10 rounded py-1 px-2 hover:bg-primary/20 transition-colors"
+                      type="button"
+                      onClick={() => setRotationForMembers(rotationMembers(), false)}
+                      disabled={rotationBusy() || rotationMembers().length === 0}
+                      class="rounded bg-primary/10 px-2 py-1 text-[9px] font-bold text-primary transition-colors hover:bg-primary/20 disabled:opacity-45"
                     >
-                      Clear all
+                      Remove all
                     </button>
                   </div>
                 </div>
                 <div class="max-h-56 space-y-1 overflow-y-auto">
-                  <For each={[...studentMembers()].sort((a, b) => displayName(a).localeCompare(displayName(b)))}>
+                  <For
+                    each={sortedStudentMembers()}
+                    fallback={<p class="px-2 py-5 text-center text-xs text-muted-foreground">No student profiles yet.</p>}
+                  >
                     {(member) => {
-                      const onWheel = () => !removedIds().includes(member.id);
+                      const included = () => member.job_rotation_enabled !== false;
                       return (
-                        <label class="flex items-center gap-2 rounded px-1.5 py-1 hover:bg-muted cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={onWheel()}
-                            onChange={() => setRemovedIds((ids) =>
-                              ids.includes(member.id) ? ids.filter((id) => id !== member.id) : [...ids, member.id])}
-                            class="w-3.5 h-3.5 accent-primary shrink-0"
-                          />
-                          <span class={`text-xs truncate ${onWheel() ? "text-foreground" : "text-muted-foreground line-through"}`}>
-                            {displayName(member)}
-                          </span>
-                        </label>
+                        <div class="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 hover:bg-muted">
+                          <div class="min-w-0">
+                            <p class={`truncate text-xs ${included() ? "text-foreground" : "text-muted-foreground line-through"}`}>
+                              {displayName(member)}
+                            </p>
+                            <p class="text-[9px] text-muted-foreground">
+                              {included() ? "On job list" : "Removed from job list"}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setRotationForMembers([member], !included())}
+                            disabled={rotationBusy()}
+                            aria-label={`${included() ? "Remove" : "Add"} ${displayName(member)} ${included() ? "from" : "to"} the job list`}
+                            class={`min-h-8 shrink-0 rounded-lg border px-2.5 text-[10px] font-bold transition-colors disabled:cursor-wait disabled:opacity-50 ${
+                              included()
+                                ? "border-primary/30 text-primary hover:bg-primary/10"
+                                : "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
+                            }`}
+                          >
+                            {included() ? "Remove" : "Add"}
+                          </button>
+                        </div>
                       );
                     }}
                   </For>
@@ -631,7 +723,8 @@ export default function JobsWidget(props) {
           isAdmin={isAdmin()}
           currentUser={auth.user()}
           onDayStatus={handleDayStatus}
-          onDelete={(id) => removeAssignment.mutate(id)}
+          onDelete={handleRemoveAssignment}
+          deletePending={removeAssignment.isPending}
           currentMonth={currentMonth}
         />
       </div>
@@ -693,7 +786,8 @@ export default function JobsWidget(props) {
             isAdmin={isAdmin()}
             currentUser={auth.user()}
             onDayStatus={handleDayStatus}
-            onDelete={(id) => removeAssignment.mutate(id)}
+            onDelete={handleRemoveAssignment}
+          deletePending={removeAssignment.isPending}
             currentMonth={currentMonth}
           />
         </div>
