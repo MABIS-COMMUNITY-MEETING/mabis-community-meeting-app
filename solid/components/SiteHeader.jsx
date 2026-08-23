@@ -91,6 +91,10 @@ export default function SiteHeader(props) {
 
   return (
     <>
+      {/* Mount persistent navigation at the document root. Route entrance
+          wrappers temporarily animate with transforms; keeping a fixed header
+          inside one makes it scroll with that wrapper on some compositors. */}
+      <Portal>
       <header class="site-header-shell fixed top-0 left-0 right-0 z-50">
         <Glass variant="navigation" tone="light" contentClass="flex items-center justify-between gap-3 px-3 py-3 sm:px-8 sm:py-4">
           <A href="/" data-cursor="HOME" class="group flex items-center gap-3">
@@ -140,6 +144,7 @@ export default function SiteHeader(props) {
         </Glass>
         <span class="lg-scroll-edge" aria-hidden="true" />
       </header>
+      </Portal>
 
       <Show when={open()}>
         <Portal>
