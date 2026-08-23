@@ -183,19 +183,20 @@ export function startPointerEngine() {
   if (started) return () => {};
   started = true;
 
-  let latestX = 0, latestY = 0, latestT = 0, latestEl = null;
+  let latestX = 0, latestY = 0, latestT = 0, latestNode = null, latestEl = null;
   let inputDirty = false, geometryDirty = false, retarget = false;
   let scrollRetargetTimer = 0;
 
-  // Pointer events only publish the newest sample. Filtering, magnetic geometry
-  // reads and prediction run once in the scheduler's read phase, not at USB rate.
+  // Pointer events only publish the newest sample. Filtering, selector
+  // matching, magnetic geometry reads and prediction run once in the
+  // scheduler's read phase, not at USB polling rate.
   const onMove = (e) => {
     const events = e.getCoalescedEvents?.();
     const latest = events?.length ? events[events.length - 1] : e;
     latestX = latest.clientX;
     latestY = latest.clientY;
     latestT = latest.timeStamp / 1000;
-    latestEl = cursorTargetAt(e.target);
+    latestNode = e.target;
     inputDirty = true;
     pointer.inside = true;
     wake();
@@ -211,9 +212,10 @@ export function startPointerEngine() {
     }
     sample(latestX, latestY, latestT);
     if (retarget) {
-      latestEl = cursorTargetAt(document.elementFromPoint(latestX, latestY));
+      latestNode = document.elementFromPoint(latestX, latestY);
       retarget = false;
     }
+    latestEl = cursorTargetAt(latestNode);
     if (geometryDirty && heldEl?.isConnected && measure(heldEl, box)) geometryDirty = false;
     selectTarget(latestEl);
     pointer.target = heldEl;
@@ -261,16 +263,19 @@ export function startPointerEngine() {
   // including re-entering from an iframe — so it catches returns that
   // `pointerenter` misses. Regaining window focus is a second, independent
   // recovery point for the tab/alt-tab case.
-  const onMouseOver = () => { pointer.inside = true; wake(); };
-  const onFocus = () => { pointer.inside = true; wake(); };
+  const restoreInside = () => {
+    if (pointer.inside) return;
+    pointer.inside = true;
+    wake();
+  };
 
   window.addEventListener("pointermove", onMove, { passive: true });
   window.addEventListener("pointerdown", onDown, { passive: true });
   window.addEventListener("pointerup", onUp, { passive: true });
   document.addEventListener("pointerleave", onLeave, { passive: true });
   document.addEventListener("pointerenter", onEnter, { passive: true });
-  window.addEventListener("mouseover", onMouseOver, { passive: true });
-  window.addEventListener("focus", onFocus);
+  window.addEventListener("mouseover", restoreInside, { passive: true });
+  window.addEventListener("focus", restoreInside);
   window.addEventListener("resize", onReset, { passive: true });
   window.addEventListener("scroll", onScroll, { passive: true, capture: true });
   window.addEventListener("blur", onReset);
@@ -283,8 +288,8 @@ export function startPointerEngine() {
     window.removeEventListener("pointerup", onUp);
     document.removeEventListener("pointerleave", onLeave);
     document.removeEventListener("pointerenter", onEnter);
-    window.removeEventListener("mouseover", onMouseOver);
-    window.removeEventListener("focus", onFocus);
+    window.removeEventListener("mouseover", restoreInside);
+    window.removeEventListener("focus", restoreInside);
     window.removeEventListener("resize", onReset);
     window.removeEventListener("scroll", onScroll, true);
     window.removeEventListener("blur", onReset);
