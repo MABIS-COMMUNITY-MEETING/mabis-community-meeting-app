@@ -772,7 +772,7 @@ export default function JobsWidget(props) {
             aria-expanded={showJobListStudio()}
           >
             <FileDown class="h-4 w-4" />
-            <JapaneseText ja="係リストとPDF" layout="inline">Job List & PDF</JapaneseText>
+            <JapaneseText ja="予定表を印刷・保存" layout="inline">Print / Save Schedule</JapaneseText>
           </Button>
         </div>
         <JobListStudioPanel />
@@ -851,7 +851,7 @@ export default function JobsWidget(props) {
                 aria-expanded={showJobListStudio()}
               >
                 <FileDown class="h-3.5 w-3.5" />
-                <JapaneseText ja="係リストとPDF" layout="inline">Job List & PDF</JapaneseText>
+                <JapaneseText ja="予定表を印刷・保存" layout="inline">Print / Save Schedule</JapaneseText>
               </Button>
               <button onClick={() => setFullscreen(true)} class="flex min-h-9 items-center gap-1 px-1 text-xs text-primary hover:underline">
                 <Maximize2 class="w-3 h-3" /> Full Screen
