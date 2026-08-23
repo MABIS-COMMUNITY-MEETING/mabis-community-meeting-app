@@ -103,6 +103,7 @@ const chrome = read("solid/components/chrome.jsx");
 const motionCss = read("solid/solid-motion.css");
 const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
+const selectSolid = read("solid/components/ui/select.jsx");
 const glass = read("src/styles/glass.css");
 const glassComponentSolid = read("solid/components/Glass.jsx");
 const siteHeaderSolid = read("solid/components/SiteHeader.jsx");
@@ -229,6 +230,20 @@ requireText("src/App.jsx", app, "installScrollStateClass()");
 requireText("scroll implementation", smoothScroll, 'classList.add("is-scrolling")');
 forbidText("solid/components/chrome.jsx", chrome, "subscribeScrollProgress");
 requireText("src/lib/physics/pointer.js", pointer, "scrollRetargetTimer");
+requireText("src/lib/physics/pointer.js", pointer, 'const LITE_SELECTOR = "[data-cursor-lite]"');
+requireText("solid/components/ui/select.jsx", selectSolid, "createMemo(() => normalise(local.options))");
+requireText("solid/components/ui/select.jsx", selectSolid, "data-cursor-lite");
+requireText("src/components/JobsWidget.jsx", jobs, "data-cursor-lite");
+const cursorMaterialStart = css.indexOf(".cursor-dot, .cursor-ring");
+const cursorMaterialEnd = css.indexOf(".cursor-label", cursorMaterialStart);
+const cursorMaterial = cursorMaterialStart === -1 || cursorMaterialEnd === -1
+  ? ""
+  : css.slice(cursorMaterialStart, cursorMaterialEnd);
+if (!cursorMaterial) {
+  failures.push("src/index.css: custom cursor material rules are missing");
+} else if (/backdrop-filter|mix-blend-mode/.test(cursorMaterial)) {
+  failures.push("src/index.css: moving cursor dot/ring must not use live backdrop blur or blend-mode compositing");
+}
 /* Voice Your Words deliberately follows scroll again, but the event handler
    only marks one sample stale and wakes the shared fixed-timestep scheduler.
    Geometry is read in the scheduler's sample phase and transform/opacity are
