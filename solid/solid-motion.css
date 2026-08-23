@@ -45,7 +45,7 @@ html.animations-disabled .meeting-nudge { animation: none; }
   to   { clip-path: inset(0 0 0 0); }
 }
 .site-nav-overlay {
-  animation: nav-reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: nav-reveal 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes nav-item-rise {
@@ -53,7 +53,7 @@ html.animations-disabled .meeting-nudge { animation: none; }
   to   { transform: translateY(0); opacity: 1; }
 }
 .nav-item {
-  animation: nav-item-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: nav-item-rise 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 html.animations-disabled .site-nav-overlay,
