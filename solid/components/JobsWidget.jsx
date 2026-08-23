@@ -14,6 +14,7 @@ import { useAuth } from "~/lib/AuthContext";
 import { Button } from "~/components/ui";
 import { Select } from "~/components/ui/select";
 import { JapaneseText } from "~/components/primitives";
+import { seededShuffle } from "~/lib/wheel-math";
 import SpinWheel from "~/components/jobs/SpinWheel";
 import { WinnerBanner, JobScheduleTable, SpinningForTable } from "~/components/jobs/tables";
 
@@ -49,16 +50,6 @@ const SCHEDULE_OPTIONS = [
   { value: "tue_thu", label: "Tue/Thu" },
 ];
 
-function shuffledMembers(list, seed) {
-  const shuffled = [...list];
-  let state = seed >>> 0;
-  for (let i = shuffled.length - 1; i > 0; i -= 1) {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    const j = state % (i + 1);
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
 
 /*
  * JobsWidget — Solid port of src/components/JobsWidget.jsx (1,060 lines).
@@ -187,7 +178,7 @@ export default function JobsWidget(props) {
       .filter((m) => !removedIds().includes(m.id))
       .sort((a, b) => displayName(a).localeCompare(displayName(b)));
     const seed = shuffleSeed();
-    return seed ? shuffledMembers(ordered, seed) : ordered;
+    return seed ? seededShuffle(ordered, seed) : ordered;
   });
   const directPickOptions = createMemo(() =>
     wheelMembers().map((m) => ({ value: m.id, label: displayName(m) })));
