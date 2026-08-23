@@ -1,0 +1,60 @@
+{
+  "name": "JobList",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Saved job list title"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes shown on the saved list and PDF"
+    },
+    "period_label": {
+      "type": "string",
+      "description": "English period label shown on the PDF"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "job_title": {
+            "type": "string"
+          },
+          "assigned_to_name": {
+            "type": "string"
+          },
+          "assignment_period": {
+            "type": "string",
+            "enum": [
+              "weekly",
+              "monthly"
+            ]
+          },
+          "schedule_days": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "job_title",
+          "assigned_to_name"
+        ]
+      },
+      "description": "Snapshot of the selected job assignments"
+    },
+    "created_by_name": {
+      "type": "string"
+    },
+    "created_by_email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "items"
+  ]
+}
