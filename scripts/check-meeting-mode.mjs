@@ -44,6 +44,8 @@ assert.match(minutesSource, /lazy\(\(\) => import\("~\/components\/DocsEditor"\)
 assert.match(minutesSource, /<IdleMount timeout=\{1200\}>/, "the shared Home editor must remain deferred so Meeting Mode stays responsive");
 assert.match(minutesSource, /stickyTop=\{props\.stickyTop\}/, "the shared minutes component must forward its sticky toolbar offset");
 assert.match(discussionSource, /stickyTop="0px"/, "Meeting Mode must pin the toolbar directly below its header with no scroll gap");
+assert.match(discussionSource, /shadow-sm overflow-clip/, "Home's document shell must clip without becoming a scroll container, so sticky toolbars follow the viewport");
+assert.doesNotMatch(discussionSource, /shadow-sm overflow-hidden/, "overflow-hidden would trap the sticky document toolbar inside the card again");
 assert.match(minutesSource, /queryKey: \["topics", props\.weekLabel\]/, "the shared document must reuse the same cached week query");
 assert.match(minutesSource, /const createdIds = new Map\(\)/, "quick saves must not create duplicate minutes records");
 assert.match(docsEditorSource, /toggleList\("bullet"\)/, "bullet controls must apply Quill's bullet format, not ordered numbering");
