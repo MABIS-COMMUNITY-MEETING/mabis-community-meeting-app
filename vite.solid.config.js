@@ -56,6 +56,9 @@ function base44ForSolid(options) {
 
 export default defineConfig({
   configFile: false,
+  // Match the shipped build: dependency lookup tables stay as JavaScript
+  // escapes, so non-UI Unicode data cannot trigger the remainder font file.
+  esbuild: { charset: "ascii" },
   root: path.resolve(process.cwd(), "solid"),
   // Fonts, logo and manifest are shared with the React build rather than copied.
   publicDir: path.resolve(process.cwd(), "public"),
