@@ -1,4 +1,4 @@
-const JAPANESE_SCRIPT = /[\\p{Script=Han}\\p{Script=Hiragana}\\p{Script=Katakana}々〆ヵヶー]/gu;
+const JAPANESE_SCRIPT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}々〆ヵヶー]/gu;
 
 const escapeHtml = (value) => String(value ?? "")
   .replaceAll("&", "&amp;")
@@ -10,7 +10,7 @@ const escapeHtml = (value) => String(value ?? "")
 const englishOnly = (value, fallback = "") => {
   const cleaned = String(value ?? "")
     .replace(JAPANESE_SCRIPT, " ")
-    .replace(/\\s+/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
   return cleaned || fallback;
 };
@@ -22,14 +22,14 @@ const safeCssValue = (value, fallback) => {
 
 const safeFilename = (value) => englishOnly(value, "MABIS Job List")
   .replace(/[^a-z0-9._ -]+/gi, "")
-  .replace(/\\s+/g, " ")
+  .replace(/\s+/g, " ")
   .trim()
   .slice(0, 80) || "MABIS Job List";
 
 const asCssColor = (value, fallback) => {
   const cleaned = safeCssValue(value, "");
   if (!cleaned) return fallback;
-  return /^(?:#|rgb|hsl|oklch|color\\()/i.test(cleaned) ? cleaned : `hsl(${cleaned})`;
+  return /^(?:#|rgb|hsl|oklch|color\()/i.test(cleaned) ? cleaned : `hsl(${cleaned})`;
 };
 
 const stylesheetMarkup = (urls) => (urls || [])
