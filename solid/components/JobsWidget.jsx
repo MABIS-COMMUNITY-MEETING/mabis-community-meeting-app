@@ -1,7 +1,7 @@
-import { createSignal, createMemo, createEffect, onMount, Show, For, Index } from "solid-js";
+import { createSignal, createMemo, createEffect, onMount, lazy, Suspense, Show, For, Index } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
-import { Loader2, Trash2, Maximize2, X, CheckCircle2, UserPlus, Plus } from "lucide-solid";
+import { FileDown, Loader2, Trash2, Maximize2, X, CheckCircle2, UserPlus, Plus } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { displayName } from "@/lib/names";
 import {
@@ -17,6 +17,8 @@ import { JapaneseText } from "~/components/primitives";
 import { seededShuffle } from "~/lib/wheel-math";
 import SpinWheel from "~/components/jobs/SpinWheel";
 import { WinnerBanner, JobScheduleTable, SpinningForTable } from "~/components/jobs/tables";
+
+const JobListStudio = lazy(() => import("~/components/jobs/JobListStudio"));
 
 const JOBS = [
   { id: "water1", label: "Water Plants (1)" },
@@ -91,6 +93,7 @@ export default function JobsWidget(props) {
   const [fullscreen, setFullscreen] = createSignal(false);
   const [showStudentMgr, setShowStudentMgr] = createSignal(false);
   const [showAddJob, setShowAddJob] = createSignal(false);
+  const [showJobListStudio, setShowJobListStudio] = createSignal(false);
   const [newJob, setNewJob] = createStore({ title: "", period: "weekly", schedule: "every_weekday" });
   const [addJobError, setAddJobError] = createSignal("");
   const [jobActionMessage, setJobActionMessage] = createSignal("");
@@ -453,6 +456,32 @@ export default function JobsWidget(props) {
     window.setTimeout(() => setJobActionMessage(""), 3000);
   };
 
+  const JobListStudioPanel = () => (
+    <Show when={showJobListStudio()}>
+      <Suspense
+        fallback={
+          <JapaneseText
+            as="p"
+            role="status"
+            ja="係リスト作成画面を読み込んでいます…"
+            class="block border-y border-border px-3 py-8 text-center text-sm text-muted-foreground"
+            japaneseClass="mt-1 block text-[0.86em]"
+          >
+            Loading Job List Studio…
+          </JapaneseText>
+        }
+      >
+        <JobListStudio
+          assignments={currentAssignments()}
+          periodLabel={`Week of ${formatWeekLabel(currentWeek)} / Time Keepers: ${formatMonthLabel(currentMonth)}`}
+          currentUser={auth.user()}
+          isAdmin={isAdmin()}
+          onClose={() => setShowJobListStudio(false)}
+        />
+      </Suspense>
+    </Show>
+  );
+
   const WheelAndTable = (p) => (
     <div class="space-y-6">
       <Show when={jobActionMessage()}>
@@ -726,13 +755,27 @@ export default function JobsWidget(props) {
 
       {/* Bottom: jobs table — shown for everyone, larger for non-admins */}
       <div>
-        <JapaneseText
-          ja={`今週：${formatWeekLabel(currentWeek)}・タイムキーパー：${formatMonthLabel(currentMonth)}—${currentAssignments().length}/${allJobs().length}件割り当て済み`}
-          class="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3"
-          japaneseClass="mt-0.5 block normal-case tracking-normal text-[0.9em]"
-        >
-          Week of {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments().length}/{allJobs().length} assigned
-        </JapaneseText>
+        <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <JapaneseText
+            ja={`今週：${formatWeekLabel(currentWeek)}・タイムキーパー：${formatMonthLabel(currentMonth)}—${currentAssignments().length}/${allJobs().length}件割り当て済み`}
+            class="block text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+            japaneseClass="mt-0.5 block normal-case tracking-normal text-[0.9em]"
+          >
+            Week of {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments().length}/{allJobs().length} assigned
+          </JapaneseText>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            class="min-h-10 shrink-0 self-start rounded-sm border-primary/45 text-primary sm:self-auto"
+            onClick={() => setShowJobListStudio((open) => !open)}
+            aria-expanded={showJobListStudio()}
+          >
+            <FileDown class="h-4 w-4" />
+            <JapaneseText ja="係リストとPDF" layout="inline">Job List & PDF</JapaneseText>
+          </Button>
+        </div>
+        <JobListStudioPanel />
         <JobScheduleTable
           assignments={currentAssignments()}
           isAdmin={isAdmin()}
@@ -788,14 +831,34 @@ export default function JobsWidget(props) {
     }>
       <Show when={!props.compact} fallback={
         <div>
-          <div class="flex items-center justify-between mb-2">
-            <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <JapaneseText
+              as="p"
+              ja={`現在の係：${currentAssignments().length}/${allJobs().length}件`}
+              class="block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              japaneseClass="ml-1.5 inline normal-case tracking-normal"
+              layout="inline"
+            >
               Current jobs — {currentAssignments().length}/{allJobs().length}
-            </p>
-            <button onClick={() => setFullscreen(true)} class="flex items-center gap-1 text-xs text-primary hover:underline">
-              <Maximize2 class="w-3 h-3" /> Full Screen
-            </button>
+            </JapaneseText>
+            <div class="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                class="min-h-9 rounded-sm border-primary/45 px-2.5 text-xs text-primary"
+                onClick={() => setShowJobListStudio((open) => !open)}
+                aria-expanded={showJobListStudio()}
+              >
+                <FileDown class="h-3.5 w-3.5" />
+                <JapaneseText ja="係リストとPDF" layout="inline">Job List & PDF</JapaneseText>
+              </Button>
+              <button onClick={() => setFullscreen(true)} class="flex min-h-9 items-center gap-1 px-1 text-xs text-primary hover:underline">
+                <Maximize2 class="w-3 h-3" /> Full Screen
+              </button>
+            </div>
           </div>
+          <JobListStudioPanel />
           <JobScheduleTable
             assignments={currentAssignments()}
             isAdmin={isAdmin()}
