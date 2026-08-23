@@ -396,8 +396,8 @@ export default function JobsWidget(props) {
       }
       setJobActionMessage("Could not update the job list. Please try again.");
     } finally {
-      await queryClient.invalidateQueries({ queryKey: ["members"] });
       setRotationBusy(false);
+      queryClient.invalidateQueries({ queryKey: ["members"] });
     }
   };
 
@@ -787,7 +787,7 @@ export default function JobsWidget(props) {
             currentUser={auth.user()}
             onDayStatus={handleDayStatus}
             onDelete={handleRemoveAssignment}
-          deletePending={removeAssignment.isPending}
+            deletePending={removeAssignment.isPending}
             currentMonth={currentMonth}
           />
         </div>
