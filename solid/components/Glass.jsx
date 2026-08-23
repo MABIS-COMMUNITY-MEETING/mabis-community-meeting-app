@@ -43,69 +43,7 @@ export default function Glass(props) {
 
   onMount(() => {
     const unregister = registerGlass(el);
-    let liquidGlass = null;
-    let LiquidGlassContainer = null;
-    let disposed = false;
-    let idleId = null;
-    let timerId = null;
-
-    const mountLiquidGlass = () => {
-      if (disposed || !el || !LiquidGlassContainer) return;
-      liquidGlass?.destroy();
-      liquidGlass = new LiquidGlassContainer({
-        element: el,
-        type: "rounded",
-        borderRadius: local.variant === "navigation"
-          ? 0
-          : (Number.parseFloat(getComputedStyle(el).borderRadius) || 0),
-        tintOpacity: local.variant === "navigation" ? 0.18 : 0.2,
-        warp: true,
-      });
-    };
-
-    /*
-     * Paint the complete CSS glass immediately, but start downloading the
-     * optional WebGL optics in parallel instead of waiting up to 1.4 seconds
-     * before the request even begins. Snapshot capture and canvas setup remain
-     * idle work, so they never hold up the menu's first interactive frame.
-     */
-    const liquidModulePromise = window.WebGLRenderingContext
-      ? import("@/lib/liquid-glass-js").catch(() => null)
-      : Promise.resolve(null);
-
-    const loadLiquidGlass = async () => {
-      if (disposed) return;
-      const liquidModule = await liquidModulePromise;
-      if (!liquidModule || disposed) return;
-      ({ LiquidGlassContainer } = liquidModule);
-      mountLiquidGlass();
-    };
-
-    if (typeof requestIdleCallback === "function") {
-      idleId = requestIdleCallback(() => { void loadLiquidGlass(); }, { timeout: 450 });
-    } else {
-      timerId = window.setTimeout(() => { void loadLiquidGlass(); }, 120);
-    }
-
-    const refreshForTheme = () => {
-      if (!LiquidGlassContainer || disposed) return;
-      LiquidGlassContainer.captureGeneration += 1;
-      LiquidGlassContainer.pageSnapshot = null;
-      LiquidGlassContainer.isCapturing = false;
-      LiquidGlassContainer.waitingForSnapshot = [];
-      mountLiquidGlass();
-    };
-    window.addEventListener("themeChanged", refreshForTheme);
-
-    onCleanup(() => {
-      disposed = true;
-      unregister?.();
-      window.removeEventListener("themeChanged", refreshForTheme);
-      if (idleId !== null && typeof cancelIdleCallback === "function") cancelIdleCallback(idleId);
-      if (timerId !== null) clearTimeout(timerId);
-      liquidGlass?.destroy();
-      liquidGlass = null;
-    });
+    onCleanup(() => unregister?.());
   });
 
   const press = (v) => { if (el) el.dataset.glassPress = v ? "1" : "0"; };
