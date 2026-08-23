@@ -159,21 +159,11 @@ const MAX_RUNTIME_ENTRIES = 48;
 
 self.addEventListener("install", (event) => {
   /*
-   * Take over immediately instead of waiting for every tab to close.
-   *
-   * Without this, a new build installs and then sits in "waiting" for as long
-   * as ANY tab of the app is open — and because staticAsset() is cache-first,
-   * the old worker keeps serving the old JS and CSS from its shell cache the
-   * whole time. Even a hard reload gets the stale build. On a PWA that people
-   * leave open on a phone, "as long as any tab is open" is close to forever:
-   * fixes were shipping, building green, and never reaching anyone.
-   *
-   * The trade-off is the usual one — a page loaded from the previous build
-   * may afterwards ask for a chunk this build has renamed. The client handles
-   * that by reloading once on controllerchange (see solid/main.jsx), which is
-   * a single refresh against a fix that otherwise never arrives.
+   * Keep a new build waiting while an older build still controls an open tab.
+   * That preserves the exact hashed chunks the active meeting/document loaded
+   * and avoids an unrequested reload. The update activates naturally after
+   * the last old tab closes, so the next normal visit gets the new shell.
    */
-  self.skipWaiting();
   event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(PRECACHE_URLS)));
 });
 
