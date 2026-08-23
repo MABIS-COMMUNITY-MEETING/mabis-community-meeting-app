@@ -1,6 +1,6 @@
 import { Select as KSelect } from "@kobalte/core/select";
 import { Check, ChevronDown } from "lucide-solid";
-import { splitProps } from "solid-js";
+import { createMemo, splitProps } from "solid-js";
 
 /*
  * Select — Kobalte-backed replacement for the Radix/shadcn select.
@@ -26,7 +26,7 @@ export function Select(props) {
     "value", "onChange", "options", "placeholder", "class", "triggerClass", "disabled", "aria-label",
   ]);
 
-  const items = () => normalise(local.options);
+  const items = createMemo(() => normalise(local.options));
   const selected = () => items().find((o) => o.value === local.value) || null;
 
   return (
@@ -66,7 +66,10 @@ export function Select(props) {
       </KSelect.Trigger>
 
       <KSelect.Portal>
-        <KSelect.Content class="relative z-[120] min-w-[8rem] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md">
+        <KSelect.Content
+          data-cursor-lite
+          class="relative z-[120] min-w-[8rem] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md"
+        >
           <KSelect.Listbox class="max-h-72 overflow-y-auto p-1" />
         </KSelect.Content>
       </KSelect.Portal>
