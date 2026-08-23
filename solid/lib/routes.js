@@ -1,5 +1,6 @@
 import { saveDataEnabled } from "@/lib/performance-tier";
 import { setLoadingState } from "@/lib/loading-state";
+import { homeLayout } from "@/lib/layout-preference";
 
 /*
  * Solid route loaders.
@@ -58,10 +59,23 @@ export function startHomeModuleWarmup() {
   if (saveDataEnabled()) return undefined;
   /* Home's own chunk first — it is the one every widget renders inside, and
      it is memoised, so loadHomeRoute() below reuses this exact promise. */
-  void homeChunk().catch(() => undefined);
-  moduleWarmupPromise = import("~/lib/home-warmup")
-    .then(({ warmHomeModules }) => warmHomeModules())
-    .catch(() => undefined);
+  const home = homeChunk();
+  void home.catch(() => undefined);
+
+  const warmups = [
+    import("~/lib/home-warmup")
+      .then(({ warmHomeModules }) => warmHomeModules()),
+  ];
+
+  /* Boss owns the persistent glass header and its menu. Existing Boss users
+     must not leave the boot loader and then wait on a second nested Suspense
+     boundary before navigation exists. The stored choice is available before
+     auth, so overlap this extra static chunk with the auth request. */
+  if (homeLayout() === "boss") {
+    warmups.push(home.then(({ preloadBossHome }) => preloadBossHome()));
+  }
+
+  moduleWarmupPromise = Promise.allSettled(warmups);
   return moduleWarmupPromise;
 }
 
