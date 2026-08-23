@@ -13,6 +13,7 @@ import {
   timeKeeperKeysForYear,
 } from "../src/lib/jobsRotation.js";
 import { TAU, normalizeRotation, seededShuffle } from "../solid/lib/wheel-math.js";
+import { buildJobListPrintHtml, containsJapanese } from "../solid/lib/job-list-pdf.js";
 
 const august = new Date(2026, 7, 14, 12);
 assert.equal(getMonthLabel(august), "2026-08");
@@ -56,6 +57,33 @@ assert.deepEqual(seededShuffle(originalOrder, 1), firstShuffle);
 assert.notDeepEqual(seededShuffle(originalOrder, 2), firstShuffle);
 assert.deepEqual([...firstShuffle].sort(), [...originalOrder].sort());
 
+const pdfHtml = buildJobListPrintHtml({
+  title: "係 MABIS Jobs",
+  notes: "担当者向けのメモ",
+  period_label: "Week of August 17 今週",
+  created_by_name: "Alex 山田",
+  created_date: "2026-08-23",
+  items: [
+    {
+      job_title: "植物 Water Plants",
+      assigned_to_name: "Sam 佐藤",
+      assignment_period: "weekly",
+      schedule_days: ["Monday", "水曜日"],
+    },
+  ],
+}, {
+  primary: "#123456",
+  primaryForeground: "#ffffff",
+  secondary: "#fedcba",
+  fontFamily: "'MABIS Test UI', system-ui",
+});
+assert.equal(containsJapanese(pdfHtml), false);
+assert.match(pdfHtml, /--pdf-primary: #123456;/);
+assert.match(pdfHtml, /--pdf-secondary: #fedcba;/);
+assert.match(pdfHtml, /font-family: 'MABIS Test UI', system-ui;/);
+assert.match(pdfHtml, /Prepared by/);
+assert.match(pdfHtml, /Week of August 17/);
+
 const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const homeSource = source("solid/pages/Home.jsx");
 const discussionSource = source("solid/components/DiscussionWidget.jsx");
@@ -64,6 +92,9 @@ const jobTablesSource = source("solid/components/jobs/tables.jsx");
 const spinWheelSource = source("solid/components/jobs/SpinWheel.jsx");
 const wheelSessionSource = source("solid/lib/job-wheel-session.js");
 const memberSchemaSource = source("base44/entities/Member.jsonc");
+const jobListSchemaSource = source("base44/entities/JobList.jsonc");
+const jobListStudioSource = source("solid/components/jobs/JobListStudio.jsx");
+const jobListPdfSource = source("solid/lib/job-list-pdf.js");
 const docsEditorSource = source("solid/components/DocsEditor.jsx");
 const announcementSource = source("solid/components/AnnouncementsWidget.jsx");
 
@@ -83,10 +114,17 @@ assert.match(jobsSource, /data-cursor-lite/);
 assert.match(jobsSource, /onDelete=\{handleRemoveAssignment\}/);
 assert.match(jobTablesSource, /props\.onDelete\(a\)/);
 assert.match(jobTablesSource, /<span>Remove<\/span>/);
+assert.match(jobListSchemaSource, /"name": "JobList"/);
+assert.match(jobsSource, /lazy\(\(\) => import\("\~\/components\/jobs\/JobListStudio"\)\)/);
+assert.match(jobListStudioSource, /base44\.entities\.JobList\.create/);
+assert.match(jobListStudioSource, /printJobList/);
+assert.match(jobListPdfSource, /token\("--font-body"\)/);
+assert.match(jobListPdfSource, /token\("--primary"\)/);
+assert.match(jobListPdfSource, /englishOnly/);
 assert.equal((discussionSource.match(/<MeetingMinutes\b/g) || []).length, 2);
 assert.doesNotMatch(discussionSource, /MeetingNotesEditor/);
 assert.match(docsEditorSource, /toggleList\("bullet"\)/);
 assert.match(announcementSource, /memberForAuthor\(announcement\.author_name\)\?\.avatar_url/);
 assert.doesNotMatch(announcementSource, /avatar_url:\s*auth\.user\(\)\?\.avatar_url\s*\|\|\s*author\?\.avatar_url/);
 
-console.log("Jobs and meeting UI contract: persistent job-list membership, exact assignment removal, shared wheel shuffle, scheduling, mirrored Home state, unlimited bounded spins, bullet formatting, and announcement avatars passed.");
+console.log("Jobs and meeting UI contract: persistent job-list membership, exact assignment removal, shared wheel shuffle, saved lists, English-only theme/font-aware PDF export, scheduling, mirrored Home state, unlimited bounded spins, bullet formatting, and announcement avatars passed.");
