@@ -1,4 +1,4 @@
-import { lazy, Suspense, Show, onMount, onCleanup } from "solid-js";
+import { lazy, Suspense, Show, createEffect, createSignal, onMount, onCleanup } from "solid-js";
 import { Router, Route, Navigate } from "@solidjs/router";
 import { QueryClientProvider } from "@tanstack/solid-query";
 import { queryClientInstance } from "~/lib/query-client";
@@ -81,8 +81,23 @@ function ChunkFallback() {
  */
 function Protected(props) {
   const auth = useAuth();
+  /*
+   * LoadingScreen is a boot gate, not a cover for background auth work. Once
+   * the first auth/settings resolution has shown the route, keep it mounted:
+   * a later refetch may briefly raise a loading flag, but it must never replace
+   * an in-progress meeting or document with the full-screen loader.
+   */
+  const [resolvedOnce, setResolvedOnce] = createSignal(
+    auth.authChecked() || (!auth.isLoadingAuth() && !auth.isLoadingPublicSettings()),
+  );
+  createEffect(() => {
+    if (auth.authChecked() || (!auth.isLoadingAuth() && !auth.isLoadingPublicSettings())) {
+      setResolvedOnce(true);
+    }
+  });
+
   return (
-    <Show when={!auth.isLoadingAuth() && !auth.isLoadingPublicSettings()} fallback={<RouteFallback />}>
+    <Show when={resolvedOnce()} fallback={<RouteFallback />}>
       <Show
         when={auth.authError()?.type !== "user_not_registered"}
         fallback={<UserNotRegisteredError />}
