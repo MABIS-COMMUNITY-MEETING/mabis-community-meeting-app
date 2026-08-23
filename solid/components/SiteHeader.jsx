@@ -1,4 +1,5 @@
 import { createSignal, createEffect, onMount, onCleanup, Show, Index } from "solid-js";
+import { Portal } from "solid-js/web";
 import { A, useNavigate, useLocation } from "@solidjs/router";
 import { ArrowUpRight } from "lucide-solid";
 import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
@@ -141,7 +142,8 @@ export default function SiteHeader(props) {
       </header>
 
       <Show when={open()}>
-        <div class="site-nav-overlay fixed inset-0 z-40 bg-ink text-bone">
+        <Portal>
+          <div class="site-nav-overlay fixed inset-0 z-40 bg-ink text-bone">
           <div class="grid-bg absolute inset-0 opacity-15" />
 
           <span
@@ -222,7 +224,8 @@ export default function SiteHeader(props) {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </Portal>
       </Show>
     </>
   );
