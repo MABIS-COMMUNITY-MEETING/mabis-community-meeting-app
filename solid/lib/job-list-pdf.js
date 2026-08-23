@@ -80,12 +80,6 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
   const fontFamily = safeCssValue(appearance.fontFamily, "'GNUFreeMonoUI', monospace");
   const title = PDF_TITLE;
   const notes = englishOnly(jobList?.notes);
-  const period = englishOnly(jobList?.period_label, "Current assignments");
-  const author = englishOnly(jobList?.created_by_name, "MABIS Community");
-  const created = englishOnly(
-    jobList?.created_date || jobList?.createdDate || new Date().toISOString().slice(0, 10),
-    new Date().toISOString().slice(0, 10),
-  ).slice(0, 10);
   const rows = items.map((item, index) => {
     const schedule = (Array.isArray(item?.schedule_days) ? item.schedule_days : [])
       .map((day) => englishOnly(day))
@@ -97,7 +91,6 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
         <td><strong>${escapeHtml(englishOnly(item?.job_title, "Job"))}</strong></td>
         <td>${escapeHtml(englishOnly(item?.assigned_to_name, "Unassigned"))}</td>
         <td>${escapeHtml(schedule || "As scheduled")}</td>
-        <td class="pdf-period">${escapeHtml(englishOnly(item?.assignment_period, "weekly"))}</td>
       </tr>`;
   }).join("");
 
@@ -143,7 +136,7 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
       border-bottom: 1px solid var(--pdf-foreground);
       padding: 7mm 0 5mm;
     }
-    .pdf-kicker, .pdf-label, th, .pdf-number, .pdf-period, .pdf-footer {
+    .pdf-kicker, .pdf-label, th, .pdf-number, .pdf-footer {
       font-family: ${fontFamily};
       font-size: 7.5pt;
       font-weight: 700;
@@ -179,16 +172,7 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
     }
     .pdf-stripe span:first-child { background: var(--pdf-primary); }
     .pdf-stripe span:last-child { background: var(--pdf-secondary); }
-    .pdf-meta {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      border: 1px solid var(--pdf-border);
-      border-bottom: 0;
-    }
-    .pdf-meta > div { min-width: 0; padding: 3mm; border-right: 1px solid var(--pdf-border); }
-    .pdf-meta > div:last-child { border-right: 0; }
     .pdf-label { display: block; margin-bottom: 1mm; color: var(--pdf-muted-foreground); }
-    .pdf-value { font-weight: 700; overflow-wrap: anywhere; }
     table { width: 100%; border-collapse: collapse; table-layout: fixed; }
     thead { display: table-header-group; }
     tr { break-inside: avoid; }
@@ -207,11 +191,9 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
     }
     tbody tr:nth-child(even) { background: var(--pdf-muted); }
     th:nth-child(1), td:nth-child(1) { width: 9%; text-align: center; }
-    th:nth-child(2), td:nth-child(2) { width: 27%; }
-    th:nth-child(3), td:nth-child(3) { width: 23%; }
-    th:nth-child(4), td:nth-child(4) { width: 28%; }
-    th:nth-child(5), td:nth-child(5) { width: 13%; }
-    .pdf-period { color: var(--pdf-primary); }
+    th:nth-child(2), td:nth-child(2) { width: 31%; }
+    th:nth-child(3), td:nth-child(3) { width: 27%; }
+    th:nth-child(4), td:nth-child(4) { width: 33%; }
     .pdf-empty { padding: 12mm; text-align: center; border: 1px solid var(--pdf-border); }
     .pdf-notes {
       margin-top: 6mm;
@@ -241,14 +223,9 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
       <div class="pdf-mark" aria-label="MABIS">M</div>
     </header>
     <div class="pdf-stripe" aria-hidden="true"><span></span><span></span></div>
-    <section class="pdf-meta" aria-label="Job list information">
-      <div><span class="pdf-label">Period</span><span class="pdf-value">${escapeHtml(period)}</span></div>
-      <div><span class="pdf-label">Prepared by</span><span class="pdf-value">${escapeHtml(author)}</span></div>
-      <div><span class="pdf-label">Prepared</span><span class="pdf-value">${escapeHtml(created)}</span></div>
-    </section>
     ${rows ? `
       <table aria-label="Jobs">
-        <thead><tr><th>No.</th><th>Job</th><th>Person</th><th>Schedule</th><th>Period</th></tr></thead>
+        <thead><tr><th>No.</th><th>Job</th><th>Person</th><th>Schedule</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>` : '<div class="pdf-empty">No jobs were included in this list.</div>'}
     ${notes ? `<section class="pdf-notes"><span class="pdf-label">Notes</span>${escapeHtml(notes)}</section>` : ""}
@@ -278,6 +255,14 @@ export async function printJobList(jobList, doc = document) {
     });
   }));
   await popup.document.fonts?.ready;
+  const sourceWindow = doc.defaultView || window;
+  const restoreApp = () => {
+    if (!popup.closed) popup.close();
+    sourceWindow.focus();
+  };
+  popup.addEventListener("afterprint", restoreApp, { once: true });
+  popup.addEventListener("pagehide", () => sourceWindow.focus(), { once: true });
+
   popup.document.title = safeFilename(PDF_TITLE);
   popup.focus();
   popup.print();
