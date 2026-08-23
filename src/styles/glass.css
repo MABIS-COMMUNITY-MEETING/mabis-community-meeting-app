@@ -178,35 +178,6 @@
 
 .lg-surface > .lg-content { position: relative; z-index: 1; }
 
-/* ── liquid-glass-js WebGL layer ────────────────────────────────
-   The shader is adapted from dashersw/liquid-glass-js (MIT) and mounted only
-   after the Boss UI is interactive. The normal CSS material above remains
-   fully painted until the shader dispatches liquidglassready, and remains the
-   permanent fallback when WebGL/page capture is unavailable. Keeping the
-   canvas as a child layer — never as a wrapper — preserves Solid ownership,
-   focus order, dropdown overflow and the header's stacking context. */
-.lg-surface.glass-container {
-  position: relative;
-}
-.lg-surface > .lg-liquid-canvas {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-/* The upstream canvas is a distortion/highlight pass, not a replacement for
-   the browser's live backdrop. A one-time html2canvas texture can be stale or
-   exceed a GPU's texture limit on this very long page; replacing the native
-   material with it made the menu bar turn muddy/blank while scrolling. Keep
-   the live CSS glass painted and blend the liquid pass gently above it. */
-.lg-surface.lg-webgl-ready > .lg-liquid-canvas {
-  opacity: var(--liquid-glass-overlay-opacity, 0.30);
-}
-
 /* ── variants: thickness by role ─────────────────────────────── */
 
 /* compact — icon buttons, toggles, glyph chips */
@@ -240,8 +211,6 @@
   --glass_tint: 0.11;
   --glass_lens: 1.8px;
   --glass_spec: 0.22;
-  /* Full-width snapshot distortion must stay subordinate to the live glass. */
-  --liquid-glass-overlay-opacity: 0.24;
   --glass_shadow: 0 14px 40px -22px hsl(var(--ink) / 0.40);
   border-left: none;
   border-right: none;
@@ -335,51 +304,6 @@
   border-color: hsl(var(--ink) / 0.12);
 }
 
-/*
- * The persistent menu uses the thicker, milky frost from the supplied
- * references: diffuse backdrop, translucent theme-derived tint, a bright
- * rounded inner rim and a soft lower shadow. Bone/background keep the pane
- * correct on every saved/custom theme instead of hard-coding white/black.
- */
-.lg-navigation.lg-on-light {
-  --glass_blur: 26px;
-  --glass_saturation: 146%;
-  --glass_brightness: 1.08;
-  --glass_tint: 0.18;
-  --glass_spec: 0.38;
-  --liquid-glass-overlay-opacity: 0.30;
-  background:
-    linear-gradient(180deg,
-      hsl(var(--bone) / 0.38) 0%,
-      hsl(var(--bone) / 0.22) 48%,
-      hsl(var(--background) / 0.32) 100%),
-    linear-gradient(90deg,
-      hsl(var(--primary) / 0.08),
-      hsl(var(--secondary) / 0.06));
-  border-bottom-color: hsl(var(--bone) / 0.52);
-  box-shadow:
-    inset 2px 2px 1px 0 hsl(var(--bone) / 0.48),
-    inset -1px -1px 1px 1px hsl(var(--bone) / 0.34),
-    0 8px 8px hsl(var(--ink) / 0.16),
-    0 0 24px hsl(var(--ink) / 0.10);
-}
-
-.lg-navigation.lg-on-light::before {
-  background:
-    radial-gradient(
-      180px 110px at var(--glass_pointer_x) var(--glass_pointer_y),
-      hsl(var(--bone) / var(--glass_spec)),
-      hsl(var(--bone) / 0.10) 32%,
-      transparent 62%
-    ),
-    linear-gradient(
-      to bottom,
-      hsl(var(--bone) / 0.36),
-      hsl(var(--bone) / 0.08) 38%,
-      transparent 72%
-    );
-}
-
 /* press — physical compression, released with a spring-ish ease */
 .lg-surface[data-glass-press="1"] {
   transform: scale(0.988);
@@ -429,11 +353,11 @@
   right: 0;
   left: 0;
   z-index: 0;
-  height: 26px;
+  height: 22px;
   pointer-events: none;
-  background: linear-gradient(to bottom, hsl(var(--bone) / 0.24), transparent 92%);
-  -webkit-backdrop-filter: blur(12px) saturate(118%);
-  backdrop-filter: blur(12px) saturate(118%);
+  background: linear-gradient(to bottom, hsl(var(--background) / 0.20), transparent 92%);
+  -webkit-backdrop-filter: blur(8px) saturate(112%);
+  backdrop-filter: blur(8px) saturate(112%);
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.72) 38%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.72) 38%, transparent 100%);
   opacity: var(--glass-scroll-edge-opacity, 0.52);
@@ -531,11 +455,6 @@ html.animations-disabled .lg-scroll-edge {
     --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
   }
   .lg-thick { --glass_blur: 12px; }
-  .lg-navigation {
-    --glass_blur: 16px;
-    --glass_tint: 0.22;
-    --liquid-glass-overlay-opacity: 0.26;
-  }
   .lg-surface::after { display: none; }
   .lg-scroll-edge {
     height: 14px;
