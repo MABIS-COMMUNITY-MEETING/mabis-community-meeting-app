@@ -63,21 +63,28 @@ export default function Glass(props) {
       });
     };
 
+    /*
+     * Paint the complete CSS glass immediately, but start downloading the
+     * optional WebGL optics in parallel instead of waiting up to 1.4 seconds
+     * before the request even begins. Snapshot capture and canvas setup remain
+     * idle work, so they never hold up the menu's first interactive frame.
+     */
+    const liquidModulePromise = window.WebGLRenderingContext
+      ? import("@/lib/liquid-glass-js").catch(() => null)
+      : Promise.resolve(null);
+
     const loadLiquidGlass = async () => {
-      if (disposed || !window.WebGLRenderingContext) return;
-      try {
-        ({ LiquidGlassContainer } = await import("@/lib/liquid-glass-js"));
-        if (disposed) return;
-        mountLiquidGlass();
-      } catch {
-        // The CSS glass is the complete fallback when WebGL or capture fails.
-      }
+      if (disposed) return;
+      const liquidModule = await liquidModulePromise;
+      if (!liquidModule || disposed) return;
+      ({ LiquidGlassContainer } = liquidModule);
+      mountLiquidGlass();
     };
 
     if (typeof requestIdleCallback === "function") {
-      idleId = requestIdleCallback(() => { void loadLiquidGlass(); }, { timeout: 1400 });
+      idleId = requestIdleCallback(() => { void loadLiquidGlass(); }, { timeout: 450 });
     } else {
-      timerId = window.setTimeout(() => { void loadLiquidGlass(); }, 350);
+      timerId = window.setTimeout(() => { void loadLiquidGlass(); }, 120);
     }
 
     const refreshForTheme = () => {
