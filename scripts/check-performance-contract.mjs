@@ -195,6 +195,10 @@ requireText("src/components/MotionPreference.jsx", motionPreference, ['reducedMo
 requireText("src/App.jsx", app, "<OptionalCustomCursor />");
 requireText("src/components/OptionalCustomCursor.jsx", optionalCursor, ['lazy(() => import("@/components/CustomCursor"))', 'lazy(() => import("~/components/CustomCursor"))']);
 requireText("src/lib/routeLoaders.js", routeLoaders, "preloadRoute");
+requireText("src/pages/Home.jsx", home, "export function preloadBossHome()");
+requireText("src/pages/Home.jsx", home, "const BossHome = lazy(preloadBossHome);");
+requireText("src/lib/routeLoaders.js", routeLoaders, 'homeLayout() === "boss"');
+requireText("src/lib/routeLoaders.js", routeLoaders, "preloadBossHome");
 requireText("src/lib/routeLoaders.js", routeLoaders, "HOME_WARMUP_BUDGET_MS");
 requireText("src/lib/routeLoaders.js", routeLoaders, "waitWithinBudget");
 requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "isConstrainedNetwork()");
@@ -251,6 +255,8 @@ requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
 requireText("solid/components/Glass.jsx", glassComponentSolid, 'import("@/lib/liquid-glass-js")');
+requireText("solid/components/Glass.jsx", glassComponentSolid, "timeout: 450");
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "timeout: 1400");
 requireText("solid/components/Glass.jsx", glassComponentSolid, "liquidGlass?.destroy()");
 requireText("src/lib/liquid-glass-js.js", liquidGlass, "https://github.com/dashersw/liquid-glass-js");
 requireText("src/lib/liquid-glass-js.js", liquidGlass, 'import html2canvas from "html2canvas"');
@@ -266,6 +272,7 @@ requireText("src/styles/glass.css", glass, "inset 2px 2px 1px 0");
 forbidText("src/styles/glass.css", glass, ".lg-surface.lg-webgl-ready {\n  background: transparent");
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, 'import { Portal } from "solid-js/web"');
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, '<Portal>\n      <header class="site-header-shell fixed top-0 left-0 right-0 z-50">');
+requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, "0.03 + i * 0.035");
 requireText("solid/components/ThemeSwitcher.jsx", themeSwitcherSolid, 'import { Portal } from "solid-js/web"');
 requireText("solid/components/ThemeSwitcher.jsx", themeSwitcherSolid, "z-[150]");
 
