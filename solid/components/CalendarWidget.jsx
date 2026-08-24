@@ -13,6 +13,7 @@ import { askGeminiVision } from "@/lib/geminiClient";
 import { Button, Input, Textarea } from "~/components/ui";
 import { Select } from "~/components/ui/select";
 import { JapaneseText } from "~/components/primitives";
+import { useSharedCalendarState } from "~/lib/calendar-state";
 
 /*
  * CalendarWidget — Solid port of src/components/CalendarWidget.jsx.
@@ -77,10 +78,7 @@ export default function CalendarWidget() {
   const queryClient = useQueryClient();
   let screenshotInputEl;
 
-  const [viewDate, setViewDate] = createSignal(new Date());
-  const [view, setView] = createSignal(
-    typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches ? "Day" : "Month",
-  );
+  const { viewDate, setViewDate, view, setView } = useSharedCalendarState();
   const [showForm, setShowForm] = createSignal(false);
   const [selectedDay, setSelectedDay] = createSignal(null);
   const [selectedEvent, setSelectedEvent] = createSignal(null);
@@ -492,6 +490,19 @@ export default function CalendarWidget() {
           >
             Today
           </button>
+          <input
+            type="month"
+            aria-label="Jump to any month"
+            title="Jump to any month"
+            value={format(viewDate(), "yyyy-MM")}
+            onInput={(event) => {
+              const [year, month] = event.currentTarget.value.split("-").map(Number);
+              if (!year || !month) return;
+              setViewDate(new Date(year, month - 1, 1));
+              setView("Month");
+            }}
+            class="min-h-8 w-[8.75rem] rounded-lg border border-border bg-card px-2 py-1 text-xs font-semibold text-card-foreground"
+          />
           <button onClick={() => step(1)} aria-label="Next" class="p-1.5 rounded-lg hover:bg-card/20 text-primary-foreground transition-colors">
             <ChevronRight class="w-4 h-4" />
           </button>
