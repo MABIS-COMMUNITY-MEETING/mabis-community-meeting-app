@@ -113,6 +113,7 @@ const packageJson = read("package.json");
 const performanceContract = read("scripts/check-performance-contract.mjs");
 const bundleBudget = read("scripts/check-bundle-budget.mjs");
 const cjkFontLoader = read("src/components/CjkFontLoader.jsx");
+const summerHeader = read("solid/components/home/SummerHeader.jsx");
 /*
  * The LIVE sign-in page, named explicitly rather than through the src/→solid/
  * fallback.
@@ -365,6 +366,8 @@ requireText("src/index.css", css, "--font-body: 'OpenMojiColor', 'GNUFreeMonoUI'
 requireText("src/index.css", css, "--font-cjk: 'OpenMojiColor', 'Maple Mono NF CN'");
 requireText("src/index.css", css, ":lang(ko)");
 requireText("src/index.css", css, "unicode-range: U+0E00-0E7F");
+requireText("solid/components/home/SummerHeader.jsx", summerHeader, "bg-card font-body shadow-sm");
+forbidText("solid/components/home/SummerHeader.jsx", summerHeader, "font-display");
 requireText("src/components/CjkFontLoader.jsx", cjkFontLoader, "https://fontsapi.zeoseven.com/442/main/result.css");
 requireText("src/components/CjkFontLoader.jsx", cjkFontLoader, "MutationObserver");
 requireText("src/pages/Login.jsx", login, 'base44.auth.loginWithProvider("google", "/home")');
