@@ -1,0 +1,1 @@
+import{I as r}from"./Icon-pIDo8qQT.js";import{c as e,m as a}from"./index-2sWVpilJ.js";var n=[["path",{d:"m6 9 6 6 6-6",key:"qrunsl"}]],m=o=>e(r,a(o,{iconNode:n,name:"chevron-down"})),d=m;export{d as c};

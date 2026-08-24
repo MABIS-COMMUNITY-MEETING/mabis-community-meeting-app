@@ -45,8 +45,14 @@
           const themeColor = document.querySelector('meta[name="theme-color"]');
           if (primary && themeColor) themeColor.setAttribute("content", `hsl(${primary})`);
 
+          const plainMabis = storedTheme === "default"
+            && !localStorage.getItem("mabis-custom-colors")
+            && !localStorage.getItem("mabis-material-seed");
           window.__mabisPrePaintTheme = {
-            bodyClasses: snapshot.bodyClasses || [],
+            bodyClasses: [...new Set([
+              ...(snapshot.bodyClasses || []),
+              ...(plainMabis ? ["mabis-unrestricted-document-colors"] : []),
+            ])],
             themeClass: snapshot.themeClass || "",
           };
         } catch {
@@ -133,8 +139,8 @@
         #root:not(:empty) + #boot-splash { transition: none; }
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-FkYYNFrZ.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Cdx-IK7x.css">
+    <script type="module" crossorigin src="/assets/index-2sWVpilJ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-C-Bd_Mwf.css">
     <script type="module">
 if (window.self === window.top) {
   let lastPath = "";
@@ -175,7 +181,7 @@ if (window.self === window.top) {
           const snapshot = window.__mabisPrePaintTheme;
           if (!snapshot) return;
 
-          const owned = new Set(["pride-active", "theme-is-dark"]);
+          const owned = new Set(["pride-active", "theme-is-dark", "mabis-unrestricted-document-colors"]);
           for (const name of snapshot.bodyClasses) {
             if (owned.has(name)) document.body.classList.add(name);
           }
