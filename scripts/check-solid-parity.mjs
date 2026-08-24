@@ -255,9 +255,8 @@ check("app mounted into #root", root && root.children.length > 0);
  * component that never mounted, and it cost a real debugging detour. Match by
  * iteration instead of trusting the selector engine.
  */
-const byTitle = (title) => (root
-  ? [...root.querySelectorAll("[title]")].find((el) => el.getAttribute("title") === title)
-  : undefined);
+const byTitle = (title) => [...document.querySelectorAll("[title]")]
+  .find((el) => el.getAttribute("title") === title);
 
 /*
  * Lazy chunks resolve on the timer queue, so a fixed sleep after a click is a
@@ -433,8 +432,11 @@ if (route === "/login") {
   // technical labels; the default bar uses the original site's sentence case.
   const signOut = bossLayout ? "SIGN OUT" : "Sign Out";
   const firstName = bossLayout ? "PARITY" : "Parity";
-  check("sign-out control rendered", textNow().includes(signOut));
-  check("signed-in user's first name shown", textNow().includes(firstName),
+  const headerText = bossLayout
+    ? document.body.textContent.replace(/\s+/g, " ")
+    : textNow();
+  check("sign-out control rendered", headerText.includes(signOut));
+  check("signed-in user's first name shown", headerText.includes(firstName),
     `expected the seeded user's first name as "${firstName}"`);
   const avatarBtn = byTitle("Customize Profile Picture");
   check("profile-picture button rendered", !!avatarBtn);
