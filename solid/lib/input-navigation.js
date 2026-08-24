@@ -99,8 +99,9 @@ export function moveDirectionalFocus(direction, root = document) {
   const ownerDocument = root.nodeType === 9 ? root : root.ownerDocument;
   const active = ownerDocument?.activeElement;
   const current = candidates.includes(active) ? active : null;
-  const target = findDirectionalTarget(current, direction, candidates)
-    || (current ? null : firstViewportCandidate(candidates));
+  const target = current
+    ? findDirectionalTarget(current, direction, candidates)
+    : firstViewportCandidate(candidates);
 
   if (!target) return false;
   target.focus({ preventScroll: true });
