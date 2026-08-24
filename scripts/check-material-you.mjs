@@ -279,13 +279,13 @@ try {
 
   const rootStyle = document.documentElement.style;
 
-  applyTheme("sonic", { persist: false });
+  applyTheme("catppuccin_mocha", { persist: false });
   assertEqual("character theme publishes character colour", rootStyle.getPropertyValue("--character-primary") !== "", true);
-  assertEqual("character theme body class", document.body.classList.contains("theme-sonic"), true);
+  assertEqual("character theme body class", document.body.classList.contains("theme-mocha"), true);
   applyMaterialSeed("#4181ee", { persist: false, dark: true });
   assertEqual("Material clears character colour", rootStyle.getPropertyValue("--character-primary"), "");
   assertEqual("Material clears character glass edge", rootStyle.getPropertyValue("--glass-edge"), "");
-  assertEqual("Material removes previous character body class", document.body.classList.contains("theme-sonic"), false);
+  assertEqual("Material removes previous character body class", document.body.classList.contains("theme-mocha"), false);
   assertEqual("Material owns the active body class", document.body.classList.contains("theme-material"), true);
 
   applyTheme("pride", { persist: false });
