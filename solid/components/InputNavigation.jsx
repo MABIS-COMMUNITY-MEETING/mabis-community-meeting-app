@@ -1,10 +1,12 @@
 import { onMount, onCleanup } from "solid-js";
 import {
   activateFocused,
+  activeNavigationModal,
   isEditingTarget,
   moveDirectionalFocus,
   NAVIGATION_REPEAT,
   readGamepadIntent,
+  shouldFireOnce,
 } from "~/lib/input-navigation";
 
 const ARROWS = {
@@ -49,9 +51,12 @@ export default function InputNavigation() {
       }
     };
 
+    const fireOnce = (key, active, action) => {
+      if (shouldFireOnce(held, key, active)) action();
+    };
+
     const closeOrGoBack = () => {
-      const overlay = document.querySelector("[role='dialog'], [aria-modal='true']");
-      if (overlay) {
+      if (activeNavigationModal()) {
         window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
         return;
       }
@@ -69,11 +74,11 @@ export default function InputNavigation() {
             moveDirectionalFocus(direction);
           });
         }
-        fireWithRepeat("activate", intent.activate, now, () => {
+        fireOnce("activate", intent.activate, () => {
           revealFocus();
           activateFocused();
         });
-        fireWithRepeat("back", intent.back, now, closeOrGoBack);
+        fireOnce("back", intent.back && !intent.activate, closeOrGoBack);
       } else {
         held.clear();
       }
