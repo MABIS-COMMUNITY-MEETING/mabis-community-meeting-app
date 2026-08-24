@@ -85,7 +85,7 @@ function PagesMenu() {
 
 export default function SummerHeader(props) {
   return (
-    <header class="sticky top-0 z-40 border-b border-border bg-card shadow-sm">
+    <header class="sticky top-0 z-40 border-b border-border bg-card font-body shadow-sm">
       {/*
         * One non-wrapping row, so at phone width every pixel spent on the left
         * is taken from the controls on the right — which are all `shrink-0` and
@@ -99,7 +99,7 @@ export default function SummerHeader(props) {
             <img src={LOGO} alt="MABIS" class="h-7 w-7 object-contain sm:h-8 sm:w-8" />
           </span>
           <span class="min-w-0">
-            <span class="block truncate font-display text-base font-bold leading-none text-foreground transition-colors group-hover:text-primary">
+            <span class="block truncate text-base font-bold leading-none text-foreground transition-colors group-hover:text-primary">
               <span class="sm:hidden">MABIS</span>
               <span class="hidden sm:inline">MABIS Community Meeting</span>
             </span>
