@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import fs from "node:fs";
 import path from "node:path";
 import { JSDOM } from "jsdom";
 import { createServer } from "vite";
@@ -229,11 +230,19 @@ try {
   globalThis.localStorage = browser.window.localStorage;
   globalThis.Event = browser.window.Event;
   globalThis.getComputedStyle = browser.window.getComputedStyle.bind(browser.window);
+  globalThis.requestAnimationFrame = (callback) => {
+    callback();
+    return 1;
+  };
+  globalThis.cancelAnimationFrame = () => {};
 
   const {
     SAVED_THEMES_CHANGED_EVENT,
+    applyMaterialSeed,
+    applyTheme,
     deleteSavedTheme,
     getSavedThemes,
+    hexToHsl,
     saveMaterialTheme,
   } = await server.ssrLoadModule("/src/lib/themes.js");
 
@@ -267,6 +276,46 @@ try {
   deleteSavedTheme("Golden hour");
   assertObject("saved Material theme deletion", getSavedThemes(), []);
   assertEqual("deleted Material theme sync event", savedThemeEvents, 3);
+
+  const rootStyle = document.documentElement.style;
+
+  applyTheme("sonic", { persist: false });
+  assertEqual("character theme publishes character colour", rootStyle.getPropertyValue("--character-primary") !== "", true);
+  assertEqual("character theme body class", document.body.classList.contains("theme-sonic"), true);
+  applyMaterialSeed("#4181ee", { persist: false, dark: true });
+  assertEqual("Material clears character colour", rootStyle.getPropertyValue("--character-primary"), "");
+  assertEqual("Material clears character glass edge", rootStyle.getPropertyValue("--glass-edge"), "");
+  assertEqual("Material removes previous character body class", document.body.classList.contains("theme-sonic"), false);
+  assertEqual("Material owns the active body class", document.body.classList.contains("theme-material"), true);
+
+  applyTheme("pride", { persist: false });
+  assertEqual("Pride theme activates ambience", document.body.classList.contains("pride-active"), true);
+  assertEqual("Pride theme publishes glow", rootStyle.getPropertyValue("--pride-glow") !== "", true);
+  applyMaterialSeed("#4181ee", { persist: false, dark: true });
+  assertEqual("Material clears Pride ambience", document.body.classList.contains("pride-active"), false);
+  assertEqual("Material clears Pride glow", rootStyle.getPropertyValue("--pride-glow"), "");
+  assertEqual("Material clears Pride edge", rootStyle.getPropertyValue("--pride-edge"), "");
+  assertEqual("Material clears Pride highlight", rootStyle.getPropertyValue("--pride-highlight"), "");
+  assertEqual("Material retains its requested dark mode", document.body.classList.contains("theme-is-dark"), true);
+  assertEqual(
+    "Material primary remains seed-owned after catalogue switches",
+    rootStyle.getPropertyValue("--primary"),
+    hexToHsl(materialSchemeColors("#4181ee", true)["--primary"]),
+  );
+
+  const calendarSource = fs.readFileSync(path.resolve("solid/components/CalendarWidget.jsx"), "utf8");
+  for (const forbidden of ["#EACE54", "#951E3A", "text-amber-800"]) {
+    assertEqual(`calendar contains no fixed theme colour ${forbidden}`, calendarSource.includes(forbidden), false);
+  }
+  for (const pair of [
+    "bg-primary text-primary-foreground",
+    "bg-secondary text-secondary-foreground",
+    "bg-destructive text-destructive-foreground",
+    "bg-accent text-accent-foreground",
+    "bg-muted text-muted-foreground",
+  ]) {
+    assertEqual(`calendar contains theme-owned pair ${pair}`, calendarSource.includes(pair), true);
+  }
 
   for (const fixture of schemeFixtures) {
     assertObject(
