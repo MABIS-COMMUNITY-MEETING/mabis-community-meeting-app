@@ -423,33 +423,10 @@ if (route === "/login") {
       textNow().includes("Pages"));
   }
 
-  // MabisAIAssistant: lazy, inside IdleMount, so it appears only after the idle
-  // callback fires and its chunk resolves.
-  await waitFor(() => byTitle("MABIS Omni AI Assistant"));
-  const fab = byTitle("MABIS Omni AI Assistant");
-  check("assistant FAB mounted after idle", !!fab,
-    "IdleMount never fired, or the lazy chunk failed to resolve");
-  check("assistant panel closed on first paint",
-    !textNow().includes("How can I help?"));
-
-  if (fab) {
-    fab.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-    await waitFor(() => textNow().includes("How can I help?"));
-    const t2 = textNow();
-    const h2b = root.innerHTML;
-    check("assistant panel opens on click", t2.includes("MABIS Assistant"));
-    check("empty-state prompt rendered", t2.includes("How can I help?"));
-    check("all four suggestions rendered",
-      t2.includes("What's on the agenda this week?")
-      && t2.includes("What did we discuss last meeting?")
-      && t2.includes("Who's on jobs this week?")
-      && t2.includes("Any announcements I should know about?"));
-    check("composer rendered", h2b.includes("Reply to MABIS Assistant"));
-    check("entrance is the CSS keyframe, not framer", h2b.includes("assistant-pop"));
-    check("send button disabled while the composer is empty",
-      !!root.querySelector("textarea")
-      && [...root.querySelectorAll("button")].some((b) => b.disabled));
-  }
+  // The floating AI assistant was intentionally removed from Home. Pin that
+  // decision so an obsolete idle-loaded chunk cannot creep back into either
+  // layout and add first-use work again.
+  check("retired assistant stays absent", !byTitle("MABIS Omni AI Assistant"));
 
   // Header controls: the avatar, first name and sign-out sit beside the
   // theme/settings buttons in both layouts. The boss bar upper-cases them as
