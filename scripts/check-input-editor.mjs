@@ -70,6 +70,107 @@ const gameCubeIntent = nav.readGamepadIntent(gameCubePad);
 check(gameCubeIntent.up && gameCubeIntent.activate,
   "Raw GameCube adapter ids use the compatible A-button mapping and raw axes");
 
+const diagonalIntent = nav.readGamepadIntent({
+  ...standardPad,
+  axes: [0.82, 0.68, 0, 0],
+});
+check(diagonalIntent.right && !diagonalIntent.down,
+  "A diagonal stick resolves to one dominant menu direction");
+
+const secondaryAxisIntent = nav.readGamepadIntent({
+  ...standardPad,
+  axes: [0, 0, 0.95, -0.95, 1, -1],
+  buttons: Array.from({ length: 16 }, () => ({ pressed: false, value: 0 })),
+});
+check(!secondaryAxisIntent.left && !secondaryAxisIntent.right
+    && !secondaryAxisIntent.up && !secondaryAxisIntent.down,
+  "Right-stick and trigger axes do not cause phantom navigation");
+
+const dpadPriorityIntent = nav.readGamepadIntent({
+  ...standardPad,
+  axes: [0.9, 0, 0, 0],
+  buttons: Array.from({ length: 16 }, (_, index) => ({
+    pressed: index === 12,
+    value: index === 12 ? 1 : 0,
+  })),
+});
+check(dpadPriorityIntent.up && !dpadPriorityIntent.right,
+  "The digital pad takes priority over an active analog stick");
+
+const nintendoActivate = nav.readGamepadIntent({
+  ...standardPad,
+  id: "Nintendo Switch Pro Controller",
+  buttons: Array.from({ length: 16 }, (_, index) => ({
+    pressed: index === 1,
+    value: index === 1 ? 1 : 0,
+  })),
+});
+const nintendoBack = nav.readGamepadIntent({
+  ...standardPad,
+  id: "Nintendo Switch Pro Controller",
+  buttons: Array.from({ length: 16 }, (_, index) => ({
+    pressed: index === 0,
+    value: index === 0 ? 1 : 0,
+  })),
+});
+check(nintendoActivate.activate && !nintendoActivate.back,
+  "Nintendo A activates the focused control");
+check(nintendoBack.back && !nintendoBack.activate,
+  "Nintendo B performs the back action");
+
+const gameCubeBack = nav.readGamepadIntent({
+  ...gameCubePad,
+  buttons: Array.from({ length: 16 }, (_, index) => ({
+    pressed: index === 2,
+    value: index === 2 ? 1 : 0,
+  })),
+});
+check(gameCubeBack.back && !gameCubeBack.activate,
+  "GameCube B goes back without also activating the focused control");
+
+const held = new Map();
+check(nav.shouldFireOnce(held, "activate", true),
+  "Action buttons fire on their pressed edge");
+check(!nav.shouldFireOnce(held, "activate", true),
+  "Holding an action button cannot double-submit");
+nav.shouldFireOnce(held, "activate", false);
+check(nav.shouldFireOnce(held, "activate", true),
+  "An action button can fire again after release");
+
+Object.defineProperty(window, "innerWidth", { value: 390, configurable: true });
+Object.defineProperty(window, "innerHeight", { value: 844, configurable: true });
+document.body.replaceChildren();
+const offscreenButton = document.createElement("button");
+const visibleButton = document.createElement("button");
+offscreenButton.getBoundingClientRect = () => rect(20, -100);
+visibleButton.getBoundingClientRect = () => rect(20, 120);
+let scrollOptions = null;
+visibleButton.scrollIntoView = (options) => { scrollOptions = options; };
+document.body.append(offscreenButton, visibleButton);
+check(nav.moveDirectionalFocus("down") && document.activeElement === visibleButton,
+  "Initial controller focus starts on-screen at phone width");
+check(scrollOptions?.behavior === "auto",
+  "Repeated navigation does not stack smooth-scroll animations");
+
+document.body.replaceChildren();
+const backgroundButton = document.createElement("button");
+const modal = document.createElement("div");
+const modalButton = document.createElement("button");
+backgroundButton.getBoundingClientRect = () => rect(20, 40);
+modal.setAttribute("aria-modal", "true");
+modal.setAttribute("role", "dialog");
+modal.getBoundingClientRect = () => rect(10, 20, 360, 700);
+modalButton.getBoundingClientRect = () => rect(40, 100);
+modal.append(modalButton);
+document.body.append(backgroundButton, modal);
+backgroundButton.focus();
+check(nav.activeNavigationModal() === modal,
+  "The visible modal is recognized as the active controller scope");
+check(nav.moveDirectionalFocus("right") && document.activeElement === modalButton,
+  "Controller focus cannot escape behind an open modal");
+
+document.body.replaceChildren();
+
 const sanitized = editor.sanitizePastedHtml(
   '<p style="color:#f00;background-color:yellow"><mark>Keep</mark> <a href="https://example.com">link</a></p>'
 );
