@@ -25,6 +25,11 @@ import {
 const MeetingMinutes = lazy(() => import("~/components/MeetingMinutes"));
 const JobsWidget = lazy(() => import("~/components/JobsWidget"));
 
+function newTopicSaveRequestId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `topic-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 /*
  * DiscussionWidget — Solid port of src/components/DiscussionWidget.jsx.
  *
@@ -86,6 +91,8 @@ export default function DiscussionWidget(props) {
   // A save that fails must say so. Previously both the validation guard and a
   // rejected request returned silently, so the form sat there looking unsaved.
   const [saveError, setSaveError] = createSignal("");
+  const [saveRequestId, setSaveRequestId] = createSignal("");
+  const [saveRequestSignature, setSaveRequestSignature] = createSignal("");
   const [localMeetingMode, setLocalMeetingMode] = createSignal(location.state?.startMeeting === true);
   const [meetingPaused, setMeetingPaused] = createSignal(false);
   const [meetingNotesReady, setMeetingNotesReady] = createSignal(false);
@@ -201,7 +208,31 @@ export default function DiscussionWidget(props) {
   const topicsQuery = useQuery(() => ({
     queryKey: ["topics", viewedWeek()],
     queryFn: () => base44.entities.DiscussionTopic.filter({ week_label: viewedWeek() }, "-created_date", 100),
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   }));
+
+  /*
+   * Realtime is the fast path for everyone else in the meeting. Invalidation is
+   * frame-coalesced because archive and bulk updates can emit several events at
+   * once; the 15-second query interval above is the fallback for filtered or
+   * unavailable websocket connections.
+   */
+  createEffect(() => {
+    let refreshFrame = 0;
+    const unsubscribe = base44.entities.DiscussionTopic.subscribe(() => {
+      if (refreshFrame) return;
+      refreshFrame = requestAnimationFrame(() => {
+        refreshFrame = 0;
+        queryClient.invalidateQueries({ queryKey: ["topics"] });
+      });
+    });
+    onCleanup(() => {
+      cancelAnimationFrame(refreshFrame);
+      unsubscribe?.();
+    });
+  });
 
   const viewedTopics = createMemo(() =>
     (topicsQuery.data || [])
@@ -223,13 +254,14 @@ export default function DiscussionWidget(props) {
   const resetTopicForm = () => {
     setTitle(""); setDescription(""); setPriority("3");
     setSubmittedBy(""); setEditingTopicId(null); setShowForm(false);
-    setSaveError("");
+    setSaveError(""); setSaveRequestId(""); setSaveRequestSignature("");
   };
 
   const toggleAddTopicForm = () => {
     if (showForm() && !editingTopicId()) { resetTopicForm(); return; }
     setEditingTopicId(null);
     setTitle(""); setDescription(""); setSubmittedBy(""); setPriority("3");
+    setSaveRequestId(""); setSaveRequestSignature("");
     setShowForm(true);
   };
 
@@ -239,15 +271,64 @@ export default function DiscussionWidget(props) {
       : "Could not save. Check your connection and try again — your text is still here.",
   );
 
+  const mergeTopicIntoCache = (weekLabel, topic) => {
+    if (!topic?.id) return;
+    queryClient.setQueryData(["topics", weekLabel], (current = []) => {
+      const existing = current.findIndex((row) => row.id === topic.id);
+      if (existing === -1) return [topic, ...current];
+      return current.map((row, index) => index === existing ? { ...row, ...topic } : row);
+    });
+  };
+
+  /*
+   * A create can reach the server even when its response is lost. Keep one
+   * request id for one exact form payload: after an ambiguous failure, confirm
+   * that id before ever creating again. This makes the Retry click safe without
+   * duplicating a topic.
+   */
+  let lastCreateAttemptId = "";
+  const createTopicReliably = async (data) => {
+    const requestId = data.save_request_id;
+    if (requestId && lastCreateAttemptId === requestId) {
+      const existing = await base44.entities.DiscussionTopic.filter({ save_request_id: requestId }, "-created_date", 1);
+      if (existing[0]) return existing[0];
+    }
+
+    lastCreateAttemptId = requestId;
+    try {
+      return await base44.entities.DiscussionTopic.create(data);
+    } catch (error) {
+      try {
+        const confirmed = await base44.entities.DiscussionTopic.filter({ save_request_id: requestId }, "-created_date", 1);
+        if (confirmed[0]) return confirmed[0];
+      } catch {
+        // Preserve and report the original write error, not the verification error.
+      }
+      throw error;
+    }
+  };
+
   const addTopic = useMutation(() => ({
-    mutationFn: (data) => base44.entities.DiscussionTopic.create(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["topics"] }); resetTopicForm(); },
+    mutationFn: createTopicReliably,
+    onSuccess: (saved, data) => {
+      mergeTopicIntoCache(data.week_label, { ...data, ...saved });
+      queryClient.invalidateQueries({ queryKey: ["topics"] });
+      lastCreateAttemptId = "";
+      resetTopicForm();
+    },
     onError: saveFailed,
   }));
 
   const updateTopic = useMutation(() => ({
     mutationFn: ({ id, data }) => base44.entities.DiscussionTopic.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["topics"] }); resetTopicForm(); },
+    onSuccess: (saved, variables) => {
+      const weekLabel = viewedWeek();
+      const current = queryClient.getQueryData(["topics", weekLabel]) || [];
+      const previous = current.find((row) => row.id === variables.id) || {};
+      mergeTopicIntoCache(weekLabel, { ...previous, ...variables.data, ...saved, id: variables.id });
+      queryClient.invalidateQueries({ queryKey: ["topics"] });
+      resetTopicForm();
+    },
     onError: saveFailed,
   }));
 
@@ -313,11 +394,18 @@ export default function DiscussionWidget(props) {
         },
       });
     } else {
-      addTopic.mutate({
+      const data = {
         title: title().trim(), description: description() || "",
         submitted_by: submittedBy().trim(), completed: false,
         week_label: viewedWeek(), archived: false, priority: parseInt(priority()),
-      });
+      };
+      const signature = JSON.stringify(data);
+      const requestId = saveRequestSignature() === signature && saveRequestId()
+        ? saveRequestId()
+        : newTopicSaveRequestId();
+      setSaveRequestId(requestId);
+      setSaveRequestSignature(signature);
+      addTopic.mutate({ ...data, save_request_id: requestId });
     }
   };
 
