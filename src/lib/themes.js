@@ -829,6 +829,19 @@ export function applyMaterialSeed(seedHex, { persist = true, dark } = {}) {
   // instead of silently inheriting that leftover state.
   document.body.classList.toggle("theme-is-dark", isDark);
   document.body.classList.remove("mabis-unrestricted-document-colors");
+
+  /*
+   * A Material scheme owns the complete visual state, not only the semantic
+   * surface tokens above. Clear catalogue-only identity as part of the same
+   * commit so Pride ambience, character glass edges and a Boss theme body
+   * class cannot survive a switch into Material.
+   */
+  document.body.classList.remove("pride-active");
+  ["--pride-glow", "--pride-edge", "--pride-highlight"].forEach((key) => {
+    root.style.removeProperty(key);
+  });
+  applyCharacterTokens(null);
+  applyThemeBodyClass("theme-material");
   applyPalette(materialSchemeSwatches(seedHex, isDark), true);
 
   if (persist) {
