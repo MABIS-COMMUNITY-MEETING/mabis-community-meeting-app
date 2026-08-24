@@ -768,7 +768,9 @@ if (route === "/login") {
 // These mount in App.jsx for every route, so they are asserted for every route.
 const shellHtml = () => (root ? root.innerHTML : "");
 check("grain overlay mounted", shellHtml().includes("grain-layer"));
-check("palette stripe mounted", shellHtml().includes("--palette-stripes"));
+// PaletteStripe intentionally portals to <body> so the portaled glass header
+// cannot cover it; root.innerHTML therefore cannot observe it.
+check("palette stripe mounted", document.body.innerHTML.includes("--palette-stripes"));
 /*
  * Inverted deliberately. The shell used to mount a 2px scroll-progress bar
  * here, and the boss layout a right-edge section counter; both redrew
