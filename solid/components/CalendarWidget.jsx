@@ -24,12 +24,17 @@ import { JapaneseText } from "~/components/primitives";
  * every parent re-render. Same shape, different motivation.
  */
 
+/*
+ * Event categories use semantic colour pairs, never MABIS hexes. Named themes
+ * and Material schemes both define these roles, so a pill always gets its
+ * foreground from the same theme-owned role as its background.
+ */
 const EVENT_COLORS = {
-  event:    { bg: "bg-primary/10",   text: "text-primary",     label: "Event",    ja: "予定",   dot: "#c98a96", pill: "bg-primary/10 text-primary" },
-  holiday:  { bg: "bg-[#EACE54]/25", text: "text-amber-800",   label: "Holiday",  ja: "祝日",   dot: "#EACE54", pill: "bg-[#EACE54]/25 text-amber-800" },
-  meeting:  { bg: "bg-primary/20",   text: "text-primary",     label: "Meeting",  ja: "ミーティング", dot: "#951E3A", pill: "bg-primary/20 text-primary" },
-  birthday: { bg: "bg-[#EACE54]/12", text: "text-primary",     label: "Birthday", ja: "誕生日", dot: "#d9a441", pill: "bg-[#EACE54]/12 text-primary" },
-  other:    { bg: "bg-[#EACE54]/18", text: "text-amber-800",   label: "Other",    ja: "その他", dot: "#b08948", pill: "bg-[#EACE54]/18 text-amber-800" },
+  event:    { bg: "bg-primary",     text: "text-card-foreground", label: "Event",    ja: "予定",         dot: "hsl(var(--primary))",           pill: "bg-primary text-primary-foreground" },
+  holiday:  { bg: "bg-secondary",   text: "text-card-foreground", label: "Holiday",  ja: "祝日",         dot: "hsl(var(--secondary))",         pill: "bg-secondary text-secondary-foreground" },
+  meeting:  { bg: "bg-destructive", text: "text-card-foreground", label: "Meeting",  ja: "ミーティング", dot: "hsl(var(--destructive))",       pill: "bg-destructive text-destructive-foreground" },
+  birthday: { bg: "bg-accent",      text: "text-card-foreground", label: "Birthday", ja: "誕生日",       dot: "hsl(var(--accent))",            pill: "bg-accent text-accent-foreground" },
+  other:    { bg: "bg-muted",       text: "text-card-foreground", label: "Other",    ja: "その他",       dot: "hsl(var(--muted-foreground))", pill: "border border-border bg-muted text-muted-foreground" },
 };
 
 const VIEWS = ["Day", "Month", "Year", "Week"];
