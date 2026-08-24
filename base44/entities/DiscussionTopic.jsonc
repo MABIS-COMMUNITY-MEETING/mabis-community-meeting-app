@@ -33,6 +33,10 @@
       "type": "boolean",
       "default": false,
       "description": "Auto-created jobs assignment topic"
+    },
+    "save_request_id": {
+      "type": "string",
+      "description": "Client-generated idempotency key for reliable discussion saves"
     }
   },
   "required": [
