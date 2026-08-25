@@ -480,23 +480,35 @@ html.input-navigation-active :focus {
   outline-offset: 3px;
 }
 
-/* Quality-first Linux browser profile. The browser owns the kernel/GPU bridge;
-   these hints isolate only elements that are actively animated and keep every
-   visual effect enabled instead of entering performance-lite. */
+/* Quality-first Linux browser profile. The browser owns the kernel/GPU bridge,
+   so keep its native layer heuristics: blanket preserve-3d/backface hints
+   created extra surfaces on some Mesa and software-rendered paths. Browser
+   defaults also choose the most efficient text shaping path for the active
+   GNU/Maple face. All visual effects remain enabled. */
 html.platform-linux {
-  text-rendering: optimizeLegibility;
   font-synthesis: none;
   scrollbar-gutter: stable;
 }
-html.platform-linux .loading-glow,
-html.platform-linux .loading-spinner,
-html.platform-linux .loading-progress-fill,
-html.platform-linux .page-curtain,
-html.platform-linux .page-curtain-mark,
-html.platform-linux .page-content-lift,
-html.platform-linux .widget-rise {
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
+
+/* The shared reveal observer keeps this class current without a scroll
+   listener or a Solid signal. Once a measured section is off-screen, pause
+   only continuous decoration inside it; the exact animation state resumes
+   before the section re-enters the visible viewport. */
+html.platform-linux .cv-section.cv-ready:not(.cv-onscreen) :is(
+  .marquee-track,
+  .splash-bob,
+  .meeting-nudge,
+  .float-y,
+  .spin-slow,
+  .blob-drift,
+  .blob-drift-2,
+  .pulse-dot,
+  .pride-field-x,
+  .pride-field-y,
+  .pride-orbit,
+  .pride-chevron
+) {
+  animation-play-state: paused !important;
 }
 
 /* ── theme-independent custom cursor ────────────────────────────────
