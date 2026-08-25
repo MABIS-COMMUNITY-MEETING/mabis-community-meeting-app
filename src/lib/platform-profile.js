@@ -16,9 +16,9 @@ export function isLinuxPlatform() {
  * Mark the real browser platform before the app mounts.
  *
  * A web page cannot call Linux schedulers, Vulkan or kernel APIs. This profile
- * therefore sticks to capabilities the browser intentionally exposes, and the
- * CSS it enables keeps the complete visual treatment while making active
- * transforms easier for Linux compositors to isolate.
+ * therefore sticks to capabilities the browser intentionally exposes. The
+ * CSS profile keeps the complete visual treatment, parks only invisible work,
+ * and leaves layer promotion to the browser's measured compositor heuristics.
  */
 export function applyPlatformProfile() {
   if (typeof document === "undefined") return { linux: false };
