@@ -137,6 +137,8 @@ const meetingMinutes = read("solid/components/MeetingMinutes.jsx");
 const discussionDocumentEditor = read("solid/components/discussion/DiscussionDocumentEditor.jsx");
 const platformProfile = read("src/lib/platform-profile.js");
 const performanceTier = read("src/lib/performance-tier.js");
+const solidPerf = read("solid/lib/perf.js");
+const perfMonitor = read("solid/lib/perf-monitor.js");
 /*
  * The SHIPPED entry, not the root one.
  *
@@ -455,6 +457,11 @@ requireText("src/main.jsx", main, "applyPlatformProfile();");
 requireText("src/lib/platform-profile.js", platformProfile, "platform-linux");
 requireText("src/lib/performance-tier.js", performanceTier, "if (isLinuxPlatform()) return false;");
 requireText("src/lib/performance-tier.js", performanceTier, "if (isLinuxPlatform()) return () => {};");
+requireText("solid/lib/perf.js", solidPerf, "const revealCallbacks = new WeakMap();");
+requireText("solid/lib/perf.js", solidPerf, 'classList.toggle("cv-onscreen", entry.isIntersecting)');
+requireText("src/index.css", css, "html.platform-linux .cv-section.cv-ready:not(.cv-onscreen)");
+forbidText("src/index.css", css, "transform-style: preserve-3d");
+requireText("solid/lib/perf-monitor.js", perfMonitor, "softwareRendering: isSoftwareRendered()");
 
 requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMono-subset.woff2?v=3");
 requireText("solid/index.html", html, "/fonts/gnu-freefont/FreeMonoBold-subset.woff2?v=3");
