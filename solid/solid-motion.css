@@ -300,15 +300,11 @@ html.animations-disabled .tap-85:active { transform: none; }
 }
 
 /* ── Scroll: buy frames back while the finger is down ──────────────────────
- * backdrop-filter is the most expensive thing on this page — it re-samples
- * the layer beneath it every single frame, and the design stacks it on every
- * widget. During an active scroll that cost lands exactly when the frame
- * budget is tightest.
- *
- * So while scrolling we drop the blur to a flat translucent fill. The surface
- * keeps its shape, border and tint, and the effect returns the moment scroll
- * settles (~140ms). This is invisible in motion and is worth entire frames on
- * an integrated GPU.
+ * Keep the primary .lg-surface material live: its single backdrop-filter is
+ * the visible glass and must preserve continuity during momentum scroll.
+ * These selectors remove only optional pseudo-element depth passes on older
+ * widget surfaces, avoiding stacked backdrop reads without changing the main
+ * material, shape, tint or border.
  *
  * `is-scrolling` is toggled by installScrollStateClass() in lib/perf.js,
  * rAF-coalesced so many scroll events collapse into one class write.
@@ -405,8 +401,6 @@ html.performance-lite .cv-section [style*="translateY"] {
   opacity: 1 !important;
 }
 
-/* Promote only what is genuinely moving, and only while it moves. A permanent
-   will-change on ten sections costs VRAM on integrated graphics for layers the
-   compositor is not touching. */
-.widget-rise { will-change: transform, opacity; }
-.widget-rise:not(:hover) { will-change: auto; }
+/* The compositor sees widget-rise's transform/opacity keyframes directly.
+   Leave promotion to the browser instead of pinning ten section layers in
+   VRAM with a permanent will-change hint. */
