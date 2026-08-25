@@ -83,30 +83,53 @@ export function onceVisible(el, fn) {
 /*
  * Reveal-on-view, separate from mounting.
  *
- * The section entrance used to read createVisibility(), which fires while the
- * section is still ~1400px below the fold — so the slide-up ran entirely
- * off-screen and had finished before it was ever looked at. That is why the
- * sections appeared to have no transition at all.
- *
- * This observer uses React's original viewport margin ("-8% 0px"), so the
- * animation starts as the section genuinely comes into view.
+ * Mounting and revealing need different root margins, but neither needs an
+ * observer per section. One shared reveal observer starts the entrance when a
+ * section genuinely enters the viewport and keeps only a cheap cv-onscreen
+ * class current afterwards. Linux uses that class to park continuous
+ * decoration in sections the compositor cannot show.
  */
+const revealCallbacks = new WeakMap();
+let revealObserver = null;
+
+function getRevealObserver() {
+  if (revealObserver || typeof IntersectionObserver === "undefined") return revealObserver;
+  revealObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      entry.target.classList.toggle("cv-onscreen", entry.isIntersecting);
+      if (!entry.isIntersecting) continue;
+      const reveal = revealCallbacks.get(entry.target);
+      if (!reveal) continue;
+      revealCallbacks.delete(entry.target);
+      reveal();
+    }
+  }, { rootMargin: "-8% 0px" });
+  return revealObserver;
+}
+
+function observeReveal(el, reveal) {
+  const io = getRevealObserver();
+  if (!io || !el) {
+    el?.classList.add("cv-onscreen");
+    reveal();
+    return () => {};
+  }
+  revealCallbacks.set(el, reveal);
+  io.observe(el);
+  return () => {
+    revealCallbacks.delete(el);
+    io.unobserve(el);
+  };
+}
+
 export function createReveal() {
   const [revealed, setRevealed] = createSignal(false);
   let el;
   const ref = (node) => { el = node; };
 
   onMount(() => {
-    if (!el || typeof IntersectionObserver === "undefined") { setRevealed(true); return; }
-    const io = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        io.unobserve(entry.target);   // once, like framer's viewport.once
-        setRevealed(true);
-      }
-    }, { rootMargin: "-8% 0px" });
-    io.observe(el);
-    onCleanup(() => io.disconnect());
+    const stop = observeReveal(el, () => setRevealed(true));
+    onCleanup(stop);
   });
 
   return [ref, revealed];
