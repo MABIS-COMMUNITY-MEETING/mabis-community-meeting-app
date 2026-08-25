@@ -32,6 +32,8 @@
  */
 
 import { refreshHz, refreshIntervalMs, resetFrameChain, sampleFrame } from "@/lib/physics/refresh-rate";
+import { detectedPlatform, isLinuxPlatform } from "@/lib/platform-profile";
+import { isSoftwareRendered } from "@/lib/software-rendering";
 
 const FLAG = "mabis-perf";
 
@@ -195,6 +197,9 @@ export function startPerfMonitor() {
 function deviceProfile() {
   const c = navigator.connection || {};
   return {
+    platform: detectedPlatform() || "unknown",
+    linux: isLinuxPlatform(),
+    softwareRendering: isSoftwareRendered(),
     cores: navigator.hardwareConcurrency ?? "unknown",
     memoryGB: navigator.deviceMemory ?? "unknown",
     network: c.effectiveType ?? "unknown",
