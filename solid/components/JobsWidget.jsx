@@ -450,11 +450,15 @@ export default function JobsWidget(props) {
     setWinner(null);
   };
 
+  /* No banner here on purpose. Every other jobActionMessage reports something
+     the reader cannot see — an assignment removed, a job marked done, a save
+     that failed. A shuffle is the one action whose entire result is on screen
+     already: the wheel visibly reorders under the button that was just
+     pressed. Announcing it said nothing new and pushed the wheel down the page
+     for three seconds each time. */
   const handleShuffleWheel = () => {
     if (wheelMembers().length < 2 || winner()) return;
     setShuffleSeed((seed) => ((seed + 1) >>> 0) || 1);
-    setJobActionMessage("Wheel order shuffled. No one was assigned.");
-    window.setTimeout(() => setJobActionMessage(""), 3000);
   };
 
   const JobListStudioPanel = () => (
