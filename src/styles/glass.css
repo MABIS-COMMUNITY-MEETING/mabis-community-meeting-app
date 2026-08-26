@@ -312,7 +312,6 @@
       hsl(var(--ink) / calc(var(--glass_tint) * 0.5)));
 }
 
-/* press — physical compression, released with a spring-ish ease */
 /* ── The custom cursor's ring is a glass surface ─────────────────────────
 
    Same material as .lg-surface, assembled differently, for two reasons that
@@ -382,6 +381,7 @@ html.is-scrolling .cursor-ring {
   backdrop-filter: none;
 }
 
+/* press — physical compression, released with a spring-ish ease */
 .lg-surface[data-glass-press="1"] {
   transform: scale(0.988);
   --glass_spec: 0.36;
