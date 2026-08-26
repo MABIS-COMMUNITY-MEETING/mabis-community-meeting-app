@@ -38,9 +38,26 @@ export function EditorialSection(props) {
   const index = () => props.index ?? "00";
   const flag = () => `var(--flag-${((parseInt(index(), 10) || 1) % 8) + 1}, hsl(var(--primary)))`;
 
+  /*
+   * `none`, not `translateY(0)`, for the settled state.
+   *
+   * They look identical and are not. Any transform other than `none` makes the
+   * element a containing block for its position:fixed descendants, and this
+   * style is inline and permanent once the section has revealed — so the
+   * wrapper below that holds {props.children} was trapping every widget inside
+   * it forever. Announcements, Discussion, Jobs, Calendar, Lost and Found, News
+   * and Members all go fullscreen by adding `fixed inset-0` to themselves, and
+   * each was being pinned to, and clipped by, this wrapper's box instead of the
+   * viewport.
+   *
+   * Same trap as .widget-rise's fill-mode and .page-content-lift's before it;
+   * see the fill-mode note in solid-motion.css. `none` interpolates from
+   * translateY(8px) exactly as translateY(0) does, so the entrance is
+   * unchanged.
+   */
   const reveal = (delay) => ({
     opacity: revealed() ? 1 : 0,
-    transform: revealed() ? "translateY(0)" : "translateY(8px)",
+    transform: revealed() ? "none" : "translateY(8px)",
     transition: `opacity 0.55s ${EASE_CSS} ${delay}s, transform 0.55s ${EASE_CSS} ${delay}s`,
   });
 
