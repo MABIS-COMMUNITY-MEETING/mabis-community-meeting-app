@@ -355,6 +355,32 @@ requireText("src/components/JobsWidget.jsx", jobs, "canvas.width !== backingSize
  * index.css.
  */
 requireText("solid/solid-motion.css", motionCss, ".cv-section.cv-ready");
+/*
+ * No forwards-filling transform animation may wrap a widget.
+ *
+ * A CSS animation over `transform` that fills forwards leaves the element a
+ * containing block for position:fixed descendants after it finishes, even when
+ * the last keyframe is `transform: none`. Both wrappers between a route and a
+ * widget animate transform on entry — .page-content-lift around every route and
+ * .widget-rise around every LazySection child — so either one filling forwards
+ * pins every fullscreen widget to that box instead of the viewport, and the
+ * widget vanishes when you open it.
+ *
+ * .page-content-lift was already `backwards` with a note explaining why;
+ * .widget-rise was `both` and had exactly the documented symptom. Neither has
+ * an animation-delay worth covering, so `backwards` costs nothing.
+ */
+for (const rule of [".page-content-lift", ".widget-rise"]) {
+  const declaration = motionCss.match(new RegExp(`\\${rule}\\s*\\{[^}]*animation:[^;}]*`));
+  const value = declaration?.[0] ?? "";
+  if (!/\bbackwards\b/.test(value) || /\b(both|forwards)\b/.test(value)) {
+    failures.push(
+      `solid/solid-motion.css: ${rule} must use animation-fill-mode \`backwards\`, not `
+      + `\`both\`/\`forwards\` — a forwards-filled transform makes it a containing block for `
+      + `position:fixed, which hides every fullscreen widget. Saw: ${value.trim() || "no animation"}`,
+    );
+  }
+}
 /* Declarations only. index.css documents this removal at length and names the
    property while doing so; prose about why it is gone is not a regression. */
 forbidText("src/index.css", css.replace(/\/\*[\s\S]*?\*\//g, ""), "content-visibility: auto");
