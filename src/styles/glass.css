@@ -343,8 +343,12 @@
   --glass_blur: 6px;
   --glass_saturation: 150%;
   --glass_brightness: 1.06;
-  --glass_tint: 0.22;
-  --glass_spec: 0.34;
+  /* Lower again than the 0.22 first tried here, and far below the 0.50 panel
+     default. Tint is what separates glass from a milky disc, and the smaller
+     the surface the less of it you can spend before the backdrop stops reading
+     through at all. */
+  --glass_tint: 0.13;
+  --glass_spec: 0.40;
   --glass_pointer_x: 50%;
   --glass_pointer_y: 0%;
   --glass-distortion-filter: none;
@@ -374,12 +378,25 @@
   --glass_pointer_y: 30%;
 }
 
-/* Same bargain the rest of the glass makes while the page is moving: the live
-   blur is the expensive part and nobody is studying the cursor mid-scroll. */
-html.is-scrolling .cursor-ring {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
+/* Deliberately NOT dropped during scroll.
+
+   Every other glass surface loses its blur under html.is-scrolling, because a
+   full-viewport panel costs real frames and nobody studies it mid-gesture. The
+   cursor is the opposite on both counts: it is a 34px disc, so the backdrop
+   sample is a rounding error next to a navigation bar, and it is the one thing
+   the reader is actually looking at. Dropping it made the glass visibly switch
+   off the instant the page moved, which reads as a bug rather than as an
+   optimisation. */
+
+/* The dot has to clear the glass.
+
+   Both cursor layers sit at z-index 9999 and the ring comes later in the DOM,
+   so the ring paints over the dot. That was invisible while the ring was an
+   empty outline; with a tint layer filling it, the dot ended up behind the
+   glass and blurred into the ring's own backdrop. Lifting it one level puts it
+   back on top and takes it out of the backdrop the ring samples, so it stays
+   crisp instead of becoming part of the smear. */
+.cursor-dot { z-index: 10000; }
 
 /* press — physical compression, released with a spring-ish ease */
 .lg-surface[data-glass-press="1"] {
