@@ -320,6 +320,23 @@ requireText("solid/components/ThemeSwitcher.jsx", themeSwitcherSolid, "z-[150]")
  * Containment on ::before / ::after is fine and deliberately still allowed:
  * pseudo-elements cannot have children.
  */
+/*
+ * Every tone the glass offers must survive a dark theme.
+ *
+ * --ink and --bone are pigments, not flipping tokens: themes.js gives --ink the
+ * darker of background/foreground and --bone the lighter, in all 140 themes. So
+ * .lg-on-light's tint is a sheet of light paper regardless of theme, and on a
+ * dark one it put light type on a white bar — the navigation was unreadable.
+ * check:themes did not catch it because it does not evaluate glass surfaces.
+ */
+if (!/body\.theme-is-dark\s+\.lg-on-light\s*>\s*\.liquidGlass-tint/.test(glass)) {
+  failures.push(
+    "src/styles/glass.css: .lg-on-light needs a `body.theme-is-dark` counterpart for its tint. "
+    + "Without it a surface declared tone=\"light\" paints light paper on a dark theme and its "
+    + "text becomes unreadable.",
+  );
+}
+
 const surfaceStart = glass.indexOf(".lg-surface {");
 /* Comments are stripped first: the rule carries a prose warning that names the
    very declaration being forbidden, and matching that would fail the build for
