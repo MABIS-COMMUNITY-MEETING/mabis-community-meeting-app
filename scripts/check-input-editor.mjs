@@ -196,5 +196,9 @@ check(/insertImageFiles\(files, insertionIndex\)/.test(docsEditorSource)
   "Dropped images use the same saved Quill embed path as toolbar images");
 check(/type="file" accept="image\/\*" multiple/.test(docsEditorSource),
   "The document image picker and drop path both support multiple images");
+check(/addEventListener\("paste", handlePaste, true\)/.test(docsEditorSource),
+  "Rich paste sanitization runs before Quill so links are inserted only once");
+check(/removeEventListener\("paste", handlePaste, true\)/.test(docsEditorSource),
+  "The capture-phase paste listener is removed with matching options");
 
 console.log(`Input/editor contract: ${checks}/${checks} checks passed.`);
