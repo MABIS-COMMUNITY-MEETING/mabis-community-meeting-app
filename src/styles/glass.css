@@ -337,7 +337,7 @@
       expensive thing in this stylesheet. Blur, tint and shine carry the look at
       this size; the distortion is not legible on a 34px disc anyway.
 
-   The tint is much weaker than the panel default (0.22 against 0.50): at cursor
+   The tint is much weaker than the panel default (0.13 against 0.50): at cursor
    size a half-opaque fill reads as a white blob rather than as glass. */
 .cursor-ring {
   /* 3px, the same shallow blur .lg-surface uses and the value the reference
