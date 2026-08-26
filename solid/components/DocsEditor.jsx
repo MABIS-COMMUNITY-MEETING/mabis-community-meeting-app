@@ -346,7 +346,10 @@ export default function DocsEditor(props) {
 
     quill.on("selection-change", handleSelectionChange);
     quill.on("text-change", handleTextChange);
-    quill.root.addEventListener("paste", handlePaste);
+    // Run before Quill's own paste listener. Quill skips events that are
+    // already prevented, so rich clipboard content is sanitized and inserted
+    // once instead of being inserted by both listeners.
+    quill.root.addEventListener("paste", handlePaste, true);
     quill.root.addEventListener("click", handleLinkOpen);
     quill.root.addEventListener("dblclick", handleLinkOpen);
     window.addEventListener("themeChanged", syncUnrestrictedColors);
@@ -355,7 +358,7 @@ export default function DocsEditor(props) {
     onCleanup(() => {
       quill?.off("selection-change", handleSelectionChange);
       quill?.off("text-change", handleTextChange);
-      quill?.root.removeEventListener("paste", handlePaste);
+      quill?.root.removeEventListener("paste", handlePaste, true);
       quill?.root.removeEventListener("click", handleLinkOpen);
       quill?.root.removeEventListener("dblclick", handleLinkOpen);
       window.removeEventListener("themeChanged", syncUnrestrictedColors);
