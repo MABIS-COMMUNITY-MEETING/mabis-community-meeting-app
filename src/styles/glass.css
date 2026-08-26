@@ -301,7 +301,10 @@
 /* over bright sections lean on contrast rather than more white */
 .lg-on-light {
   --glass_brightness: 0.99;
-  border-color: hsl(var(--ink) / 0.12);
+  /* --foreground, not --ink: see the note on the tint below. --ink never flips,
+     so this rim stayed a dark hairline on dark themes where it should be a
+     light one. Identical value on a light theme. */
+  border-color: hsl(var(--foreground) / 0.12);
 }
 
 /* Built from --background/--foreground, NOT --bone/--ink.
@@ -328,13 +331,6 @@
       hsl(var(--background) / calc(var(--glass_tint) * 1.9)),
       hsl(var(--background) / calc(var(--glass_tint) * 0.9)) 55%,
       hsl(var(--foreground) / calc(var(--glass_tint) * 0.5)));
-}
-
-/* The edge treatment follows the same rule as the tint above: --ink darkens a
-   light page's rim and lightens nothing on a dark one, so both go to theme
-   tokens. Free on light themes for the same reason — identical values there. */
-.lg-on-light {
-  border-color: hsl(var(--foreground) / 0.12);
 }
 
 /* ── The custom cursor's ring is a glass surface ─────────────────────────
