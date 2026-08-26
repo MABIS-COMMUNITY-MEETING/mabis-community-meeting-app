@@ -321,19 +321,27 @@ requireText("solid/components/ThemeSwitcher.jsx", themeSwitcherSolid, "z-[150]")
  * pseudo-elements cannot have children.
  */
 /*
- * Every tone the glass offers must survive a dark theme.
+ * The light tone must be built from theme tokens, not pigments.
  *
- * --ink and --bone are pigments, not flipping tokens: themes.js gives --ink the
- * darker of background/foreground and --bone the lighter, in all 140 themes. So
- * .lg-on-light's tint is a sheet of light paper regardless of theme, and on a
- * dark one it put light type on a white bar — the navigation was unreadable.
- * check:themes did not catch it because it does not evaluate glass surfaces.
+ * --ink and --bone never flip: themes.js gives --ink the darker of
+ * background/foreground and --bone the lighter, in all 140 themes plus custom
+ * colours and Material You. A tint made of --bone is a sheet of light paper
+ * always, so on any dark scheme it painted a white bar under the header's
+ * --foreground text — which is light there. The navigation was unreadable.
+ *
+ * --background/--foreground are the same two values on a light theme, so this
+ * costs nothing there and self-corrects on every dark one, whichever theme
+ * system produced it. check:themes does not catch this because it does not
+ * evaluate glass surfaces.
  */
-if (!/body\.theme-is-dark\s+\.lg-on-light\s*>\s*\.liquidGlass-tint/.test(glass)) {
+const onLightTint = glass.match(/\.lg-on-light\s*>\s*\.liquidGlass-tint\s*\{[^}]*\}/)?.[0] ?? "";
+if (!onLightTint) {
+  failures.push("src/styles/glass.css: .lg-on-light > .liquidGlass-tint is missing.");
+} else if (/--bone|--ink/.test(onLightTint)) {
   failures.push(
-    "src/styles/glass.css: .lg-on-light needs a `body.theme-is-dark` counterpart for its tint. "
-    + "Without it a surface declared tone=\"light\" paints light paper on a dark theme and its "
-    + "text becomes unreadable.",
+    "src/styles/glass.css: .lg-on-light's tint must use --background/--foreground, not "
+    + "--bone/--ink. Those two never flip between light and dark themes, so a tone=\"light\" "
+    + "surface paints light paper on a dark scheme and its text becomes unreadable.",
   );
 }
 
