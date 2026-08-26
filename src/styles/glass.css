@@ -417,17 +417,20 @@
    Specificity carries this over .lg-navigation's own 26px, so the header
    strip is covered without naming it. */
 html.performance-lite .lg-surface {
-  --glass_blur: 9px;
-  --glass_tint: 0.14;
-  backdrop-filter: blur(var(--glass_blur));
-  -webkit-backdrop-filter: blur(var(--glass_blur));
+  --glass_blur: 3px;
+  --glass_tint: 0.56;
   box-shadow: none;
 }
 
-html.performance-lite .lg-surface::before,
-html.performance-lite .lg-surface::after { display: none; }
+html.performance-lite .liquidGlass-effect {
+  filter: none;
+}
 
-html.performance-lite .lg-depth { display: none; }
+html.performance-lite .liquidGlass-shine,
+html.performance-lite .liquidGlass-effect::after,
+html.performance-lite .lg-depth {
+  display: none;
+}
 html.performance-lite .lg-scroll-edge {
   background: linear-gradient(to bottom, hsl(var(--background) / 0.72), transparent);
   -webkit-backdrop-filter: none;
@@ -436,7 +439,7 @@ html.performance-lite .lg-scroll-edge {
   transform: none;
 }
 
-html.animations-disabled .lg-surface::before,
+html.animations-disabled .liquidGlass-shine,
 html.animations-disabled .lg-depth,
 html.animations-disabled .lg-scroll-edge {
   transform: none !important;
@@ -449,21 +452,18 @@ html.animations-disabled .lg-scroll-edge {
    fill makes the glass disappear during wheel, touch and momentum scrolls.
    Blur remains constant between frames, so there is no interpolation loop. */
 
-/* ── mobile: smaller radii, no lens pass ───────────────────────
-   Blur radius is held at or below 10px here. Mobile GPUs start dropping
-   frames above roughly that value, and backdrop blur re-reads the layer
-   beneath on every frame — it is the most expensive filter we apply.
-   Blur is perceptually non-linear, so 10px and 16px are nearly
-   indistinguishable at this size while costing very differently; the tint
-   is nudged up to keep the material reading as glass rather than a wash. */
+/* ── mobile: keep the shallow blur, drop the SVG lens pass ──────
+   The 3px backdrop stays live. The local displacement filter is the optional
+   optical pass, so mobile removes it without replacing glass with paint. */
 @media (max-width: 640px) {
   .lg-surface {
-    --glass_blur: 10px;
-    --glass_tint: 0.16;
+    --glass_tint: 0.56;
     --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
   }
-  .lg-thick { --glass_blur: 12px; }
-  .lg-surface::after { display: none; }
+  .liquidGlass-effect {
+    filter: none;
+  }
+  .liquidGlass-effect::after { display: none; }
   .lg-scroll-edge {
     height: 14px;
     -webkit-backdrop-filter: blur(5px) saturate(108%);
@@ -474,10 +474,10 @@ html.animations-disabled .lg-scroll-edge {
 /* ── reduced motion: material keeps its optics, stops behaving ── */
 @media (prefers-reduced-motion: reduce) {
   .lg-surface { transform: none !important; transition: none; }
-  .lg-surface::before {
+  .liquidGlass-shine {
     background: linear-gradient(to bottom, hsl(var(--bone) / 0.14), transparent 45%);
   }
-  .lg-surface::before,
+  .liquidGlass-shine,
   .lg-depth,
   .lg-scroll-edge {
     transform: none !important;
@@ -490,12 +490,14 @@ html.animations-disabled .lg-scroll-edge {
 @media (prefers-reduced-transparency: reduce) {
   .lg-surface {
     background: hsl(var(--background) / 0.97) !important;
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
     border-color: hsl(var(--foreground) / 0.36);
   }
-  .lg-surface::after,
+  .liquidGlass-effect,
+  .liquidGlass-shine,
   .lg-depth { display: none; }
+  .liquidGlass-tint {
+    background: hsl(var(--background) / 0.97);
+  }
   .lg-scroll-edge {
     background: linear-gradient(to bottom, hsl(var(--background) / 0.94), transparent);
     -webkit-backdrop-filter: none;
@@ -525,8 +527,9 @@ html.animations-disabled .lg-scroll-edge {
     backdrop-filter: none !important;
     box-shadow: none;
   }
-  .lg-surface::before,
-  .lg-surface::after,
+  .liquidGlass-effect,
+  .liquidGlass-tint,
+  .liquidGlass-shine,
   .lg-depth,
   .lg-scroll-edge { display: none; }
 }
@@ -537,6 +540,7 @@ html.animations-disabled .lg-scroll-edge {
     background: hsl(var(--background) / 0.94);
     border-color: hsl(var(--foreground) / 0.18);
   }
-  .lg-surface::after { display: none; }
+  .liquidGlass-effect { display: none; }
+  .liquidGlass-tint { background: hsl(var(--background) / 0.86); }
   .lg-overlay { background: hsl(var(--ink) / 0.55); }
 }
