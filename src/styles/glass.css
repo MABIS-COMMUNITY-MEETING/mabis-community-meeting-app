@@ -312,6 +312,40 @@
       hsl(var(--ink) / calc(var(--glass_tint) * 0.5)));
 }
 
+/* ── A dark theme overrides tone="light" ──────────────────────────────────
+
+   `tone` names the surface the glass floats OVER, and SiteHeader hard-codes
+   "light". That is right on a light theme and wrong on all the dark ones, and
+   nothing corrected it, because --ink and --bone do not flip: themes.js:625
+   assigns --ink the darker of background/foreground and --bone the lighter, in
+   every theme. They are pigments, not tokens. So `hsl(var(--bone) / tint*1.9)`
+   is a near-opaque sheet of light paper on a dark page, and the header's own
+   text is --foreground, which is light there — light type on a white bar. The
+   navigation was effectively unreadable on every dark theme.
+
+   Fixed here rather than in SiteHeader so it covers any surface that asks for
+   the light tone, not just the one that does today. body.theme-is-dark is set
+   by themes.js and replayed before first paint by theme-boot.js, so this
+   resolves on the first frame and cannot flash.
+
+   The values are .lg-on-dark's, and --glass_brightness returns to the 1.04
+   default that .lg-on-light lowers to 0.99 for paper. */
+body.theme-is-dark .lg-on-light {
+  --glass_brightness: 1.04;
+  border-color: hsl(var(--bone) / 0.16);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--bone) / 0.26),
+    inset 0 -1px 0 hsl(var(--ink) / 0.4),
+    var(--glass_shadow);
+}
+body.theme-is-dark .lg-on-light > .liquidGlass-tint {
+  background:
+    linear-gradient(135deg,
+      hsl(var(--bone) / calc(var(--glass_tint) * 0.85)),
+      hsl(var(--bone) / calc(var(--glass_tint) * 0.25)) 60%,
+      hsl(var(--ink) / calc(var(--glass_tint) * 1.4)));
+}
+
 /* ── The custom cursor's ring is a glass surface ─────────────────────────
 
    Same material as .lg-surface, assembled differently, for two reasons that
