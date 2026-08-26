@@ -340,7 +340,12 @@
    The tint is much weaker than the panel default (0.22 against 0.50): at cursor
    size a half-opaque fill reads as a white blob rather than as glass. */
 .cursor-ring {
-  --glass_blur: 6px;
+  /* 3px, the same shallow blur .lg-surface uses and the value the reference
+     effect is built on. 6px was tried here on the assumption that a small
+     surface needs more blur to read as glass; the opposite is true. A 34px
+     disc at 6px has no backdrop left to see through, so it stops looking like
+     glass and starts looking like frosted plastic. */
+  --glass_blur: 3px;
   --glass_saturation: 150%;
   --glass_brightness: 1.06;
   /* Lower again than the 0.22 first tried here, and far below the 0.50 panel
