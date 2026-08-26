@@ -6,6 +6,11 @@ import { MATERIAL, CURSOR, SLEEP } from "@/lib/physics/tokens";
 import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math";
 import { lowPowerMode, PERFORMANCE_TIER_EVENT } from "@/lib/performance-tier";
 import { customCursorEnabled, CURSOR_EVENT } from "@/lib/cursor-preference";
+/* The ring is a glass surface and uses the same tint and shine layers every
+   other glass surface does. Imported here for the same reason Glass.jsx
+   imports it — the stylesheet ships in whichever chunk actually renders the
+   material, never in the render-blocking entry. */
+import "@/styles/glass.css";
 
 /**
  * CustomCursor — Solid port of src/components/CustomCursor.jsx.
@@ -35,6 +40,7 @@ import { customCursorEnabled, CURSOR_EVENT } from "@/lib/cursor-preference";
 export default function CustomCursor() {
   let dotEl;
   let ringEl;
+  let ringLabelEl;
 
   const [enabled, setEnabled] = createSignal(false);
   const [lowPower, setLowPower] = createSignal(lowPowerMode());
@@ -205,8 +211,11 @@ export default function CustomCursor() {
         const opacity = pointer.down ? "0.5" : pointer.inside ? "1" : "0";
         if (opacity !== lastRingOpacity) { r.style.opacity = opacity; lastRingOpacity = opacity; }
 
+        /* Written to the label element, never to the ring. The ring now holds
+           the glass layers as children, and assigning textContent to it would
+           delete them on the first hover. */
         const text = pointer.label || lastLabel;
-        if (r.textContent !== text) r.textContent = text;
+        if (ringLabelEl && ringLabelEl.textContent !== text) ringLabelEl.textContent = text;
         if (pointer.label) lastLabel = pointer.label;
         const color = `rgba(255,255,255,${gl.toFixed(3)})`;
         if (color !== lastColor) { r.style.color = color; lastColor = color; }
@@ -241,7 +250,15 @@ export default function CustomCursor() {
     <Show when={enabled()}>
       <Portal>
         <div ref={dotEl} class="cursor-dot" style={{ opacity: 0 }} aria-hidden />
-        <div ref={ringEl} class="cursor-ring" style={{ opacity: 0 }} aria-hidden />
+        {/* The live blur sits on the ring itself rather than on a
+            .liquidGlass-effect layer: the ring's contain, will-change and
+            per-frame opacity each start a backdrop root, which would leave a
+            child's backdrop-filter sampling nothing. See glass.css. */}
+        <div ref={ringEl} class="cursor-ring" style={{ opacity: 0 }} aria-hidden>
+          <span class="liquidGlass-tint" />
+          <span class="liquidGlass-shine" />
+          <span ref={ringLabelEl} class="liquidGlass-text" />
+        </div>
       </Portal>
     </Show>
   );
