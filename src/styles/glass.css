@@ -353,7 +353,10 @@
      the surface the less of it you can spend before the backdrop stops reading
      through at all. */
   --glass_tint: 0.13;
-  --glass_spec: 0.40;
+  /* Hot. The panel default is 0.26 because a large surface catching that much
+     light looks wet; a 34px disc has so little area that a restrained
+     highlight simply is not visible. */
+  --glass_spec: 0.92;
   --glass_pointer_x: 50%;
   --glass_pointer_y: 0%;
   --glass-distortion-filter: none;
@@ -376,11 +379,34 @@
   color: inherit;
 }
 
-/* The shine's radial highlight is anchored to a pointer position the cursor
-   does not have — it IS the pointer. Centre it instead of tracking. */
+/* The reflection, rebuilt at cursor scale.
+
+   Two things had to change, and only one of them is opacity.
+
+   The shared rule draws its highlight as radial-gradient(120px 90px ...),
+   sized for a navigation bar. On a 34px ring that ellipse is three times wider
+   than the element, so the "specular hotspot" covered the whole disc evenly and
+   landed as a flat wash — brightening it would only have produced a brighter
+   wash. Percentages instead of pixels give a real hotspot that stays
+   proportional across all three ring sizes (34px, 40px hover, 56px label).
+
+   Then the intensity: full opacity rather than the 0.82 the shared layer runs
+   at, a harder falloff, and a much stronger inset rim — that rim is the part
+   that reads as a glass edge catching light, and it is what the reference
+   effect leans on. */
 .cursor-ring > .liquidGlass-shine {
-  --glass_pointer_x: 50%;
-  --glass_pointer_y: 30%;
+  opacity: 1;
+  background:
+    radial-gradient(
+      58% 46% at 50% 20%,
+      hsl(var(--bone) / var(--glass_spec)),
+      hsl(var(--bone) / calc(var(--glass_spec) * 0.38)) 42%,
+      transparent 74%
+    ),
+    linear-gradient(to bottom, hsl(var(--bone) / 0.34), transparent 58%);
+  box-shadow:
+    inset 1.5px 1.5px 1px 0 hsl(var(--bone) / 0.98),
+    inset -1px -1px 1px 0.5px hsl(var(--bone) / 0.80);
 }
 
 /* Deliberately NOT dropped during scroll.
