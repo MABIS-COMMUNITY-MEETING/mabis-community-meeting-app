@@ -101,6 +101,7 @@ const optionalCursor = read("src/components/OptionalCustomCursor.jsx");
 const smoothScroll = readIfPresent("src/components/SmoothScroll.jsx") + readIfPresent("solid/lib/perf.js");
 const chrome = read("solid/components/chrome.jsx");
 const motionCss = read("solid/solid-motion.css");
+const editorialShell = read("solid/components/home/shell.jsx");
 const scrollScaleRitual = read("src/components/home/ScrollScaleRitual.jsx");
 const pointer = read("src/lib/physics/pointer.js");
 const physicsScheduler = read("src/lib/physics/scheduler.js");
@@ -370,6 +371,26 @@ requireText("solid/solid-motion.css", motionCss, ".cv-section.cv-ready");
  * .widget-rise was `both` and had exactly the documented symptom. Neither has
  * an animation-delay worth covering, so `backwards` costs nothing.
  */
+/*
+ * The Boss layout's reveal wrapper must settle to `transform: none`.
+ *
+ * EditorialSection wraps {props.children} — the widget — in a div carrying an
+ * inline reveal style. Settling that to `translateY(0)` instead of `none` looks
+ * identical and behaves completely differently: any transform other than none
+ * makes the element a containing block for position:fixed descendants, and this
+ * one is inline and permanent, so every fullscreen widget was pinned to and
+ * clipped by the wrapper instead of filling the viewport.
+ *
+ * Third instance of the same trap, after .page-content-lift and .widget-rise.
+ */
+if (/transform:\s*revealed\(\)\s*\?\s*["']translateY\(0\)["']/.test(editorialShell)) {
+  failures.push(
+    "solid/components/home/shell.jsx: the reveal helper must settle to `transform: \"none\"`, "
+    + "not `\"translateY(0)\"` — a non-none transform makes the wrapper a containing block for "
+    + "position:fixed, so fullscreen widgets are clipped to it instead of the viewport.",
+  );
+}
+
 for (const rule of [".page-content-lift", ".widget-rise"]) {
   const declaration = motionCss.match(new RegExp(`\\${rule}\\s*\\{[^}]*animation:[^;}]*`));
   const value = declaration?.[0] ?? "";
