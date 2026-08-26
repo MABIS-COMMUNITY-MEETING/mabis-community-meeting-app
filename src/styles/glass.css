@@ -313,6 +313,75 @@
 }
 
 /* press — physical compression, released with a spring-ish ease */
+/* ── The custom cursor's ring is a glass surface ─────────────────────────
+
+   Same material as .lg-surface, assembled differently, for two reasons that
+   are specific to a thing which moves every frame.
+
+   1. THE BACKDROP SAMPLE IS ON THE RING, NOT ON A CHILD LAYER.
+
+      Everywhere else the live blur lives on .liquidGlass-effect. It cannot
+      here. backdrop-filter samples the "backdrop root", and an ancestor with
+      `contain: paint`, `will-change: opacity`, or a computed opacity below 1
+      starts a new one. .cursor-ring has all three — contain: strict and
+      will-change for the per-frame transform, and an inline opacity the render
+      loop drives for fade-in and the press state. A child's backdrop-filter
+      would therefore sample an empty backdrop and paint nothing at all.
+      Putting it on the ring itself samples the page, which is the point.
+
+   2. NO DISPLACEMENT FILTER.
+
+      --glass-distortion-filter stays none. feDisplacementMap runs at
+      scale="150" — tuned for a wide navigation bar — and would shift pixels by
+      up to 150px on an element 34px across, smearing it into nothing. Running
+      an SVG filter graph per frame on a moving element is also the single most
+      expensive thing in this stylesheet. Blur, tint and shine carry the look at
+      this size; the distortion is not legible on a 34px disc anyway.
+
+   The tint is much weaker than the panel default (0.22 against 0.50): at cursor
+   size a half-opaque fill reads as a white blob rather than as glass. */
+.cursor-ring {
+  --glass_blur: 6px;
+  --glass_saturation: 150%;
+  --glass_brightness: 1.06;
+  --glass_tint: 0.22;
+  --glass_spec: 0.34;
+  --glass_pointer_x: 50%;
+  --glass_pointer_y: 0%;
+  --glass-distortion-filter: none;
+
+  -webkit-backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+  backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+}
+
+/* The ring's own children, so the label still centres in the flex box while
+   the layers sit behind it. Both are pure paint — a gradient and a pair of
+   inset shadows — so neither needs a backdrop root of its own. */
+.cursor-ring > .liquidGlass-tint { z-index: 0; }
+.cursor-ring > .liquidGlass-shine { z-index: 1; }
+.cursor-ring > .liquidGlass-text {
+  position: relative;
+  z-index: 2;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+}
+
+/* The shine's radial highlight is anchored to a pointer position the cursor
+   does not have — it IS the pointer. Centre it instead of tracking. */
+.cursor-ring > .liquidGlass-shine {
+  --glass_pointer_x: 50%;
+  --glass_pointer_y: 30%;
+}
+
+/* Same bargain the rest of the glass makes while the page is moving: the live
+   blur is the expensive part and nobody is studying the cursor mid-scroll. */
+html.is-scrolling .cursor-ring {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 .lg-surface[data-glass-press="1"] {
   transform: scale(0.988);
   --glass_spec: 0.36;
