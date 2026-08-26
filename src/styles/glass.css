@@ -2,12 +2,15 @@
    LIQUID GLASS — an optical material for the floating control
    plane only. The editorial content plane stays crisp.
 
-   Anatomy of one surface (single backdrop-filter, never nested):
-     .lg-surface            the material itself (blur/saturate/tint)
-       ::before             pointer-tracked specular highlight
-       ::after              edge lens — refraction reads strongest at
-                            the rim, near-zero at the centre
-     > .lg-content          the micro control plane (icons/labels)
+   Anatomy of one self-contained surface:
+     .liquidGlass-wrapper   layout, outline and physical shadow
+       .liquidGlass-effect  live backdrop blur + local SVG distortion
+       .liquidGlass-tint    theme-aware translucent color
+       .liquidGlass-shine   pointer-tracked specular and inset rim
+       .liquidGlass-text    the micro control plane (icons/labels)
+
+   Each surface owns its SVG filter definition. No GitHub image, stock
+   background or cross-origin visual asset is required at runtime.
 
    Thickness scales with role: a 36px icon button and a full menu bar
    are the same material at different depths, not the same class.
@@ -30,52 +33,29 @@
      nothing visible while still costing linearly. Every variant below is
      brought down on that basis (the mobile block already argued the same at
      10px); tint carries the material instead, so nothing stops being glass. */
-  --glass_blur: 16px;
+  --glass_blur: 3px;
   --glass_saturation: 160%;
   --glass_brightness: 1.04;
-  --glass_tint: 0.10;          /* base fill strength */
-  --glass_lens: 1.5px;         /* edge refraction travel */
-  --glass_spec: 0.26;          /* specular highlight peak */
-  --glass_shadow: 0 10px 30px -12px hsl(var(--ink) / 0.28);
+  --glass_tint: 0.50;
+  --glass_lens: 1.5px;
+  --glass_spec: 0.26;
+  --glass_shadow:
+    0 6px 6px hsl(var(--ink) / 0.20),
+    0 0 20px hsl(var(--ink) / 0.10);
   --glass_pointer_x: 50%;
   --glass_pointer_y: 0%;
   --glass_press: 1;
+  --glass-distortion-filter: none;
 
   position: relative;
-  /*
-   * NO `isolation: isolate` here.
-   *
-   * It was, for the ::before/::after/.lg-content layering — but `backdrop-filter`
-   * already creates a stacking context on this element, so it bought nothing,
-   * and `isolation: isolate` is one of the properties that forms a BACKDROP
-   * ROOT. An element that is its own backdrop root has no backdrop left to
-   * sample, which is a documented way to end up with a surface that keeps its
-   * tint and border and renders no blur at all — exactly the symptom this bar
-   * had. The layering is unchanged without it.
-   *
-   * Same class of bug as the one removed from .site-header-shell below; see
-   * the longer note there.
-   */
-  /* NOTE: no transform at rest — a transformed element becomes a backdrop
-     root, which would blank out the edge-lens pass below */
-  /* Blur is intentionally constant between frames; interpolating a backdrop
-     filter forces repeated rasterization of the whole glass surface. */
+  display: flex;
+  background: transparent;
   transition:
-    transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+    transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2),
+    box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
 
-  /* the fill is a directional wedge, not a flat white wash — the
-     surface is brighter where the light enters it */
-  background:
-    linear-gradient(
-      135deg,
-      hsl(var(--bone) / calc(var(--glass_tint) * 1.7)),
-      hsl(var(--bone) / calc(var(--glass_tint) * 0.55)) 58%,
-      hsl(var(--ink) / calc(var(--glass_tint) * 0.35))
-    );
-
-  backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
-  -webkit-backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+  /* The visual children clip to the radius. The wrapper stays unclipped so a
+     menu or popover anchored inside glass cannot disappear at its boundary. */
 
   /*
    * DO NOT put `contain: paint` on this element.
@@ -109,20 +89,46 @@
     var(--glass_shadow);
 }
 
-/* specular — follows the pointer, stable at rest, never a sweeping sheen */
-.lg-surface::before {
-  content: "";
+.liquidGlass-filter-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.liquidGlass-effect,
+.liquidGlass-tint,
+.liquidGlass-shine {
   position: absolute;
   inset: 0;
-  z-index: 0;
-  pointer-events: none;
+  overflow: hidden;
   border-radius: inherit;
+  pointer-events: none;
+}
+
+.liquidGlass-effect {
+  z-index: 0;
+  -webkit-backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+  backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+  filter: var(--glass-distortion-filter);
+}
+
+.liquidGlass-tint {
+  z-index: 1;
+  background:
+    linear-gradient(
+      135deg,
+      hsl(var(--background) / var(--glass_tint)),
+      hsl(var(--background) / calc(var(--glass_tint) * 0.78)) 58%,
+      hsl(var(--primary) / calc(var(--glass_tint) * 0.16))
+    );
+}
+
+.liquidGlass-shine {
+  z-index: 2;
   opacity: var(--glass-scroll-spec-opacity, 0.82);
   transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
-  /* Safe here in the way the surface never was: a pseudo-element cannot have
-     children, and this one is inset:0, so clipping to its own box is a no-op
-     visually while still bounding the raster of a will-change layer. */
-  contain: paint;
   background:
     radial-gradient(
       120px 90px at var(--glass_pointer_x) var(--glass_pointer_y),
@@ -131,15 +137,16 @@
       transparent 55%
     ),
     linear-gradient(to bottom, hsl(var(--bone) / 0.12), transparent 42%);
+  box-shadow:
+    inset 2px 2px 1px 0 hsl(var(--bone) / 0.50),
+    inset -1px -1px 1px 1px hsl(var(--bone) / 0.50);
   transition:
     opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* edge lens — a second, tiny blur pass masked to the rim with a smooth
-   falloff, so only the border region bends the backdrop; the middle of
-   the panel stays optically stable and text behind it stays legible */
-.lg-surface::after {
+/* A restrained local texture keeps the displaced backdrop from banding. */
+.liquidGlass-effect::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -176,7 +183,15 @@
   transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
 }
 
-.lg-surface > .lg-content { position: relative; z-index: 1; }
+.lg-surface > .lg-content {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+}
+
+.liquidGlass-text {
+  color: inherit;
+}
 
 /* ── variants: thickness by role ─────────────────────────────── */
 
