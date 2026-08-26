@@ -26,13 +26,9 @@
 }
 
 .lg-surface {
-  /* Radius is the single biggest GPU cost in this file: backdrop blur re-reads
-     the layer beneath every frame, and its raster cost scales with the radius,
-     not with how glassy it looks. Blur is perceptually non-linear — past
-     ~16px the surface reads as "frosted" and further radius buys almost
-     nothing visible while still costing linearly. Every variant below is
-     brought down on that basis (the mobile block already argued the same at
-     10px); tint carries the material instead, so nothing stops being glass. */
+  /* The supplied optical reference uses a shallow 3px live blur. Distortion,
+     tint and the inset shine provide depth without increasing backdrop radius
+     or adding another cross-origin texture pass. */
   --glass_blur: 3px;
   --glass_saturation: 160%;
   --glass_brightness: 1.04;
@@ -197,36 +193,28 @@
 
 /* compact — icon buttons, toggles, glyph chips */
 .lg-compact {
-  --glass_blur: 12px;
   --glass_saturation: 145%;
   --glass_brightness: 1.03;
-  --glass_tint: 0.09;
+  --glass_tint: 0.42;
   --glass_lens: 0.6px;
-  --glass_spec: 0.30;          /* sharper on small surfaces */
+  --glass_spec: 0.30;
   --glass_shadow: 0 4px 12px -6px hsl(var(--ink) / 0.30);
 }
 
 /* regular — toolbars, contextual clusters */
 .lg-regular {
-  --glass_blur: 18px;
-  --glass_saturation: 160%;
-  --glass_brightness: 1.04;
-  --glass_tint: 0.12;
+  --glass_tint: 0.50;
   --glass_lens: 1.4px;
   --glass_spec: 0.26;
 }
 
 /* navigation — the persistent header strip */
 .lg-navigation {
-  /* The header is the widest glass in the app, so it pays this radius over the
-     most pixels of any surface — the best value cut in the file. */
-  --glass_blur: 20px;
   --glass_saturation: 168%;
   --glass_brightness: 1.05;
-  --glass_tint: 0.11;
+  --glass_tint: 0.50;
   --glass_lens: 1.8px;
   --glass_spec: 0.22;
-  --glass_shadow: 0 14px 40px -22px hsl(var(--ink) / 0.40);
   border-left: none;
   border-right: none;
   border-top: none;
@@ -235,10 +223,9 @@
 
 /* controller — thin floating optical strip for the input prompts */
 .lg-controller {
-  --glass_blur: 16px;
   --glass_saturation: 165%;
   --glass_brightness: 1.05;
-  --glass_tint: 0.13;
+  --glass_tint: 0.52;
   --glass_lens: 1.4px;
   --glass_spec: 0.24;
   --glass_shadow: 0 -10px 34px -20px hsl(var(--ink) / 0.45);
@@ -246,24 +233,22 @@
 
 /* panel / thick — large floating surfaces and overlays */
 .lg-panel {
-  --glass_blur: 22px;
   --glass_saturation: 170%;
   --glass_brightness: 1.05;
-  --glass_tint: 0.15;
+  --glass_tint: 0.55;
   --glass_lens: 2.4px;
   --glass_spec: 0.24;
   --glass_shadow: 0 26px 70px -28px hsl(var(--ink) / 0.45);
 }
 .lg-thick {
-  --glass_blur: 26px;
   --glass_saturation: 178%;
   --glass_brightness: 1.06;
-  --glass_tint: 0.18;
+  --glass_tint: 0.60;
   --glass_lens: 3.4px;
-  --glass_spec: 0.22;          /* wider, more diffuse on deep material */
+  --glass_spec: 0.22;
   --glass_shadow: 0 34px 90px -30px hsl(var(--ink) / 0.55);
 }
-.lg-thick::before {
+.lg-thick > .liquidGlass-shine {
   background:
     radial-gradient(220px 170px at var(--glass_pointer_x) var(--glass_pointer_y),
       hsl(var(--bone) / var(--glass_spec)),
@@ -274,34 +259,39 @@
 
 /* clear — minimal tint, for glass over already-quiet backgrounds */
 .lg-clear {
-  --glass_blur: 13px;
   --glass_saturation: 150%;
   --glass_brightness: 1.02;
-  --glass_tint: 0.05;
+  --glass_tint: 0.32;
   --glass_lens: 1px;
   --glass_spec: 0.18;
 }
 
 /* overlay — full-bleed scrim behind a modal; carries no highlight */
 .lg-overlay {
-  --glass_blur: 14px;
   --glass_saturation: 120%;
   --glass_brightness: 0.92;
-  --glass_tint: 0.06;
+  --glass_tint: 0.42;
   --glass_shadow: none;
   border: none;
 }
-.lg-overlay::before, .lg-overlay::after, .lg-overlay .lg-depth { display: none; }
+.lg-overlay > .liquidGlass-shine,
+.lg-overlay > .liquidGlass-effect::after,
+.lg-overlay .lg-depth {
+  display: none;
+}
 
 /* ── adaptive tint ───────────────────────────────────────────── */
 /* over dark sections the material is graphite with a luminous rim —
    not an inverted copy of the light one */
-.lg-on-dark {
+.lg-on-dark > .liquidGlass-tint {
   background:
     linear-gradient(135deg,
       hsl(var(--bone) / calc(var(--glass_tint) * 0.85)),
       hsl(var(--bone) / calc(var(--glass_tint) * 0.25)) 60%,
       hsl(var(--ink) / calc(var(--glass_tint) * 1.4)));
+}
+
+.lg-on-dark {
   border-color: hsl(var(--bone) / 0.16);
   box-shadow:
     inset 0 1px 0 hsl(var(--bone) / 0.26),
@@ -311,12 +301,15 @@
 /* over bright sections lean on contrast rather than more white */
 .lg-on-light {
   --glass_brightness: 0.99;
+  border-color: hsl(var(--ink) / 0.12);
+}
+
+.lg-on-light > .liquidGlass-tint {
   background:
     linear-gradient(135deg,
       hsl(var(--bone) / calc(var(--glass_tint) * 1.9)),
       hsl(var(--bone) / calc(var(--glass_tint) * 0.9)) 55%,
       hsl(var(--ink) / calc(var(--glass_tint) * 0.5)));
-  border-color: hsl(var(--ink) / 0.12);
 }
 
 /* press — physical compression, released with a spring-ish ease */
@@ -329,8 +322,8 @@
 
 /* Fast pointer travel attenuates cached decoration only. Blur never changes,
    so rapid pointer motion cannot invalidate the backdrop sampling pass. */
-.lg-surface[data-glass-fast="1"]::before { opacity: 0.68; }
-.lg-surface[data-glass-fast="1"]::after { opacity: 0.58; }
+.lg-surface[data-glass-fast="1"] > .liquidGlass-shine { opacity: 0.68; }
+.lg-surface[data-glass-fast="1"] > .liquidGlass-effect::after { opacity: 0.58; }
 
 /* focus inside glass — brackets, never translucency alone */
 .lg-surface :focus-visible {
