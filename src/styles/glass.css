@@ -304,46 +304,37 @@
   border-color: hsl(var(--ink) / 0.12);
 }
 
+/* Built from --background/--foreground, NOT --bone/--ink.
+
+   --ink and --bone are pigments, not tokens: themes.js gives --ink the darker
+   of background/foreground and --bone the lighter, in every theme. A tint made
+   of --bone is therefore a sheet of light paper always, so on a dark theme this
+   painted a white bar under the header's --foreground text, which is light
+   there. Unreadable navigation on every dark scheme.
+
+   The substitution is provably free on light themes: there --bone IS
+   --background and --ink IS --foreground, the same two values, so nothing
+   changes. On dark ones they invert and the tint follows the page as it should.
+
+   Deliberately expressed in tokens rather than gated on body.theme-is-dark.
+   Named themes, custom colours, Pride and Material You all set --background and
+   --foreground, but they reach polarity by different routes — applyMaterialSeed
+   stores mabis-theme="default" and re-snapshots, so whether that body class is
+   still set by the time the header paints depends on boot ordering. The tokens
+   are always right. */
 .lg-on-light > .liquidGlass-tint {
   background:
     linear-gradient(135deg,
-      hsl(var(--bone) / calc(var(--glass_tint) * 1.9)),
-      hsl(var(--bone) / calc(var(--glass_tint) * 0.9)) 55%,
-      hsl(var(--ink) / calc(var(--glass_tint) * 0.5)));
+      hsl(var(--background) / calc(var(--glass_tint) * 1.9)),
+      hsl(var(--background) / calc(var(--glass_tint) * 0.9)) 55%,
+      hsl(var(--foreground) / calc(var(--glass_tint) * 0.5)));
 }
 
-/* ── A dark theme overrides tone="light" ──────────────────────────────────
-
-   `tone` names the surface the glass floats OVER, and SiteHeader hard-codes
-   "light". That is right on a light theme and wrong on all the dark ones, and
-   nothing corrected it, because --ink and --bone do not flip: themes.js:625
-   assigns --ink the darker of background/foreground and --bone the lighter, in
-   every theme. They are pigments, not tokens. So `hsl(var(--bone) / tint*1.9)`
-   is a near-opaque sheet of light paper on a dark page, and the header's own
-   text is --foreground, which is light there — light type on a white bar. The
-   navigation was effectively unreadable on every dark theme.
-
-   Fixed here rather than in SiteHeader so it covers any surface that asks for
-   the light tone, not just the one that does today. body.theme-is-dark is set
-   by themes.js and replayed before first paint by theme-boot.js, so this
-   resolves on the first frame and cannot flash.
-
-   The values are .lg-on-dark's, and --glass_brightness returns to the 1.04
-   default that .lg-on-light lowers to 0.99 for paper. */
-body.theme-is-dark .lg-on-light {
-  --glass_brightness: 1.04;
-  border-color: hsl(var(--bone) / 0.16);
-  box-shadow:
-    inset 0 1px 0 hsl(var(--bone) / 0.26),
-    inset 0 -1px 0 hsl(var(--ink) / 0.4),
-    var(--glass_shadow);
-}
-body.theme-is-dark .lg-on-light > .liquidGlass-tint {
-  background:
-    linear-gradient(135deg,
-      hsl(var(--bone) / calc(var(--glass_tint) * 0.85)),
-      hsl(var(--bone) / calc(var(--glass_tint) * 0.25)) 60%,
-      hsl(var(--ink) / calc(var(--glass_tint) * 1.4)));
+/* The edge treatment follows the same rule as the tint above: --ink darkens a
+   light page's rim and lightens nothing on a dark one, so both go to theme
+   tokens. Free on light themes for the same reason — identical values there. */
+.lg-on-light {
+  border-color: hsl(var(--foreground) / 0.12);
 }
 
 /* ── The custom cursor's ring is a glass surface ─────────────────────────
