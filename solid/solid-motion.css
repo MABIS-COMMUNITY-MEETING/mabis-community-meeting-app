@@ -300,7 +300,7 @@ html.animations-disabled .tap-85:active { transform: none; }
 }
 
 /* ── Scroll: buy frames back while the finger is down ──────────────────────
- * Keep the primary .lg-surface material live: its single backdrop-filter is
+ * Keep the primary .liquidGlass-effect material live: its single backdrop-filter is
  * the visible glass and must preserve continuity during momentum scroll.
  * These selectors remove only optional pseudo-element depth passes on older
  * widget surfaces, avoiding stacked backdrop reads without changing the main
@@ -309,7 +309,7 @@ html.animations-disabled .tap-85:active { transform: none; }
  * `is-scrolling` is toggled by installScrollStateClass() in lib/perf.js,
  * rAF-coalesced so many scroll events collapse into one class write.
  */
-html.is-scrolling .lg-surface::after,
+html.is-scrolling .liquidGlass-effect::after,
 html.is-scrolling .mabis-widget::after,
 html.is-scrolling .bg-ink.ink-card::after {
   -webkit-backdrop-filter: none !important;
@@ -334,7 +334,7 @@ html.is-scrolling .spin-slow {
  * Driven by the app's existing performance-tier detection. The layout, type
  * and colour system are untouched — only the per-frame GPU effects go.
  */
-html.performance-lite .lg-surface::after,
+html.performance-lite .liquidGlass-effect::after,
 html.performance-lite .mabis-widget::after,
 html.performance-lite .bg-ink.ink-card::after {
   -webkit-backdrop-filter: none !important;
