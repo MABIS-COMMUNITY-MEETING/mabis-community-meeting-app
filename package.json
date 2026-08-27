@@ -45,7 +45,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.43",
+    "@base44/sdk": "^0.8.44",
     "@base44/vite-plugin": "^1.0.31",
     "@kobalte/core": "^0.13.13",
     "@material/material-color-utilities": "0.4.0",
