@@ -287,8 +287,20 @@ requireText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "onClick=
 
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
+requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
+requireText("src/styles/glass.css", glass, "filter: var(--glass-distortion-filter)");
+requireText("solid/components/Glass.jsx", glassComponentSolid, [
+  "liquidGlass-effect", "liquidGlass-tint", "liquidGlass-matte",
+  "liquidGlass-shine", "liquidGlass-text",
+]);
+requireText("solid/components/Glass.jsx", glassComponentSolid, "<feTurbulence");
+requireText("solid/components/Glass.jsx", glassComponentSolid, "<feDisplacementMap");
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "src=");
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "https://");
+forbidText("src/styles/glass.css", glass, "https://");
+forbidText("src/styles/glass.css", glass, "data:image");
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
-/* Glass is CSS-only. A document snapshot plus a WebGL canvas on every glass
+/* Glass uses native CSS plus a local inline SVG filter. A document snapshot plus a WebGL canvas on every glass
    surface caused long tasks and scroll hitching, especially in the persistent
    menu. Keep the native backdrop material and prevent that renderer from being
    wired back into the component or stylesheet. */
