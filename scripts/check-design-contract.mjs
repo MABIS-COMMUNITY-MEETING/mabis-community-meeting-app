@@ -277,8 +277,10 @@ for (const [relativePath, content] of cursorContractFiles) {
 }
 
 const scrollGlassRule = "Preserve live single-pass glass backdrop blur during wheel, touch, rapid, and momentum scrolling; active-scroll optimizations may pause decoration but must not replace glass with an opaque fallback.";
+const selfContainedGlassRule = "Keep glass visuals self-contained: no hotlinked GitHub images, stock backgrounds, or cross-origin demo assets.";
 for (const [relativePath, content] of editorialContractFiles) {
     requireText(relativePath, content, scrollGlassRule);
+    requireText(relativePath, content, selfContainedGlassRule);
 }
 
 const fontStackRule = "GNU FreeMono remains the default and every selectable UI face falls back through the GNU FreeFont stack; the pinned OpenMoji emoji font leads every stack but is scoped by `unicode-range` to emoji codepoints alone, so it never renders text.";
