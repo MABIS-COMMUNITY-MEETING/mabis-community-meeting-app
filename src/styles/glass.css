@@ -6,7 +6,8 @@
      .liquidGlass-wrapper   layout, outline and physical shadow
        .liquidGlass-effect  live backdrop blur + local SVG distortion
        .liquidGlass-tint    theme-aware translucent color
-       .liquidGlass-shine   pointer-tracked specular and inset rim
+       .liquidGlass-matte   quiet micro-grain across the full pane
+       .liquidGlass-shine   softened specular and inset rim
        .liquidGlass-text    the micro control plane (icons/labels)
 
    Each surface owns its SVG filter definition. No GitHub image, stock
@@ -19,7 +20,7 @@
 :root {
   --glass-scroll-shift: 0px;
   --glass-scroll-shadow-opacity: 0.12;
-  --glass-scroll-spec-opacity: 0.82;
+  --glass-scroll-spec-opacity: 0.46;
   --glass-scroll-rim-opacity: 0.70;
   --glass-scroll-edge-opacity: 0.52;
   --glass-scroll-tint-alpha: 0.10;
@@ -30,11 +31,12 @@
      tint and the inset shine provide depth without increasing backdrop radius
      or adding another cross-origin texture pass. */
   --glass_blur: 3px;
-  --glass_saturation: 160%;
-  --glass_brightness: 1.04;
+  --glass_saturation: 135%;
+  --glass_brightness: 1.01;
   --glass_tint: 0.50;
+  --glass_matte: 0.38;
   --glass_lens: 1.5px;
-  --glass_spec: 0.26;
+  --glass_spec: 0.14;
   --glass_shadow:
     0 6px 6px hsl(var(--ink) / 0.20),
     0 0 20px hsl(var(--ink) / 0.10);
@@ -95,6 +97,7 @@
 
 .liquidGlass-effect,
 .liquidGlass-tint,
+.liquidGlass-matte,
 .liquidGlass-shine {
   position: absolute;
   inset: 0;
@@ -121,9 +124,28 @@
     );
 }
 
-.liquidGlass-shine {
+.liquidGlass-matte {
   z-index: 2;
-  opacity: var(--glass-scroll-spec-opacity, 0.82);
+  opacity: var(--glass_matte);
+  background-image:
+    radial-gradient(
+      circle at 25% 35%,
+      hsl(var(--foreground) / 0.11) 0 0.55px,
+      transparent 0.8px
+    ),
+    radial-gradient(
+      circle at 70% 65%,
+      hsl(var(--background) / 0.20) 0 0.45px,
+      transparent 0.75px
+    );
+  background-position: 0 0, 1px 2px;
+  background-size: 3px 3px, 5px 5px;
+  background-repeat: repeat;
+}
+
+.liquidGlass-shine {
+  z-index: 3;
+  opacity: var(--glass-scroll-spec-opacity, 0.46);
   transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
   background:
     radial-gradient(
@@ -132,16 +154,17 @@
       hsl(var(--bone) / calc(var(--glass_spec) * 0.3)) 24%,
       transparent 55%
     ),
-    linear-gradient(to bottom, hsl(var(--bone) / 0.12), transparent 42%);
+    linear-gradient(to bottom, hsl(var(--bone) / 0.08), transparent 42%);
   box-shadow:
-    inset 2px 2px 1px 0 hsl(var(--bone) / 0.50),
-    inset -1px -1px 1px 1px hsl(var(--bone) / 0.50);
+    inset 2px 2px 1px 0 hsl(var(--bone) / 0.30),
+    inset -1px -1px 1px 1px hsl(var(--bone) / 0.28);
   transition:
     opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* A restrained local texture keeps the displaced backdrop from banding. */
+/* A restrained edge haze keeps the displaced backdrop from banding. The
+   full-pane matte grain lives on its own inexpensive paint layer above. */
 .liquidGlass-effect::after {
   content: "";
   position: absolute;
@@ -155,8 +178,12 @@
   contain: paint; /* childless and inset:0 — see ::before above */
   -webkit-mask-image: radial-gradient(120% 160% at 50% 50%, transparent 34%, rgba(0,0,0,0.35) 62%, #000 100%);
   mask-image: radial-gradient(120% 160% at 50% 50%, transparent 34%, rgba(0,0,0,0.35) 62%, #000 100%);
-  /* restrained material noise kills gradient banding without graining the UI */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.5'/%3E%3C/svg%3E");
+  background: linear-gradient(
+    145deg,
+    transparent 35%,
+    hsl(var(--bone) / 0.10) 62%,
+    hsl(var(--bone) / 0.18) 100%
+  );
   opacity: var(--glass-scroll-rim-opacity, 0.70);
   transition: opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -181,7 +208,7 @@
 
 .lg-surface > .lg-content {
   position: relative;
-  z-index: 3;
+  z-index: 4;
   width: 100%;
 }
 
@@ -193,11 +220,11 @@
 
 /* compact — icon buttons, toggles, glyph chips */
 .lg-compact {
-  --glass_saturation: 145%;
-  --glass_brightness: 1.03;
+  --glass_saturation: 130%;
+  --glass_brightness: 1.01;
   --glass_tint: 0.42;
   --glass_lens: 0.6px;
-  --glass_spec: 0.30;
+  --glass_spec: 0.16;
   --glass_shadow: 0 4px 12px -6px hsl(var(--ink) / 0.30);
 }
 
@@ -205,16 +232,16 @@
 .lg-regular {
   --glass_tint: 0.50;
   --glass_lens: 1.4px;
-  --glass_spec: 0.26;
+  --glass_spec: 0.14;
 }
 
 /* navigation — the persistent header strip */
 .lg-navigation {
-  --glass_saturation: 168%;
-  --glass_brightness: 1.05;
+  --glass_saturation: 140%;
+  --glass_brightness: 1.02;
   --glass_tint: 0.50;
   --glass_lens: 1.8px;
-  --glass_spec: 0.22;
+  --glass_spec: 0.12;
   border-left: none;
   border-right: none;
   border-top: none;
@@ -223,29 +250,29 @@
 
 /* controller — thin floating optical strip for the input prompts */
 .lg-controller {
-  --glass_saturation: 165%;
-  --glass_brightness: 1.05;
+  --glass_saturation: 138%;
+  --glass_brightness: 1.02;
   --glass_tint: 0.52;
   --glass_lens: 1.4px;
-  --glass_spec: 0.24;
+  --glass_spec: 0.14;
   --glass_shadow: 0 -10px 34px -20px hsl(var(--ink) / 0.45);
 }
 
 /* panel / thick — large floating surfaces and overlays */
 .lg-panel {
-  --glass_saturation: 170%;
-  --glass_brightness: 1.05;
+  --glass_saturation: 142%;
+  --glass_brightness: 1.02;
   --glass_tint: 0.55;
   --glass_lens: 2.4px;
-  --glass_spec: 0.24;
+  --glass_spec: 0.14;
   --glass_shadow: 0 26px 70px -28px hsl(var(--ink) / 0.45);
 }
 .lg-thick {
-  --glass_saturation: 178%;
-  --glass_brightness: 1.06;
+  --glass_saturation: 145%;
+  --glass_brightness: 1.03;
   --glass_tint: 0.60;
   --glass_lens: 3.4px;
-  --glass_spec: 0.22;
+  --glass_spec: 0.13;
   --glass_shadow: 0 34px 90px -30px hsl(var(--ink) / 0.55);
 }
 .lg-thick > .liquidGlass-shine {
@@ -259,11 +286,11 @@
 
 /* clear — minimal tint, for glass over already-quiet backgrounds */
 .lg-clear {
-  --glass_saturation: 150%;
-  --glass_brightness: 1.02;
+  --glass_saturation: 130%;
+  --glass_brightness: 1;
   --glass_tint: 0.32;
   --glass_lens: 1px;
-  --glass_spec: 0.18;
+  --glass_spec: 0.10;
 }
 
 /* overlay — full-bleed scrim behind a modal; carries no highlight */
@@ -274,6 +301,7 @@
   --glass_shadow: none;
   border: none;
 }
+.lg-overlay > .liquidGlass-matte,
 .lg-overlay > .liquidGlass-shine,
 .lg-overlay > .liquidGlass-effect::after,
 .lg-overlay .lg-depth {
@@ -367,14 +395,15 @@
      disc at 6px has no backdrop left to see through, so it stops looking like
      glass and starts looking like frosted plastic. */
   --glass_blur: 3px;
-  --glass_saturation: 150%;
-  --glass_brightness: 1.06;
+  --glass_saturation: 135%;
+  --glass_brightness: 1.02;
   /* Lower again than the 0.22 first tried here, and far below the 0.50 panel
      default. Tint is what separates glass from a milky disc, and the smaller
      the surface the less of it you can spend before the backdrop stops reading
      through at all. */
   --glass_tint: 0.13;
-  --glass_spec: 0.40;
+  --glass_matte: 0.22;
+  --glass_spec: 0.22;
   --glass_pointer_x: 50%;
   --glass_pointer_y: 0%;
   --glass-distortion-filter: none;
@@ -387,10 +416,11 @@
    the layers sit behind it. Both are pure paint — a gradient and a pair of
    inset shadows — so neither needs a backdrop root of its own. */
 .cursor-ring > .liquidGlass-tint { z-index: 0; }
-.cursor-ring > .liquidGlass-shine { z-index: 1; }
+.cursor-ring > .liquidGlass-matte { z-index: 1; }
+.cursor-ring > .liquidGlass-shine { z-index: 2; }
 .cursor-ring > .liquidGlass-text {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   font: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
@@ -518,30 +548,9 @@
    mid-scroll. See the active-scroll note further down. */
 
 /* ── lite tier: cheaper glass, still glass ─────────────────────────
-   This rule used to live in index.css as
-
-     html.performance-lite .lg-surface {
-       background: hsl(var(--background) / 0.96) !important;
-       backdrop-filter: none !important;
-     }
-
-   which is the one thing the contract forbids outright: a performance tier
-   "may pause decoration but must not replace glass with an opaque fallback".
-   At 0.96 alpha with no filter this was not the material any more, just a
-   bar. And because the frame monitor used to demote healthy hardware on sight
-   — a steady 30 Hz panel was condemned by its first frame, see the note in
-   performance-tier.js — people saw their top bar like that permanently, with
-   no setting that would bring it back.
-
-   What actually costs GPU time here is the blur RADIUS (raster cost scales
-   with it), the extra saturate and brightness passes, and the two decorative
-   pseudo-element layers. So those go, and the single thing that makes it
-   glass — a live backdrop blur — stays, at roughly a third of the radius.
-   The tier still gets its cheap surface; it just gets a cheaper pane of glass
-   instead of a sheet of paint.
-
-   Specificity carries this over .lg-navigation's own 26px, so the header
-   strip is covered without naming it. */
+   The SVG displacement and cached shine are optional; the shallow 3px live
+   backdrop and static matte grain are not. The lite tier removes those costly
+   optical passes while keeping the same translucent material and outline. */
 html.performance-lite .lg-surface {
   --glass_blur: 3px;
   --glass_tint: 0.56;
@@ -655,6 +664,7 @@ html.animations-disabled .lg-scroll-edge {
   }
   .liquidGlass-effect,
   .liquidGlass-tint,
+  .liquidGlass-matte,
   .liquidGlass-shine,
   .lg-depth,
   .lg-scroll-edge { display: none; }
