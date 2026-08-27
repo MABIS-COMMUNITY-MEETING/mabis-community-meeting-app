@@ -256,6 +256,7 @@ export default function CustomCursor() {
             child's backdrop-filter sampling nothing. See glass.css. */}
         <div ref={ringEl} class="cursor-ring" style={{ opacity: 0 }} aria-hidden>
           <span class="liquidGlass-tint" />
+          <span class="liquidGlass-matte" />
           <span class="liquidGlass-shine" />
           <span ref={ringLabelEl} class="liquidGlass-text" />
         </div>
