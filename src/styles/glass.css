@@ -20,21 +20,20 @@
 :root {
   --glass-scroll-shift: 0px;
   --glass-scroll-shadow-opacity: 0.12;
-  --glass-scroll-spec-opacity: 0.46;
+  --glass-scroll-spec-opacity: 0.40;
   --glass-scroll-rim-opacity: 0.70;
   --glass-scroll-edge-opacity: 0.52;
   --glass-scroll-tint-alpha: 0.10;
 }
 
 .lg-surface {
-  /* The supplied optical reference uses a shallow 3px live blur. Distortion,
-     tint and the inset shine provide depth without increasing backdrop radius
-     or adding another cross-origin texture pass. */
-  --glass_blur: 3px;
-  --glass_saturation: 135%;
-  --glass_brightness: 1.01;
-  --glass_tint: 0.50;
-  --glass_matte: 0.30;
+  /* The frosted treatment diffuses the page before the local distortion,
+     embedded grain and inset shine are composited over it. */
+  --glass_blur: 12px;
+  --glass_saturation: 122%;
+  --glass_brightness: 1.02;
+  --glass_tint: 0.56;
+  --glass_matte: 0.32;
   --glass_lens: 1.5px;
   --glass_spec: 0.14;
   --glass_shadow:
@@ -217,9 +216,9 @@
 
 /* compact — icon buttons, toggles, glyph chips */
 .lg-compact {
-  --glass_saturation: 130%;
+  --glass_saturation: 120%;
   --glass_brightness: 1.01;
-  --glass_tint: 0.42;
+  --glass_tint: 0.50;
   --glass_lens: 0.6px;
   --glass_spec: 0.16;
   --glass_shadow: 0 4px 12px -6px hsl(var(--ink) / 0.30);
@@ -227,16 +226,16 @@
 
 /* regular — toolbars, contextual clusters */
 .lg-regular {
-  --glass_tint: 0.50;
+  --glass_tint: 0.56;
   --glass_lens: 1.4px;
   --glass_spec: 0.14;
 }
 
 /* navigation — the persistent header strip */
 .lg-navigation {
-  --glass_saturation: 140%;
+  --glass_saturation: 128%;
   --glass_brightness: 1.02;
-  --glass_tint: 0.50;
+  --glass_tint: 0.58;
   --glass_lens: 1.8px;
   --glass_spec: 0.12;
   border-left: none;
@@ -247,9 +246,9 @@
 
 /* controller — thin floating optical strip for the input prompts */
 .lg-controller {
-  --glass_saturation: 138%;
+  --glass_saturation: 126%;
   --glass_brightness: 1.02;
-  --glass_tint: 0.52;
+  --glass_tint: 0.60;
   --glass_lens: 1.4px;
   --glass_spec: 0.14;
   --glass_shadow: 0 -10px 34px -20px hsl(var(--ink) / 0.45);
@@ -257,17 +256,17 @@
 
 /* panel / thick — large floating surfaces and overlays */
 .lg-panel {
-  --glass_saturation: 142%;
+  --glass_saturation: 130%;
   --glass_brightness: 1.02;
-  --glass_tint: 0.55;
+  --glass_tint: 0.64;
   --glass_lens: 2.4px;
   --glass_spec: 0.14;
   --glass_shadow: 0 26px 70px -28px hsl(var(--ink) / 0.45);
 }
 .lg-thick {
-  --glass_saturation: 145%;
+  --glass_saturation: 134%;
   --glass_brightness: 1.03;
-  --glass_tint: 0.60;
+  --glass_tint: 0.70;
   --glass_lens: 3.4px;
   --glass_spec: 0.13;
   --glass_shadow: 0 34px 90px -30px hsl(var(--ink) / 0.55);
@@ -283,18 +282,18 @@
 
 /* clear — minimal tint, for glass over already-quiet backgrounds */
 .lg-clear {
-  --glass_saturation: 130%;
+  --glass_saturation: 118%;
   --glass_brightness: 1;
-  --glass_tint: 0.32;
+  --glass_tint: 0.42;
   --glass_lens: 1px;
   --glass_spec: 0.10;
 }
 
 /* overlay — full-bleed scrim behind a modal; carries no highlight */
 .lg-overlay {
-  --glass_saturation: 120%;
-  --glass_brightness: 0.92;
-  --glass_tint: 0.42;
+  --glass_saturation: 112%;
+  --glass_brightness: 0.94;
+  --glass_tint: 0.48;
   --glass_shadow: none;
   border: none;
 }
@@ -353,9 +352,9 @@
 .lg-on-light > .liquidGlass-tint {
   background:
     linear-gradient(135deg,
-      hsl(var(--background) / calc(var(--glass_tint) * 1.9)),
-      hsl(var(--background) / calc(var(--glass_tint) * 0.9)) 55%,
-      hsl(var(--foreground) / calc(var(--glass_tint) * 0.5)));
+      hsl(var(--background) / calc(var(--glass_tint) * 1.45)),
+      hsl(var(--background) / calc(var(--glass_tint) * 0.95)) 55%,
+      hsl(var(--foreground) / calc(var(--glass_tint) * 0.42)));
 }
 
 /* ── The custom cursor's ring is a glass surface ─────────────────────────
@@ -383,18 +382,16 @@
       expensive thing in this stylesheet. Blur, tint and shine carry the look at
       this size; the distortion is not legible on a 34px disc anyway.
 
-   The tint is much weaker than the panel default (0.13 against 0.50): at cursor
+   The tint is much weaker than the panel default (0.13 against 0.64): at cursor
    size a half-opaque fill reads as a white blob rather than as glass. */
 .cursor-ring {
-  /* 3px, the same shallow blur .lg-surface uses and the value the reference
-     effect is built on. 6px was tried here on the assumption that a small
-     surface needs more blur to read as glass; the opposite is true. A 34px
-     disc at 6px has no backdrop left to see through, so it stops looking like
-     glass and starts looking like frosted plastic. */
+  /* The compact cursor keeps the original 3px blur while full glass panes use
+     12px. A 34px disc at the panel radius has no backdrop left to see through,
+     so it becomes a milky blob rather than a readable cursor. */
   --glass_blur: 3px;
   --glass_saturation: 135%;
   --glass_brightness: 1.02;
-  /* Lower again than the 0.22 first tried here, and far below the 0.50 panel
+  /* Lower again than the 0.22 first tried here, and far below the 0.64 panel
      default. Tint is what separates glass from a milky disc, and the smaller
      the surface the less of it you can spend before the backdrop stops reading
      through at all. */
@@ -550,7 +547,7 @@
    optical passes while keeping the same translucent material and outline. */
 html.performance-lite .lg-surface {
   --glass_blur: 3px;
-  --glass_tint: 0.56;
+  --glass_tint: 0.64;
   box-shadow: none;
 }
 
@@ -584,12 +581,13 @@ html.animations-disabled .lg-scroll-edge {
    fill makes the glass disappear during wheel, touch and momentum scrolls.
    Blur remains constant between frames, so there is no interpolation loop. */
 
-/* ── mobile: keep the shallow blur, drop the SVG lens pass ──────
-   The 3px backdrop stays live. The local displacement filter is the optional
-   optical pass, so mobile removes it without replacing glass with paint. */
+/* ── mobile: keep a bounded frost, drop the SVG lens pass ───────
+   The 8px backdrop keeps the frosted read without paying the desktop radius.
+   The local displacement filter is optional and remains disabled here. */
 @media (max-width: 640px) {
   .lg-surface {
-    --glass_tint: 0.56;
+    --glass_blur: 8px;
+    --glass_tint: 0.62;
     --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
   }
   .liquidGlass-effect {
