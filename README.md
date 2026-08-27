@@ -103,6 +103,7 @@ It should have restrained transparency, edge refraction, directional highlights,
 - Do not apply glass to long text, discussion bodies, lists, or every card.
 - Preserve the existing glass architecture in `src/styles/glass.css` unless Novesce explicitly requests a redesign.
 - Preserve live single-pass glass backdrop blur during wheel, touch, rapid, and momentum scrolling; active-scroll optimizations may pause decoration but must not replace glass with an opaque fallback.
+- Keep glass visuals self-contained: no hotlinked GitHub images, stock backgrounds, or cross-origin demo assets.
 
 ### Color
 
@@ -545,6 +546,8 @@ lg-overlay
 lg-on-dark
 lg-on-light
 ```
+
+Every pane renders `wrapper → effect → tint → matte → shine → text`. The matte layer is a quiet, theme-aware CSS micro-grain across the full pane; it uses no image texture or external asset, while the softened shine keeps controls legible without a wet-plastic finish.
 
 Rules:
 
