@@ -136,6 +136,7 @@ export default function Glass(props) {
       <GlassDistortionFilter id={filterId} />
       <span class="liquidGlass-effect" aria-hidden="true" />
       <span class="liquidGlass-tint" aria-hidden="true" />
+      <span class="liquidGlass-matte" aria-hidden="true" />
       <span class="liquidGlass-shine" aria-hidden="true" />
       <div class={`lg-content liquidGlass-text ${local.contentClass || ""}`}>
         <span class="lg-depth" aria-hidden="true" />
