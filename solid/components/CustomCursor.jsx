@@ -89,7 +89,7 @@ export default function CustomCursor() {
     let lastLabel = "";
     let prevRingX = 0, prevRingY = 0;
     let prevShear = 0, prevScale = 1, prevTheta = 0, prevGlow = 0;
-    let lastHover = false, lastIsLabel = false, lastDotOpacity = "", lastRingOpacity = "", lastColor = "";
+    let lastHover = false, lastIsLabel = false, lastDotOpacity = "", lastRingOpacity = "", lastLabelAlpha = "";
 
     // Spatial hysteresis, not temporal smoothing: ignore only motion contained
     // within the noise radius, then snap fully to the browser coordinate.
@@ -217,8 +217,15 @@ export default function CustomCursor() {
         const text = pointer.label || lastLabel;
         if (ringLabelEl && ringLabelEl.textContent !== text) ringLabelEl.textContent = text;
         if (pointer.label) lastLabel = pointer.label;
-        const color = `rgba(255,255,255,${gl.toFixed(3)})`;
-        if (color !== lastColor) { r.style.color = color; lastColor = color; }
+        /* Only the alpha is written. The colour itself is
+           hsl(var(--foreground) / var(--cursor-label-alpha)) in index.css, so
+           the label follows the active theme — named, custom, Pride or Material
+           You — instead of the hard-coded white this used to fade in. */
+        const labelAlpha = gl.toFixed(3);
+        if (labelAlpha !== lastLabelAlpha) {
+          r.style.setProperty("--cursor-label-alpha", labelAlpha);
+          lastLabelAlpha = labelAlpha;
+        }
       }
     };
 
