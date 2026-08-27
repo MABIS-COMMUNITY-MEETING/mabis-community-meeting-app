@@ -547,7 +547,7 @@ lg-on-dark
 lg-on-light
 ```
 
-Every pane renders `wrapper → effect → tint → matte → shine → text`. The matte layer is a quiet, theme-aware CSS micro-grain across the full pane; it uses no image texture or external asset, while the softened shine keeps controls legible without a wet-plastic finish.
+Every pane renders `wrapper → effect → tint → matte → shine → text`. The matte layer is a quiet fractal-noise data-SVG blended over a theme-aware gradient across the full pane; it is embedded directly in `glass.css` and fetches no external asset, while the softened shine keeps controls legible without a wet-plastic finish.
 
 Rules:
 
