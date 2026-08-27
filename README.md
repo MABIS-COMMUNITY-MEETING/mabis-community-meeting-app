@@ -547,7 +547,7 @@ lg-on-dark
 lg-on-light
 ```
 
-Every pane renders `wrapper → effect → tint → matte → shine → text`. The matte layer is a quiet fractal-noise data-SVG blended over a theme-aware gradient across the full pane; it is embedded directly in `glass.css` and fetches no external asset, while the softened shine keeps controls legible without a wet-plastic finish.
+Every pane renders `wrapper → effect → tint → matte → shine → text`. The matte layer is a quiet fractal-noise data-SVG blended over a theme-aware gradient across the full pane; it is embedded directly in `glass.css` and fetches no external asset, while the softened shine keeps controls legible without a wet-plastic finish. Standard panes use a 12px frosted backdrop, phones use a bounded 8px frost, and the performance-lite fallback retains a 3px live blur.
 
 Rules:
 
