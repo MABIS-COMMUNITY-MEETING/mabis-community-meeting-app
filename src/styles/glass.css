@@ -34,7 +34,7 @@
   --glass_saturation: 135%;
   --glass_brightness: 1.01;
   --glass_tint: 0.50;
-  --glass_matte: 0.38;
+  --glass_matte: 0.30;
   --glass_lens: 1.5px;
   --glass_spec: 0.14;
   --glass_shadow:
@@ -128,19 +128,16 @@
   z-index: 2;
   opacity: var(--glass_matte);
   background-image:
-    radial-gradient(
-      circle at 25% 35%,
-      hsl(var(--foreground) / 0.11) 0 0.55px,
-      transparent 0.8px
-    ),
-    radial-gradient(
-      circle at 70% 65%,
-      hsl(var(--background) / 0.20) 0 0.45px,
-      transparent 0.75px
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.72'/%3E%3C/svg%3E"),
+    linear-gradient(
+      135deg,
+      hsl(var(--background) / 0.88),
+      hsl(var(--primary) / 0.24)
     );
-  background-position: 0 0, 1px 2px;
-  background-size: 3px 3px, 5px 5px;
-  background-repeat: repeat;
+  background-position: center, center;
+  background-size: 160px 160px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  background-blend-mode: overlay;
 }
 
 .liquidGlass-shine {
@@ -402,7 +399,7 @@
      the surface the less of it you can spend before the backdrop stops reading
      through at all. */
   --glass_tint: 0.13;
-  --glass_matte: 0.22;
+  --glass_matte: 0.18;
   --glass_spec: 0.22;
   --glass_pointer_x: 50%;
   --glass_pointer_y: 0%;
