@@ -516,12 +516,26 @@ html.platform-linux .cv-section.cv-ready:not(.cv-onscreen) :is(
    Material, saved custom, catalogue and Pride themes may repaint the page,
    but must never add a theme-scoped override for these cursor classes. */
 .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; contain: strict; will-change: transform, opacity; }
-.cursor-dot { width: 5px; height: 5px; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.72), 0 1px 3px rgb(0 0 0 / 0.35); transform: translate(-50%,-50%); }
-.cursor-ring { width: 34px; height: 34px; border: 1px solid rgb(255 255 255 / 0.9); box-shadow: 0 0 0 1px rgb(0 0 0 / 0.55), 0 2px 8px rgb(0 0 0 / 0.2); transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:9px; letter-spacing:0.08em; color:#fff; text-transform:uppercase; }
+/* ── The cursor follows the theme ─────────────────────────────────────
+   Core in --foreground, halo in --background, in that order. Those two are the
+   one pair the theme system guarantees contrast between — check-theme-balance
+   verifies exactly that across all 140 themes, plus custom colours and Material
+   You — so a cursor built from them is legible on every scheme without a single
+   per-theme rule. (check-theme-balance separately forbids per-theme cursor
+   overrides; token-driven rules like these are what it wants instead.)
+
+   It was hard-coded white with a black halo, which is only correct on a dark
+   page: on a light theme the dot was a white disc on white paper, held together
+   by its outline alone.
+
+   The outermost soft shadow stays --ink. That one is a cast shadow, not part of
+   the mark, and a shadow is dark in every theme — which is what --ink means. */
+.cursor-dot { width: 5px; height: 5px; background: hsl(var(--foreground)); box-shadow: 0 0 0 1px hsl(var(--background) / 0.9), 0 1px 3px hsl(var(--ink) / 0.35); transform: translate(-50%,-50%); }
+.cursor-ring { width: 34px; height: 34px; border: 1px solid hsl(var(--foreground) / 0.9); box-shadow: 0 0 0 1px hsl(var(--background) / 0.55), 0 2px 8px hsl(var(--ink) / 0.2); transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:9px; letter-spacing:0.08em; color: hsl(var(--foreground) / var(--cursor-label-alpha, 0)); text-transform:uppercase; }
 .cursor-label { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; white-space: nowrap; }
 .cursor-trail { position: fixed; top: 0; left: 0; width: 5px; height: 5px; pointer-events: none; z-index: 9999; border-radius: 999px; background: #fff; mix-blend-mode: difference; transform: translate(-50%,-50%); }
 .cursor-ring.is-hover { width: 40px; height: 40px; background:transparent; }
-.cursor-ring.is-label { width: 56px; height: 56px; background:rgba(255,255,255,0.1); }
+.cursor-ring.is-label { width: 56px; height: 56px; background: hsl(var(--foreground) / 0.1); }
 
 /* ── loading screen: one selected face, one compositor progress loop ── */
 .loading-screen,
