@@ -290,6 +290,8 @@ requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_bl
 requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
 requireText("src/styles/glass.css", glass, "data:image/svg+xml");
 requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
+requireText("src/styles/glass.css", glass, "--glass_blur: 12px;");
+requireText("src/styles/glass.css", glass, "--glass_blur: 8px;");
 requireText("src/styles/glass.css", glass, "filter: var(--glass-distortion-filter)");
 requireText("solid/components/Glass.jsx", glassComponentSolid, [
   "liquidGlass-effect", "liquidGlass-tint", "liquidGlass-matte",
