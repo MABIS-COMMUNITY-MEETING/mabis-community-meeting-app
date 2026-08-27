@@ -288,6 +288,8 @@ requireText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "onClick=
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
+requireText("src/styles/glass.css", glass, "data:image/svg+xml");
+requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
 requireText("src/styles/glass.css", glass, "filter: var(--glass-distortion-filter)");
 requireText("solid/components/Glass.jsx", glassComponentSolid, [
   "liquidGlass-effect", "liquidGlass-tint", "liquidGlass-matte",
@@ -298,7 +300,7 @@ requireText("solid/components/Glass.jsx", glassComponentSolid, "<feDisplacementM
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "src=");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "https://");
 forbidText("src/styles/glass.css", glass, "https://");
-forbidText("src/styles/glass.css", glass, "data:image");
+forbidText("src/styles/glass.css", glass, 'url("http');
 forbidText("src/styles/glass.css", glass, "html.is-scrolling .lg-surface");
 /* Glass uses native CSS plus a local inline SVG filter. A document snapshot plus a WebGL canvas on every glass
    surface caused long tasks and scroll hitching, especially in the persistent
