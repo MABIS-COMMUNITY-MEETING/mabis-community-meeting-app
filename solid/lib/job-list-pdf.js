@@ -33,6 +33,26 @@ const asCssColor = (value, fallback) => {
   return /^(?:#|rgb|hsl|oklch|color\()/i.test(cleaned) ? cleaned : `hsl(${cleaned})`;
 };
 
+/*
+ * The theme's full palette bar, as a gradient.
+ *
+ * themes.js publishes --palette-stripes: a 90deg linear-gradient with hard
+ * stops, one band per swatch, and it is what PaletteStripe paints across the
+ * top of the app. Reading it here is what makes an exported list carry the same
+ * flag the reader is looking at — all five bands of Lesbian, all six of Rainbow
+ * — rather than the two-tone primary/secondary approximation the PDF used to
+ * draw, which flattened every multi-colour theme to a pink-and-orange bar.
+ *
+ * Only a linear-gradient is accepted. The value ends up inside a style block in
+ * a document this code writes, so anything that is not the shape we expect is
+ * discarded rather than passed through.
+ */
+const asCssGradient = (value, fallback) => {
+  const cleaned = safeCssValue(value, "");
+  if (!cleaned) return fallback;
+  return /^linear-gradient\([^<>"']*\)$/i.test(cleaned) ? cleaned : fallback;
+};
+
 const stylesheetMarkup = (urls) => (urls || [])
   .map((url) => `<link rel="stylesheet" href="${escapeHtml(url)}">`)
   .join("");
@@ -56,6 +76,10 @@ export function readJobListPrintAppearance(doc = document) {
     border: asCssColor(token("--border"), "#c9bdaf"),
     muted: asCssColor(token("--muted"), "#eee6d9"),
     mutedForeground: asCssColor(token("--muted-foreground"), "#6c6161"),
+    /* Empty rather than a colour when the theme has no palette: the stripe
+       falls back to the primary/secondary split below, so a single-colour
+       theme still gets a bar. */
+    paletteStripes: asCssGradient(token("--palette-stripes"), ""),
     fontFamily: safeCssValue(token("--font-body"), "'GNUFreeMonoUI', monospace"),
     stylesheetUrls: Array.from(doc.querySelectorAll('link[rel="stylesheet"]'))
       .map((link) => link.href)
@@ -77,6 +101,7 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
     muted: safeCssValue(appearance.muted, "#eee6d9"),
     mutedForeground: safeCssValue(appearance.mutedForeground, "#6c6161"),
   };
+  const paletteStripes = asCssGradient(appearance.paletteStripes, "");
   const fontFamily = safeCssValue(appearance.fontFamily, "'GNUFreeMonoUI', monospace");
   const title = PDF_TITLE;
   const notes = englishOnly(jobList?.notes);
@@ -164,14 +189,24 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
       font-size: 15pt;
       font-weight: 800;
     }
+    /* print-color-adjust keeps the bar in the output. Browsers strip background
+       colours from printed pages by default, which would drop the flag entirely
+       — the one thing this stripe exists for. */
     .pdf-stripe {
       display: grid;
       grid-template-columns: 3fr 1fr;
       height: 3mm;
       margin: 3mm 0 6mm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     .pdf-stripe span:first-child { background: var(--pdf-primary); }
     .pdf-stripe span:last-child { background: var(--pdf-secondary); }
+    /* A themed palette replaces the two-tone split with the whole flag. */
+    .pdf-stripe--palette {
+      display: block;
+      background: var(--pdf-palette-stripes);
+    }
     .pdf-label { display: block; margin-bottom: 1mm; color: var(--pdf-muted-foreground); }
     table { width: 100%; border-collapse: collapse; table-layout: fixed; }
     thead { display: table-header-group; }
@@ -222,7 +257,7 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
       </div>
       <div class="pdf-mark" aria-label="MABIS">M</div>
     </header>
-    <div class="pdf-stripe" aria-hidden="true"><span></span><span></span></div>
+    <div class="pdf-stripe${paletteStripes ? " pdf-stripe--palette" : ""}" aria-hidden="true">${paletteStripes ? "" : "<span></span><span></span>"}</div>
     ${rows ? `
       <table aria-label="Jobs">
         <thead><tr><th>No.</th><th>Job</th><th>Person</th><th>Schedule</th></tr></thead>
