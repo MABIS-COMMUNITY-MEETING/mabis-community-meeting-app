@@ -385,22 +385,30 @@ forbidText(
  * the glass render fully transparent in Firefox; keeping `filter` off
  * .liquidGlass-effect is what retired that bug rather than papering over it.
  */
-requireText("src/styles/glass.css", glass, "backdrop-filter: var(--glass-lens-filter");
-if (/\.liquidGlass-effect\s*\{[^}]*[;\s]filter\s*:/.test(glass.replace(/\/\*[\s\S]*?\*\//g, ""))) {
+/*
+ * The distortion goes on `filter`, and the frost stays on backdrop-filter.
+ *
+ * It was tried the other way round — the SVG reference inside the
+ * backdrop-filter list — so that one element would not carry both properties,
+ * which is the combination Gecko refuses. That fixed Firefox by making the
+ * effect invisible everywhere: Chromium ignores url() in backdrop-filter
+ * entirely, so the distortion silently stopped rendering while frost and grain
+ * carried on. Working-in-Chromium beats theoretically-cleaner.
+ */
+requireText("src/styles/glass.css", glass, "filter: var(--glass-distortion-filter");
+requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
+forbidText("src/styles/glass.css", glass, "backdrop-filter: var(--glass-distortion-filter");
+/* The Gecko escape hatch that the arrangement above makes necessary. Without
+   it Firefox renders the pane fully transparent rather than merely un-refracted,
+   and nothing else in the gate notices. Matched on the `and (not (-webkit-`
+   fragment: the condition's values contain nested parens that a naive character
+   class walks straight past, and the no-backdrop-filter-at-all fallback further
+   down spells it `or (-webkit-`, so this cannot collide with it. */
+if (!glass.includes("and (not (-webkit-backdrop-filter")) {
   failures.push(
-    "src/styles/glass.css: .liquidGlass-effect must not set `filter`. The lens goes in the "
-    + "backdrop-filter list; an element with both loses its backdrop in Gecko and the glass "
-    + "renders fully transparent in Firefox.",
-  );
-}
-/* url() in a backdrop is the newest syntax here, and where it is unsupported
-   the whole declaration dies — taking saturate and brightness with it and
-   leaving a bare tinted box. The fallback restates them without the lens. */
-if (!glass.includes('@supports not (backdrop-filter: url("#lens"))')) {
-  failures.push(
-    "src/styles/glass.css: the lens needs its `@supports not (backdrop-filter: url(\"#lens\"))` "
-    + "fallback. Without it, any engine that cannot resolve url() in a backdrop loses saturate "
-    + "and brightness too and the surface flattens to a plain tint.",
+    "src/styles/glass.css: .liquidGlass-effect sets both backdrop-filter and filter, so it needs "
+    + "the `@supports (backdrop-filter: ...) and (not (-webkit-backdrop-filter: ...))` block that "
+    + "clears `filter` for Gecko. Without it the glass renders fully transparent in Firefox.",
   );
 }
 requireText("solid/components/Glass.jsx", glassComponentSolid, [
