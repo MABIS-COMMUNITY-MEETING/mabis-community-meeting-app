@@ -292,6 +292,30 @@ it may only change at Novesce's explicit request.
    `format('truetype')` sources are 2-4× their woff2 equivalents for anyone who
    does pick those fonts.
 
+### Paid for, not saved: the Aqua treatment on the glass
+
+A visual change, logged here because it *adds* paint work, and the rule of this
+document is that additions get accounted for too.
+
+Per glass surface it adds one static `linear-gradient` to `.liquidGlass-shine`,
+two inset edge lines, and four zero-blur outer hairlines on `.lg-surface`.
+
+What it does **not** add is the expensive kind of work: no filter, no blur pass,
+no backdrop sample, nothing that reads the page behind the pane. The two new
+inset lines have a 2px blur radius against the 56px one already in that rule, so
+they are small next to what the shine costs today. The hairlines have no blur
+and no spread at all — four hard 1px lines.
+
+The honest cost is on pointer move. `.liquidGlass-shine` already repaints on
+every pointer move because its radial hotspot is pointer-driven, and the new
+lozenge sits in that same background stack, so it repaints along with it.
+Hoisting the static half onto its own pseudo-element was considered and
+rejected: same layer, same damage rect, so it would repaint anyway and only add
+an element.
+
+Not measured as frame time — this sandbox has no paint profiler, and quoting a
+number that was never taken would be worse than saying so.
+
 ### Rejected
 
 - **Whole-Unicode-block font subsets.** Including the math, letterlike,
