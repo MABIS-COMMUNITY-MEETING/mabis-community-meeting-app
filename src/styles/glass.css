@@ -29,13 +29,20 @@
 .lg-surface {
   /* The frosted treatment diffuses the page before the local distortion,
      embedded grain and inset shine are composited over it. */
-  /* 12px → 9px: 25% less frost, at Novesce's request. Every other blur in this
-     file moved by the same proportion so the tiers keep their relationship. */
-  --glass_blur: 9px;
+  /* Zero. The material is grainy now, not frosted — .liquidGlass-matte carries
+     it, and a backdrop blur underneath would put the haze straight back.
+     saturate() and brightness() stay, so the backdrop is still sampled and the
+     surface still reads as a material rather than a flat panel.
+
+     This is one number: restoring any frost is setting it back (it was 12px,
+     then 9px after the 25% cut). Every other tier below went to 0 with it. */
+  --glass_blur: 0px;
   --glass_saturation: 122%;
   --glass_brightness: 1.02;
   --glass_tint: 0.56;
-  --glass_matte: 0.32;
+  /* Up from 0.32 with the frost gone: the grain is the material now, so it has
+     to carry weight the blur used to. */
+  --glass_matte: 0.55;
   --glass_lens: 1.5px;
   --glass_spec: 0.14;
   --glass_shadow:
@@ -621,12 +628,14 @@ html.animations-disabled .lg-scroll-edge {
    fill makes the glass disappear during wheel, touch and momentum scrolls.
    Blur remains constant between frames, so there is no interpolation loop. */
 
-/* ── mobile: keep a bounded frost, drop the SVG lens pass ───────
-   The 6px backdrop keeps the frosted read without paying the desktop radius.
-   The local displacement filter is optional and remains disabled here. */
+/* ── mobile: no backdrop radius at all ──────────────────────────────────
+   The desktop pane is already at zero blur since the material became grain, so
+   there is no radius left to bound here — this tier now only carries the
+   heavier tint and the cheaper shadow. The local displacement filter is
+   optional and remains disabled here. */
 @media (max-width: 640px) {
   .lg-surface {
-    --glass_blur: 6px;
+    --glass_blur: 0px;
     --glass_tint: 0.62;
     --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
   }
