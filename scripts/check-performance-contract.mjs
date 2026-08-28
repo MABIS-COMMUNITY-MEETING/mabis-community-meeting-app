@@ -333,15 +333,29 @@ forbidText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "claimRelo
 requireText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "onClick={() => window.location.reload()}");
 
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
-/* Active scrolling must not capture the moving backdrop at all. The cached
-   material stays under the unchanged tint/grain/rim so this fast path cannot
-   regress to the old transparent flash. */
+/*
+ * The material must NOT change appearance during a scroll gesture.
+ *
+ * Swapping the backdrop-filter for a cached plane while scrolling did stop the
+ * lens re-rasterising, and it is why the header flickered: the surface changed
+ * the moment a gesture started and changed back ~140ms after it stopped, twice
+ * per scroll, on the one element pinned to the viewport throughout.
+ *
+ * The answer is a resting effect cheap enough to leave alone — a single
+ * displacement pass rather than three plus two blends — not a swap. Anything
+ * that toggles backdrop-filter or background on the effect layer per gesture is
+ * the flicker coming back.
+ */
 forbidText("solid/solid-motion.css", motionCss, "--glass-scroll-lens-filter");
-requireText(
-  "solid/solid-motion.css",
-  motionCss,
-  "html.is-scrolling .lg-surface > .liquidGlass-effect {\n  -webkit-backdrop-filter: none !important;\n  backdrop-filter: none !important;\n  background: var(--glass-cached-material);",
-);
+if (/html\.is-scrolling[^{]*\.liquidGlass-effect\s*\{[^}]*(backdrop-filter|background)\s*:/.test(
+  motionCss.replace(/\/\*[\s\S]*?\*\//g, ""),
+)) {
+  failures.push(
+    "solid/solid-motion.css: html.is-scrolling must not change .liquidGlass-effect's "
+    + "backdrop-filter or background. Swapping the material per gesture is what makes the "
+    + "header flicker on every scroll; keep the resting effect cheap instead.",
+  );
+}
 requireText("solid/solid-motion.css", motionCss, "html.is-scrolling .site-header-shell > .lg-scroll-edge");
 requireText("src/styles/glass.css", glass, "--glass-cached-material:");
 requireText(
