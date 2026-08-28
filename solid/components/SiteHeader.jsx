@@ -4,7 +4,7 @@ import { A, useNavigate, useLocation } from "@solidjs/router";
 import { ArrowUpRight } from "lucide-solid";
 import { playHover, playMenuOpen, playMenuClose } from "@/lib/sound";
 import { preloadRoute } from "~/lib/routes";
-import Glass from "~/components/Glass";
+import Glass, { GlassFilterDefs } from "~/components/Glass";
 import SoundToggle from "~/components/SoundToggle";
 import { JapaneseText } from "~/components/primitives";
 import { lockBodyScroll } from "@/lib/scroll-lock";
@@ -96,6 +96,7 @@ export default function SiteHeader(props) {
           inside one makes it scroll with that wrapper on some compositors. */}
       <Portal>
       <header class="site-header-shell fixed top-0 left-0 right-0 z-50">
+        <GlassFilterDefs />
         <Glass variant="navigation" tone="light" contentClass="flex items-center justify-between gap-3 px-3 py-3 sm:px-8 sm:py-4">
           <A href="/" data-cursor="HOME" class="group flex items-center gap-3">
             <span class="relative flex h-9 w-9 items-center justify-center overflow-hidden border border-foreground/30 bg-background">
