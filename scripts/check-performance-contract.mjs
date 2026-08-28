@@ -294,7 +294,6 @@ requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
 requireText("src/styles/glass.css", glass, "baseFrequency='1.5'");
 requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
 requireText("src/styles/glass.css", glass, "data:image/svg+xml");
-requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
 /* The frost is off: the material is grain now (.liquidGlass-matte), so every
    tier sits at zero backdrop radius. saturate() and brightness() still sample
    the backdrop, which is why the property stays.
