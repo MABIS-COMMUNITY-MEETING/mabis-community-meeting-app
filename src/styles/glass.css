@@ -622,10 +622,6 @@ html.performance-lite .lg-surface {
   box-shadow: none;
 }
 
-html.performance-lite .liquidGlass-effect {
-  filter: none;
-}
-
 html.performance-lite .liquidGlass-shine,
 html.performance-lite .liquidGlass-effect::after,
 html.performance-lite .lg-depth {
@@ -655,16 +651,17 @@ html.animations-disabled .lg-scroll-edge {
 /* ── mobile: no backdrop radius at all ──────────────────────────────────
    The desktop pane is already at zero blur since the material became grain, so
    there is no radius left to bound here — this tier now only carries the
-   heavier tint and the cheaper shadow. The local displacement filter is
-   optional and remains disabled here. */
+   heavier tint and the cheaper shadow.
+
+   The lens goes too. It is stretched to the surface, so at phone width the ramp
+   is squeezed into far fewer pixels and reads as a smear rather than an edge —
+   and this is the tier most likely to be running on a weak GPU. */
 @media (max-width: 640px) {
   .lg-surface {
     --glass_blur: 0px;
     --glass_tint: 0.62;
     --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
-  }
-  .liquidGlass-effect {
-    filter: none;
+    --glass-lens-filter: opacity(1);
   }
   .liquidGlass-effect::after { display: none; }
   .lg-scroll-edge {
