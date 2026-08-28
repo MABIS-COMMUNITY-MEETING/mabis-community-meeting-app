@@ -315,15 +315,22 @@ forbidText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "claimRelo
 requireText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "onClick={() => window.location.reload()}");
 
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
-/* Active scrolling keeps real refraction but selects the one-pass companion
-   filter. A no-op opacity filter here was the transparency flash. */
-forbidText("solid/solid-motion.css", motionCss, "--glass-lens-filter: opacity(1);");
+/* Active scrolling must not capture the moving backdrop at all. The cached
+   material stays under the unchanged tint/grain/rim so this fast path cannot
+   regress to the old transparent flash. */
+forbidText("solid/solid-motion.css", motionCss, "--glass-scroll-lens-filter");
 requireText(
   "solid/solid-motion.css",
   motionCss,
-  "--glass-lens-filter: var(--glass-scroll-lens-filter, opacity(1));",
+  "html.is-scrolling .lg-surface > .liquidGlass-effect {\n  -webkit-backdrop-filter: none !important;\n  backdrop-filter: none !important;\n  background: var(--glass-cached-material);",
 );
 requireText("solid/solid-motion.css", motionCss, "html.is-scrolling .site-header-shell > .lg-scroll-edge");
+requireText("src/styles/glass.css", glass, "--glass-cached-material:");
+requireText(
+  "src/styles/glass.css",
+  glass,
+  "html.performance-lite .liquidGlass-effect {\n  -webkit-backdrop-filter: none !important;",
+);
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
 /* The grain is the material. Pin the supplied dense self-contained texture and
@@ -383,12 +390,12 @@ requireText("solid/components/Glass.jsx", glassComponentSolid, [
   "liquidGlass-shine", "liquidGlass-text",
 ]);
 /* The supplied reference lens is shared once at the persistent header. Resting
-   quality keeps its RGB split; the frame-critical scroll path keeps only one
-   displacement. CSS carries the 1.56px frost, so a second SVG Gaussian blur is
-   redundant and forbidden. */
+   quality keeps its RGB split. Scroll, lite and mobile paths use cached paint
+   rather than a second live filter. CSS carries the 1.56px frost, so a second
+   SVG Gaussian blur is redundant and forbidden. */
 requireText("solid/components/Glass.jsx", glassComponentSolid, "export function GlassFilterDefs()");
 requireText("solid/components/Glass.jsx", glassComponentSolid, 'const FILTER_ID = "glass-filter-chromatic"');
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'const SCROLL_FILTER_ID = "glass-filter-scroll"');
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "glass-filter-scroll");
 requireText("solid/components/Glass.jsx", glassComponentSolid, "data:image/png;base64,");
 requireText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
 requireText("solid/components/Glass.jsx", glassComponentSolid, 'preserveAspectRatio="none"');
@@ -396,19 +403,19 @@ requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="-20"');
 requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="-24"');
 requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="-28"');
 requireText("solid/components/Glass.jsx", glassComponentSolid, 'mode="screen"');
-requireText("solid/components/Glass.jsx", glassComponentSolid, '"--glass-scroll-lens-filter": SCROLL_FILTER_URL');
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "--glass-scroll-lens-filter");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feTurbulence");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feGaussianBlur");
-if ((glassComponentSolid.match(/<feImage/g) || []).length !== 2) {
+if ((glassComponentSolid.match(/<feImage/g) || []).length !== 1) {
   failures.push(
-    "solid/components/Glass.jsx: keep exactly two feImage uses—one for resting RGB quality "
-    + "and one for the one-pass scroll path.",
+    "solid/components/Glass.jsx: keep exactly one feImage for the resting RGB lens; "
+    + "scrolling must use cached paint instead of another live filter.",
   );
 }
-if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 4) {
+if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 3) {
   failures.push(
-    "solid/components/Glass.jsx: expected three resting RGB displacement passes plus exactly "
-    + "one scroll-time displacement pass.",
+    "solid/components/Glass.jsx: expected exactly the three resting RGB displacement passes; "
+    + "scrolling must not add a fourth live backdrop pass.",
   );
 }
 if ((glassComponentSolid.match(/<feBlend/g) || []).length !== 2) {
