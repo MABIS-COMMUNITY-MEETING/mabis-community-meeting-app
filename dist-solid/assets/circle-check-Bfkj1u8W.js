@@ -1,1 +1,0 @@
-import{I as c}from"./Icon-COAFcgVo.js";import{e as r,m as a}from"./index-SNLd5Spp.js";var m=[["circle",{cx:"12",cy:"12",r:"10",key:"1mglay"}],["path",{d:"m9 12 2 2 4-4",key:"dzmm74"}]],o=e=>r(c,a(e,{iconNode:m,name:"circle-check"})),l=o;export{l as c};

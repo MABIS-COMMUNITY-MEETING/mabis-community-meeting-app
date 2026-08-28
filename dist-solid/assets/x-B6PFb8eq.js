@@ -1,1 +1,0 @@
-import{I as e}from"./Icon-COAFcgVo.js";import{e as o,m as r}from"./index-SNLd5Spp.js";var m=[["path",{d:"M18 6 6 18",key:"1bl5f8"}],["path",{d:"m6 6 12 12",key:"d8bk6v"}]],t=a=>o(e,r(a,{iconNode:m,name:"x"})),f=t;export{f as x};
