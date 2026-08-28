@@ -893,7 +893,7 @@ export default function JobsWidget(props) {
             isAdmin={isAdmin()}
             currentUser={auth.user()}
             onJobStatus={handleJobStatus}
-          statusPending={updateAssignment.isPending}
+            statusPending={updateAssignment.isPending}
             onDelete={handleRemoveAssignment}
             deletePending={removeAssignment.isPending}
             currentMonth={currentMonth}
