@@ -97,6 +97,15 @@ export function getVisibleWeekDates(monthLabel, referenceDate = new Date()) {
   }).filter((entry) => entry.inMonth);
 }
 
+export function getWeekStatusKeys(jobOrAssignment, monthLabel = getMonthLabel(), referenceDate = new Date()) {
+  if (jobPeriod(jobOrAssignment) !== "monthly") return scheduledDaysFor(jobOrAssignment);
+
+  const scheduled = scheduledDaysFor(jobOrAssignment);
+  return getVisibleWeekDates(monthLabel, referenceDate)
+    .filter((entry) => scheduled.includes(entry.day))
+    .map((entry) => entry.key);
+}
+
 export function getScheduledDatesForMonth(jobOrTitle, monthLabel) {
   const scheduledDays = scheduledDaysFor(jobOrTitle);
   const first = startOfMonth(monthLabelToDate(monthLabel));
