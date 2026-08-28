@@ -310,11 +310,23 @@ html.animations-disabled .tap-85:active { transform: none; }
  * by installScrollStateClass() in lib/perf.js and coalesced outside Solid's
  * reactive graph.
  */
-html.is-scrolling .lg-surface > .liquidGlass-effect {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  background: var(--glass-cached-material);
-}
+/* NOT swapped during scroll any more.
+
+   This used to drop the whole backdrop-filter and paint
+   --glass-cached-material instead, to stop an expensive filter re-rasterising
+   on every scroll frame. It worked, and it was the wrong trade: the surface
+   visibly CHANGED the instant a gesture began and changed back ~140ms after it
+   ended. Twice per scroll, on the one element pinned to the viewport the whole
+   time. That is the flicker.
+
+   The fix was to make the resting effect cheap rather than to hide it. The lens
+   is now a single displacement pass in objectBoundingBox units — down from
+   three passes, two screen blends and a closing blur — so it can simply keep
+   running and nothing has to change mid-gesture.
+
+   The genuinely free savings below are kept: the grain layer, the ::after rim
+   passes and the decorative infinite animations still pause while scrolling.
+   None of those alter the material's own appearance. */
 
 html.is-scrolling .site-header-shell > .lg-scroll-edge {
   -webkit-backdrop-filter: none !important;
