@@ -339,7 +339,18 @@ requireText("solid/components/Glass.jsx", glassComponentSolid, [
   "liquidGlass-effect", "liquidGlass-tint", "liquidGlass-matte",
   "liquidGlass-shine", "liquidGlass-text",
 ]);
-requireText("solid/components/Glass.jsx", glassComponentSolid, "<feTurbulence");
+/* The lens graph. feImage carries the prebaked displacement ramp (feTurbulence
+   is noise and cannot describe an edge), and the three feDisplacementMap passes
+   at different scales are the chromatic dispersion that reads as thickness.
+   Losing any of them turns the lens back into a plain blur. */
+requireText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'preserveAspectRatio="none"');
+if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length < 3) {
+  failures.push(
+    "solid/components/Glass.jsx: the lens needs three feDisplacementMap passes, one per colour "
+    + "channel. Fewer than that is a plain displacement with no chromatic dispersion.",
+  );
+}
 requireText("solid/components/Glass.jsx", glassComponentSolid, "<feDisplacementMap");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "src=");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "https://");
