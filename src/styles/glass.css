@@ -37,7 +37,10 @@
   /* A substantial neutral body keeps the header from reading like clear ice;
      the denser matte layer makes the supplied grain the dominant finish. */
   --glass_tint: 0.48;
-  --glass_matte: 0.74;
+  /* 0.74 was loud enough that the gradient above dominated the material rather
+     than seasoning it — the grain should be tooth on the surface, not a sheet
+     over it. */
+  --glass_matte: 0.55;
   /* Theme-aware fallback used while pixels are moving. It is ordinary cached
      paint—not a backdrop sample—under the unchanged grain, tint and rim. */
   --glass-cached-material:
@@ -226,7 +229,19 @@
   opacity: var(--glass_matte);
   background:
     url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22200%22%3E%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%221.50%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23n)%22%20opacity%3D%221.00%22%2F%3E%3C%2Fsvg%3E"),
-    linear-gradient(179deg, #ffffff, #000000);
+    /* --background → --foreground, never literal #ffffff → #000000.
+
+       Under `overlay` these endpoints do luminance work, and the literal pair
+       is a pure-white top at whatever --glass_matte is set to. On a light theme
+       that is invisible, because --background IS near-white there — the two
+       spellings are the same value. On a dark theme it is a white sheet laid
+       over the pane, and the header's own --foreground text is light there, so
+       the navigation went light-on-light and unreadable.
+
+       Free on light themes for exactly that reason, self-correcting on dark
+       ones, and right for custom colours and Material You too, since every
+       theme system sets these two. */
+    linear-gradient(179deg, hsl(var(--background)), hsl(var(--foreground)));
   background-position: center, center;
   background-size: 200px 200px, 100% 100%;
   background-repeat: repeat, no-repeat;
