@@ -1,9 +1,9 @@
 import { Show, For } from "solid-js";
 import { Portal } from "solid-js/web";
-import { Trash2, AlertCircle } from "lucide-solid";
+import { Trash2, AlertCircle, CheckCircle2 } from "lucide-solid";
 import { displayName } from "@/lib/names";
 import {
-  WEEKDAYS, formatMonthLabel, getScheduledDatesForMonth, getVisibleWeekDates,
+  formatMonthLabel, getScheduledDatesForMonth, getWeekStatusKeys,
   jobPeriod, normalizeJobTitle, scheduledDaysFor,
 } from "@/lib/jobsRotation";
 import { JapaneseText } from "~/components/primitives";
@@ -69,43 +69,58 @@ export function WinnerBanner(props) {
   );
 }
 
-/** Per-day cycle button: click → Yes → No → Cancel. */
-export function DayStatus(props) {
-  const scheduled = () => scheduledDaysFor(props.assignment);
-  const monthly = () => jobPeriod(props.assignment) === "monthly";
-
-  const entries = () =>
-    monthly()
-      ? getVisibleWeekDates(props.currentMonth).filter((e) => scheduled().includes(e.day))
-      : WEEKDAYS.filter((d) => scheduled().includes(d)).map((day) => ({ day, key: day, shortLabel: day }));
-
+/** One clear status for the assignment's current week. */
+export function WeekStatus(props) {
+  const keys = () =>
+    getWeekStatusKeys(props.assignment, props.assignment.month_label || props.currentMonth);
   const done = () => props.assignment.days_completed || [];
   const notDone = () => props.assignment.not_done_days || [];
+  const weekDone = () => keys().length > 0 && keys().every((key) => done().includes(key));
+  const weekNotDone = () => keys().length > 0 && keys().some((key) => notDone().includes(key));
+  const disabled = () => !props.canEdit || props.pending || keys().length === 0;
+
+  const choose = (nextState) => {
+    if (disabled()) return;
+    const isActive = nextState === "done" ? weekDone() : weekNotDone();
+    props.onWeekStatus(props.assignment, isActive ? "neutral" : nextState);
+  };
 
   return (
-    <div class="flex gap-1.5 flex-wrap justify-center">
-      <For each={entries()}>
-        {(entry) => {
-          const state = () =>
-            done().includes(entry.key) ? "yes" : notDone().includes(entry.key) ? "no" : "neutral";
-          const compactLabel = () => (monthly() ? `${entry.day[0]}${entry.key.slice(-2)}` : entry.day[0]);
-          return (
-            <button
-              type="button"
-              title={`${entry.shortLabel} — ${state() === "yes" ? "Done" : state() === "no" ? "Not done" : "Not marked"} (click to cycle)`}
-              onClick={() => props.canEdit && props.onDayStatus(props.assignment, entry.key, state())}
-              disabled={!props.canEdit}
-              class={`min-w-9 h-9 px-1 rounded-lg text-[10px] font-bold flex items-center justify-center border-2 transition-all
-                ${state() === "yes" ? "bg-green-500 border-green-500 text-primary-foreground"
-                  : state() === "no" ? "bg-red-500 border-red-500 text-primary-foreground"
-                  : "border-border text-muted-foreground bg-card hover:border-primary/30"}
-                ${props.canEdit ? "hover:scale-110 cursor-pointer" : "cursor-default opacity-60"}`}
-            >
-              {state() === "yes" ? "✓" : state() === "no" ? "✗" : compactLabel()}
-            </button>
-          );
-        }}
-      </For>
+    <div
+      class="flex flex-col items-center gap-1.5"
+      role="group"
+      aria-label={`Weekly completion for ${normalizeJobTitle(props.assignment.job_title)}`}
+    >
+      <button
+        type="button"
+        onClick={() => choose("done")}
+        disabled={disabled()}
+        aria-pressed={weekDone()}
+        title={weekDone() ? "Done this week — click to undo" : "Mark the whole week done"}
+        class={`inline-flex min-h-10 min-w-[150px] items-center justify-center gap-1.5 rounded-xl border-2 px-3 text-xs font-bold transition-all
+          ${weekDone()
+            ? "bg-green-500 border-green-500 text-primary-foreground"
+            : "border-primary/30 bg-card text-primary hover:border-primary hover:bg-primary/10"}
+          ${disabled() ? "cursor-default opacity-60" : "cursor-pointer hover:-translate-y-0.5 hover:shadow-sm"}`}
+      >
+        <CheckCircle2 class="h-4 w-4 shrink-0" />
+        {weekDone() ? "Done this week" : "Done for this week"}
+      </button>
+      <button
+        type="button"
+        onClick={() => choose("notdone")}
+        disabled={disabled()}
+        aria-pressed={weekNotDone()}
+        title={weekNotDone() ? "Not done this week — click to undo" : "Mark this week not done"}
+        class={`inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border px-2 text-[10px] font-bold transition-colors
+          ${weekNotDone()
+            ? "bg-red-500 border-red-500 text-primary-foreground"
+            : "border-border bg-card text-muted-foreground hover:border-red-300 hover:text-red-600"}
+          ${disabled() ? "cursor-default opacity-60" : "cursor-pointer"}`}
+      >
+        <AlertCircle class="h-3 w-3 shrink-0" />
+        {weekNotDone() ? "Not done this week" : "Not done"}
+      </button>
     </div>
   );
 }
@@ -173,11 +188,12 @@ export function JobScheduleTable(props) {
                       </div>
                     </td>
                     <td class="px-3 py-3 text-center">
-                      <DayStatus
+                      <WeekStatus
                         assignment={a}
                         canEdit={canEdit(a)}
-                        onDayStatus={props.onDayStatus}
+                        onWeekStatus={props.onWeekStatus}
                         currentMonth={props.currentMonth}
+                        pending={props.statusPending}
                       />
                       <Show when={allDone()}>
                         <p class="text-[9px] text-green-600 font-bold mt-1">All done!</p>
