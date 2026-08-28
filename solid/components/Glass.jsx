@@ -100,22 +100,22 @@ export function GlassFilterDefs() {
 
         <filter
           id={LENS_ID}
+          primitiveUnits="objectBoundingBox"
           color-interpolation-filters="sRGB"
           x="0%"
           y="0%"
           width="100%"
           height="100%"
         >
-          <feImage x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" href={LENS_MAP} />
-          <feDisplacementMap in="SourceGraphic" in2="map" result="dispRed" scale="-20" xChannelSelector="R" yChannelSelector="G" />
-          <feColorMatrix in="dispRed" type="matrix" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="red" />
-          <feDisplacementMap in="SourceGraphic" in2="map" result="dispGreen" scale="-24" xChannelSelector="R" yChannelSelector="G" />
-          <feColorMatrix in="dispGreen" type="matrix" values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0" result="green" />
-          <feDisplacementMap in="SourceGraphic" in2="map" result="dispBlue" scale="-28" xChannelSelector="R" yChannelSelector="G" />
-          <feColorMatrix in="dispBlue" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0" result="blue" />
-          <feBlend in="red" in2="green" mode="screen" result="rg" />
-          <feBlend in="rg" in2="blue" mode="screen" result="output" />
-          <feGaussianBlur in="output" stdDeviation="3" />
+          <feImage x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="map" href={LENS_MAP} />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="0.02" result="blur" />
+          <feDisplacementMap
+            in="blur"
+            in2="map"
+            scale="1"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
         </filter>
 
       </defs>
