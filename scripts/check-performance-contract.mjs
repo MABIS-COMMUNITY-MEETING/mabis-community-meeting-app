@@ -328,6 +328,13 @@ requireText("src/styles/glass.css", glass, "linear-gradient(179deg, #ffffff, #00
 requireText("src/styles/glass.css", glass, "background-size: 200px 200px, 100% 100%");
 requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
 requireText("src/styles/glass.css", glass, "data:image/svg+xml");
+/* Material strength is intentional: grain must dominate the old icy shine and
+   the persistent navigation must keep a substantial neutral body. */
+requireText("src/styles/glass.css", glass, "--glass_matte: 0.74;");
+requireText("src/styles/glass.css", glass, "--glass-scroll-spec-opacity: 0.22;");
+requireText("src/styles/glass.css", glass, [
+  ".lg-navigation {\n  --glass_saturation: 128%;\n  --glass_brightness: 1.02;\n  --glass_tint: 0.50;",
+]);
 /* The frost is off: the material is grain now (.liquidGlass-matte), so every
    tier sits at zero backdrop radius. saturate() and brightness() still sample
    the backdrop, which is why the property stays.
