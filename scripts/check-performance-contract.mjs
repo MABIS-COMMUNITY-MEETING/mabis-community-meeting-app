@@ -299,6 +299,24 @@ requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
 requireText("src/styles/glass.css", glass, "--glass_blur: 9px;");
 requireText("src/styles/glass.css", glass, "--glass_blur: 6px;");
 requireText("src/styles/glass.css", glass, "filter: var(--glass-distortion-filter)");
+/*
+ * Gecko cannot do backdrop-filter and filter on one element — it renders the
+ * element into a filter surface and never samples the backdrop, so the frost
+ * vanishes and the pane goes see-through. .liquidGlass-effect carries both, so
+ * it needs the escape hatch that clears `filter` where that applies.
+ *
+ * The query is a capability difference rather than a sniff: Firefox shipped the
+ * standard backdrop-filter and never the -webkit- alias, Chromium and Safari
+ * have both. If the guard is dropped, glass silently stops working in Firefox
+ * and nothing else fails.
+ */
+if (!/@supports\s*\(backdrop-filter[^)]*\)\s*and\s*\(not\s*\(-webkit-backdrop-filter/.test(glass)) {
+  failures.push(
+    "src/styles/glass.css: .liquidGlass-effect sets both backdrop-filter and filter, so it needs "
+    + "the `@supports (backdrop-filter: ...) and (not (-webkit-backdrop-filter: ...))` block that "
+    + "clears `filter` for Gecko. Without it the glass renders fully transparent in Firefox.",
+  );
+}
 requireText("solid/components/Glass.jsx", glassComponentSolid, [
   "liquidGlass-effect", "liquidGlass-tint", "liquidGlass-matte",
   "liquidGlass-shine", "liquidGlass-text",
