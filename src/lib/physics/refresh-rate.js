@@ -42,19 +42,21 @@ const PERCENTILE = 0.2;
 /* Under this many samples the estimate is noise, and callers get the fallback. */
 const MIN_SAMPLES = 12;
 
-/* Bounds on what can possibly be a refresh interval. 1 ms is 1000 Hz, which no
- * panel exceeds today and this file does not need to care if one does — it is
- * a sanity floor, not an assumption. 50 ms is 20 Hz; a longer gap is a stall,
- * a background tab or a debugger pause, and says nothing about the hardware. */
-const MIN_INTERVAL_MS = 1;
+/* There is deliberately no lower interval bound. Any positive rAF delta is
+ * valid evidence, so a future 2 kHz, 10 kHz or faster display does not hit a
+ * ceiling hidden in today's hardware assumptions. Repeated calls from several
+ * rAF subscribers in the same refresh share a timestamp and produce dt=0,
+ * which the positive-delta check rejects naturally.
+ *
+ * 50 ms is the opposite guard: a longer gap is a stall, background tab or
+ * debugger pause, and says nothing about the display's refresh. */
 const MAX_INTERVAL_MS = 50;
 
-/* A panel's refresh rate does not change between one frame and the next, so
- * re-sorting the ring on every callback would be work done to learn something
- * already known. Recomputing every 16th sample keeps the estimate current
- * within a few frames of a real change (an external monitor being plugged in,
- * a VRR panel shifting range) for a sixteenth of the cost. */
-const RECOMPUTE_EVERY = 16;
+/* Re-estimation is throttled by elapsed time, not frame count. Sorting every
+ * N frames makes the measurement cost grow with refresh rate—the exact
+ * opposite of future-proof. Four small 64-value sorts per second keep monitor
+ * changes responsive while costing the same at 30 Hz and at any future rate. */
+const RECOMPUTE_INTERVAL_MS = 250;
 
 const deltas = new Float64Array(RING);
 const scratch = new Float64Array(RING);
@@ -62,7 +64,7 @@ let count = 0;
 let head = 0;
 let previous = 0;
 let cached = 0;
-let sinceCompute = Infinity;
+let computedAt = -Infinity;
 
 /**
  * Record one presented frame. Call from any rAF callback that is already
@@ -74,11 +76,10 @@ export function sampleFrame(now) {
   /* A delta outside the plausible band is a stall, not a refresh. It is
    * dropped, but `previous` still advances, so the gap is never smeared into
    * the next sample either. */
-  if (previous && dt >= MIN_INTERVAL_MS && dt <= MAX_INTERVAL_MS) {
+  if (previous && dt > 0 && dt <= MAX_INTERVAL_MS) {
     deltas[head] = dt;
     head = (head + 1) % RING;
     if (count < RING) count++;
-    sinceCompute++;
   }
   previous = now;
 }
@@ -104,7 +105,7 @@ export function refreshMeasured() {
  */
 export function refreshIntervalMs(fallback = 1000 / 60) {
   if (count < MIN_SAMPLES) return fallback;
-  if (sinceCompute < RECOMPUTE_EVERY) return cached;
+  if (cached && previous - computedAt < RECOMPUTE_INTERVAL_MS) return cached;
 
   /* Ring order is irrelevant to a percentile, so this copies into a scratch
    * view and sorts in place rather than allocating. */
@@ -112,7 +113,7 @@ export function refreshIntervalMs(fallback = 1000 / 60) {
   view.set(deltas.subarray(0, count));
   view.sort();
   cached = view[Math.floor((count - 1) * PERCENTILE)];
-  sinceCompute = 0;
+  computedAt = previous;
   return cached;
 }
 
@@ -137,5 +138,5 @@ export function resetForTest() {
   head = 0;
   previous = 0;
   cached = 0;
-  sinceCompute = Infinity;
+  computedAt = -Infinity;
 }
