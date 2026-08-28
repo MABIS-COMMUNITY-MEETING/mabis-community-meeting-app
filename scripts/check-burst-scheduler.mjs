@@ -174,7 +174,8 @@ check("60 Hz uses the throughput cap", near(cooperativeSliceMs(1000 / 60), 5));
 check("120 Hz reserves 70% of the frame for rendering", near(cooperativeSliceMs(1000 / 120), 2.5));
 check("144 Hz receives a display-relative slice", near(cooperativeSliceMs(1000 / 144), (1000 / 144) * 0.30));
 check("240 Hz receives a display-relative slice", near(cooperativeSliceMs(1000 / 240), 1.25));
-check("extreme refresh rates keep a 1ms scheduling floor", near(cooperativeSliceMs(1000 / 1000), 1));
+check("1000 Hz keeps the same 30% rendering reserve", near(cooperativeSliceMs(1000 / 1000), 0.3));
+check("10000 Hz has no fixed scheduling floor", near(cooperativeSliceMs(1000 / 10000), 0.03));
 check("invalid refresh evidence uses the conservative 120 Hz fallback", near(cooperativeSliceMs(NaN), 2.5));
 
 {
