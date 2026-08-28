@@ -524,6 +524,30 @@ requireText("solid/components/ThemeSwitcher.jsx", themeSwitcherSolid, "z-[150]")
  * system produced it. check:themes does not catch this because it does not
  * evaluate glass surfaces.
  */
+/*
+ * No literal colours in the material layers.
+ *
+ * Third time a hardcoded pair has broken dark themes here. The matte's sheen
+ * was `linear-gradient(179deg, #ffffff, #000000)` under `overlay`, which is a
+ * pure-white sheet over the pane at 0.74 opacity: invisible on a light theme,
+ * because --background IS near-white there, and unreadable on a dark one, where
+ * the header's --foreground text is light and ended up light-on-light.
+ *
+ * Every layer that paints the material must be built from theme tokens. They
+ * cost nothing on light themes — identical values — and self-correct everywhere
+ * else, including custom colours and Material You.
+ */
+for (const layer of [".liquidGlass-matte", ".liquidGlass-tint", ".liquidGlass-shine"]) {
+  const rule = glass.match(new RegExp(`\\${layer}\\s*\\{[^}]*\\}`))?.[0] ?? "";
+  const literal = rule.replace(/\/\*[\s\S]*?\*\//g, "").match(/#[0-9a-fA-F]{3,8}\b|\brgba?\(/);
+  if (literal) {
+    failures.push(
+      `src/styles/glass.css: ${layer} paints with a literal colour (${literal[0]}). `
+      + "Material layers must use theme tokens, or the surface stops following dark themes "
+      + "and its text becomes unreadable.",
+    );
+  }
+}
 const onLightTint = glass.match(/\.lg-on-light\s*>\s*\.liquidGlass-tint\s*\{[^}]*\}/)?.[0] ?? "";
 if (!onLightTint) {
   failures.push("src/styles/glass.css: .lg-on-light > .liquidGlass-tint is missing.");
