@@ -335,14 +335,11 @@ requireText("src/styles/glass.css", glass, "--glass-scroll-spec-opacity: 0.22;")
 requireText("src/styles/glass.css", glass, [
   ".lg-navigation {\n  --glass_saturation: 128%;\n  --glass_brightness: 1.02;\n  --glass_tint: 0.50;",
 ]);
-/* The frost is off: the material is grain now (.liquidGlass-matte), so every
-   tier sits at zero backdrop radius. saturate() and brightness() still sample
-   the backdrop, which is why the property stays.
-
-   Pinned rather than free-floating because backdrop blur is the most expensive
-   thing this stylesheet does, and the last time it moved it moved everywhere.
-   Editing this line is how you decide to bring frost back. */
-requireText("src/styles/glass.css", glass, "--glass_blur: 0px;");
+/* The standard material carries exactly 13% of its original 12px frost
+   radius: 1.56px. Grain remains dominant, while the lite/mobile overrides may
+   still use zero blur to protect constrained hardware. Pin the normal radius
+   because backdrop blur is the most expensive live part of this stylesheet. */
+requireText("src/styles/glass.css", glass, "--glass_blur: 1.56px;");
 forbidText(
   "src/styles/glass.css",
   glass.replace(/\/\*[\s\S]*?\*\//g, ""),
