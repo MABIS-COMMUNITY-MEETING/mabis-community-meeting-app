@@ -1,1 +1,0 @@
-import{I as a}from"./Icon-HpOLPqBi.js";import{e as r,m as o}from"./index-CZnxW4r2.js";var l=[["path",{d:"M21 12a9 9 0 1 1-6.219-8.56",key:"13zald"}]],c=e=>r(a,o(e,{iconNode:l,name:"loader-circle"})),t=c;export{t as l};
