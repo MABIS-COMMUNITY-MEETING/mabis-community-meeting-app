@@ -443,9 +443,9 @@
      through at all. */
   --glass_tint: 0.13;
   /* Lighter than the pane's 0.55: at 34px the same grain density reads much
-     heavier, and the cursor has to stay a cursor. */
+     heavier, and the cursor has to stay a cursor. Raised from 0.18 with the
+     move to grain. */
   --glass_matte: 0.30;
-  --glass_matte: 0.18;
   --glass_spec: 0.22;
   --glass_pointer_x: 50%;
   --glass_pointer_y: 0%;
