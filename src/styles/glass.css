@@ -387,10 +387,10 @@
    The tint is much weaker than the panel default (0.13 against 0.64): at cursor
    size a half-opaque fill reads as a white blob rather than as glass. */
 .cursor-ring {
-  /* The compact cursor keeps the original 3px blur while full glass panes use
-     12px. A 34px disc at the panel radius has no backdrop left to see through,
-     so it becomes a milky blob rather than a readable cursor. */
-  --glass_blur: 3px;
+  /* The compact cursor stays far shallower than a full glass pane. A 34px disc
+     at the panel radius has no backdrop left to see through, so it becomes a
+     milky blob rather than a readable cursor. Reduced 25% with the rest. */
+  --glass_blur: 2.25px;
   --glass_saturation: 135%;
   --glass_brightness: 1.02;
   /* Lower again than the 0.22 first tried here, and far below the 0.64 panel
@@ -548,7 +548,7 @@
    backdrop and static matte grain are not. The lite tier removes those costly
    optical passes while keeping the same translucent material and outline. */
 html.performance-lite .lg-surface {
-  --glass_blur: 3px;
+  --glass_blur: 2.25px;
   --glass_tint: 0.64;
   box-shadow: none;
 }
