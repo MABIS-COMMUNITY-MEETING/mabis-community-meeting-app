@@ -1,1 +1,0 @@
-import{I as e}from"./index-DaO_9FoO.js";const t=["members"],a=["id","name","email","role","avatar_url","avatar_color","job_rotation_enabled"];function n(){return e.entities.Member.list("name",200,void 0,a)}export{t as M,n as l};
