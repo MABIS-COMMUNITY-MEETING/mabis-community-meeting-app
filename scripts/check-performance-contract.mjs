@@ -288,16 +288,26 @@ requireText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "onClick=
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
+/* The grain is the material, so its two defining numbers are pinned the way the
+   blur radius used to be: a dense, fine turbulence at full strength. Drop
+   either and the surface quietly goes back to being a plain tinted panel. */
+requireText("src/styles/glass.css", glass, "baseFrequency='1.5'");
+requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
 requireText("src/styles/glass.css", glass, "data:image/svg+xml");
 requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
-/* The two pinned blur radii: the desktop pane and the mobile one. Both were cut
-   by 25% at Novesce's request (12px → 9px, 8px → 6px), along with the cursor and
-   the lite tier, so the tiers keep their proportions. Pinned rather than
-   free-floating because backdrop blur is the most expensive thing this
-   stylesheet does — changing it should be a decision, which is what editing this
-   line makes it. */
-requireText("src/styles/glass.css", glass, "--glass_blur: 9px;");
-requireText("src/styles/glass.css", glass, "--glass_blur: 6px;");
+/* The frost is off: the material is grain now (.liquidGlass-matte), so every
+   tier sits at zero backdrop radius. saturate() and brightness() still sample
+   the backdrop, which is why the property stays.
+
+   Pinned rather than free-floating because backdrop blur is the most expensive
+   thing this stylesheet does, and the last time it moved it moved everywhere.
+   Editing this line is how you decide to bring frost back. */
+requireText("src/styles/glass.css", glass, "--glass_blur: 0px;");
+forbidText(
+  "src/styles/glass.css",
+  glass.replace(/\/\*[\s\S]*?\*\//g, ""),
+  "--glass_blur: 9px",
+);
 requireText("src/styles/glass.css", glass, "filter: var(--glass-distortion-filter)");
 /*
  * Gecko cannot do backdrop-filter and filter on one element — it renders the
