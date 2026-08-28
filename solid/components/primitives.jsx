@@ -1,6 +1,6 @@
 import { createSignal, onMount, onCleanup, splitProps, For, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { subscribe } from "@/lib/physics/scheduler";
+import { subscribe, wake } from "@/lib/physics/scheduler";
 import { integrateSpring } from "@/lib/physics/math";
 import { springFromFramer, useJapaneseText, finePointer } from "~/lib/motion";
 
@@ -120,8 +120,13 @@ export function MagneticButton(props) {
       const r = el.getBoundingClientRect();
       targetX = (e.clientX - (r.left + r.width / 2)) * strength();
       targetY = (e.clientY - (r.top + r.height / 2)) * strength();
+      wake();
     };
-    const reset = () => { targetX = 0; targetY = 0; };
+    const reset = () => {
+      targetX = 0;
+      targetY = 0;
+      wake();
+    };
 
     el.addEventListener("mousemove", onMove);
     el.addEventListener("mouseleave", reset);
