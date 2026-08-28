@@ -104,9 +104,10 @@ function judge(deltaFor, limitMs = 8000) {
 }
 
 /* ── 1. The estimate tracks the panel, at every rate anyone ships ────────── */
-/* 480 and 1000 Hz are in here deliberately. No panel needs them today; the
-   point is that nothing in the estimator has a ceiling written into it. */
-for (const hz of [30, 60, 75, 90, 120, 144, 165, 240, 360, 480, 1000]) {
+/* 2 kHz and 10 kHz are deliberately beyond current display hardware. They
+   prove the estimator is refresh-independent instead of merely raising an old
+   ceiling from 240 Hz to another finite guess. */
+for (const hz of [30, 60, 75, 90, 120, 144, 165, 240, 360, 480, 1000, 2000, 10000]) {
   resetForTest();
   feed(40, () => ms(hz));
   const got = refreshIntervalMs();
@@ -205,6 +206,11 @@ for (const hz of [30, 50, 60, 75, 120, 144, 240, 360]) {
   const tier = tierSource;
   const monitor = src("../solid/lib/perf-monitor.js");
   const scheduler = src("../src/lib/physics/scheduler.js");
+  const burstScheduler = src("../solid/lib/burst-scheduler.js");
+  const ritual = src("../solid/components/home/ScrollScaleRitual.jsx");
+  const primitives = src("../solid/components/primitives.jsx");
+  const splash = src("../solid/pages/Splash.jsx");
+  const wheel = src("../solid/components/jobs/SpinWheel.jsx");
 
   check("performance-tier judges against the measured interval",
     /refreshIntervalMs\(\)/.test(tier));
@@ -222,6 +228,23 @@ for (const hz of [30, 50, 60, 75, 120, 144, 240, 360]) {
     /sampleFrame\(now\)/.test(scheduler));
   check("the physics loop breaks the chain when it parks",
     /resetFrameChain\(\)/.test(scheduler));
+  check("the refresh estimator has no minimum interval / maximum Hz cap",
+    !/MIN_INTERVAL_MS/.test(src("../src/lib/physics/refresh-rate.js")));
+  check("refresh-estimator work is throttled by time rather than frame count",
+    /RECOMPUTE_INTERVAL_MS/.test(src("../src/lib/physics/refresh-rate.js"))
+      && !/RECOMPUTE_EVERY/.test(src("../src/lib/physics/refresh-rate.js")));
+  check("cooperative warm-up slices have no high-refresh floor",
+    !/MIN_SLICE_MS/.test(burstScheduler));
+  check("scroll springs interpolate fixed steps at the presentation rate",
+    /render:\s*\(alpha\)/.test(ritual) && /previousX/.test(ritual));
+  check("magnetic controls interpolate fixed steps at the presentation rate",
+    /render:\s*\(alpha\)/.test(primitives) && /previousX/.test(primitives));
+  check("splash parallax interpolates fixed steps at the presentation rate",
+    /render:\s*\(alpha\)/.test(splash) && /previousX/.test(splash));
+  check("the wheel paints its detailed face once and spins with a compositor transform",
+    /const drawWheelFace/.test(wheel)
+      && /const animate[\s\S]*paintRotation\(rotation\)/.test(wheel)
+      && !/const animate[\s\S]*drawWheel\(rotation\)/.test(wheel));
 }
 
 if (failures.length) {
@@ -230,4 +253,4 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(`\nFrame pacing: ${count}/${count} checks passed`);
-console.log("\nPacing is judged against the display's measured refresh, so a steady 30 Hz machine keeps its effects and a stuttering 144 Hz one does not.\n");
+console.log("\nPacing is refresh-independent: steady displays keep their effects, stuttering ones yield, and presentation stays interpolated with no maximum-Hz constant.\n");
