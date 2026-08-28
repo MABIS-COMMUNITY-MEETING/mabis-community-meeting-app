@@ -407,45 +407,37 @@ requireText("solid/components/Glass.jsx", glassComponentSolid, [
   "liquidGlass-effect", "liquidGlass-tint", "liquidGlass-matte",
   "liquidGlass-shine", "liquidGlass-text",
 ]);
-/* The supplied reference lens is shared once at the persistent header. Resting
-   quality keeps its RGB split. Scroll, lite and mobile paths use cached paint
-   rather than a second live filter. CSS carries the 1.56px frost, so a second
-   SVG Gaussian blur is redundant and forbidden. */
+/*
+ * The reference distortion, shared once at the persistent header.
+ *
+ * This is the turbulence graph the effect was built from, and it is applied
+ * through `filter` — see the note in glass.css. It was briefly rewritten as a
+ * chromatic RGB split driven by an embedded PNG map and moved into the
+ * backdrop-filter list, on the reasoning that this span has no pixels of its
+ * own for `filter` to act on. Correct in theory, useless in practice:
+ * **Chromium does not support url() references in backdrop-filter**, so the
+ * reference was silently ignored and the distortion never rendered at all
+ * while frost and grain kept working.
+ *
+ * The map went with it. It was 7.5 KiB of base64 in a chunk, and feTurbulence
+ * generates its displacement source procedurally at no download cost.
+ */
 requireText("solid/components/Glass.jsx", glassComponentSolid, "export function GlassFilterDefs()");
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'const FILTER_ID = "glass-filter-chromatic"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'const FILTER_ID = "glass-distortion"');
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "glass-filter-scroll");
-requireText("solid/components/Glass.jsx", glassComponentSolid, "data:image/png;base64,");
-requireText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'preserveAspectRatio="none"');
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="-20"');
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="-24"');
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="-28"');
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'mode="screen"');
-forbidText("solid/components/Glass.jsx", glassComponentSolid, "--glass-scroll-lens-filter");
-forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feTurbulence");
-forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feGaussianBlur");
-if ((glassComponentSolid.match(/<feImage/g) || []).length !== 1) {
+requireText("solid/components/Glass.jsx", glassComponentSolid, "<feTurbulence");
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'baseFrequency="0.01 0.01"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'seed="5"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, "<feSpecularLighting");
+requireText("solid/components/Glass.jsx", glassComponentSolid, "<fePointLight");
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="150"');
+/* No embedded raster. The displacement source is generated, not downloaded. */
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "data:image/png;base64,");
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
+if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 1) {
   failures.push(
-    "solid/components/Glass.jsx: keep exactly one feImage for the resting RGB lens; "
-    + "scrolling must use cached paint instead of another live filter.",
-  );
-}
-if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 3) {
-  failures.push(
-    "solid/components/Glass.jsx: expected exactly the three resting RGB displacement passes; "
-    + "scrolling must not add a fourth live backdrop pass.",
-  );
-}
-if ((glassComponentSolid.match(/<feBlend/g) || []).length !== 2) {
-  failures.push("solid/components/Glass.jsx: the resting RGB lens needs exactly two screen blends.");
-}
-const compactLensMap = glassComponentSolid.match(/const LENS_MAP = "(data:image\/png;base64,[^"]+)"/)?.[1] ?? "";
-if (!compactLensMap) {
-  failures.push("solid/components/Glass.jsx: the self-contained displacement map is missing.");
-} else if (compactLensMap.length > 6000) {
-  failures.push(
-    `solid/components/Glass.jsx: displacement map is ${compactLensMap.length} characters; `
-    + "keep the optimized embedded map below 6000 so the deferred glass chunk stays small.",
+    "solid/components/Glass.jsx: the reference distortion is a single displacement pass. "
+    + "More than one is the chromatic variant, which cannot render in Chromium from a backdrop.",
   );
 }
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, "<GlassFilterDefs />");
