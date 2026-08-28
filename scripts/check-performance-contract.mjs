@@ -253,11 +253,10 @@ forbidText("scroll implementation", smoothScroll, 'addEventListener("wheel"');
  * page now scrolls natively and nothing redraws itself in response.
  *
  * What must survive is the opposite of decoration — installScrollStateClass()
- * toggles html.is-scrolling, which solid-motion.css uses to drop
- * backdrop-filter, hide the grain layer and pause infinite animations for the
- * duration of a gesture. That is what keeps a native scroll at frame rate on
- * an integrated GPU, so it is required, and required in the shell rather than
- * in one page.
+ * toggles html.is-scrolling, which solid-motion.css uses to suspend auxiliary
+ * edge blur, the full-viewport grain layer and infinite animations for the
+ * duration of a gesture. The primary one-pass liquid lens stays live, so the
+ * material cannot snap to plain transparency while scrolling.
  */
 requireText("src/App.jsx", app, "installScrollStateClass()");
 requireText("scroll implementation", smoothScroll, 'classList.add("is-scrolling")');
@@ -316,8 +315,9 @@ forbidText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "claimRelo
 requireText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "onClick={() => window.location.reload()}");
 
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
-requireText("solid/solid-motion.css", motionCss, "html.is-scrolling .site-header-shell > .lg-surface > .liquidGlass-effect");
-requireText("solid/solid-motion.css", motionCss, "--glass-lens-filter: opacity(1);");
+/* Scrolling may shed auxiliary paint, but it must never replace the primary
+   liquid lens with a no-op filter — that was the transparency flash. */
+forbidText("solid/solid-motion.css", motionCss, "--glass-lens-filter: opacity(1);");
 requireText("solid/solid-motion.css", motionCss, "html.is-scrolling .site-header-shell > .lg-scroll-edge");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
