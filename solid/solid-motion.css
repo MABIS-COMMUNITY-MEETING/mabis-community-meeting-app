@@ -300,15 +300,27 @@ html.animations-disabled .tap-85:active { transform: none; }
 }
 
 /* ── Scroll: buy frames back while the finger is down ──────────────────────
- * Keep the primary .liquidGlass-effect material live: its single backdrop-filter is
- * the visible glass and must preserve continuity during momentum scroll.
- * These selectors remove only optional pseudo-element depth passes on older
- * widget surfaces, avoiding stacked backdrop reads without changing the main
- * material, shape, tint or border.
+ * Keep the primary .liquidGlass-effect material live so tint, matte grain,
+ * outline, saturation and brightness remain continuous through momentum.
+ * The fixed full-width header is the exception only for its optional optical
+ * passes: while content moves behind it, bypass the three-channel SVG
+ * displacement and the separate blurred edge strip. Both would otherwise
+ * recapture nearly the full viewport width on every frame. The cached material
+ * layers and the main live sampled backdrop remain visible, so there is no
+ * opaque/static glass swap or scroll flash.
  *
  * `is-scrolling` is toggled by installScrollStateClass() in lib/perf.js,
  * rAF-coalesced so many scroll events collapse into one class write.
  */
+html.is-scrolling .site-header-shell > .lg-surface > .liquidGlass-effect {
+  --glass-lens-filter: opacity(1);
+}
+
+html.is-scrolling .site-header-shell > .lg-scroll-edge {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
 html.is-scrolling .liquidGlass-effect::after,
 html.is-scrolling .mabis-widget::after,
 html.is-scrolling .bg-ink.ink-card::after {
