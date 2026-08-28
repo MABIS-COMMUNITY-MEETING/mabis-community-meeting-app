@@ -456,15 +456,21 @@ requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="150"');
 /* No embedded raster. The displacement source is generated, not downloaded. */
 requireText("solid/components/Glass.jsx", glassComponentSolid, "data:image/png;base64,");
 requireText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
-/* Four passes: one for the turbulence distortion applied through `filter`, and
-   three for the chromatic lens applied through backdrop-filter where Chromium
-   can refract the page behind the pane. Both graphs ship; glass.css picks. */
-if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 4) {
+/* Two passes total: one turbulence distortion on `filter` for engines without a
+   filterable backdrop, and ONE for the lens. The lens was three passes plus two
+   screen blends for chromatic dispersion — prettier, and expensive enough that
+   it had to be swapped out mid-scroll, which is what caused the flicker. A
+   single pass in objectBoundingBox units is cheap enough to leave running, so
+   nothing changes during a gesture. Adding channels back reintroduces that. */
+if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 2) {
   failures.push(
-    "solid/components/Glass.jsx: expected four displacement passes — one turbulence "
-    + "distortion plus the three chromatic channels.",
+    "solid/components/Glass.jsx: expected two displacement passes — one turbulence "
+    + "distortion and one single-pass lens. More makes the lens too expensive to run "
+    + "during scroll, which brings back the swap and the flicker.",
   );
 }
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'primitiveUnits="objectBoundingBox"');
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feBlend");
 requireText("src/styles/glass.css", glass, "backdrop-filter: var(--glass-lens-filter");
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, "<GlassFilterDefs />");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "src=");
