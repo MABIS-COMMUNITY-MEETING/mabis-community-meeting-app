@@ -299,18 +299,21 @@ html.animations-disabled .tap-85:active { transform: none; }
   contain: strict;
 }
 
-/* ── Scroll: keep the lens, shed only invisible quality ───────────────────
- * Resting glass uses the supplied RGB-split lens. During active scrolling it
- * switches to the companion one-pass filter built from the same edge map and
- * middle displacement scale. The material remains refractive—never plain
- * transparency—but avoids three framebuffer displacements plus two blends on
- * every scroll frame. Frost, grain, tint, outline and saturation stay fixed.
+/* ── Scroll: cached matte material, zero backdrop raster ─────────────────
+ * Resting glass keeps the supplied RGB-split lens. During active scrolling,
+ * every visible glass surface drops live backdrop sampling completely. Even a
+ * single displacement or saturate pass would re-raster the moving page behind
+ * the pane on every frame.
  *
- * `is-scrolling` is toggled by installScrollStateClass() in lib/perf.js,
- * rAF-coalesced so many scroll events collapse into one class write.
+ * The grain, tint, rim and theme-aware cached body remain in place, so the
+ * material never flashes to ordinary transparency. `is-scrolling` is toggled
+ * by installScrollStateClass() in lib/perf.js and coalesced outside Solid's
+ * reactive graph.
  */
-html.is-scrolling .site-header-shell > .lg-surface > .liquidGlass-effect {
-  --glass-lens-filter: var(--glass-scroll-lens-filter, opacity(1));
+html.is-scrolling .lg-surface > .liquidGlass-effect {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: var(--glass-cached-material);
 }
 
 html.is-scrolling .site-header-shell > .lg-scroll-edge {
