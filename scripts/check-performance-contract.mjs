@@ -140,6 +140,9 @@ const platformProfile = read("src/lib/platform-profile.js");
 const performanceTier = read("src/lib/performance-tier.js");
 const solidPerf = read("solid/lib/perf.js");
 const perfMonitor = read("solid/lib/perf-monitor.js");
+const membersWidgetSolid = read("solid/components/MembersWidget.jsx");
+const membersQuerySolid = read("solid/lib/members-query.js");
+const presenceSolid = read("solid/lib/usePresence.js");
 /*
  * The SHIPPED entry, not the root one.
  *
@@ -208,6 +211,19 @@ requireText("src/lib/routeLoaders.js", routeLoaders, "HOME_WARMUP_BUDGET_MS");
 requireText("src/lib/routeLoaders.js", routeLoaders, "waitWithinBudget");
 requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "isConstrainedNetwork()");
 requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "queryClientInstance.prefetchQuery");
+
+/* Members must reach a useful paint without one monolithic row/control mount. */
+requireText("solid/lib/members-query.js", membersQuerySolid, "const MEMBER_FIELDS = [");
+requireText("solid/lib/members-query.js", membersQuerySolid, 'Member.list("name", 200, undefined, MEMBER_FIELDS)');
+requireText("src/pages/Home.jsx", home, "queryFn: listMembers");
+requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "prefetch(MEMBER_QUERY_KEY, listMembers)");
+requireText("solid/components/MembersWidget.jsx", membersWidgetSolid, "Array.isArray(props.members)");
+forbidText("solid/components/MembersWidget.jsx", membersWidgetSolid, "base44.entities.Member.list");
+requireText("solid/components/MembersWidget.jsx", membersWidgetSolid, "FIRST_MEMBER_ROWS = 24");
+requireText("solid/components/MembersWidget.jsx", membersWidgetSolid, "afterNextPaint(append)");
+requireText("solid/components/MembersWidget.jsx", membersWidgetSolid, "useActivePresence(presenceReady)");
+requireText("solid/lib/usePresence.js", presenceSolid, "enabled: isEnabled()");
+requireText("solid/lib/usePresence.js", presenceSolid, "if (!isEnabled()) return;");
 requireText("src/lib/home-route-warmup.js", homeRouteWarmup, "return Promise.allSettled");
 requireText("src/lib/routeLoaders.js", routeLoaders, "if (moduleWarmup) await moduleWarmup");
 requireText("src/components/LoadingScreen.jsx", loadingScreen, "CACHING STUFF");
