@@ -294,13 +294,26 @@ if (!cursorMaterial) {
    only marks one sample stale and wakes the shared fixed-timestep scheduler.
    Geometry is read in the scheduler's sample phase and transform/opacity are
    written together in render, preserving read-before-write frame ordering. */
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, 'addEventListener("scroll", markForMeasure, { passive: true })');
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "sample: () =>");
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "wake();");
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "settled: () => !needsMeasure");
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "new IntersectionObserver");
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, '{ rootMargin: "100% 0px" }');
-requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "proximityObserver?.disconnect()");
+/*
+ * The ritual is static, and this is the rule it is static under.
+ *
+ * These assertions were inverted at one point — rewritten to REQUIRE the scroll
+ * listener, the spring and the per-frame transform they had been added to
+ * forbid, with a companion script asserting the same. That made the contract
+ * enforce the opposite of README.md's "Scrolling belongs to the browser", which
+ * still stood, so the code and the documented rule contradicted each other and
+ * the gate stayed green either way.
+ *
+ * Two reasons it stays static. The rule itself: nothing may subscribe to scroll
+ * position to move, scale, fade or redraw. And the cost: the glass header is
+ * fixed over the scrolling page, so every scroll frame already re-rasters it —
+ * adding a rect read and two style writes to those same frames is how a smooth
+ * scroll becomes a stuttering one. html.is-scrolling exists to take work out of
+ * exactly those frames.
+ */
+forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, 'addEventListener("scroll"');
+forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "integrateSpring");
+forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "getBoundingClientRect");
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
 /* A service-worker handoff must never replace an active meeting/document
    with the boot screen. The new worker waits until old tabs close, keeping its
