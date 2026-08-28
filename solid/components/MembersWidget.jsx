@@ -235,12 +235,12 @@ export default function MembersWidget(props) {
 
   const remove = useMutation(() => ({
     mutationFn: (id) => base44.entities.Member.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["members"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: MEMBER_QUERY_KEY }),
   }));
 
   const updateRole = useMutation(() => ({
     mutationFn: ({ id, role }) => base44.entities.Member.update(id, { role }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["members"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: MEMBER_QUERY_KEY }),
   }));
 
   const handleRoleChange = (id, role) => updateRole.mutate({ id, role });
