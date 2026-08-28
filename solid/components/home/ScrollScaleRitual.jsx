@@ -20,9 +20,12 @@ function opacityFor(progress) {
  * the bottom to the top of the viewport, matching the original interaction.
  *
  * Scroll events only mark geometry stale and wake the shared animation clock.
- * The scheduler performs the single rect read in its sample phase, integrates
- * the spring at a fixed timestep, then writes compositor-only transform and
- * opacity in its render phase. No browser support guess can bypass this path.
+ * A generous proximity observer removes that listener and scheduler subscriber
+ * when this section is more than one viewport away, so the long Boss page pays
+ * nothing for the ritual while the words cannot be seen. The scheduler performs
+ * the single rect read in its sample phase, integrates the spring at a fixed
+ * timestep, then writes compositor-only transform and opacity in its render
+ * phase. No browser support guess can bypass this path.
  */
 export default function ScrollScaleRitual() {
   let hostEl;
@@ -35,6 +38,8 @@ export default function ScrollScaleRitual() {
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const { omega, zeta } = springFromFramer(80, 24, 0.4);
     let stopScrollMotion = null;
+    let nearViewport = typeof IntersectionObserver === "undefined";
+    let proximityObserver = null;
 
     const paintStatic = () => {
       lineEl.style.transform = "translateZ(0) scale(1)";
@@ -96,6 +101,7 @@ export default function ScrollScaleRitual() {
         window.removeEventListener("scroll", markForMeasure);
         window.removeEventListener("resize", markForMeasure);
         unsubscribe();
+        lineEl.style.willChange = "auto";
         stopScrollMotion = null;
       };
     };
@@ -104,10 +110,20 @@ export default function ScrollScaleRitual() {
       if (motionDisabled()) {
         stopScrollMotion?.();
         paintStatic();
-      } else {
+      } else if (nearViewport) {
         startScrollMotion();
+      } else {
+        stopScrollMotion?.();
       }
     };
+
+    if (typeof IntersectionObserver !== "undefined") {
+      proximityObserver = new IntersectionObserver((entries) => {
+        nearViewport = entries.some((entry) => entry.isIntersecting);
+        syncMotion();
+      }, { rootMargin: "100% 0px" });
+      proximityObserver.observe(hostEl);
+    }
 
     window.addEventListener(MOTION_EVENT, syncMotion);
     window.addEventListener(PERFORMANCE_TIER_EVENT, syncMotion);
@@ -117,6 +133,7 @@ export default function ScrollScaleRitual() {
     syncMotion();
 
     onCleanup(() => {
+      proximityObserver?.disconnect();
       stopScrollMotion?.();
       window.removeEventListener(MOTION_EVENT, syncMotion);
       window.removeEventListener(PERFORMANCE_TIER_EVENT, syncMotion);
