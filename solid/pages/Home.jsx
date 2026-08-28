@@ -5,7 +5,7 @@ import { SummerHome } from "~/components/home/summer";
 import SummerHeader from "~/components/home/SummerHeader";
 import { useQuery } from "@tanstack/solid-query";
 import { Settings, Palette, CircleHelp, LogOut } from "lucide-solid";
-import { base44 } from "@/api/base44Client";
+import { MEMBER_QUERY_KEY, listMembers } from "~/lib/members-query";
 import { useAuth } from "~/lib/AuthContext";
 import { useHomeLayout } from "~/lib/prefs";
 import { usePresenceHeartbeat } from "~/lib/usePresence";
@@ -168,8 +168,8 @@ export default function Home() {
   // that need the roster all share this single query rather than each issuing
   // its own.
   const membersQuery = useQuery(() => ({
-    queryKey: ["members"],
-    queryFn: () => base44.entities.Member.list("name", 200),
+    queryKey: MEMBER_QUERY_KEY,
+    queryFn: listMembers,
   }));
   const members = () => membersQuery.data || [];
 
