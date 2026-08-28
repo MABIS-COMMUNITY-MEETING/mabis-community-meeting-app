@@ -56,6 +56,12 @@
      than seasoning it — the grain should be tooth on the surface, not a sheet
      over it. */
   --glass_matte: 0.55;
+  /* Also declared here, not only as @property initial-value. Without @property
+     the var() resolves to nothing, the calc() around it becomes invalid, and an
+     invalid stop takes the WHOLE gradient down with it — the shine would vanish
+     rather than degrade. This declaration makes the registration purely about
+     making it animatable. */
+  --glass_aqua: 0.14;
   /* Theme-aware fallback used while pixels are moving. It is ordinary cached
      paint—not a backdrop sample—under the unchanged grain, tint and rim. */
   --glass-cached-material:
