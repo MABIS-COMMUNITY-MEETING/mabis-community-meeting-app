@@ -151,4 +151,36 @@ assert.match(docsEditorSource, /toggleList\("bullet"\)/);
 assert.match(announcementSource, /memberForAuthor\(announcement\.author_name\)\?\.avatar_url/);
 assert.doesNotMatch(announcementSource, /avatar_url:\s*auth\.user\(\)\?\.avatar_url\s*\|\|\s*author\?\.avatar_url/);
 
+/*
+ * The exported list carries the theme's whole flag, not a two-tone summary.
+ *
+ * The stripe used to be two spans, --primary and --secondary, so every
+ * multi-colour theme printed as an approximation — Lesbian's five bands came
+ * out as one pink and one orange block. It now reads --palette-stripes, the
+ * same gradient PaletteStripe paints across the top of the app, so what is
+ * exported matches what is on screen.
+ *
+ * Three properties, because each has already failed once in this file's
+ * neighbourhood: the flag is used when present, a theme without a palette still
+ * gets its two-tone bar, and a value that is not a gradient is discarded rather
+ * than written into a document this code generates.
+ */
+const LESBIAN_STRIPES =
+  "linear-gradient(90deg, #D62900 0% 20%, #FF9B55 20% 40%, #FFFFFF 40% 60%, #D461A6 60% 80%, #A50062 80% 100%)";
+const stripeMarkup = (html) => html.match(/<div class="pdf-stripe[^>]*>.*?<\/div>/s)?.[0] ?? "";
+const stripeVar = (html) => html.match(/--pdf-palette-stripes: ([^;]*);/)?.[1] ?? "";
+
+const themedPdf = buildJobListPrintHtml({ items: [] }, { paletteStripes: LESBIAN_STRIPES });
+assert.match(stripeMarkup(themedPdf), /pdf-stripe--palette/, "a themed palette must paint the full flag");
+assert.equal(stripeVar(themedPdf), LESBIAN_STRIPES, "the theme's own gradient must reach the PDF");
+assert.match(pdfHtml, /print-color-adjust: exact/, "browsers drop background colours when printing unless told not to");
+
+const plainPdf = buildJobListPrintHtml({ items: [] }, {});
+assert.doesNotMatch(stripeMarkup(plainPdf), /pdf-stripe--palette/, "no palette must keep the two-tone bar");
+assert.match(stripeMarkup(plainPdf), /<span><\/span><span><\/span>/, "the two-tone fallback must still render");
+
+const hostilePdf = buildJobListPrintHtml({ items: [] }, { paletteStripes: "red;} body{display:none" });
+assert.doesNotMatch(stripeMarkup(hostilePdf), /pdf-stripe--palette/, "a non-gradient value must be rejected");
+assert.doesNotMatch(hostilePdf, /display:none/, "nothing may be injected into the generated stylesheet");
+
 console.log("Jobs and meeting UI contract: one-click whole-job completion, repeat-eligible Time Keepers, persistent job-list membership, exact assignment removal, shared wheel shuffle, saved lists, public schedule printing, simplified cancel-safe MABIS Jobs PDF export, scheduling, mirrored Home state, unlimited bounded spins, bullet formatting, and announcement avatars passed.");
