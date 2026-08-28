@@ -3,6 +3,7 @@ import { isConstrainedNetwork } from "@/lib/performance-tier";
 import { queryClientInstance } from "~/lib/query-client";
 import { getWeekLabel } from "~/lib/weeks";
 import { runBurstOrdered } from "~/lib/burst-scheduler";
+import { MEMBER_QUERY_KEY, listMembers } from "~/lib/members-query";
 
 /*
  * What the "CACHING STUFF" screen is actually for.
@@ -66,7 +67,7 @@ function dataTasks() {
     queryClientInstance.prefetchQuery({ queryKey, queryFn });
 
   return [
-    { label: "DATA / MEMBERS", run: prefetch(["members"], () => base44.entities.Member.list("name", 200)) },
+    { label: "DATA / MEMBERS", run: prefetch(MEMBER_QUERY_KEY, listMembers) },
     { label: "DATA / BIRTHDAYS", run: prefetch(["birthdays"], () => base44.entities.Birthday.list("name", 200)) },
     { label: "DATA / ANNOUNCEMENTS", run: prefetch(["announcements"], () => base44.entities.Announcement.list("-created_date", 50)) },
     {
