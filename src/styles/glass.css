@@ -4,13 +4,13 @@
 
    Anatomy of one self-contained surface:
      .liquidGlass-wrapper   layout, outline and physical shadow
-       .liquidGlass-effect  live backdrop blur + local SVG distortion
-       .liquidGlass-tint    theme-aware translucent color
-       .liquidGlass-matte   quiet micro-grain across the full pane
-       .liquidGlass-shine   softened specular and inset rim
+       .liquidGlass-effect  live sampled backdrop + shared SVG distortion
+       .liquidGlass-tint    theme-aware matte body color
+       .liquidGlass-matte   dense micro-grain across the full pane
+       .liquidGlass-shine   restrained specular and inset rim
        .liquidGlass-text    the micro control plane (icons/labels)
 
-   Each surface owns its SVG filter definition. No GitHub image, stock
+   One shared SVG filter serves every surface. No GitHub image, stock
    background or cross-origin visual asset is required at runtime.
 
    Thickness scales with role: a 36px icon button and a full menu bar
@@ -20,7 +20,7 @@
 :root {
   --glass-scroll-shift: 0px;
   --glass-scroll-shadow-opacity: 0.12;
-  --glass-scroll-spec-opacity: 0.40;
+  --glass-scroll-spec-opacity: 0.22;
   --glass-scroll-rim-opacity: 0.70;
   --glass-scroll-edge-opacity: 0.52;
   --glass-scroll-tint-alpha: 0.10;
@@ -37,12 +37,12 @@
   --glass_blur: 0px;
   --glass_saturation: 122%;
   --glass_brightness: 1.02;
-  /* Keep the backdrop readable so both the grain and the liquid displacement
-     remain visible instead of disappearing behind a nearly opaque wash. */
-  --glass_tint: 0.30;
-  --glass_matte: 0.46;
+  /* A substantial neutral body keeps the header from reading like clear ice;
+     the denser matte layer makes the supplied grain the dominant finish. */
+  --glass_tint: 0.48;
+  --glass_matte: 0.74;
   --glass_lens: 1.5px;
-  --glass_spec: 0.14;
+  --glass_spec: 0.08;
   --glass_shadow:
     0 6px 6px hsl(var(--ink) / 0.20),
     0 0 20px hsl(var(--ink) / 0.10);
@@ -90,7 +90,7 @@
   border: 1px solid hsl(var(--bone) / 0.20);
   /* inner top edge lit, inner bottom edge shaded → thickness */
   box-shadow:
-    inset 0 1px 0 hsl(var(--bone) / 0.34),
+    inset 0 1px 0 hsl(var(--bone) / 0.22),
     inset 0 -1px 0 hsl(var(--ink) / 0.16),
     inset 1px 0 0 hsl(var(--bone) / 0.10),
     var(--glass_shadow);
@@ -190,7 +190,7 @@
 
 .liquidGlass-shine {
   z-index: 3;
-  opacity: var(--glass-scroll-spec-opacity, 0.46);
+  opacity: var(--glass-scroll-spec-opacity, 0.22);
   transform: translate3d(0, var(--glass-scroll-shift, 0px), 0);
   background:
     radial-gradient(
@@ -199,15 +199,15 @@
       hsl(var(--bone) / calc(var(--glass_spec) * 0.3)) 24%,
       transparent 55%
     ),
-    linear-gradient(to bottom, hsl(var(--bone) / 0.08), transparent 42%);
+    linear-gradient(to bottom, hsl(var(--bone) / 0.04), transparent 42%);
   /* The rim from the reference surface, in tokens. Two bright inset strokes
      for the lit edge and three wide dark ones for the internal falloff — that
      stack is what gives a flat pane apparent thickness, and it does more of the
      work than the tint does. --bone/--ink rather than the original's literal
      white and lab() near-black, so it holds up on dark themes. */
   box-shadow:
-    inset 0 0 2px 1px hsl(var(--bone) / 0.35),
-    inset 0 0 10px 4px hsl(var(--bone) / 0.15),
+    inset 0 0 2px 1px hsl(var(--bone) / 0.22),
+    inset 0 0 10px 4px hsl(var(--bone) / 0.08),
     inset 0 4px 16px hsl(var(--ink) / 0.05),
     inset 0 8px 24px hsl(var(--ink) / 0.05),
     inset 0 6px 56px hsl(var(--ink) / 0.05);
@@ -277,7 +277,7 @@
   --glass_brightness: 1.01;
   --glass_tint: 0.50;
   --glass_lens: 0.6px;
-  --glass_spec: 0.16;
+  --glass_spec: 0.10;
   --glass_shadow: 0 4px 12px -6px hsl(var(--ink) / 0.30);
 }
 
@@ -285,16 +285,16 @@
 .lg-regular {
   --glass_tint: 0.56;
   --glass_lens: 1.4px;
-  --glass_spec: 0.14;
+  --glass_spec: 0.08;
 }
 
 /* navigation — the persistent header strip */
 .lg-navigation {
   --glass_saturation: 128%;
   --glass_brightness: 1.02;
-  --glass_tint: 0.32;
+  --glass_tint: 0.50;
   --glass_lens: 1.8px;
-  --glass_spec: 0.12;
+  --glass_spec: 0.07;
   border-left: none;
   border-right: none;
   border-top: none;
@@ -307,7 +307,7 @@
   --glass_brightness: 1.02;
   --glass_tint: 0.60;
   --glass_lens: 1.4px;
-  --glass_spec: 0.14;
+  --glass_spec: 0.08;
   --glass_shadow: 0 -10px 34px -20px hsl(var(--ink) / 0.45);
 }
 
@@ -317,7 +317,7 @@
   --glass_brightness: 1.02;
   --glass_tint: 0.64;
   --glass_lens: 2.4px;
-  --glass_spec: 0.14;
+  --glass_spec: 0.08;
   --glass_shadow: 0 26px 70px -28px hsl(var(--ink) / 0.45);
 }
 .lg-thick {
@@ -325,7 +325,7 @@
   --glass_brightness: 1.03;
   --glass_tint: 0.70;
   --glass_lens: 3.4px;
-  --glass_spec: 0.13;
+  --glass_spec: 0.08;
   --glass_shadow: 0 34px 90px -30px hsl(var(--ink) / 0.55);
 }
 .lg-thick > .liquidGlass-shine {
@@ -334,16 +334,16 @@
       hsl(var(--bone) / var(--glass_spec)),
       hsl(var(--bone) / calc(var(--glass_spec) * 0.28)) 26%,
       transparent 58%),
-    linear-gradient(to bottom, hsl(var(--bone) / 0.10), transparent 38%);
+    linear-gradient(to bottom, hsl(var(--bone) / 0.05), transparent 38%);
 }
 
 /* clear — minimal tint, for glass over already-quiet backgrounds */
 .lg-clear {
   --glass_saturation: 118%;
   --glass_brightness: 1;
-  --glass_tint: 0.42;
+  --glass_tint: 0.48;
   --glass_lens: 1px;
-  --glass_spec: 0.10;
+  --glass_spec: 0.06;
 }
 
 /* overlay — full-bleed scrim behind a modal; carries no highlight */
@@ -417,15 +417,15 @@
 /* press — physical compression, released with a spring-ish ease */
 .lg-surface[data-glass-press="1"] {
   transform: scale(0.988);
-  --glass_spec: 0.36;
+  --glass_spec: 0.14;
   --glass_lens: 0.8px;
   transition: transform 0.09s ease-out;
 }
 
 /* Fast pointer travel attenuates cached decoration only. Blur never changes,
    so rapid pointer motion cannot invalidate the backdrop sampling pass. */
-.lg-surface[data-glass-fast="1"] > .liquidGlass-shine { opacity: 0.68; }
-.lg-surface[data-glass-fast="1"] > .liquidGlass-effect::after { opacity: 0.58; }
+.lg-surface[data-glass-fast="1"] > .liquidGlass-shine { opacity: 0.18; }
+.lg-surface[data-glass-fast="1"] > .liquidGlass-effect::after { opacity: 0.45; }
 
 /* focus inside glass — brackets, never translucency alone */
 .lg-surface :focus-visible {
@@ -500,10 +500,9 @@
 html.performance-lite .lg-surface {
   --glass_blur: 0px;
   --glass_tint: 0.64;
-  /* No lens on weak hardware. Three displacement passes plus a blend and a blur
-     over the BACKDROP is by far the most expensive thing this stylesheet asks
-     for, and it is re-run whenever anything behind the pane moves. The grain,
-     tint and rim still read as glass without it. */
+  /* No lens on weak hardware. Even the shared single displacement pass must be
+     recomputed when the backdrop moves; the dense grain, tint and rim still
+     preserve the matte material without that optional refraction. */
   --glass-lens-filter: opacity(1);
   box-shadow: none;
 }
