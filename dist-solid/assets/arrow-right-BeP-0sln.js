@@ -1,0 +1,1 @@
+import{I as a}from"./Icon-DxJispRt.js";import{e as o,m as e}from"./index-4o7-ttCC.js";var t=[["path",{d:"M5 12h14",key:"1ays0h"}],["path",{d:"m12 5 7 7-7 7",key:"xquz4c"}]],m=r=>o(a,e(r,{iconNode:t,name:"arrow-right"})),i=m;export{i as a};
