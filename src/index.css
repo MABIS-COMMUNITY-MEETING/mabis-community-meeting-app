@@ -516,6 +516,7 @@ html.platform-linux .cv-section.cv-ready:not(.cv-onscreen) :is(
    Material, saved custom, catalogue and Pride themes may repaint the page,
    but must never add a theme-scoped override for these cursor classes. */
 .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 999px; contain: strict; will-change: transform, opacity; }
+.cursor-dot { z-index: 10000; }
 /* ── The cursor follows the theme ─────────────────────────────────────
    Core in --foreground, halo in --background, in that order. Those two are the
    one pair the theme system guarantees contrast between — check-theme-balance
@@ -531,11 +532,12 @@ html.platform-linux .cv-section.cv-ready:not(.cv-onscreen) :is(
    The outermost soft shadow stays --ink. That one is a cast shadow, not part of
    the mark, and a shadow is dark in every theme — which is what --ink means. */
 .cursor-dot { width: 5px; height: 5px; background: hsl(var(--foreground)); box-shadow: 0 0 0 1px hsl(var(--background) / 0.9), 0 1px 3px hsl(var(--ink) / 0.35); transform: translate(-50%,-50%); }
-.cursor-ring { width: 34px; height: 34px; border: 1px solid hsl(var(--foreground) / 0.9); box-shadow: 0 0 0 1px hsl(var(--background) / 0.55), 0 2px 8px hsl(var(--ink) / 0.2); transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background .2s ease, opacity .2s ease; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:9px; letter-spacing:0.08em; color: hsl(var(--foreground) / var(--cursor-label-alpha, 0)); text-transform:uppercase; }
+.cursor-ring { width: 34px; height: 34px; border: 1px solid hsl(var(--foreground) / 0.92); background: transparent; box-shadow: 0 0 0 1px hsl(var(--background) / 0.72), 0 2px 8px hsl(var(--ink) / 0.18); transform: translate(-50%,-50%); transition: width .25s cubic-bezier(.16,1,.3,1), height .25s cubic-bezier(.16,1,.3,1), background-color .16s ease, opacity .16s ease; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:9px; letter-spacing:0.08em; color: hsl(var(--foreground) / var(--cursor-label-alpha, 0)); text-transform:uppercase; }
+.cursor-ring-label { position: relative; z-index: 1; font: inherit; letter-spacing: inherit; line-height: 1; color: inherit; text-transform: inherit; white-space: nowrap; }
 .cursor-label { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; white-space: nowrap; }
 .cursor-trail { position: fixed; top: 0; left: 0; width: 5px; height: 5px; pointer-events: none; z-index: 9999; border-radius: 999px; background: #fff; mix-blend-mode: difference; transform: translate(-50%,-50%); }
 .cursor-ring.is-hover { width: 40px; height: 40px; background:transparent; }
-.cursor-ring.is-label { width: 56px; height: 56px; background: hsl(var(--foreground) / 0.1); }
+.cursor-ring.is-label { width: 56px; height: 56px; background: hsl(var(--background) / 0.94); }
 
 /* ── loading screen: one selected face, one compositor progress loop ── */
 .loading-screen,
