@@ -140,6 +140,7 @@ export function buildJobListPrintHtml(jobList, appearance = {}) {
       --pdf-border: ${colors.border};
       --pdf-muted: ${colors.muted};
       --pdf-muted-foreground: ${colors.mutedForeground};
+      --pdf-palette-stripes: ${paletteStripes || "none"};
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: var(--pdf-background); }
