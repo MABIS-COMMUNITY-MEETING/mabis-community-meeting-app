@@ -81,12 +81,24 @@ export default function SpinWheel(props) {
       canvas.height = backingSize;
     }
 
-    const parentWidth = canvas.parentElement?.clientWidth || s;
-    const viewportWidth = typeof window !== "undefined" ? window.innerWidth - 32 : s;
-    const displaySize = Math.min(s, parentWidth, viewportWidth);
-    const cssSize = `${displaySize}px`;
-    if (canvas.style.width !== cssSize) canvas.style.width = cssSize;
-    if (canvas.style.height !== cssSize) canvas.style.height = cssSize;
+    /*
+     * The displayed size is CSS's job, not this function's.
+     *
+     * This used to clamp to min(size, parentWidth, viewportWidth) and write
+     * canvas.style.width/height directly. Two problems, and together they are
+     * why the wheel jumped off-centre on spin. The JSX below sets the same two
+     * properties reactively from size(), so the two took turns winning. And a
+     * clamped canvas is narrower than its parent while the pointer is anchored
+     * to the PARENT's centre with left-1/2 — so the moment the clamp applied,
+     * the wheel and the pointer stopped sharing a centre. Pressing spin redraws
+     * the face, which re-applied the clamp, which is when it visibly moved.
+     *
+     * The element now sizes itself with width:100% / max-width / aspect-ratio
+     * and centres with margin-inline:auto, so it is always centred under the
+     * pointer and there is one source of truth. The backing store below still
+     * uses the nominal size, which the canvas scales to fit — a clamped wheel
+     * simply renders slightly sharper.
+     */
 
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -278,11 +290,16 @@ export default function SpinWheel(props) {
         <canvas
           ref={canvasEl}
           style={{
-            width: `${size()}px`,
-            height: `${size()}px`,
+            /* Never a fixed pixel width: the wheel has to shrink on a narrow
+               screen, and it has to stay centred under the pointer when it
+               does. margin-inline is what keeps those two facts compatible. */
+            width: "100%",
+            "max-width": `${size()}px`,
+            "aspect-ratio": "1",
+            "margin-inline": "auto",
             "box-shadow": "0 8px 40px hsl(var(--primary) / 0.3), 0 2px 8px rgba(0,0,0,0.12)",
           }}
-          class="cursor-pointer rounded-full"
+          class="block cursor-pointer rounded-full"
           onClick={handleSpin}
         />
       </div>
