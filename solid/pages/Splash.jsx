@@ -166,7 +166,7 @@ function EditorialSplash() {
   );
 
   return (
-    <div class="relative min-h-screen w-full overflow-hidden bg-ink text-bone">
+    <div class="splash-stage relative min-h-[100dvh] w-full overflow-hidden bg-ink text-bone">
       <div ref={bgRef} class="absolute inset-0">
         <KineticBackground variant="ink" />
       </div>
@@ -213,7 +213,11 @@ function EditorialSplash() {
       <Plus class="absolute top-1/3 right-1/4 h-2.5 w-2.5 text-primary/60 z-20" />
 
       {/* center stage with pointer parallax */}
-      <div class="relative z-10 flex min-h-[100dvh] flex-col items-start justify-center px-4 pb-20 pt-20 sm:min-h-screen sm:items-center sm:px-8 sm:pb-0 sm:pt-0">
+      {/* 100dvh at every width, not just below sm. `min-h-screen` is 100vh,
+          which on a phone includes the browser chrome that is not actually
+          there — so the stage was taller than the visible area and centred its
+          content against a box the reader could not see all of. */}
+      <div class="splash-centre relative z-10 flex min-h-[100dvh] flex-col items-start justify-center px-4 pb-20 pt-20 sm:items-center sm:px-8 sm:pb-0 sm:pt-0">
         {/* giant cropped background word */}
         <Enter
           delay={0.4}
@@ -237,7 +241,16 @@ function EditorialSplash() {
         </Enter>
 
         <div ref={titleRef}>
-          <h1 class="text-left font-display text-[clamp(2.8rem,14vw,4.1rem)] font-extralight leading-[0.88] tracking-ultra sm:text-center sm:text-8xl md:text-9xl lg:text-[11rem]">
+          {/* One fluid size for every width.
+
+              This was fluid on mobile and then FIXED per breakpoint above it:
+              clamp(...) → sm:text-8xl → md:text-9xl → lg:text-[11rem]. Between
+              those steps the type stopped responding to the viewport, so at the
+              wide end "COMMUNITY" — nine glyphs of tracked-out display face at
+              176px — was wider than the space it had, and the stage's
+              overflow-hidden cropped it. A single clamp scales continuously and
+              cannot outgrow its column. */}
+          <h1 class="text-left font-display text-[clamp(2.6rem,14vw,10.5rem)] font-extralight leading-[0.88] tracking-ultra sm:text-center">
             <span class="block">
               <SplitChars text="COMMUNITY" stagger={0.05} delay={0.6} />
             </span>
@@ -271,7 +284,7 @@ function EditorialSplash() {
               class="liquid-btn liquid-ink group relative flex w-full items-center justify-between gap-3 border border-bone/40 bg-bone/5 px-5 py-4 text-bone backdrop-blur-sm sm:w-auto sm:justify-start sm:gap-4 sm:px-8"
             >
               <span class="tech-label">N° 02</span>
-              <span class="text-lg sm:text-xl font-display font-normal tracking-tight">
+              <span class="text-[clamp(1rem,3.4vw,1.25rem)] font-display font-normal tracking-tight">
                 {isAuthenticated() ? "ENTER START" : "ENTER LOG IN"}
               </span>
               <span class="relative flex h-8 w-8 items-center justify-center overflow-hidden">
