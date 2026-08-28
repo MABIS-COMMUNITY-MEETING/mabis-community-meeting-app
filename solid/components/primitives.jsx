@@ -110,6 +110,8 @@ export function MagneticButton(props) {
 
     const sx = { x: 0, v: 0 };
     const sy = { x: 0, v: 0 };
+    let previousX = 0;
+    let previousY = 0;
     let targetX = 0;
     let targetY = 0;
 
@@ -126,11 +128,17 @@ export function MagneticButton(props) {
 
     const unsubscribe = subscribe({
       step: (dt) => {
+        previousX = sx.x;
+        previousY = sy.x;
         integrateSpring(sx, targetX, omega, zeta, dt);
         integrateSpring(sy, targetY, omega, zeta, dt);
       },
-      render: () => {
-        if (el) el.style.transform = `translate3d(${sx.x.toFixed(2)}px, ${sy.x.toFixed(2)}px, 0)`;
+      render: (alpha) => {
+        if (!el) return;
+        const a = Math.max(0, Math.min(1, alpha));
+        const x = previousX + (sx.x - previousX) * a;
+        const y = previousY + (sy.x - previousY) * a;
+        el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
       },
       settled: () =>
         Math.abs(sx.x - targetX) < 0.05 && Math.abs(sy.x - targetY) < 0.05 &&
