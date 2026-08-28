@@ -7,7 +7,7 @@ import { displayName } from "@/lib/names";
 import {
   WEEKDAYS, assignmentIsCurrent, formatMonthLabel, formatWeekLabel,
   getCurrentWeekLabel, getMonthLabel, getNextMonthLabel, getNextWeekLabel,
-  getScheduledDatesForMonth, getWeekStatusKeys, isTimeKeeperJob, jobPeriod,
+  getScheduledDatesForMonth, isTimeKeeperJob, jobPeriod,
   memberRotationKey, normalizeJobTitle, scheduledDaysFor,
 } from "@/lib/jobsRotation";
 import { useAuth } from "~/lib/AuthContext";
@@ -293,32 +293,27 @@ export default function JobsWidget(props) {
     });
   };
 
-  const weekStatusKeysFor = (a) =>
-    getWeekStatusKeys(a, a.month_label || currentMonth);
-
-  const handleWeekStatus = (a, nextState) => {
+  const handleJobStatus = (a, nextState) => {
     const done = a.days_completed || [];
     const notDoneDays = a.not_done_days || [];
-    const weekKeys = weekStatusKeysFor(a);
-    const allScheduled = statusKeysFor(a);
-    if (weekKeys.length === 0) return;
+    const jobKeys = statusKeysFor(a);
+    if (jobKeys.length === 0) return;
 
     let nextDone = done;
     let nextNotDone = notDoneDays;
 
     if (nextState === "done") {
-      nextDone = [...new Set([...done, ...weekKeys])];
-      nextNotDone = notDoneDays.filter((key) => !weekKeys.includes(key));
+      nextDone = [...new Set([...done, ...jobKeys])];
+      nextNotDone = notDoneDays.filter((key) => !jobKeys.includes(key));
     } else if (nextState === "notdone") {
-      nextDone = done.filter((key) => !weekKeys.includes(key));
-      nextNotDone = [...new Set([...notDoneDays, ...weekKeys])];
+      nextDone = done.filter((key) => !jobKeys.includes(key));
+      nextNotDone = [...new Set([...notDoneDays, ...jobKeys])];
     } else {
-      nextDone = done.filter((key) => !weekKeys.includes(key));
-      nextNotDone = notDoneDays.filter((key) => !weekKeys.includes(key));
+      nextDone = done.filter((key) => !jobKeys.includes(key));
+      nextNotDone = notDoneDays.filter((key) => !jobKeys.includes(key));
     }
 
-    const completed = allScheduled.length > 0
-      && allScheduled.every((key) => nextDone.includes(key));
+    const completed = jobKeys.every((key) => nextDone.includes(key));
     updateAssignment.mutate({ id: a.id, data: {
       days_completed: nextDone,
       not_done_days: nextNotDone,
@@ -330,10 +325,10 @@ export default function JobsWidget(props) {
 
     const title = normalizeJobTitle(a.job_title);
     const message = nextState === "done"
-      ? `Marked "${title}" done for this week.`
+      ? `Checked off "${title}".`
       : nextState === "notdone"
         ? `Marked "${title}" not done — carried to the next ${jobPeriod(a) === "monthly" ? "month" : "week"}.`
-        : `Cleared this week's status for "${title}".`;
+        : `Cleared the status for "${title}".`;
     setJobActionMessage(message);
     window.setTimeout(() => setJobActionMessage(""), 5000);
   };
@@ -353,7 +348,7 @@ export default function JobsWidget(props) {
     handledJobAction = true;
     const period = jobPeriod(a);
     const allScheduled = statusKeysFor(a);
-    const actionKeys = weekStatusKeysFor(a);
+    const actionKeys = allScheduled;
     const done = a.days_completed || [];
     const notDone = a.not_done_days || [];
 
@@ -813,7 +808,7 @@ export default function JobsWidget(props) {
           assignments={currentAssignments()}
           isAdmin={isAdmin()}
           currentUser={auth.user()}
-          onWeekStatus={handleWeekStatus}
+          onJobStatus={handleJobStatus}
           statusPending={updateAssignment.isPending}
           onDelete={handleRemoveAssignment}
           deletePending={removeAssignment.isPending}
@@ -897,7 +892,7 @@ export default function JobsWidget(props) {
             assignments={currentAssignments()}
             isAdmin={isAdmin()}
             currentUser={auth.user()}
-            onWeekStatus={handleWeekStatus}
+            onJobStatus={handleJobStatus}
           statusPending={updateAssignment.isPending}
             onDelete={handleRemoveAssignment}
             deletePending={removeAssignment.isPending}
