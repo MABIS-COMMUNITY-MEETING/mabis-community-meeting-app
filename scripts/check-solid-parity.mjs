@@ -548,8 +548,21 @@ if (route === "/login") {
   check("minutes document surface rendered",
     !!root.querySelector(".docs-editor-content, .docs-editor-readonly"));
 
-  check("meeting mode renders its locked state",
-    textNow().includes("Locked until Friday"));
+  /*
+   * Both directions, because the widget's rule is
+   * `isLocked = !meetingEnded() && !isFridayToday` — the meeting unlocks ON
+   * Friday. Asserting the locked copy unconditionally meant this failed every
+   * Friday, which is the one day of the week the app exists for. It was not a
+   * regression when it fired, just the calendar.
+   */
+  const meetingUnlocksToday = new Date().getDay() === 5;
+  check("meeting mode renders the right lock state for today",
+    meetingUnlocksToday
+      ? !textNow().includes("Locked until Friday")
+      : textNow().includes("Locked until Friday"),
+    meetingUnlocksToday
+      ? "it is Friday, so the meeting is unlocked and the locked copy must not render"
+      : "it is not Friday, so the meeting must show its locked state");
 
   check("the retired Add Topic control is gone",
     !textNow().includes("Add Topic"));
