@@ -38,6 +38,15 @@
      the denser matte layer makes the supplied grain the dominant finish. */
   --glass_tint: 0.48;
   --glass_matte: 0.74;
+  /* Theme-aware fallback used while pixels are moving. It is ordinary cached
+     paint—not a backdrop sample—under the unchanged grain, tint and rim. */
+  --glass-cached-material:
+    linear-gradient(
+      135deg,
+      hsl(var(--background) / 0.86),
+      hsl(var(--background) / 0.78) 58%,
+      hsl(var(--primary) / 0.12)
+    );
   --glass_lens: 1.5px;
   --glass_spec: 0.08;
   --glass_shadow:
@@ -484,10 +493,9 @@
    as long as it is needed — the hint was telling the compositor something the
    transform had already told it.
 
-   It is deliberately NOT re-added under `html.is-scrolling`: the performance
-   contract forbids any `is-scrolling` rule that reaches into `.lg-surface`,
-   because that selector is how glass was once swapped for an opaque fill
-   mid-scroll. See the active-scroll note further down. */
+   It is deliberately NOT re-added under `html.is-scrolling`: active scrolling
+   uses a cached material plane, so reserving more compositor memory at that
+   moment would work against the fast path. */
 
 /* ── lite tier: cheaper glass, still glass ─────────────────────────
    The SVG displacement, subtle 1.56px frost and cached shine are optional;
@@ -496,12 +504,16 @@
 html.performance-lite .lg-surface {
   --glass_blur: 0px;
   --glass_tint: 0.64;
-  /* No lens on weak hardware. Even the optimized one-pass scroll filter must
-     be recomputed when the backdrop moves; the dense grain, tint and rim still
-     preserve the matte material without that optional refraction. */
+  /* No live lens on weak hardware. The dense grain, tint and rim preserve the
+     matte material without any backdrop capture. */
   --glass-lens-filter: opacity(1);
-  --glass-scroll-lens-filter: opacity(1);
   box-shadow: none;
+}
+
+html.performance-lite .liquidGlass-effect {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: var(--glass-cached-material);
 }
 
 html.performance-lite .liquidGlass-shine,
@@ -525,10 +537,10 @@ html.animations-disabled .lg-scroll-edge {
 }
 
 /* ── active-scroll material invariance ───────────────────────
-   Native scrolling stays in charge and scroll-linked decoration still yields,
-   but the single backdrop capture stays active. Replacing it with an opaque
-   fill makes the glass disappear during wheel, touch and momentum scrolls.
-   Blur remains constant between frames, so there is no interpolation loop. */
+   Native scrolling stays in charge. solid-motion.css temporarily replaces
+   live optical sampling with --glass-cached-material while leaving this tint,
+   grain and rim stack intact. The pane therefore stays visibly matte instead
+   of turning transparent, without a per-frame backdrop raster. */
 
 /* ── mobile: preserve grain, shed live backdrop work ─────────────────────
    The standard pane carries the requested 1.56px frost. Mobile keeps the dense
@@ -543,7 +555,11 @@ html.animations-disabled .lg-scroll-edge {
     --glass_tint: 0.62;
     --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
     --glass-lens-filter: opacity(1);
-    --glass-scroll-lens-filter: opacity(1);
+  }
+  .liquidGlass-effect {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: var(--glass-cached-material);
   }
   .liquidGlass-effect::after { display: none; }
   .lg-scroll-edge {
