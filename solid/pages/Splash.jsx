@@ -99,6 +99,8 @@ function EditorialSplash() {
     const { omega, zeta } = springFromFramer(50, 20, 1);
     const sx = { x: 0, v: 0 };
     const sy = { x: 0, v: 0 };
+    let previousX = 0;
+    let previousY = 0;
     let tx = 0;
     let ty = 0;
 
@@ -110,13 +112,18 @@ function EditorialSplash() {
 
     const unsubscribe = subscribe({
       step: (dt) => {
+        previousX = sx.x;
+        previousY = sy.x;
         integrateSpring(sx, tx, omega, zeta, dt);
         integrateSpring(sy, ty, omega, zeta, dt);
       },
-      render: () => {
+      render: (alpha) => {
+        const a = Math.max(0, Math.min(1, alpha));
+        const x = previousX + (sx.x - previousX) * a;
+        const y = previousY + (sy.x - previousY) * a;
         // Same multipliers as the framer useTransform calls.
-        if (titleRef) titleRef.style.transform = `translate3d(${(sx.x * 24).toFixed(2)}px, ${(sy.x * 14).toFixed(2)}px, 0)`;
-        if (bgRef) bgRef.style.transform = `translate3d(${(sx.x * -28).toFixed(2)}px, ${(sy.x * -18).toFixed(2)}px, 0)`;
+        if (titleRef) titleRef.style.transform = `translate3d(${(x * 24).toFixed(2)}px, ${(y * 14).toFixed(2)}px, 0)`;
+        if (bgRef) bgRef.style.transform = `translate3d(${(x * -28).toFixed(2)}px, ${(y * -18).toFixed(2)}px, 0)`;
       },
       settled: () =>
         Math.abs(sx.x - tx) < 0.001 && Math.abs(sy.x - ty) < 0.001 &&
@@ -229,7 +236,7 @@ function EditorialSplash() {
           </JapaneseText>
         </Enter>
 
-        <div ref={titleRef} class="will-change-transform">
+        <div ref={titleRef}>
           <h1 class="text-left font-display text-[clamp(2.8rem,14vw,4.1rem)] font-extralight leading-[0.88] tracking-ultra sm:text-center sm:text-8xl md:text-9xl lg:text-[11rem]">
             <span class="block">
               <SplitChars text="COMMUNITY" stagger={0.05} delay={0.6} />
