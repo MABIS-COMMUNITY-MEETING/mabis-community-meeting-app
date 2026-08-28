@@ -310,7 +310,11 @@ requireText("src/styles/glass.css", glass, "filter: var(--glass-distortion-filte
  * have both. If the guard is dropped, glass silently stops working in Firefox
  * and nothing else fails.
  */
-if (!/@supports\s*\(backdrop-filter[^)]*\)\s*and\s*\(not\s*\(-webkit-backdrop-filter/.test(glass)) {
+/* Matched on the `and (not (-webkit-` fragment rather than a full parse of the
+   condition: the values contain nested parens (`blur(1px)`), which a naive
+   character class walks straight past. The no-backdrop-filter-at-all fallback
+   further down spells it `or (-webkit-`, so this cannot match that one. */
+if (!glass.includes("and (not (-webkit-backdrop-filter")) {
   failures.push(
     "src/styles/glass.css: .liquidGlass-effect sets both backdrop-filter and filter, so it needs "
     + "the `@supports (backdrop-filter: ...) and (not (-webkit-backdrop-filter: ...))` block that "
