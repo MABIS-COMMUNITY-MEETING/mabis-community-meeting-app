@@ -10,7 +10,8 @@
        .liquidGlass-shine   restrained specular and inset rim
        .liquidGlass-text    the micro control plane (icons/labels)
 
-   One shared SVG filter serves every surface. No GitHub image, stock
+   One shared SVG definitions block serves every surface. The compact
+   displacement map is embedded in the website; no GitHub image, stock
    background or cross-origin visual asset is required at runtime.
 
    Thickness scales with role: a 36px icon button and a full menu bar
@@ -495,8 +496,8 @@
 html.performance-lite .lg-surface {
   --glass_blur: 0px;
   --glass_tint: 0.64;
-  /* No lens on weak hardware. Even the shared single displacement pass must be
-     recomputed when the backdrop moves; the dense grain, tint and rim still
+  /* No lens on weak hardware. Even the optimized one-pass scroll filter must
+     be recomputed when the backdrop moves; the dense grain, tint and rim still
      preserve the matte material without that optional refraction. */
   --glass-lens-filter: opacity(1);
   --glass-scroll-lens-filter: opacity(1);
