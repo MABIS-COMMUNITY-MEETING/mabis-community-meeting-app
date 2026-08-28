@@ -125,9 +125,13 @@ export default function Glass(props) {
   const press = (v) => { if (el) el.dataset.glassPress = v ? "1" : "0"; };
   const surfaceStyle = () => {
     if (typeof local.style === "string") {
-      return `--glass-lens-filter:${FILTER_URL};${local.style}`;
+      return `--glass-lens-filter:${FILTER_URL};--glass-scroll-lens-filter:${SCROLL_FILTER_URL};${local.style}`;
     }
-    return { "--glass-lens-filter": FILTER_URL, ...(local.style || {}) };
+    return {
+      "--glass-lens-filter": FILTER_URL,
+      "--glass-scroll-lens-filter": SCROLL_FILTER_URL,
+      ...(local.style || {}),
+    };
   };
 
   return (
