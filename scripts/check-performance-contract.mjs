@@ -290,8 +290,14 @@ requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_bl
 requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
 requireText("src/styles/glass.css", glass, "data:image/svg+xml");
 requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
-requireText("src/styles/glass.css", glass, "--glass_blur: 12px;");
-requireText("src/styles/glass.css", glass, "--glass_blur: 8px;");
+/* The two pinned blur radii: the desktop pane and the mobile one. Both were cut
+   by 25% at Novesce's request (12px → 9px, 8px → 6px), along with the cursor and
+   the lite tier, so the tiers keep their proportions. Pinned rather than
+   free-floating because backdrop blur is the most expensive thing this
+   stylesheet does — changing it should be a decision, which is what editing this
+   line makes it. */
+requireText("src/styles/glass.css", glass, "--glass_blur: 9px;");
+requireText("src/styles/glass.css", glass, "--glass_blur: 6px;");
 requireText("src/styles/glass.css", glass, "filter: var(--glass-distortion-filter)");
 requireText("solid/components/Glass.jsx", glassComponentSolid, [
   "liquidGlass-effect", "liquidGlass-tint", "liquidGlass-matte",
