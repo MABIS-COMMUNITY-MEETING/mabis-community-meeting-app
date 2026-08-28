@@ -27,14 +27,10 @@
 }
 
 .lg-surface {
-  /* Zero. The material is grainy, not frosted — .liquidGlass-matte carries
-     it, and a backdrop blur underneath would put the haze straight back.
-     saturate() and brightness() stay, so the backdrop is still sampled and the
-     surface still reads as a material rather than a flat panel.
-
-     This is one number: restoring any frost is setting it back (it was 12px,
-     then 9px after the 25% cut). Every other tier below went to 0 with it. */
-  --glass_blur: 0px;
+  /* Subtle frost under the grain: 1.56px is exactly 13% of the original
+     12px radius. It softens the sampled backdrop without returning to the old
+     icy haze; the dense matte grain remains the dominant finish. */
+  --glass_blur: 1.56px;
   --glass_saturation: 122%;
   --glass_brightness: 1.02;
   /* A substantial neutral body keeps the header from reading like clear ice;
@@ -162,13 +158,12 @@
     );
 }
 
-/* ── Grain, not frost ───────────────────────────────────────────────
+/* ── Grain with restrained frost ─────────────────────────────────────
 
-   This layer is what gives the material its character now. baseFrequency went
-   0.65 → 1.5 and the noise rect 0.72 → 1, which is a much finer and much denser
-   grain — tooth rather than haze — and the backdrop blur went to zero to match
-   (see --glass_blur on .lg-surface). Novesce asked for grainy instead of
-   frosted; those two changes together are that.
+   This layer remains the material's main character. baseFrequency went
+   0.65 → 1.5 and the noise rect 0.72 → 1, producing a much finer and denser
+   tooth. A 1.56px backdrop radius adds only 13% of the original 12px frost,
+   softening motion behind the grain without turning it back into clear ice.
 
    The gradient is --bone → --ink rather than literal #ffffff → #000000. Under
    `overlay` those are doing luminance work, not colour work, and --bone/--ink
@@ -494,9 +489,9 @@
    mid-scroll. See the active-scroll note further down. */
 
 /* ── lite tier: cheaper glass, still glass ─────────────────────────
-   The SVG displacement and cached shine are optional; the shallow 3px live
-   backdrop and static matte grain are not. The lite tier removes those costly
-   optical passes while keeping the same translucent material and outline. */
+   The SVG displacement, subtle 1.56px frost and cached shine are optional;
+   the static matte grain is not. The lite tier removes those live optical
+   passes while keeping the same substantial material body and outline. */
 html.performance-lite .lg-surface {
   --glass_blur: 0px;
   --glass_tint: 0.64;
@@ -533,10 +528,9 @@ html.animations-disabled .lg-scroll-edge {
    fill makes the glass disappear during wheel, touch and momentum scrolls.
    Blur remains constant between frames, so there is no interpolation loop. */
 
-/* ── mobile: no backdrop radius at all ──────────────────────────────────
-   The desktop pane is already at zero blur since the material became grain, so
-   there is no radius left to bound here — this tier now only carries the
-   heavier tint and the cheaper shadow.
+/* ── mobile: preserve grain, shed live backdrop work ─────────────────────
+   The standard pane carries the requested 1.56px frost. Mobile keeps the dense
+   matte grain and heavier tint but drops that live blur to protect scrolling.
 
    The lens goes too. It is stretched to the surface, so at phone width the ramp
    is squeezed into far fewer pixels and reads as a smear rather than an edge —
