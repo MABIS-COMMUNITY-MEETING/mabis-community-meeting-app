@@ -315,9 +315,14 @@ forbidText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "claimRelo
 requireText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "onClick={() => window.location.reload()}");
 
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
-/* Scrolling may shed auxiliary paint, but it must never replace the primary
-   liquid lens with a no-op filter — that was the transparency flash. */
+/* Active scrolling keeps real refraction but selects the one-pass companion
+   filter. A no-op opacity filter here was the transparency flash. */
 forbidText("solid/solid-motion.css", motionCss, "--glass-lens-filter: opacity(1);");
+requireText(
+  "solid/solid-motion.css",
+  motionCss,
+  "--glass-lens-filter: var(--glass-scroll-lens-filter, opacity(1));",
+);
 requireText("solid/solid-motion.css", motionCss, "html.is-scrolling .site-header-shell > .lg-scroll-edge");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
@@ -377,21 +382,45 @@ requireText("solid/components/Glass.jsx", glassComponentSolid, [
   "liquidGlass-effect", "liquidGlass-tint", "liquidGlass-matte",
   "liquidGlass-shine", "liquidGlass-text",
 ]);
-/* Keep one shared procedural lens at the persistent header. One turbulence map
-   plus one displacement pass is the lowest useful graph: there is no embedded
-   bitmap, output blur, per-channel graph, or per-surface SVG duplication. */
+/* The supplied reference lens is shared once at the persistent header. Resting
+   quality keeps its RGB split; the frame-critical scroll path keeps only one
+   displacement. CSS carries the 1.56px frost, so a second SVG Gaussian blur is
+   redundant and forbidden. */
 requireText("solid/components/Glass.jsx", glassComponentSolid, "export function GlassFilterDefs()");
-requireText("solid/components/Glass.jsx", glassComponentSolid, "<feTurbulence");
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'baseFrequency="0.008 0.014"');
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'numOctaves="1"');
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="38"');
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'x="-15%"');
-forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'const FILTER_ID = "glass-filter-chromatic"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'const SCROLL_FILTER_ID = "glass-filter-scroll"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, "data:image/png;base64,");
+requireText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'preserveAspectRatio="none"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="-20"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="-24"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="-28"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'mode="screen"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, '"--glass-scroll-lens-filter": SCROLL_FILTER_URL');
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feTurbulence");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feGaussianBlur");
-if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 1) {
+if ((glassComponentSolid.match(/<feImage/g) || []).length !== 2) {
   failures.push(
-    "solid/components/Glass.jsx: keep exactly one shared feDisplacementMap pass; extra passes "
-    + "multiply compositing work on every frame.",
+    "solid/components/Glass.jsx: keep exactly two feImage uses—one for resting RGB quality "
+    + "and one for the one-pass scroll path.",
+  );
+}
+if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 4) {
+  failures.push(
+    "solid/components/Glass.jsx: expected three resting RGB displacement passes plus exactly "
+    + "one scroll-time displacement pass.",
+  );
+}
+if ((glassComponentSolid.match(/<feBlend/g) || []).length !== 2) {
+  failures.push("solid/components/Glass.jsx: the resting RGB lens needs exactly two screen blends.");
+}
+const compactLensMap = glassComponentSolid.match(/const LENS_MAP = "(data:image\/png;base64,[^"]+)"/)?.[1] ?? "";
+if (!compactLensMap) {
+  failures.push("solid/components/Glass.jsx: the self-contained displacement map is missing.");
+} else if (compactLensMap.length > 6000) {
+  failures.push(
+    `solid/components/Glass.jsx: displacement map is ${compactLensMap.length} characters; `
+    + "keep the optimized embedded map below 6000 so the deferred glass chunk stays small.",
   );
 }
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, "<GlassFilterDefs />");
