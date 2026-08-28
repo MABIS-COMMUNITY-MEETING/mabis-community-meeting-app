@@ -4,7 +4,6 @@ import { subscribe } from "@/lib/physics/scheduler";
 import { pointer, startPointerEngine } from "@/lib/physics/pointer";
 import { MATERIAL, CURSOR, SLEEP } from "@/lib/physics/tokens";
 import { integrateSpring, clamp, tanhSat, angleDelta } from "@/lib/physics/math";
-import { lowPowerMode, PERFORMANCE_TIER_EVENT } from "@/lib/performance-tier";
 import { customCursorEnabled, CURSOR_EVENT } from "@/lib/cursor-preference";
 /* The ring is a glass surface and uses the same tint and shine layers every
    other glass surface does. Imported here for the same reason Glass.jsx
@@ -43,28 +42,21 @@ export default function CustomCursor() {
   let ringLabelEl;
 
   const [enabled, setEnabled] = createSignal(false);
-  const [lowPower, setLowPower] = createSignal(lowPowerMode());
   const [preferenceEnabled, setPreferenceEnabled] = createSignal(customCursorEnabled());
 
   onMount(() => {
-    const updateTier = (event) => setLowPower(event.detail);
     const updatePreference = (event) => setPreferenceEnabled(Boolean(event.detail));
-    window.addEventListener(PERFORMANCE_TIER_EVENT, updateTier);
     window.addEventListener(CURSOR_EVENT, updatePreference);
-    onCleanup(() => {
-      window.removeEventListener(PERFORMANCE_TIER_EVENT, updateTier);
-      window.removeEventListener(CURSOR_EVENT, updatePreference);
-    });
+    onCleanup(() => window.removeEventListener(CURSOR_EVENT, updatePreference));
   });
 
   createEffect(() => {
     const prefOn = preferenceEnabled();
-    const isLowPower = lowPower();
 
     setEnabled(false);
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!prefOn || !fine || reduced || isLowPower) {
+    if (!prefOn || !fine || reduced) {
       document.body.classList.remove("cursor-ready");
       return;
     }
@@ -230,7 +222,13 @@ export default function CustomCursor() {
     };
 
     const settled = () => {
-      if (!visible) return true;
+      if (!pointer.seen) return true;
+      const hover = !!pointer.target && !pointer.label;
+      const isLabel = !!pointer.label;
+      const dotOpacity = pointer.inside ? "1" : "0";
+      const ringOpacity = pointer.down ? "0.5" : pointer.inside ? "1" : "0";
+      if (!visible || dotMoved || hover !== lastHover || isLabel !== lastIsLabel
+        || dotOpacity !== lastDotOpacity || ringOpacity !== lastRingOpacity) return false;
       return (
         Math.hypot(ringX.x - dotX, ringY.x - dotY) < SLEEP.pos &&
         Math.hypot(ringX.v, ringY.v) < SLEEP.vel &&
@@ -240,6 +238,7 @@ export default function CustomCursor() {
         Math.abs(shear.v) < 0.01 &&
         Math.abs(scale.x - (pointer.down ? CURSOR.pressScale : 1)) < 0.002 &&
         Math.abs(scale.v) < 0.01 &&
+        Math.abs(glow.x - (pointer.label ? 1 : 0)) < 0.01 &&
         Math.abs(glow.v) < 0.01
       );
     };
