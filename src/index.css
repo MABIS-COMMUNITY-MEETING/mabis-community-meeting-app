@@ -1474,8 +1474,8 @@ html.animations-disabled .cursor-ring {
 
 /* ── automatic low-power mode ────────────────────────────────────────
    Activated only for genuinely constrained hardware or sustained missed
-   frames. Content and controls stay identical; decorative motion, custom
-   pointer work and live backdrop capture yield to native/static rendering. */
+   frames. Content, controls and the user's explicit cursor choice stay intact;
+   decorative motion and costly live backdrop passes yield. */
 html.performance-lite { scroll-behavior: auto !important; }
 html.performance-lite *:not(.loading-progress),
 html.performance-lite *:not(.loading-progress)::before,
@@ -1484,11 +1484,7 @@ html.performance-lite *:not(.loading-progress)::after {
   transition: none !important;
   scroll-behavior: auto !important;
 }
-html.performance-lite .grain-layer,
-html.performance-lite .cursor-dot,
-html.performance-lite .cursor-ring,
-html.performance-lite .cursor-trail,
-html.performance-lite .cursor-label { display: none !important; }
+html.performance-lite .grain-layer { display: none !important; }
 html.performance-lite .pride-field-x:nth-child(n+3) { display: none !important; }
 html.performance-lite .pride-field-light { filter: blur(14px); }
 /* The lite tier's treatment of glass lives in styles/glass.css, with the
