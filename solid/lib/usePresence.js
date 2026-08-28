@@ -61,16 +61,19 @@ export function usePresenceHeartbeat() {
 }
 
 /** Accessor returning a Set of lowercased emails currently active. */
-export function useActivePresence() {
+export function useActivePresence(enabled = () => true) {
   const queryClient = useQueryClient();
+  const isEnabled = () => enabled() !== false;
 
   const presenceQuery = useQuery(() => ({
     queryKey: ["presence"],
     queryFn: () => base44.entities.Presence.list("-last_seen", 200),
     refetchInterval: 15000,
+    enabled: isEnabled(),
   }));
 
   createEffect(() => {
+    if (!isEnabled()) return;
     const unsub = base44.entities.Presence.subscribe(() => {
       queryClient.invalidateQueries({ queryKey: ["presence"] });
     });
