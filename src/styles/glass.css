@@ -595,7 +595,15 @@ html.animations-disabled .lg-scroll-edge {
 
 /* ── reduced motion: material keeps its optics, stops behaving ── */
 @media (prefers-reduced-motion: reduce) {
-  .lg-surface { transform: none !important; transition: none; }
+  /* The lens goes too. Someone who has asked the OS for less motion has asked
+     for less of exactly this: a refraction that is re-derived from the backdrop
+     every time anything behind it moves. It is decoration with a per-frame
+     price, and it is the first thing that should be spent. */
+  .lg-surface {
+    transform: none !important;
+    transition: none;
+    --glass-lens-filter: opacity(1);
+  }
   .liquidGlass-shine {
     background: linear-gradient(to bottom, hsl(var(--bone) / 0.14), transparent 45%);
   }
