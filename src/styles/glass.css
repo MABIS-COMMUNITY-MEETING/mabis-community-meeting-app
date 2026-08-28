@@ -499,6 +499,7 @@ html.performance-lite .lg-surface {
      recomputed when the backdrop moves; the dense grain, tint and rim still
      preserve the matte material without that optional refraction. */
   --glass-lens-filter: opacity(1);
+  --glass-scroll-lens-filter: opacity(1);
   box-shadow: none;
 }
 
@@ -541,6 +542,7 @@ html.animations-disabled .lg-scroll-edge {
     --glass_tint: 0.62;
     --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
     --glass-lens-filter: opacity(1);
+    --glass-scroll-lens-filter: opacity(1);
   }
   .liquidGlass-effect::after { display: none; }
   .lg-scroll-edge {
