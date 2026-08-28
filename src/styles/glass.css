@@ -83,7 +83,11 @@
   background: transparent;
   transition:
     transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2),
-    box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+    box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2),
+    /* Interpolable only because --glass_aqua is registered with a syntax at the
+       top of this file. Left unregistered it would step, and the edges would
+       pop on release rather than settle. */
+    --glass_aqua 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
 
   /* The visual children clip to the radius. The wrapper stays unclipped so a
      menu or popover anchored inside glass cannot disappear at its boundary. */
@@ -518,7 +522,13 @@
   transform: scale(0.988);
   --glass_spec: 0.14;
   --glass_lens: 0.8px;
-  transition: transform 0.09s ease-out;
+  /* The lozenge and its two edge lines gain under the finger and ease back out
+     on the spring above, so the surface reads as compressing toward the light
+     rather than only getting smaller. */
+  --glass_aqua: 0.26;
+  transition:
+    transform 0.09s ease-out,
+    --glass_aqua 0.09s ease-out;
 }
 
 /* Fast pointer travel attenuates cached decoration only. Blur never changes,
