@@ -13,6 +13,9 @@ assert.match(component, /integrateSpring\(state, target, omega, zeta, dt\)/, "sc
 assert.match(component, /sample:\s*\(\) =>/, "geometry reads must stay in the scheduler sample phase");
 assert.match(component, /wake\(\)/, "every scroll change must wake a scheduler that has settled");
 assert.match(component, /addEventListener\("scroll", markForMeasure, \{ passive: true \}\)/, "the progress listener must be passive");
+assert.match(component, /new IntersectionObserver/, "the scroll listener must be proximity-gated");
+assert.match(component, /rootMargin:\s*"100% 0px"/, "the ritual should prewarm one viewport before it becomes visible");
+assert.match(component, /proximityObserver\?\.disconnect\(\)/, "the proximity observer must be cleaned up");
 assert.match(component, /MOTION_EVENT/, "the animation must respond when the user changes the motion setting");
 assert.doesNotMatch(component, /CSS\?\.supports|animation-timeline/, "browser support guesses must never bypass the working path again");
 assert.doesNotMatch(styles, /animation-timeline:[\s\S]*voice-words/, "CSS timelines must not compete with measured scroll progress");
