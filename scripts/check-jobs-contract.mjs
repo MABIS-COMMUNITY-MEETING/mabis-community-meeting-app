@@ -8,6 +8,7 @@ import {
   getNextMonthLabel,
   getScheduledDatesForMonth,
   getVisibleWeekDates,
+  getWeekStatusKeys,
   normalizeJobTitle,
   scheduledDaysFor,
   timeKeeperKeysForYear,
@@ -28,6 +29,18 @@ assert.equal(getScheduledDatesForMonth("Time Keeper (2)", "2026-08").length, 8);
 assert.deepEqual(
   getVisibleWeekDates("2026-08", august).map((entry) => entry.key),
   ["2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14"],
+);
+assert.deepEqual(
+  getWeekStatusKeys({ assignment_period: "weekly", schedule_days: ["Tuesday", "Thursday"] }),
+  ["Tuesday", "Thursday"],
+);
+assert.deepEqual(
+  getWeekStatusKeys(
+    { assignment_period: "monthly", schedule_days: ["Monday", "Wednesday", "Friday"] },
+    "2026-08",
+    august,
+  ),
+  ["2026-08-10", "2026-08-12", "2026-08-14"],
 );
 
 const served = timeKeeperKeysForYear([
@@ -119,6 +132,10 @@ assert.match(jobsSource, /base44\.entities\.Member\.update\(member\.id, \{ job_r
 assert.match(jobsSource, /studentMembers\(\)\.filter\(\(m\) => m\.job_rotation_enabled !== false\)/);
 assert.match(jobsSource, /data-cursor-lite/);
 assert.match(jobsSource, /onDelete=\{handleRemoveAssignment\}/);
+assert.match(jobsSource, /onWeekStatus=\{handleWeekStatus\}/);
+assert.match(jobTablesSource, /Done for this week/);
+assert.match(jobTablesSource, /props\.onWeekStatus\(props\.assignment/);
+assert.doesNotMatch(jobTablesSource, /DayStatus|onDayStatus|click to cycle/);
 assert.match(jobTablesSource, /props\.onDelete\(a\)/);
 assert.match(jobTablesSource, /<span>Remove<\/span>/);
 assert.match(jobListSchemaSource, /"name": "JobList"/);
@@ -147,4 +164,4 @@ assert.match(docsEditorSource, /toggleList\("bullet"\)/);
 assert.match(announcementSource, /memberForAuthor\(announcement\.author_name\)\?\.avatar_url/);
 assert.doesNotMatch(announcementSource, /avatar_url:\s*auth\.user\(\)\?\.avatar_url\s*\|\|\s*author\?\.avatar_url/);
 
-console.log("Jobs and meeting UI contract: repeat-eligible Time Keepers, persistent job-list membership, exact assignment removal, shared wheel shuffle, saved lists, public schedule printing, simplified cancel-safe MABIS Jobs PDF export, scheduling, mirrored Home state, unlimited bounded spins, bullet formatting, and announcement avatars passed.");
+console.log("Jobs and meeting UI contract: one-click weekly completion, repeat-eligible Time Keepers, persistent job-list membership, exact assignment removal, shared wheel shuffle, saved lists, public schedule printing, simplified cancel-safe MABIS Jobs PDF export, scheduling, mirrored Home state, unlimited bounded spins, bullet formatting, and announcement avatars passed.");
