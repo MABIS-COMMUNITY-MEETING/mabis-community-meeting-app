@@ -114,6 +114,30 @@
   filter: var(--glass-distortion-filter);
 }
 
+/* ── Firefox: keep the frost, drop the lens ───────────────────────────────
+
+   The rule above puts `backdrop-filter` and `filter` on the same element.
+   Gecko will not do both: an element carrying a `filter` is rendered into its
+   own filter surface and the backdrop is never sampled, so the blur silently
+   disappears and the surface collapses to its tint — a pane of glass that is
+   simply see-through. This is the same reason the reference liquid-glass demo
+   this material is built from only ever worked in Chromium and Safari.
+
+   The query is a real capability difference, not a browser sniff, and it is
+   about the exact property involved: Firefox shipped the standard
+   `backdrop-filter` and never implemented the `-webkit-` alias, while Chromium
+   and Safari support both. So "standard yes, prefixed no" is Gecko.
+
+   Dropping the SVG displacement is the right half to lose. Blur, tint, matte
+   and shine carry the material; the lens is refraction detail on top, and
+   Firefox cannot render it here at any price. Everything else is untouched, so
+   Chromium and Safari keep the full effect. */
+@supports (backdrop-filter: blur(1px)) and (not (-webkit-backdrop-filter: blur(1px))) {
+  .liquidGlass-effect {
+    filter: none;
+  }
+}
+
 .liquidGlass-tint {
   z-index: 1;
   background:
