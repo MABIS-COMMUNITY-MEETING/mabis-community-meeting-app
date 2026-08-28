@@ -89,10 +89,20 @@
   background: transparent;
   transition:
     transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2),
+    box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+  /* Deliberately a SECOND declaration rather than one more entry above.
+     transition is a shorthand: an engine that won't accept a custom property
+     name as a transition-property throws out the whole value, which would take
+     the transform spring and the box-shadow with it — a far worse loss than the
+     one being added. Written twice, the cascade picks this up where it parses
+     and silently keeps the line above where it doesn't.
+
+     Interpolable at all only because --glass_aqua is registered with a syntax
+     at the top of this file. Unregistered it would step, and the edges would
+     pop on release instead of settling. */
+  transition:
+    transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2),
     box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2),
-    /* Interpolable only because --glass_aqua is registered with a syntax at the
-       top of this file. Left unregistered it would step, and the edges would
-       pop on release rather than settle. */
     --glass_aqua 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
 
   /* The visual children clip to the radius. The wrapper stays unclipped so a
@@ -571,6 +581,8 @@
      on the spring above, so the surface reads as compressing toward the light
      rather than only getting smaller. */
   --glass_aqua: 0.26;
+  /* Paired declarations, same reasoning as the base rule above. */
+  transition: transform 0.09s ease-out;
   transition:
     transform 0.09s ease-out,
     --glass_aqua 0.09s ease-out;
