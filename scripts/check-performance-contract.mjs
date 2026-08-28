@@ -205,6 +205,12 @@ requireText("src/App.jsx", app, "<OptionalCustomCursor />");
 requireText("src/components/OptionalCustomCursor.jsx", optionalCursor, ['lazy(() => import("@/components/CustomCursor"))', 'lazy(() => import("~/components/CustomCursor"))']);
 forbidText("src/components/OptionalCustomCursor.jsx", optionalCursor, "lowPowerMode");
 forbidText("src/components/CustomCursor.jsx", customCursor, "lowPowerMode");
+/* The cursor is a continuously moving layer. It must stay independent from the
+   glass stylesheet and never inherit the expensive lens/material stack. */
+forbidText("src/components/CustomCursor.jsx", customCursor, "@/styles/glass.css");
+forbidText("src/components/CustomCursor.jsx", customCursor, "liquidGlass-");
+forbidText("src/styles/glass.css", glass, ".cursor-ring");
+requireText("src/index.css", css, ".cursor-ring-label");
 requireText("src/components/CustomCursor.jsx", customCursor, "if (!pointer.seen) return true;");
 requireText("src/components/CustomCursor.jsx", customCursor, "if (!visible || dotMoved");
 forbidText("src/index.css", css, "html.performance-lite .cursor-dot");
@@ -315,10 +321,11 @@ requireText("solid/solid-motion.css", motionCss, "--glass-lens-filter: opacity(1
 requireText("solid/solid-motion.css", motionCss, "html.is-scrolling .site-header-shell > .lg-scroll-edge");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
-/* The grain is the material, so its two defining numbers are pinned the way the
-   blur radius used to be: a dense, fine turbulence at full strength. Drop
-   either and the surface quietly goes back to being a plain tinted panel. */
-requireText("src/styles/glass.css", glass, "baseFrequency='1.5'");
+/* The grain is the material. Pin the supplied dense self-contained texture and
+   its neutral white-to-black overlay so it cannot quietly regress to frost. */
+requireText("src/styles/glass.css", glass, "baseFrequency%3D%221.50%22");
+requireText("src/styles/glass.css", glass, "linear-gradient(179deg, #ffffff, #000000)");
+requireText("src/styles/glass.css", glass, "background-size: 200px 200px, 100% 100%");
 requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
 requireText("src/styles/glass.css", glass, "data:image/svg+xml");
 /* The frost is off: the material is grain now (.liquidGlass-matte), so every
@@ -366,19 +373,24 @@ requireText("solid/components/Glass.jsx", glassComponentSolid, [
   "liquidGlass-effect", "liquidGlass-tint", "liquidGlass-matte",
   "liquidGlass-shine", "liquidGlass-text",
 ]);
-/* The lens graph. feImage carries the prebaked displacement ramp (feTurbulence
-   is noise and cannot describe an edge), and the three feDisplacementMap passes
-   at different scales are the chromatic dispersion that reads as thickness.
-   Losing any of them turns the lens back into a plain blur. */
-requireText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
-requireText("solid/components/Glass.jsx", glassComponentSolid, 'preserveAspectRatio="none"');
-if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length < 3) {
+/* Keep one shared procedural lens at the persistent header. One turbulence map
+   plus one displacement pass is the lowest useful graph: there is no embedded
+   bitmap, output blur, per-channel graph, or per-surface SVG duplication. */
+requireText("solid/components/Glass.jsx", glassComponentSolid, "export function GlassFilterDefs()");
+requireText("solid/components/Glass.jsx", glassComponentSolid, "<feTurbulence");
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'baseFrequency="0.008 0.014"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'numOctaves="1"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="38"');
+requireText("solid/components/Glass.jsx", glassComponentSolid, 'x="-15%"');
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
+forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feGaussianBlur");
+if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 1) {
   failures.push(
-    "solid/components/Glass.jsx: the lens needs three feDisplacementMap passes, one per colour "
-    + "channel. Fewer than that is a plain displacement with no chromatic dispersion.",
+    "solid/components/Glass.jsx: keep exactly one shared feDisplacementMap pass; extra passes "
+    + "multiply compositing work on every frame.",
   );
 }
-requireText("solid/components/Glass.jsx", glassComponentSolid, "<feDisplacementMap");
+requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, "<GlassFilterDefs />");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "src=");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "https://");
 forbidText("src/styles/glass.css", glass, "https://");
