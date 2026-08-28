@@ -1,9 +1,10 @@
-import { createSignal, createMemo, Show, For, Index } from "solid-js";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
+import { createSignal, createMemo, createEffect, onMount, onCleanup, Show, For, Index } from "solid-js";
+import { useMutation, useQueryClient } from "@tanstack/solid-query";
 import { Plus, Users, UserMinus, Maximize2, X } from "lucide-solid";
 import { base44 } from "@/api/base44Client";
 import { displayName } from "@/lib/names";
 import { useActivePresence } from "~/lib/usePresence";
+import { MEMBER_QUERY_KEY } from "~/lib/members-query";
 import { Button, Input } from "~/components/ui";
 import { Select } from "~/components/ui/select";
 import { JapaneseText } from "~/components/primitives";
@@ -20,6 +21,39 @@ const ROLE_CONFIG = {
 };
 
 const ROLE_OPTIONS = Object.entries(ROLE_CONFIG).map(([value, c]) => ({ value, label: c.label }));
+
+const MEMBER_RENDER_ORDER = ["chair", "minutes", "admin", "editor", "student", "teacher"];
+const FIRST_MEMBER_ROWS = 24;
+const MEMBER_ROW_BATCH = 24;
+
+/*
+ * Run after the browser has had a rendering opportunity. The timer after rAF
+ * matters: promise continuations inside rAF still run before paint.
+ */
+function afterNextPaint(fn) {
+  let frame = 0;
+  let timer = 0;
+  let cancelled = false;
+  const run = () => {
+    if (!cancelled) fn();
+  };
+
+  if (typeof document === "undefined" || document.hidden
+      || typeof requestAnimationFrame !== "function") {
+    timer = setTimeout(run, 0);
+  } else {
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      timer = setTimeout(run, 0);
+    });
+  }
+
+  return () => {
+    cancelled = true;
+    if (frame) cancelAnimationFrame(frame);
+    if (timer) clearTimeout(timer);
+  };
+}
 
 /*
  * MembersWidget — Solid port of src/components/MembersWidget.jsx.
@@ -150,20 +184,34 @@ function RemoveMemberPanel(props) {
 
 export default function MembersWidget(props) {
   const queryClient = useQueryClient();
-  const activeEmails = useActivePresence();
+  const [presenceReady, setPresenceReady] = createSignal(false);
+  const activeEmails = useActivePresence(presenceReady);
 
   const [name, setName] = createSignal("");
   const [email, setEmail] = createSignal("");
   const [newRole, setNewRole] = createSignal("student");
   const [fullscreen, setFullscreen] = createSignal(false);
+  const [renderLimit, setRenderLimit] = createSignal(FIRST_MEMBER_ROWS);
 
-  const membersQuery = useQuery(() => ({
-    queryKey: ["members"],
-    queryFn: () => base44.entities.Member.list("name", 200),
-    placeholderData: (prev) => prev,
-  }));
+  /*
+   * Home owns the roster query and passes the same cached array to every
+   * widget. Creating a second observer here added setup work while giving
+   * Members no data that Home had not already fetched.
+   */
+  const members = () => Array.isArray(props.members) ? props.members : [];
 
-  const members = () => membersQuery.data || [];
+  /*
+   * Active dots are supplemental. Starting their query and realtime transport
+   * while 57 member rows are mounting makes the first useful paint compete
+   * with work nobody can see yet, so let the roster paint first.
+   */
+  let stopPresenceStart = () => {};
+  onMount(() => {
+    stopPresenceStart = afterNextPaint(() => {
+      stopPresenceStart = afterNextPaint(() => setPresenceReady(true));
+    });
+  });
+  onCleanup(() => stopPresenceStart());
 
   const add = useMutation(() => ({
     // Granting a second permanent role adds a NEW row for the same person. A
@@ -180,7 +228,7 @@ export default function MembersWidget(props) {
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: MEMBER_QUERY_KEY });
       setName(""); setEmail(""); setNewRole("student");
     },
   }));
@@ -214,6 +262,39 @@ export default function MembersWidget(props) {
     admin:   members().filter((m) => m.role === "admin"),
     editor:  members().filter((m) => m.role === "editor"),
   }));
+
+  /*
+   * The old render mounted the entire roster, including one Kobalte Select
+   * state machine per editable row, in a single task. Paint the first 24 rows
+   * immediately, then add bounded batches after successive paints. Counts,
+   * ordering, controls, and data stay identical; only the scheduling changes.
+   */
+  createEffect(() => {
+    const total = members().length;
+    let rendered = Math.min(total, FIRST_MEMBER_ROWS);
+    let stop = () => {};
+    setRenderLimit(rendered);
+
+    const append = () => {
+      rendered = Math.min(total, rendered + MEMBER_ROW_BATCH);
+      setRenderLimit(rendered);
+      if (rendered < total) stop = afterNextPaint(append);
+    };
+
+    if (rendered < total) stop = afterNextPaint(append);
+    onCleanup(() => stop());
+  });
+
+  const visibleGrouped = createMemo(() => {
+    let remaining = renderLimit();
+    const visible = {};
+    for (const role of MEMBER_RENDER_ORDER) {
+      const list = grouped()[role];
+      visible[role] = list.slice(0, remaining);
+      remaining = Math.max(0, remaining - list.length);
+    }
+    return visible;
+  });
 
   const isActive = (m) => activeEmails().has((m.email || "").toLowerCase());
 
@@ -292,7 +373,7 @@ export default function MembersWidget(props) {
                   <Show when={grouped()[role()].length === 0}>
                     <p class="text-muted-foreground text-xs py-1.5">None assigned</p>
                   </Show>
-                  <For each={grouped()[role()]}>
+                  <For each={visibleGrouped()[role()]}>
                     {(m) => (
                       <MemberRow
                         m={m}
@@ -320,7 +401,7 @@ export default function MembersWidget(props) {
                 <Show when={grouped()[role()].length === 0}>
                   <p class="text-muted-foreground text-xs py-1.5 col-span-2">None yet</p>
                 </Show>
-                <For each={grouped()[role()]}>
+                <For each={visibleGrouped()[role()]}>
                   {(m) => (
                     <MemberRow
                       m={m}
