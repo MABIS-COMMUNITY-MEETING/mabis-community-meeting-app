@@ -365,16 +365,20 @@ requireText(
 );
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
-/* The grain is the material. Pin the supplied dense self-contained texture and
-   its neutral white-to-black overlay so it cannot quietly regress to frost. */
+/* The grain is the material. Pin the dense self-contained texture and its
+   luminance sweep so it cannot quietly regress to frost — but the sweep is
+   pinned by SHAPE, not by literal colour. Requiring #ffffff → #000000 is what
+   kept reinstating a pure-white sheet over the pane on dark themes; the loop
+   further down forbids literals in these layers outright. */
 requireText("src/styles/glass.css", glass, "baseFrequency%3D%221.50%22");
-requireText("src/styles/glass.css", glass, "linear-gradient(179deg, #ffffff, #000000)");
+requireText("src/styles/glass.css", glass, "linear-gradient(179deg, hsl(var(--background)), hsl(var(--foreground)))");
 requireText("src/styles/glass.css", glass, "background-size: 200px 200px, 100% 100%");
 requireText("src/styles/glass.css", glass, "background-blend-mode: overlay");
 requireText("src/styles/glass.css", glass, "data:image/svg+xml");
 /* Material strength is intentional: grain must dominate the old icy shine and
-   the persistent navigation must keep a substantial neutral body. */
-requireText("src/styles/glass.css", glass, "--glass_matte: 0.74;");
+   the persistent navigation must keep a substantial neutral body. 0.74 was past
+   that — the sweep stopped seasoning the surface and became a sheet over it. */
+requireText("src/styles/glass.css", glass, "--glass_matte: 0.55;");
 requireText("src/styles/glass.css", glass, "--glass-scroll-spec-opacity: 0.22;");
 requireText("src/styles/glass.css", glass, [
   ".lg-navigation {\n  --glass_saturation: 128%;\n  --glass_brightness: 1.02;\n  --glass_tint: 0.50;",
