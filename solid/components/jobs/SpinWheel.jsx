@@ -44,6 +44,8 @@ export default function SpinWheel(props) {
     ring: "#7a1830",
     font: "'GNUFreeMonoUI'",
   };
+  let wheelFaceDirty = true;
+  let lastRotationStyle = "";
 
   const refreshAppearance = () => {
     const styles = getComputedStyle(document.documentElement);
@@ -57,12 +59,19 @@ export default function SpinWheel(props) {
       ring: themeColor("--ring", "#7a1830"),
       font: styles.getPropertyValue("--font-body").trim() || "'GNUFreeMonoUI'",
     };
+    wheelFaceDirty = true;
   };
 
-  const drawWheel = (rot) => {
+  /*
+   * Paint the detailed wheel face only when its data, theme, size or DPR
+   * changes. During a spin the browser rotates this one rasterized layer with
+   * a compositor transform; names, shadows and every arc are no longer
+   * repainted at the display refresh rate.
+   */
+  const drawWheelFace = () => {
     const canvas = canvasEl;
     const list = members();
-    if (!canvas || list.length === 0) return;
+    if (!canvas || list.length === 0 || !wheelFaceDirty) return;
 
     const s = size();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -89,8 +98,8 @@ export default function SpinWheel(props) {
     const { primary: primaryColor, secondary: secondaryColor, ring: primaryDark, font: uiFont } = appearance;
 
     list.forEach((m, i) => {
-      const start = rot + i * arc;
-      const end = rot + (i + 1) * arc;
+      const start = i * arc;
+      const end = (i + 1) * arc;
       const isRed = i % 2 === 0;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
@@ -131,6 +140,21 @@ export default function SpinWheel(props) {
     ctx.fillStyle = secondaryColor; ctx.fill();
     ctx.beginPath(); ctx.arc(cx, cy, 6, 0, 2 * Math.PI);
     ctx.fillStyle = "#fff"; ctx.fill();
+
+    wheelFaceDirty = false;
+  };
+
+  const paintRotation = (rot) => {
+    if (!canvasEl) return;
+    const next = `translateZ(0) rotate(${rot}rad)`;
+    if (next === lastRotationStyle) return;
+    canvasEl.style.transform = next;
+    lastRotationStyle = next;
+  };
+
+  const drawWheel = (rot) => {
+    drawWheelFace();
+    paintRotation(rot);
   };
 
   onMount(() => {
@@ -138,7 +162,10 @@ export default function SpinWheel(props) {
     refreshAppearance();
     drawWheel(rotation);
 
-    const redraw = () => drawWheel(rotation);
+    const redraw = () => {
+      wheelFaceDirty = true;
+      drawWheel(rotation);
+    };
     const scheduleAppearanceRedraw = () => {
       if (appearanceRaf) return;
       appearanceRaf = requestAnimationFrame(() => {
@@ -170,7 +197,10 @@ export default function SpinWheel(props) {
   // useCallback'd on [members, size], so the mount effect's dependency
   // (drawWheel's identity) changed too. Nothing does that automatically here,
   // so it needs its own effect — otherwise the wheel visibly goes stale.
-  createEffect(on([members, size], () => drawWheel(rotation), { defer: true }));
+  createEffect(on([members, size], () => {
+    wheelFaceDirty = true;
+    drawWheel(rotation);
+  }, { defer: true }));
 
   // Pointer at top (12 o'clock = -π/2) — wheelofnames style
   const POINTER_ANGLE = -Math.PI / 2;
@@ -181,6 +211,7 @@ export default function SpinWheel(props) {
     spinning = true;
     const currentSpinGeneration = ++spinGeneration;
     setIsSpinning(true);
+    if (canvasEl) canvasEl.style.willChange = "transform";
     playWheelStart();
 
     const fullRotations = 5 + Math.random() * 3;
@@ -206,7 +237,7 @@ export default function SpinWheel(props) {
       if (!mounted || currentSpinGeneration !== spinGeneration) return;
       const p = Math.min((now - start) / duration, 1);
       rotation = startRot + totalRot * easeOut(p);
-      drawWheel(rotation);
+      paintRotation(rotation);
       const seg = segmentAt(rotation);
       if (seg !== lastSeg) {
         lastSeg = seg;
@@ -219,7 +250,8 @@ export default function SpinWheel(props) {
         // Keep the angle bounded after every run. Without normalization it
         // grows forever and eventually loses precision after enough spins.
         rotation = normalizeRotation(rotation);
-        drawWheel(rotation);
+        paintRotation(rotation);
+        if (canvasEl) canvasEl.style.willChange = "auto";
         raf = null;
         spinning = false;
         setIsSpinning(false);
