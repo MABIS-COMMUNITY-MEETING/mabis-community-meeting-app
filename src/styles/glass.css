@@ -149,15 +149,29 @@
     );
 }
 
+/* ── Grain, not frost ───────────────────────────────────────────────
+
+   This layer is what gives the material its character now. baseFrequency went
+   0.65 → 1.5 and the noise rect 0.72 → 1, which is a much finer and much denser
+   grain — tooth rather than haze — and the backdrop blur went to zero to match
+   (see --glass_blur on .lg-surface). Novesce asked for grainy instead of
+   frosted; those two changes together are that.
+
+   The gradient is --bone → --ink rather than literal #ffffff → #000000. Under
+   `overlay` those are doing luminance work, not colour work, and --bone/--ink
+   are exactly the design system's white and black: themes.js always assigns
+   --bone the lighter of background/foreground and --ink the darker. So the
+   modulation is identical while still tracking every theme, including dark ones
+   and Material You. */
 .liquidGlass-matte {
   z-index: 2;
   opacity: var(--glass_matte);
   background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.72'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E"),
     linear-gradient(
-      135deg,
-      hsl(var(--background) / 0.88),
-      hsl(var(--primary) / 0.24)
+      179deg,
+      hsl(var(--bone)),
+      hsl(var(--ink))
     );
   background-position: center, center;
   background-size: 160px 160px, 100% 100%;
