@@ -167,18 +167,20 @@
 
 /* ── The distortion ────────────────────────────────────────────────
 
-   On `filter`, exactly as the reference effect has it. It was moved into the
-   backdrop-filter list for a while on the reasoning that this span has no
-   pixels of its own, so `filter` could not be refracting anything — which is
-   sound in theory and useless in practice, because **Chromium does not support
-   url() references in backdrop-filter at all**. It accepts only filter
-   functions there, so the reference was silently ignored: frost and grain kept
-   working and the distortion simply never appeared. That is the whole bug.
+   On `filter`, which is the one place every engine with SVG filter support will
+   apply it. That makes this the base layer; the Chromium branch below moves the
+   reference onto `backdrop-filter` instead, where it displaces the page behind
+   the pane rather than the pane's own (empty) pixels.
 
-   Back on `filter`, where every engine that supports SVG filters applies it.
-   `none` is a valid whole value for the property, so the fallback can be `none`
-   here — unlike inside a backdrop-filter list, where it would have invalidated
-   the entire declaration.
+   Do not "simplify" this by deleting the branch and keeping only one of the
+   two. That was tried, on the claim that Chromium ignores url() in a
+   backdrop-filter list. **The claim was false** — Chromium is in fact the only
+   engine that renders it — and removing the branch cost the refraction
+   entirely. The correction is written out at the branch below.
+
+   `none` is a valid whole value for `filter`, so the var() fallback can be
+   `none` here — unlike inside a backdrop-filter list, where a bare `none` among
+   other functions would invalidate the entire declaration.
 
    The cost of being correct is the Gecko conflict below. */
 .liquidGlass-effect {
