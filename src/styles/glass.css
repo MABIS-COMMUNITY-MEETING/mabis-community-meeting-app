@@ -144,6 +144,33 @@
   filter: var(--glass-distortion-filter, none);
 }
 
+/* ── The chromatic lens, where the engine can refract a backdrop ───────────────
+
+   Two different techniques, and they are not interchangeable.
+
+   The `filter` above distorts the pane's own composited result. It works
+   everywhere SVG filters work, which is why it is the base.
+
+   This one puts the SVG reference in the backdrop-filter list, so the page
+   BEHIND the pane is what gets displaced — three passes at -20/-24/-28 split
+   per colour channel and screened back together, which is dispersion, and the
+   reason it reads as thick glass rather than as texture. Chromium supports an
+   SVG reference there; WebKit and Gecko do not.
+
+   I removed this once claiming Chromium could not do it. That was wrong and it
+   cost the effect. Restored, with the turbulence filter cleared here so the two
+   do not compound, and left in place everywhere this rule does not apply.
+
+   @supports cannot tell these engines apart — all three parse url() in a
+   backdrop-filter, only one renders it — so a browser that parses but ignores
+   it keeps the turbulence distortion instead of losing both. */
+@supports (backdrop-filter: url("#lens")) and (not (-webkit-backdrop-filter: blur(1px))) {
+  .liquidGlass-effect {
+    filter: none;
+    backdrop-filter: var(--glass-lens-filter, none) blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+  }
+}
+
 /* ── Firefox: keep the frost, drop the distortion ─────────────────────────
 
    The rule above puts `backdrop-filter` and `filter` on one element. Gecko will
