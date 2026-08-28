@@ -259,9 +259,8 @@ forbidText("src/lib/physics/pointer.js", pointer, "latestEl = cursorTargetAt(e.t
 requireText("src/lib/physics/pointer.js", pointer, "if (pointer.inside) return;");
 requireText("src/lib/physics/scheduler.js", physicsScheduler, "const primed = new WeakSet()");
 requireText("src/lib/physics/scheduler.js", physicsScheduler, "const activeSubs = []");
-requireText("src/lib/physics/scheduler.js", physicsScheduler, "const runAll = firstWakeFrame");
-requireText("src/lib/physics/scheduler.js", physicsScheduler, "firstWakeFrame = true");
-requireText("src/lib/physics/scheduler.js", physicsScheduler, "if (runAll || initial || !s.settled || !s.settled())");
+forbidText("src/lib/physics/scheduler.js", physicsScheduler, "firstWakeFrame");
+requireText("src/lib/physics/scheduler.js", physicsScheduler, "if (initial || !s.settled || !s.settled())");
 requireText("src/lib/physics/scheduler.js", physicsScheduler, "for (const s of activeSubs) s.step(FIXED_DT)");
 requireText("src/lib/physics/scheduler.js", physicsScheduler, "for (const s of activeSubs) {\n    s.render(alpha);");
 requireText("src/lib/physics/pointer.js", pointer, 'const LITE_SELECTOR = "[data-cursor-lite]"');
@@ -288,6 +287,9 @@ requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, 'add
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "sample: () =>");
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "wake();");
 requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "settled: () => !needsMeasure");
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "new IntersectionObserver");
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, '{ rootMargin: "100% 0px" }');
+requireText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "proximityObserver?.disconnect()");
 forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
 /* A service-worker handoff must never replace an active meeting/document
    with the boot screen. The new worker waits until old tabs close, keeping its
@@ -302,6 +304,9 @@ forbidText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "claimRelo
 requireText("solid/components/AppErrorBoundary.jsx", appErrorBoundary, "onClick={() => window.location.reload()}");
 
 requireText("src/index.css", css, "html.is-scrolling .grain-layer");
+requireText("solid/solid-motion.css", motionCss, "html.is-scrolling .site-header-shell > .lg-surface > .liquidGlass-effect");
+requireText("solid/solid-motion.css", motionCss, "--glass-lens-filter: opacity(1);");
+requireText("solid/solid-motion.css", motionCss, "html.is-scrolling .site-header-shell > .lg-scroll-edge");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
 requireText("src/styles/glass.css", glass, ".liquidGlass-matte");
 /* The grain is the material, so its two defining numbers are pinned the way the
