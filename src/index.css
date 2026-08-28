@@ -1413,6 +1413,40 @@ input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius
 .mask-edges-y { -webkit-mask-image:linear-gradient(to bottom,transparent,#000 6%,#000 94%,transparent); mask-image:linear-gradient(to bottom,transparent,#000 6%,#000 94%,transparent); }
 .huge-crop { font-size: clamp(4rem, 22vw, 18rem); line-height: .82; letter-spacing: -0.06em; }
 
+/* ── Splash on a short viewport ─────────────────────────────────────────
+
+   A phone in landscape is around 360px tall. The stage reserves 5rem of padding
+   top and bottom, centres a headline sized off the VIEWPORT WIDTH — which is
+   large in landscape — and stacks an eyebrow, a rule, a paragraph and the enter
+   button under it. That does not fit, and the button is the thing at the bottom
+   that stops fitting first.
+
+   Height is the scarce axis here, so the type is sized off it: 12vh keeps the
+   headline proportional to what is actually available rather than to the wide
+   edge. The decorative layers that only cost space go.
+
+   Scoped by height, not by device: a small desktop window gets the same
+   treatment, which is the point. */
+@media (max-height: 560px) and (min-width: 640px) {
+  .splash-centre {
+    justify-content: flex-start;
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+  }
+  .splash-centre h1 {
+    font-size: clamp(2rem, 12vh, 5rem);
+  }
+  .splash-centre .huge-crop { display: none; }
+  .splash-stage .corner-bracket { display: none; }
+}
+
+/* Very short: drop the supporting paragraph too, so the headline and the way
+   in are both on screen without scrolling. */
+@media (max-height: 430px) {
+  .splash-centre p,
+  .splash-centre .splash-lede { display: none; }
+}
+
 /* ── micro-detail utilities ── */
 @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.55)} }
 .pulse-dot { animation: pulse-dot 1.7s ease-in-out infinite; }
