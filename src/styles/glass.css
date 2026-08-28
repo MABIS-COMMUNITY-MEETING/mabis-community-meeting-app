@@ -140,6 +140,10 @@
   inset: 0;
   overflow: hidden;
   border-radius: inherit;
+  /* The corners are shaped on .lg-surface. Every clipped layer has to take the
+     same shape or the frost, grain and sheen would square off inside a
+     squircle. Dropped at parse where unsupported, exactly like the parent. */
+  corner-shape: inherit;
   pointer-events: none;
 }
 
