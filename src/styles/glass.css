@@ -141,10 +141,10 @@
        what's behind it without implying a light source. --ink is the design
        system's black, so this stays a shading edge on dark themes instead of
        inverting into a glow. */
-    -1px 0 0 hsl(var(--ink) / 0.15),
-    1px 0 0 hsl(var(--ink) / 0.15),
-    0 -1px 0 hsl(var(--ink) / 0.065),
-    0 1px 0 hsl(var(--ink) / 0.065),
+    -1px 0 0 hsl(var(--ink) / calc(0.15 * var(--glass_hairline, 1))),
+    1px 0 0 hsl(var(--ink) / calc(0.15 * var(--glass_hairline, 1))),
+    0 -1px 0 hsl(var(--ink) / calc(0.065 * var(--glass_hairline, 1))),
+    0 1px 0 hsl(var(--ink) / calc(0.065 * var(--glass_hairline, 1))),
     var(--glass_shadow);
 }
 
@@ -467,6 +467,16 @@
       hsl(var(--bone) / var(--glass_spec)),
       hsl(var(--bone) / calc(var(--glass_spec) * 0.28)) 26%,
       transparent 58%),
+    /* Same lozenge as the base surface, opened up for the larger pane: a thick
+       panel is a bigger piece of glass, so the light returning at its lower
+       edge sits further down and reads softer. */
+    linear-gradient(
+      to bottom,
+      hsl(var(--bone) / calc(var(--glass_aqua) * 0.75)),
+      hsl(var(--bone) / calc(var(--glass_aqua) * 0.10)) 26%,
+      transparent 60%,
+      hsl(var(--bone) / calc(var(--glass_aqua) * 0.45))
+    ),
     linear-gradient(to bottom, hsl(var(--bone) / 0.05), transparent 38%);
 }
 
@@ -486,6 +496,11 @@
   --glass_tint: 0.48;
   --glass_shadow: none;
   border: none;
+  /* A full-bleed scrim has no edges to define — it is the room, not an object
+     in it. The hairlines would only draw a line down the viewport gutter. This
+     is the multiplier the base box-shadow reads, so the rule stays one
+     declaration instead of being restated here. */
+  --glass_hairline: 0;
 }
 .lg-overlay > .liquidGlass-matte,
 .lg-overlay > .liquidGlass-shine,
