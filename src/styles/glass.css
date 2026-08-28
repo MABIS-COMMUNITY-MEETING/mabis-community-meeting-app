@@ -259,6 +259,24 @@
       hsl(var(--bone) / calc(var(--glass_spec) * 0.3)) 24%,
       transparent 55%
     ),
+    /* ── The Aqua lozenge ─────────────────────────────────────────────
+
+       A vertical body: a touch lighter at the very top, the surface's own value
+       through the middle, and lighter again at the very bottom. That last part
+       is the bit that reads as Aqua rather than as a plain sheen — light
+       returning at the lower edge is what makes a flat pane look like a curved
+       lozenge catching the room.
+
+       In tokens rather than the reference's literal whites, so it holds up on
+       dark themes; --bone is the design system's white. It sits UNDER the
+       pointer hotspot above and over the frost and grain, which are untouched. */
+    linear-gradient(
+      to bottom,
+      hsl(var(--bone) / calc(var(--glass_aqua) * 0.9)),
+      hsl(var(--bone) / calc(var(--glass_aqua) * 0.12)) 22%,
+      transparent 52%,
+      hsl(var(--bone) / calc(var(--glass_aqua) * 0.55))
+    ),
     linear-gradient(to bottom, hsl(var(--bone) / 0.04), transparent 42%);
   /* The rim from the reference surface, in tokens. Two bright inset strokes
      for the lit edge and three wide dark ones for the internal falloff — that
@@ -266,6 +284,12 @@
      work than the tint does. --bone/--ink rather than the original's literal
      white and lab() near-black, so it holds up on dark themes. */
   box-shadow:
+    /* The two tight Aqua edge lines: a 2px highlight hugging the top inside
+       edge and a slightly stronger one hugging the bottom. The negative spread
+       is what keeps them as lines on the edge instead of a glow across the
+       face — that restraint is the "refined" half of the reference. */
+    inset 0 2px 2px -2px hsl(var(--bone) / calc(var(--glass_aqua) * 1.6)),
+    inset 0 -2px 2px -2px hsl(var(--bone) / calc(var(--glass_aqua) * 2.2)),
     inset 0 0 2px 1px hsl(var(--bone) / 0.22),
     inset 0 0 10px 4px hsl(var(--bone) / 0.08),
     inset 0 4px 16px hsl(var(--ink) / 0.05),
