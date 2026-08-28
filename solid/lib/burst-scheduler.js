@@ -87,21 +87,21 @@ const MAX_PENALTY = 40;
  * BORE's kernel slice is a preemption budget; JavaScript cannot preempt a
  * running function, so this is a cooperative budget between tasks. It tracks
  * the panel instead of assuming 60 or 144 Hz: at most 30% of a measured frame
- * is offered to warm-up work, capped at 5 ms for throughput and floored at
- * 1 ms so high-refresh displays do not spend more time scheduling than doing.
+ * is offered to warm-up work and capped at 5 ms for throughput. There is no
+ * fixed floor: a floor becomes a hidden maximum supported refresh rate once
+ * the display's entire frame interval is shorter than that constant.
  *
  * Before the refresh estimator has enough evidence, refreshIntervalMs() is
  * given a conservative 120 Hz fallback. This protects 120/144/240 Hz first
  * loads instead of spending a 60 Hz-sized slice before the panel is measured.
  */
 const SLICE_SHARE = 0.30;
-const MIN_SLICE_MS = 1;
 const MAX_SLICE_MS = 5;
 
 export function cooperativeSliceMs(intervalMs = refreshIntervalMs(1000 / 120)) {
   const interval = Number(intervalMs);
   const safeInterval = Number.isFinite(interval) && interval > 0 ? interval : 1000 / 120;
-  return Math.max(MIN_SLICE_MS, Math.min(MAX_SLICE_MS, safeInterval * SLICE_SHARE));
+  return Math.min(MAX_SLICE_MS, safeInterval * SLICE_SHARE);
 }
 
 /* Bounds what gets persisted. Labels are stable, but a rename or a new section
