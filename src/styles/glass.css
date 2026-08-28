@@ -497,6 +497,30 @@
    uses a cached material plane, so reserving more compositor memory at that
    moment would work against the fast path. */
 
+/* ── No lens while something is animating behind the pane ───────────────────
+
+   A backdrop-filter's output is a function of its backdrop, so it has to be
+   recomputed whenever anything behind it repaints. The header is fixed over the
+   whole page, and the Pride ambience is a full-viewport fixed field whose
+   lights drift on infinite compositor animations — so with a Pride theme on,
+   the three displacement passes, two blends and closing blur re-ran every
+   frame, forever, with nobody touching the page.
+
+   html.is-scrolling already covers the scroll gesture. This covers the case it
+   cannot see: continuous background motion at rest, which is worse, because it
+   never stops and there is no gesture to blame it on.
+
+   Only the lens goes. Blur, tint, grain and rim are ordinary paint and stay, so
+   the material still reads as glass — it just stops re-deriving its refraction
+   sixty times a second for an effect nobody can perceive against moving light.
+
+   Not a theme override in the sense check-theme-balance forbids: it keys on the
+   ambience being ACTIVE, not on which theme is chosen, and every Pride theme
+   gets the identical treatment. */
+body.pride-active .lg-surface {
+  --glass-lens-filter: opacity(1);
+}
+
 /* ── lite tier: cheaper glass, still glass ─────────────────────────
    The SVG displacement, subtle 1.56px frost and cached shine are optional;
    the static matte grain is not. The lite tier removes those live optical
