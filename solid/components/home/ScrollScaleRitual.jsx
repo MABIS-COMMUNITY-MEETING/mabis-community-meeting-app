@@ -50,6 +50,7 @@ export default function ScrollScaleRitual() {
       if (stopScrollMotion) return;
 
       const state = { x: 0, v: 0 };
+      let previousX = 0;
       let target = 0;
       let needsMeasure = true;
 
@@ -60,7 +61,7 @@ export default function ScrollScaleRitual() {
       };
 
       measure();
-      state.x = target;
+      state.x = previousX = target;
       lineEl.style.willChange = "transform, opacity";
 
       const markForMeasure = () => {
@@ -77,10 +78,14 @@ export default function ScrollScaleRitual() {
           needsMeasure = false;
           measure();
         },
-        step: (dt) => integrateSpring(state, target, omega, zeta, dt),
-        render: () => {
-          lineEl.style.transform = `translateZ(0) scale(${lerp(0.82, 1.28, state.x).toFixed(4)})`;
-          lineEl.style.opacity = opacityFor(state.x).toFixed(3);
+        step: (dt) => {
+          previousX = state.x;
+          integrateSpring(state, target, omega, zeta, dt);
+        },
+        render: (alpha) => {
+          const interpolated = lerp(previousX, state.x, Math.max(0, Math.min(1, alpha)));
+          lineEl.style.transform = `translateZ(0) scale(${lerp(0.82, 1.28, interpolated).toFixed(4)})`;
+          lineEl.style.opacity = opacityFor(interpolated).toFixed(3);
         },
         settled: () => !needsMeasure
           && Math.abs(state.x - target) < 0.0005
