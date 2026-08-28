@@ -228,6 +228,9 @@ for (const hz of [30, 50, 60, 75, 120, 144, 240, 360]) {
     /sampleFrame\(now\)/.test(scheduler));
   check("the physics loop breaks the chain when it parks",
     /resetFrameChain\(\)/.test(scheduler));
+  check("one wake never forces already-settled subscribers to animate",
+    !/firstWakeFrame|runAll/.test(scheduler)
+      && /if \(initial \|\| !s\.settled \|\| !s\.settled\(\)\)/.test(scheduler));
   check("the refresh estimator has no minimum interval / maximum Hz cap",
     !/MIN_INTERVAL_MS/.test(src("../src/lib/physics/refresh-rate.js")));
   check("refresh-estimator work is throttled by time rather than frame count",
