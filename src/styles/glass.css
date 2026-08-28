@@ -27,6 +27,21 @@
   --glass-scroll-tint-alpha: 0.10;
 }
 
+/*
+ * Registered so it can be TRANSITIONED.
+ *
+ * A plain custom property is a string as far as animation is concerned, so it
+ * snaps between values. Declaring a syntax gives it a type the engine can
+ * interpolate — that is the mechanism the reference surface leans on for its
+ * press response. Every Aqua alpha below is derived from this one number, so
+ * animating it moves the whole treatment together.
+ */
+@property --glass_aqua {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.14;
+}
+
 .lg-surface {
   /* Subtle frost under the grain: 1.56px is exactly 13% of the original
      12px radius. It softens the sampled backdrop without returning to the old
