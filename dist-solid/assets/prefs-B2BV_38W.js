@@ -1,1 +1,0 @@
-import{w as s,aG as t,ah as n,C as r}from"./index-1LJNlAP4.js";function u(){const[o,a]=s(t()),e=()=>a(t());return window.addEventListener(n,e),window.addEventListener("storage",e),r(()=>{window.removeEventListener(n,e),window.removeEventListener("storage",e)}),o}export{u};
