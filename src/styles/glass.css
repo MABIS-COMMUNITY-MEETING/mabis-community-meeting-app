@@ -29,7 +29,9 @@
 .lg-surface {
   /* The frosted treatment diffuses the page before the local distortion,
      embedded grain and inset shine are composited over it. */
-  --glass_blur: 12px;
+  /* 12px → 9px: 25% less frost, at Novesce's request. Every other blur in this
+     file moved by the same proportion so the tiers keep their relationship. */
+  --glass_blur: 9px;
   --glass_saturation: 122%;
   --glass_brightness: 1.02;
   --glass_tint: 0.56;
@@ -582,11 +584,11 @@ html.animations-disabled .lg-scroll-edge {
    Blur remains constant between frames, so there is no interpolation loop. */
 
 /* ── mobile: keep a bounded frost, drop the SVG lens pass ───────
-   The 8px backdrop keeps the frosted read without paying the desktop radius.
+   The 6px backdrop keeps the frosted read without paying the desktop radius.
    The local displacement filter is optional and remains disabled here. */
 @media (max-width: 640px) {
   .lg-surface {
-    --glass_blur: 8px;
+    --glass_blur: 6px;
     --glass_tint: 0.62;
     --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
   }
