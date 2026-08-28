@@ -116,11 +116,29 @@
    */
 
   border: 1px solid hsl(var(--bone) / 0.20);
+
+  /* Squircle corners, the Aqua way. Progressive on purpose: engines that don't
+     know `corner-shape` drop the declaration at parse time and keep the plain
+     rounded rect, which is exactly the current look, so there is nothing to
+     fall back to. 1.1 is barely past a circular arc — enough to take the pinch
+     out of the corner without reading as a blob. */
+  corner-shape: superellipse(1.1);
+
   /* inner top edge lit, inner bottom edge shaded → thickness */
   box-shadow:
     inset 0 1px 0 hsl(var(--bone) / 0.22),
     inset 0 -1px 0 hsl(var(--ink) / 0.16),
     inset 1px 0 0 hsl(var(--bone) / 0.10),
+    /* Outer hairlines. Four 1px offsets with no blur and no spread, so each is
+       a hard line just outside the border rather than a shadow. Sides darker
+       than top and bottom — that asymmetry is what separates the pane from
+       what's behind it without implying a light source. --ink is the design
+       system's black, so this stays a shading edge on dark themes instead of
+       inverting into a glow. */
+    -1px 0 0 hsl(var(--ink) / 0.15),
+    1px 0 0 hsl(var(--ink) / 0.15),
+    0 -1px 0 hsl(var(--ink) / 0.065),
+    0 1px 0 hsl(var(--ink) / 0.065),
     var(--glass_shadow);
 }
 
