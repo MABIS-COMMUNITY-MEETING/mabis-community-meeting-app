@@ -238,8 +238,15 @@ for (const hz of [30, 50, 60, 75, 120, 144, 240, 360]) {
       && !/RECOMPUTE_EVERY/.test(src("../src/lib/physics/refresh-rate.js")));
   check("cooperative warm-up slices have no high-refresh floor",
     !/MIN_SLICE_MS/.test(burstScheduler));
-  check("scroll springs interpolate fixed steps at the presentation rate",
-    /render:\s*\(alpha\)/.test(ritual) && /previousX/.test(ritual));
+  /* The ritual has no spring to pace. It is static by decision — see
+     "Scrolling belongs to the browser" in README.md and the forbid rules in
+     check-performance-contract.mjs. This assertion required the scroll-driven
+     animation those rules exist to prevent, so it asserted the opposite of the
+     contract and kept the gate green while the two disagreed. What is checked
+     now is that it stays static. */
+  check("the voice-words ritual runs no scroll-driven animation",
+    !/render:\s*\(alpha\)/.test(ritual) && !/integrateSpring/.test(ritual),
+    "a fixed-step spring is back in ScrollScaleRitual; it must stay static");
   check("magnetic controls interpolate fixed steps at the presentation rate",
     /render:\s*\(alpha\)/.test(primitives) && /previousX/.test(primitives));
   check("splash parallax interpolates fixed steps at the presentation rate",
