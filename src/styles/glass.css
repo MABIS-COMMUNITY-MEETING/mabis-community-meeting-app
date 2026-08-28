@@ -58,7 +58,7 @@
   /* No-op by default, so a .lg-surface rendered without Glass.jsx still has a
      valid backdrop-filter list. Glass.jsx overrides it per instance with the
      url() of that instance's lens. */
-  --glass-lens-filter: opacity(1);
+  --glass-distortion-filter: none;
 
   position: relative;
   display: flex;
@@ -135,8 +135,9 @@
    functions and would invalidate the entire declaration. */
 .liquidGlass-effect {
   z-index: 0;
-  -webkit-backdrop-filter: var(--glass-lens-filter, opacity(1)) blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
-  backdrop-filter: var(--glass-lens-filter, opacity(1)) blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+  -webkit-backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+  backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+  filter: var(--glass-distortion-filter, none);
 }
 
 /* ── Engines that cannot put an SVG filter in a backdrop ─────────────────────
@@ -518,7 +519,7 @@
    ambience being ACTIVE, not on which theme is chosen, and every Pride theme
    gets the identical treatment. */
 body.pride-active .lg-surface {
-  --glass-lens-filter: opacity(1);
+  --glass-distortion-filter: none;
 }
 
 /* ── lite tier: cheaper glass, still glass ─────────────────────────
@@ -530,7 +531,7 @@ html.performance-lite .lg-surface {
   --glass_tint: 0.64;
   /* No live lens on weak hardware. The dense grain, tint and rim preserve the
      matte material without any backdrop capture. */
-  --glass-lens-filter: opacity(1);
+  --glass-distortion-filter: none;
   box-shadow: none;
 }
 
@@ -578,7 +579,7 @@ html.animations-disabled .lg-scroll-edge {
     --glass_blur: 0px;
     --glass_tint: 0.62;
     --glass_shadow: 0 8px 22px -14px hsl(var(--ink) / 0.32);
-    --glass-lens-filter: opacity(1);
+    --glass-distortion-filter: none;
   }
   .liquidGlass-effect {
     -webkit-backdrop-filter: none !important;
@@ -602,7 +603,7 @@ html.animations-disabled .lg-scroll-edge {
   .lg-surface {
     transform: none !important;
     transition: none;
-    --glass-lens-filter: opacity(1);
+    --glass-distortion-filter: none;
   }
   .liquidGlass-shine {
     background: linear-gradient(to bottom, hsl(var(--bone) / 0.14), transparent 45%);
