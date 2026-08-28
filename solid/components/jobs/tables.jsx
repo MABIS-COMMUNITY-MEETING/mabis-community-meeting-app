@@ -3,7 +3,7 @@ import { Portal } from "solid-js/web";
 import { Trash2, AlertCircle, CheckCircle2 } from "lucide-solid";
 import { displayName } from "@/lib/names";
 import {
-  formatMonthLabel, getScheduledDatesForMonth, getWeekStatusKeys,
+  formatMonthLabel, getScheduledDatesForMonth,
   jobPeriod, normalizeJobTitle, scheduledDaysFor,
 } from "@/lib/jobsRotation";
 import { JapaneseText } from "~/components/primitives";
@@ -69,57 +69,62 @@ export function WinnerBanner(props) {
   );
 }
 
-/** One clear status for the assignment's current week. */
-export function WeekStatus(props) {
+/** One checkbox-style status for the whole job assignment. */
+export function JobStatus(props) {
   const keys = () =>
-    getWeekStatusKeys(props.assignment, props.assignment.month_label || props.currentMonth);
+    jobPeriod(props.assignment) === "monthly"
+      ? getScheduledDatesForMonth(
+        props.assignment,
+        props.assignment.month_label || props.currentMonth,
+      )
+      : scheduledDaysFor(props.assignment);
   const done = () => props.assignment.days_completed || [];
   const notDone = () => props.assignment.not_done_days || [];
-  const weekDone = () => keys().length > 0 && keys().every((key) => done().includes(key));
-  const weekNotDone = () => keys().length > 0 && keys().some((key) => notDone().includes(key));
+  const jobDone = () => keys().length > 0 && keys().every((key) => done().includes(key));
+  const jobNotDone = () => keys().length > 0 && keys().some((key) => notDone().includes(key));
   const disabled = () => !props.canEdit || props.pending || keys().length === 0;
 
   const choose = (nextState) => {
     if (disabled()) return;
-    const isActive = nextState === "done" ? weekDone() : weekNotDone();
-    props.onWeekStatus(props.assignment, isActive ? "neutral" : nextState);
+    const isActive = nextState === "done" ? jobDone() : jobNotDone();
+    props.onJobStatus(props.assignment, isActive ? "neutral" : nextState);
   };
 
   return (
     <div
       class="flex flex-col items-center gap-1.5"
       role="group"
-      aria-label={`Weekly completion for ${normalizeJobTitle(props.assignment.job_title)}`}
+      aria-label={`Completion for ${normalizeJobTitle(props.assignment.job_title)}`}
     >
       <button
         type="button"
         onClick={() => choose("done")}
         disabled={disabled()}
-        aria-pressed={weekDone()}
-        title={weekDone() ? "Done this week — click to undo" : "Mark the whole week done"}
-        class={`inline-flex min-h-10 min-w-[150px] items-center justify-center gap-1.5 rounded-xl border-2 px-3 text-xs font-bold transition-all
-          ${weekDone()
+        aria-pressed={jobDone()}
+        title={jobDone() ? "Job checked off — click to undo" : "Check off this job"}
+        class={`inline-flex min-h-10 min-w-[140px] items-center justify-center gap-1.5 rounded-xl border-2 px-3 text-xs font-bold transition-all
+          ${jobDone()
             ? "bg-green-500 border-green-500 text-primary-foreground"
             : "border-primary/30 bg-card text-primary hover:border-primary hover:bg-primary/10"}
           ${disabled() ? "cursor-default opacity-60" : "cursor-pointer hover:-translate-y-0.5 hover:shadow-sm"}`}
       >
         <CheckCircle2 class="h-4 w-4 shrink-0" />
-        {weekDone() ? "Done this week" : "Done for this week"}
+        {jobDone() ? "Job done" : "Check off job"}
       </button>
       <button
         type="button"
         onClick={() => choose("notdone")}
         disabled={disabled()}
-        aria-pressed={weekNotDone()}
-        title={weekNotDone() ? "Not done this week — click to undo" : "Mark this week not done"}
+        aria-pressed={jobNotDone()}
+        title={jobNotDone() ? "Marked not done — click to undo" : "Mark this job not done"}
         class={`inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border px-2 text-[10px] font-bold transition-colors
-          ${weekNotDone()
+          ${jobNotDone()
             ? "bg-red-500 border-red-500 text-primary-foreground"
             : "border-border bg-card text-muted-foreground hover:border-red-300 hover:text-red-600"}
           ${disabled() ? "cursor-default opacity-60" : "cursor-pointer"}`}
       >
         <AlertCircle class="h-3 w-3 shrink-0" />
-        {weekNotDone() ? "Not done this week" : "Not done"}
+        {jobNotDone() ? "Not done" : "Didn't finish"}
       </button>
     </div>
   );
@@ -148,7 +153,7 @@ export function JobScheduleTable(props) {
             <tr class="bg-muted border-b border-border">
               <th class="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase">Job</th>
               <th class="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase">Person</th>
-              <th class="text-center px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase">This Week</th>
+              <th class="text-center px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase">Done</th>
               <th class="text-center px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase">Carry</th>
               <Show when={props.isAdmin}>
                 <th class="w-24 px-2 py-2.5 text-center text-xs font-semibold uppercase text-muted-foreground">Remove</th>
@@ -188,10 +193,10 @@ export function JobScheduleTable(props) {
                       </div>
                     </td>
                     <td class="px-3 py-3 text-center">
-                      <WeekStatus
+                      <JobStatus
                         assignment={a}
                         canEdit={canEdit(a)}
-                        onWeekStatus={props.onWeekStatus}
+                        onJobStatus={props.onJobStatus}
                         currentMonth={props.currentMonth}
                         pending={props.statusPending}
                       />
