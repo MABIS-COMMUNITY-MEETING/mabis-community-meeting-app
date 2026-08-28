@@ -161,10 +161,13 @@
    cost the effect. Restored, with the turbulence filter cleared here so the two
    do not compound, and left in place everywhere this rule does not apply.
 
-   @supports cannot tell these engines apart — all three parse url() in a
-   backdrop-filter, only one renders it — so a browser that parses but ignores
-   it keeps the turbulence distortion instead of losing both. */
-@supports (backdrop-filter: url("#lens")) and (not (-webkit-backdrop-filter: blur(1px))) {
+   The query requires the -webkit- alias, which Chromium and WebKit have and
+   Gecko does not, so Firefox never enters this branch and keeps the frost path
+   below. It cannot separate Chromium from WebKit — @supports tests parsing, and
+   all of them parse url() here; only Chromium renders it. Safari therefore
+   loses the distortion rather than gaining the lens, which is the one wart in
+   this arrangement and is called out rather than hidden. */
+@supports (backdrop-filter: url("#lens")) and (-webkit-backdrop-filter: blur(1px)) {
   .liquidGlass-effect {
     filter: none;
     backdrop-filter: var(--glass-lens-filter, none) blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
