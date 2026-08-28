@@ -121,18 +121,22 @@
   pointer-events: none;
 }
 
-/* ── The lens ──────────────────────────────────────────────────────
+/* ── The distortion ────────────────────────────────────────────────
 
-   The SVG filter goes in the backdrop-filter list, not on `filter`. That is
-   what makes it refract the page behind the pane instead of distorting this
-   span's own (empty) pixels — see the note on GlassLensFilter in Glass.jsx.
-   It also means the element no longer carries both `filter` and
-   `backdrop-filter`, which is the combination Gecko refuses to render and the
-   reason the glass came out fully transparent in Firefox.
+   On `filter`, exactly as the reference effect has it. It was moved into the
+   backdrop-filter list for a while on the reasoning that this span has no
+   pixels of its own, so `filter` could not be refracting anything — which is
+   sound in theory and useless in practice, because **Chromium does not support
+   url() references in backdrop-filter at all**. It accepts only filter
+   functions there, so the reference was silently ignored: frost and grain kept
+   working and the distortion simply never appeared. That is the whole bug.
 
-   --glass-lens-filter is set by Glass.jsx. The fallback is a no-op function
-   rather than `none`, because `none` cannot be combined with other filter
-   functions and would invalidate the entire declaration. */
+   Back on `filter`, where every engine that supports SVG filters applies it.
+   `none` is a valid whole value for the property, so the fallback can be `none`
+   here — unlike inside a backdrop-filter list, where it would have invalidated
+   the entire declaration.
+
+   The cost of being correct is the Gecko conflict below. */
 .liquidGlass-effect {
   z-index: 0;
   -webkit-backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
@@ -140,21 +144,26 @@
   filter: var(--glass-distortion-filter, none);
 }
 
-/* ── Engines that cannot put an SVG filter in a backdrop ─────────────────────
+/* ── Firefox: keep the frost, drop the distortion ─────────────────────────
 
-   `url()` inside backdrop-filter is the newest part of this and support is not
-   universal. Where it fails the whole declaration above is invalid, which would
-   take saturate and brightness down with it and leave a bare tinted box — so
-   restate them here without the lens.
+   The rule above puts `backdrop-filter` and `filter` on one element. Gecko will
+   not do both: an element carrying a `filter` is rendered into its own filter
+   surface and the backdrop is never sampled, so the frost disappears and the
+   pane collapses to its tint — glass you can see straight through. It is the
+   reason the reference effect this is built from only ever worked in Chromium
+   and Safari.
 
-   This is a parse test on the exact syntax in question, so it degrades on
-   capability rather than on a guess about which browser is running. Grain,
-   tint and shine are untouched and still carry the material; only the
-   refraction is missing. */
-@supports not (backdrop-filter: url("#lens")) {
+   A capability test, not a browser sniff, on the exact property in play:
+   Firefox shipped the standard `backdrop-filter` and never the `-webkit-`
+   alias, while Chromium and Safari have both. "Standard yes, prefixed no" is
+   Gecko.
+
+   Distortion is the right half to lose. Frost, tint, grain and rim carry the
+   material; the refraction is detail on top, and Firefox cannot have it and the
+   frost at the same time at any price. */
+@supports (backdrop-filter: blur(1px)) and (not (-webkit-backdrop-filter: blur(1px))) {
   .liquidGlass-effect {
-    -webkit-backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
-    backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
+    filter: none;
   }
 }
 
