@@ -126,10 +126,9 @@
    `backdrop-filter`, which is the combination Gecko refuses to render and the
    reason the glass came out fully transparent in Firefox.
 
-   --glass-lens-filter is set per instance by Glass.jsx. The fallback is a
-   no-op function rather than `none`, because `none` cannot be combined with
-   other filter functions and would invalidate the whole declaration: surfaces
-   without a lens — the cursor ring — still need the saturate and brightness. */
+   --glass-lens-filter is set by Glass.jsx. The fallback is a no-op function
+   rather than `none`, because `none` cannot be combined with other filter
+   functions and would invalidate the entire declaration. */
 .liquidGlass-effect {
   z-index: 0;
   -webkit-backdrop-filter: var(--glass-lens-filter, opacity(1)) blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
@@ -420,113 +419,6 @@
       hsl(var(--background) / calc(var(--glass_tint) * 0.95)) 55%,
       hsl(var(--foreground) / calc(var(--glass_tint) * 0.42)));
 }
-
-/* ── The custom cursor's ring is a glass surface ─────────────────────────
-
-   Same material as .lg-surface, assembled differently, for two reasons that
-   are specific to a thing which moves every frame.
-
-   1. THE BACKDROP SAMPLE IS ON THE RING, NOT ON A CHILD LAYER.
-
-      Everywhere else the live blur lives on .liquidGlass-effect. It cannot
-      here. backdrop-filter samples the "backdrop root", and an ancestor with
-      `contain: paint`, `will-change: opacity`, or a computed opacity below 1
-      starts a new one. .cursor-ring has all three — contain: strict and
-      will-change for the per-frame transform, and an inline opacity the render
-      loop drives for fade-in and the press state. A child's backdrop-filter
-      would therefore sample an empty backdrop and paint nothing at all.
-      Putting it on the ring itself samples the page, which is the point.
-
-   2. NO LENS.
-
-      --glass-lens-filter stays a no-op. The displacement map is stretched to
-      the surface, so on a 34px disc the whole ramp is compressed into a few
-      pixels and the refraction is not legible — while an SVG filter graph over
-      the backdrop of an element that moves every frame is the most expensive
-      thing this stylesheet can ask for. Grain, tint and rim carry the look at
-      this size.
-
-   The tint is much weaker than the panel default (0.13 against 0.64): at cursor
-   size a half-opaque fill reads as a white blob rather than as glass. */
-.cursor-ring {
-  /* Zero, with the rest of the material. Grain reads at cursor size where a
-     blur never did — a 34px disc with any real radius is a milky blob. */
-  --glass_blur: 0px;
-  --glass_saturation: 135%;
-  --glass_brightness: 1.02;
-  /* Lower again than the 0.22 first tried here, and far below the 0.64 panel
-     default. Tint is what separates glass from a milky disc, and the smaller
-     the surface the less of it you can spend before the backdrop stops reading
-     through at all. */
-  --glass_tint: 0.13;
-  /* Lighter than the pane's 0.55: at 34px the same grain density reads much
-     heavier, and the cursor has to stay a cursor. Raised from 0.18 with the
-     move to grain. */
-  --glass_matte: 0.30;
-  --glass_spec: 0.22;
-  --glass_pointer_x: 50%;
-  --glass_pointer_y: 0%;
-  --glass-lens-filter: opacity(1);
-
-  -webkit-backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
-  backdrop-filter: blur(var(--glass_blur)) saturate(var(--glass_saturation)) brightness(var(--glass_brightness));
-}
-
-/* The ring's own children, so the label still centres in the flex box while
-   the layers sit behind it. Both are pure paint — a gradient and a pair of
-   inset shadows — so neither needs a backdrop root of its own. */
-.cursor-ring > .liquidGlass-tint { z-index: 0; }
-.cursor-ring > .liquidGlass-matte { z-index: 1; }
-.cursor-ring > .liquidGlass-shine { z-index: 2; }
-.cursor-ring > .liquidGlass-text {
-  position: relative;
-  z-index: 3;
-  font: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  color: inherit;
-}
-
-/* The highlight is sized in percentages rather than the shared rule's
-   radial-gradient(120px 90px ...), which is scaled for a navigation bar: on a
-   34px ring that ellipse is wider than the element, so the hotspot covers the
-   whole disc evenly and reads as a flat wash. Percentages keep it proportional
-   across all three ring sizes (34px, 40px hover, 56px label).
-
-   Opacity and rim strength are the shared layer's — a brighter version was
-   tried here and was too much at this size. */
-.cursor-ring > .liquidGlass-shine {
-  --glass_pointer_x: 50%;
-  --glass_pointer_y: 20%;
-  background:
-    radial-gradient(
-      58% 46% at var(--glass_pointer_x) var(--glass_pointer_y),
-      hsl(var(--bone) / var(--glass_spec)),
-      hsl(var(--bone) / calc(var(--glass_spec) * 0.3)) 42%,
-      transparent 74%
-    ),
-    linear-gradient(to bottom, hsl(var(--bone) / 0.12), transparent 58%);
-}
-
-/* Deliberately NOT dropped during scroll.
-
-   Every other glass surface loses its blur under html.is-scrolling, because a
-   full-viewport panel costs real frames and nobody studies it mid-gesture. The
-   cursor is the opposite on both counts: it is a 34px disc, so the backdrop
-   sample is a rounding error next to a navigation bar, and it is the one thing
-   the reader is actually looking at. Dropping it made the glass visibly switch
-   off the instant the page moved, which reads as a bug rather than as an
-   optimisation. */
-
-/* The dot has to clear the glass.
-
-   Both cursor layers sit at z-index 9999 and the ring comes later in the DOM,
-   so the ring paints over the dot. That was invisible while the ring was an
-   empty outline; with a tint layer filling it, the dot ended up behind the
-   glass and blurred into the ring's own backdrop. Lifting it one level puts it
-   back on top and takes it out of the backdrop the ring samples, so it stays
-   crisp instead of becoming part of the smear. */
-.cursor-dot { z-index: 10000; }
 
 /* press — physical compression, released with a spring-ish ease */
 .lg-surface[data-glass-press="1"] {
