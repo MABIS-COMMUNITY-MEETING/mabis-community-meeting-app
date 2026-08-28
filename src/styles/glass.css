@@ -27,9 +27,7 @@
 }
 
 .lg-surface {
-  /* The frosted treatment diffuses the page before the local distortion,
-     embedded grain and inset shine are composited over it. */
-  /* Zero. The material is grainy now, not frosted — .liquidGlass-matte carries
+  /* Zero. The material is grainy, not frosted — .liquidGlass-matte carries
      it, and a backdrop blur underneath would put the haze straight back.
      saturate() and brightness() stay, so the backdrop is still sampled and the
      surface still reads as a material rather than a flat panel.
@@ -39,10 +37,10 @@
   --glass_blur: 0px;
   --glass_saturation: 122%;
   --glass_brightness: 1.02;
-  --glass_tint: 0.56;
-  /* Up from 0.32 with the frost gone: the grain is the material now, so it has
-     to carry weight the blur used to. */
-  --glass_matte: 0.55;
+  /* Keep the backdrop readable so both the grain and the liquid displacement
+     remain visible instead of disappearing behind a nearly opaque wash. */
+  --glass_tint: 0.30;
+  --glass_matte: 0.46;
   --glass_lens: 1.5px;
   --glass_spec: 0.14;
   --glass_shadow:
@@ -181,15 +179,11 @@
 .liquidGlass-matte {
   z-index: 2;
   opacity: var(--glass_matte);
-  background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E"),
-    linear-gradient(
-      179deg,
-      hsl(var(--bone)),
-      hsl(var(--ink))
-    );
+  background:
+    url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22200%22%3E%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%221.50%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23n)%22%20opacity%3D%221.00%22%2F%3E%3C%2Fsvg%3E"),
+    linear-gradient(179deg, #ffffff, #000000);
   background-position: center, center;
-  background-size: 160px 160px, 100% 100%;
+  background-size: 200px 200px, 100% 100%;
   background-repeat: repeat, no-repeat;
   background-blend-mode: overlay;
 }
@@ -298,7 +292,7 @@
 .lg-navigation {
   --glass_saturation: 128%;
   --glass_brightness: 1.02;
-  --glass_tint: 0.58;
+  --glass_tint: 0.32;
   --glass_lens: 1.8px;
   --glass_spec: 0.12;
   border-left: none;
