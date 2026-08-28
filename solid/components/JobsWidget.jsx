@@ -7,7 +7,7 @@ import { displayName } from "@/lib/names";
 import {
   WEEKDAYS, assignmentIsCurrent, formatMonthLabel, formatWeekLabel,
   getCurrentWeekLabel, getMonthLabel, getNextMonthLabel, getNextWeekLabel,
-  getScheduledDatesForMonth, getVisibleWeekDates, isTimeKeeperJob, jobPeriod,
+  getScheduledDatesForMonth, getWeekStatusKeys, isTimeKeeperJob, jobPeriod,
   memberRotationKey, normalizeJobTitle, scheduledDaysFor,
 } from "@/lib/jobsRotation";
 import { useAuth } from "~/lib/AuthContext";
@@ -293,25 +293,49 @@ export default function JobsWidget(props) {
     });
   };
 
-  const handleDayStatus = (a, day, currentState) => {
+  const weekStatusKeysFor = (a) =>
+    getWeekStatusKeys(a, a.month_label || currentMonth);
+
+  const handleWeekStatus = (a, nextState) => {
     const done = a.days_completed || [];
     const notDoneDays = a.not_done_days || [];
-    const scheduled = statusKeysFor(a);
+    const weekKeys = weekStatusKeysFor(a);
+    const allScheduled = statusKeysFor(a);
+    if (weekKeys.length === 0) return;
 
-    if (currentState === "neutral") {
-      const newDone = [...new Set([...done, day])];
-      const newNotDone = notDoneDays.filter((e) => e !== day);
-      const completed = scheduled.length > 0 && scheduled.every((e) => newDone.includes(e));
-      updateAssignment.mutate({ id: a.id, data: { days_completed: newDone, not_done_days: newNotDone, completed, not_done: newNotDone.length > 0 } });
-    } else if (currentState === "yes") {
-      const newDone = done.filter((e) => e !== day);
-      const newNotDone = [...new Set([...notDoneDays, day])];
-      updateAssignment.mutate({ id: a.id, data: { days_completed: newDone, not_done_days: newNotDone, completed: false, not_done: true } });
-      carryToNextPeriod(a);
+    let nextDone = done;
+    let nextNotDone = notDoneDays;
+
+    if (nextState === "done") {
+      nextDone = [...new Set([...done, ...weekKeys])];
+      nextNotDone = notDoneDays.filter((key) => !weekKeys.includes(key));
+    } else if (nextState === "notdone") {
+      nextDone = done.filter((key) => !weekKeys.includes(key));
+      nextNotDone = [...new Set([...notDoneDays, ...weekKeys])];
     } else {
-      const newNotDone = notDoneDays.filter((e) => e !== day);
-      updateAssignment.mutate({ id: a.id, data: { not_done_days: newNotDone, not_done: newNotDone.length > 0 } });
+      nextDone = done.filter((key) => !weekKeys.includes(key));
+      nextNotDone = notDoneDays.filter((key) => !weekKeys.includes(key));
     }
+
+    const completed = allScheduled.length > 0
+      && allScheduled.every((key) => nextDone.includes(key));
+    updateAssignment.mutate({ id: a.id, data: {
+      days_completed: nextDone,
+      not_done_days: nextNotDone,
+      completed,
+      not_done: nextNotDone.length > 0,
+    } });
+
+    if (nextState === "notdone") carryToNextPeriod(a);
+
+    const title = normalizeJobTitle(a.job_title);
+    const message = nextState === "done"
+      ? `Marked "${title}" done for this week.`
+      : nextState === "notdone"
+        ? `Marked "${title}" not done — carried to the next ${jobPeriod(a) === "monthly" ? "month" : "week"}.`
+        : `Cleared this week's status for "${title}".`;
+    setJobActionMessage(message);
+    window.setTimeout(() => setJobActionMessage(""), 5000);
   };
 
   // Deep-link job actions from the reminder email (?job_action=&job_id=).
@@ -329,11 +353,7 @@ export default function JobsWidget(props) {
     handledJobAction = true;
     const period = jobPeriod(a);
     const allScheduled = statusKeysFor(a);
-    const actionKeys = period === "monthly"
-      ? getVisibleWeekDates(a.month_label || currentMonth)
-        .filter((e) => scheduledDaysFor(a).includes(e.day))
-        .map((e) => e.key)
-      : scheduledDaysFor(a);
+    const actionKeys = weekStatusKeysFor(a);
     const done = a.days_completed || [];
     const notDone = a.not_done_days || [];
 
@@ -793,7 +813,8 @@ export default function JobsWidget(props) {
           assignments={currentAssignments()}
           isAdmin={isAdmin()}
           currentUser={auth.user()}
-          onDayStatus={handleDayStatus}
+          onWeekStatus={handleWeekStatus}
+          statusPending={updateAssignment.isPending}
           onDelete={handleRemoveAssignment}
           deletePending={removeAssignment.isPending}
           currentMonth={currentMonth}
@@ -876,7 +897,8 @@ export default function JobsWidget(props) {
             assignments={currentAssignments()}
             isAdmin={isAdmin()}
             currentUser={auth.user()}
-            onDayStatus={handleDayStatus}
+            onWeekStatus={handleWeekStatus}
+          statusPending={updateAssignment.isPending}
             onDelete={handleRemoveAssignment}
             deletePending={removeAssignment.isPending}
             currentMonth={currentMonth}
