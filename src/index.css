@@ -1440,12 +1440,10 @@ input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius
   .splash-stage .corner-bracket { display: none; }
 }
 
-/* Very short: drop the supporting paragraph too, so the headline and the way
-   in are both on screen without scrolling. */
-@media (max-height: 430px) {
-  .splash-centre p,
-  .splash-centre .splash-lede { display: none; }
-}
+/* Nothing is hidden beyond the two decorative layers above. With the stage
+   starting from the top instead of centring, anything that still does not fit
+   is reachable by scrolling — the root uses min-height, so it grows rather than
+   trapping the button behind its own overflow-hidden. */
 
 /* ── micro-detail utilities ── */
 @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.55)} }
