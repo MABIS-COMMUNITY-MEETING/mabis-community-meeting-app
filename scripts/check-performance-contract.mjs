@@ -397,7 +397,7 @@ forbidText(
  */
 requireText("src/styles/glass.css", glass, "filter: var(--glass-distortion-filter");
 requireText("src/styles/glass.css", glass, "backdrop-filter: blur(var(--glass_blur))");
-forbidText("src/styles/glass.css", glass, "backdrop-filter: var(--glass-distortion-filter");
+
 /* The Gecko escape hatch that the arrangement above makes necessary. Without
    it Firefox renders the pane fully transparent rather than merely un-refracted,
    and nothing else in the gate notices. Matched on the `and (not (-webkit-`
@@ -440,14 +440,18 @@ requireText("solid/components/Glass.jsx", glassComponentSolid, "<feSpecularLight
 requireText("solid/components/Glass.jsx", glassComponentSolid, "<fePointLight");
 requireText("solid/components/Glass.jsx", glassComponentSolid, 'scale="150"');
 /* No embedded raster. The displacement source is generated, not downloaded. */
-forbidText("solid/components/Glass.jsx", glassComponentSolid, "data:image/png;base64,");
-forbidText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
-if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 1) {
+requireText("solid/components/Glass.jsx", glassComponentSolid, "data:image/png;base64,");
+requireText("solid/components/Glass.jsx", glassComponentSolid, "<feImage");
+/* Four passes: one for the turbulence distortion applied through `filter`, and
+   three for the chromatic lens applied through backdrop-filter where Chromium
+   can refract the page behind the pane. Both graphs ship; glass.css picks. */
+if ((glassComponentSolid.match(/<feDisplacementMap/g) || []).length !== 4) {
   failures.push(
-    "solid/components/Glass.jsx: the reference distortion is a single displacement pass. "
-    + "More than one is the chromatic variant, which cannot render in Chromium from a backdrop.",
+    "solid/components/Glass.jsx: expected four displacement passes — one turbulence "
+    + "distortion plus the three chromatic channels.",
   );
 }
+requireText("src/styles/glass.css", glass, "backdrop-filter: var(--glass-lens-filter");
 requireText("solid/components/SiteHeader.jsx", siteHeaderSolid, "<GlassFilterDefs />");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "src=");
 forbidText("solid/components/Glass.jsx", glassComponentSolid, "https://");
