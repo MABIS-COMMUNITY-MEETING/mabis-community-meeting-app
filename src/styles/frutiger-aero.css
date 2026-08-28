@@ -88,7 +88,7 @@ html.animations-disabled body.theme-frutigeraero::after { display: none; }
    rim, and a hard gloss across the top half that stops dead at the midline.
    The liquid-glass layers are switched off below and this replaces them. */
 body.theme-frutigeraero .lg-surface {
-  --glass_blur: 8px;
+  --glass_blur: 6px;
   border-radius: 14px;
   border: 1px solid hsl(0 0% 100% / 0.9);
   background: linear-gradient(
