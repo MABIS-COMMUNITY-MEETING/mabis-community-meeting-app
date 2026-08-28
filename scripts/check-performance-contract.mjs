@@ -311,10 +311,15 @@ if (!cursorMaterial) {
  * scroll becomes a stuttering one. html.is-scrolling exists to take work out of
  * exactly those frames.
  */
-forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, 'addEventListener("scroll"');
-forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "integrateSpring");
-forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "getBoundingClientRect");
-forbidText("src/components/home/ScrollScaleRitual.jsx", scrollScaleRitual, "letterSpacing: letter");
+/* Code only. The file documents at length what it is NOT doing and names these
+   calls while doing so; a comment explaining the absence is not the thing. */
+const ritualCode = scrollScaleRitual
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/^\s*\/\/.*$/gm, "");
+forbidText("src/components/home/ScrollScaleRitual.jsx", ritualCode, 'addEventListener("scroll"');
+forbidText("src/components/home/ScrollScaleRitual.jsx", ritualCode, "integrateSpring");
+forbidText("src/components/home/ScrollScaleRitual.jsx", ritualCode, "getBoundingClientRect");
+forbidText("src/components/home/ScrollScaleRitual.jsx", ritualCode, "letterSpacing: letter");
 /* A service-worker handoff must never replace an active meeting/document
    with the boot screen. The new worker waits until old tabs close, keeping its
    hashed chunks paired with the page that loaded them; activation may still
