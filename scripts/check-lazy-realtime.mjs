@@ -71,7 +71,7 @@ export default class FakePartySocket {
    them the same way the SDK does — by bare specifier. */
 fs.writeFileSync(path.join(work, "entry.js"), `
 export { io } from "socket.io-client";
-export { default as PartySocket } from "partysocket";
+export { default as PartySocket, WebSocket } from "partysocket";
 export { log as socketLog } from "real:socket.io-client";
 export { log as partyLog } from "real:partysocket";
 `);
@@ -105,7 +105,13 @@ await build({
   },
 });
 
-const { io, PartySocket, socketLog, partyLog } = await import(pathToFileURL(path.join(outDir, "entry.js")).href);
+const {
+  io,
+  PartySocket,
+  WebSocket,
+  socketLog,
+  partyLog,
+} = await import(pathToFileURL(path.join(outDir, "entry.js")).href);
 
 /* One macrotask is enough for a resolved dynamic import to settle; the chunk
    is already on disk and in the module cache by the time this runs. */
@@ -173,7 +179,9 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 20));
 {
   const ws = new PartySocket({ host: "example.test", room: "actor-1" });
   check("PartySocket constructs synchronously", ws instanceof PartySocket);
+  check("the SDK WebSocket export uses the same lazy class", WebSocket === PartySocket);
   check("readyState reports CONNECTING before the library lands", ws.readyState === 0);
+  check("OPEN matches the WebSocket constant", ws.OPEN === 1);
 
   ws.addEventListener("open", () => {});
   ws.addEventListener("message", () => {});
