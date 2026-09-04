@@ -353,7 +353,7 @@ if (route === "/login") {
   // src/pages/Login.jsx + src/components/AuthLayout.jsx
   check("sign-in headline present", text.includes("Sign in"));
   check("Japanese title present", text.includes("サインイン"));
-  check("subtitle present", text.includes("Continue with your MABIS Google account"));
+  check("subtitle present", text.includes("Continue with your @montessoribkk.com Google account"));
   /*
    * The CTA's casing is style-dependent — editorial sets it in tech-label
    * caps, Summer in sentence case — so match case-insensitively. What must
