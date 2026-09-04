@@ -2,7 +2,11 @@ import { createContext, useContext, createSignal, onMount, createEffect, on, onC
 import { base44 } from "@/api/base44Client";
 import { appParams } from "@/lib/app-params";
 import { createAxiosClient } from "@base44/sdk/dist/utils/axios-client";
-import { isHackerMode, disableHackerMode, HACKER_USER } from "@/lib/hacker";
+import { disableHackerMode } from "@/lib/hacker";
+import {
+  isMabisSchoolEmail,
+  SCHOOL_EMAIL_REQUIRED_REASON,
+} from "@/lib/school-email";
 import { queryClientInstance } from "~/lib/query-client";
 
 /*
@@ -16,7 +20,8 @@ import { queryClientInstance } from "~/lib/query-client";
  *     signed-out visit, which used to force users through the provider twice;
  *   · offline recovery, so a network failure with a cached user restores the
  *     session instead of bouncing to login;
- *   · a real Base44 session always beating the local hacker-mode easter egg.
+ *   · exact school-domain validation before any online or cached identity can
+ *     become authenticated.
  *
  * What changed is only the reactive plumbing: useState→createSignal, and
  * context values are exposed as getter functions because Solid tracks reads,
@@ -35,6 +40,30 @@ export function AuthProvider(props) {
   const [authChecked, setAuthChecked] = createSignal(false);
   const [appPublicSettings, setAppPublicSettings] = createSignal(null);
 
+  const clearLocalSession = async () => {
+    disableHackerMode();
+    setUser(null);
+    setIsAuthenticated(false);
+    queryClientInstance.clear();
+
+    const { clearOfflineData } = await import("@/lib/offline-cache");
+    await clearOfflineData();
+  };
+
+  const rejectDisallowedUser = async () => {
+    await clearLocalSession();
+    setIsLoadingAuth(false);
+    setIsLoadingPublicSettings(false);
+    setAuthChecked(true);
+    setAuthError({
+      type: SCHOOL_EMAIL_REQUIRED_REASON,
+      message: "A @montessoribkk.com Google account is required",
+    });
+
+    const loginUrl = `${window.location.origin}/login?reason=${SCHOOL_EMAIL_REQUIRED_REASON}`;
+    base44.auth.logout(loginUrl);
+  };
+
   const recoverOfflineState = async (error) => {
     if (!appParams.token || error?.status === 401 || error?.status === 403) return false;
     if (navigator.onLine !== false && error?.status && error.status < 500) return false;
@@ -42,6 +71,10 @@ export function AuthProvider(props) {
     const { restoreOfflineQueries, restoreOfflineUser } = await import("@/lib/offline-cache");
     const offlineUser = restoreOfflineUser(appParams.token);
     if (!offlineUser) return false;
+    if (!isMabisSchoolEmail(offlineUser.email)) {
+      await rejectDisallowedUser();
+      return true;
+    }
 
     await restoreOfflineQueries(queryClientInstance, offlineUser.id);
     setUser(offlineUser);
@@ -63,6 +96,11 @@ export function AuthProvider(props) {
     try {
       setIsLoadingAuth(true);
       const currentUser = await (session || base44.auth.me());
+      if (!isMabisSchoolEmail(currentUser?.email)) {
+        await rejectDisallowedUser();
+        return false;
+      }
+
       disableHackerMode();
       setUser(currentUser);
       setIsAuthenticated(true);
@@ -134,15 +172,7 @@ export function AuthProvider(props) {
         const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
         setAppPublicSettings(publicSettings);
 
-        const hasBase44Session = await checkUserAuth({ silentUnauthenticated: !appParams.token, session });
-
-        if (!hasBase44Session && !appParams.token && isHackerMode()) {
-          setUser(HACKER_USER);
-          setIsAuthenticated(true);
-          setIsLoadingAuth(false);
-          setAuthChecked(true);
-          setAuthError(null);
-        }
+        await checkUserAuth({ silentUnauthenticated: !appParams.token, session });
         setIsLoadingPublicSettings(false);
       } catch (appError) {
         console.error("App state check failed:", appError);
@@ -177,7 +207,7 @@ export function AuthProvider(props) {
   // Offline persistence follows the signed-in user, and is torn down when the
   // user changes or the provider is disposed.
   createEffect(on(() => user()?.id, (id) => {
-    if (!id || id === HACKER_USER.id) return;
+    if (!id) return;
     let stop = () => {};
     let cancelled = false;
 
@@ -189,21 +219,7 @@ export function AuthProvider(props) {
   }));
 
   const logout = async (shouldRedirect = true) => {
-    const { clearOfflineData } = await import("@/lib/offline-cache");
-    await clearOfflineData();
-    queryClientInstance.clear();
-
-    if (user()?.id === HACKER_USER.id) {
-      disableHackerMode();
-      setUser(null);
-      setIsAuthenticated(false);
-      window.location.href = "/login";
-      return;
-    }
-
-    disableHackerMode();
-    setUser(null);
-    setIsAuthenticated(false);
+    await clearLocalSession();
 
     if (shouldRedirect) base44.auth.logout(window.location.href);
     else base44.auth.logout();
@@ -214,6 +230,11 @@ export function AuthProvider(props) {
   const updateUser = async () => {
     try {
       const currentUser = await base44.auth.me();
+      if (!isMabisSchoolEmail(currentUser?.email)) {
+        await rejectDisallowedUser();
+        return;
+      }
+
       disableHackerMode();
       const { saveOfflineUser } = await import("@/lib/offline-cache");
       saveOfflineUser(currentUser, appParams.token);
