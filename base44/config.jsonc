@@ -1,5 +1,6 @@
 {
   "name": "untitled",
+  "visibility": "private",
   "site": {
     // The standard, documented publish shape: vite.config.js is the maintained
     // config — it builds the Solid app to dist/ with the full Base44 plugin
