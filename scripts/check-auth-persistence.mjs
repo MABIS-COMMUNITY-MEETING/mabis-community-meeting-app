@@ -18,6 +18,7 @@
  */
 import fs from "node:fs";
 import { JSDOM } from "jsdom";
+import { isMabisSchoolEmail } from "../src/lib/school-email.js";
 
 const failures = [];
 const checks = [];
@@ -44,6 +45,32 @@ function loadAppParams({ url, storage = {} }) {
 }
 
 const TOKEN = "token-from-google";
+
+check("the school domain is accepted", isMabisSchoolEmail("student@montessoribkk.com"));
+check("domain matching is case-insensitive", isMabisSchoolEmail("Teacher@MONTESSORIBKK.COM"));
+check("surrounding whitespace is harmless", isMabisSchoolEmail("  parent@montessoribkk.com  "));
+check("personal Google accounts are rejected", !isMabisSchoolEmail("student@gmail.com"));
+check("lookalike suffixes are rejected", !isMabisSchoolEmail("student@montessoribkk.com.example"));
+check("subdomains are rejected", !isMabisSchoolEmail("student@mail.montessoribkk.com"));
+check("missing local parts are rejected", !isMabisSchoolEmail("@montessoribkk.com"));
+
+const authContextSource = fs.readFileSync("solid/lib/AuthContext.jsx", "utf8");
+const domainChecks = authContextSource.match(/isMabisSchoolEmail\(/g) || [];
+check("online, cached, and refreshed users are domain-checked", domainChecks.length >= 3);
+check("the local hacker identity cannot authenticate",
+  !/\bHACKER_USER\b|\bisHackerMode\s*\(/.test(authContextSource));
+
+const authConfig = JSON.parse(fs.readFileSync("base44/auth/config.jsonc", "utf8"));
+check("Google is enabled", authConfig.enableGoogleLogin === true);
+check("password login is disabled", authConfig.enableUsernamePassword === false);
+check("other social providers are disabled",
+  authConfig.enableMicrosoftLogin === false
+    && authConfig.enableFacebookLogin === false
+    && authConfig.enableAppleLogin === false
+    && authConfig.enableSSOLogin === false);
+
+const projectConfig = fs.readFileSync("base44/config.jsonc", "utf8");
+check("the Base44 app is declared private", /\"visibility\"\s*:\s*\"private\"/.test(projectConfig));
 
 // 1. Sign-in: Base44 returns from the provider with the token in the URL.
 const signIn = loadAppParams({ url: `https://app.test/home?access_token=${TOKEN}` });
@@ -91,4 +118,4 @@ if (failures.length) {
   failures.forEach((f) => console.error(`  - ${f}`));
   process.exit(1);
 }
-console.log("A signed-in session survives reloads, and sign-out still signs out.\n");
+console.log("Auth is Google-only, school-domain restricted, private, and reload-safe.\n");
