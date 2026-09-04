@@ -108,7 +108,7 @@ if (bossLayout) window.localStorage.setItem("mabis-home-layout", "boss");
  * tokenMarker is FNV-1a, copied from src/lib/offline-cache.js — it must stay in
  * step with that function or the record is silently rejected as another user's.
  */
-const SEEDED_USER = { id: "parity-user", full_name: "Parity Tester", email: "parity@example.com", role: "admin" };
+const SEEDED_USER = { id: "parity-user", full_name: "Parity Tester", email: "parity@montessoribkk.com", role: "admin" };
 if (route.startsWith("/home")) {
   const token = "parity-token";
   let hash = 2166136261;
