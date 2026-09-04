@@ -14,8 +14,8 @@
  * SUPPORTED SURFACE
  *
  * addEventListener / removeEventListener / send / close / reconnect and the
- * `readyState` getter — what modules/actors.js uses. Extend it if the SDK
- * starts using more.
+ * `readyState` / `OPEN` getters — what modules/actors.js uses. Extend it
+ * if the SDK starts using more.
  */
 
 let realModulePromise = null;
@@ -59,6 +59,10 @@ export default class LazyPartySocket {
     return this.#real ? this.#real.readyState : 0;
   }
 
+  get OPEN() {
+    return this.#real?.OPEN ?? 1;
+  }
+
   addEventListener(type, listener, options) {
     if (this.#real) this.#real.addEventListener(type, listener, options);
     else this.#listeners.push([type, listener, options]);
@@ -94,4 +98,7 @@ export default class LazyPartySocket {
   }
 }
 
-export { LazyPartySocket as PartySocket };
+export {
+  LazyPartySocket as PartySocket,
+  LazyPartySocket as WebSocket,
+};
