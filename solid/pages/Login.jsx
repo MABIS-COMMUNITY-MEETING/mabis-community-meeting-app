@@ -5,6 +5,7 @@ import AuthLayout from "~/components/AuthLayout";
 import GoogleIcon from "~/components/GoogleIcon";
 import { JapaneseText } from "~/components/primitives";
 import { disableHackerMode } from "@/lib/hacker";
+import { SCHOOL_EMAIL_REQUIRED_REASON } from "@/lib/school-email";
 import { useHomeLayout } from "~/lib/prefs";
 
 const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
@@ -18,7 +19,11 @@ const LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6
  * so the handle is tracked and cleared in onCleanup.
  */
 export default function Login() {
-  const [error, setError] = createSignal("");
+  const reason = new URLSearchParams(window.location.search).get("reason");
+  const initialError = reason === SCHOOL_EMAIL_REQUIRED_REASON
+    ? "Use your @montessoribkk.com Google account."
+    : "";
+  const [error, setError] = createSignal(initialError);
   const [googleLoading, setGoogleLoading] = createSignal(false);
   /* The shell switches with the style, so the one control on the page has to
      as well — a square tech-label button inside Summer's rounded card would
@@ -54,8 +59,8 @@ export default function Login() {
       logo={<img src={LOGO} alt="MABIS" class="w-12 h-12 object-contain" />}
       title="Sign in"
       jaTitle="サインイン"
-      subtitle="Continue with your MABIS Google account"
-      jaSubtitle="MABISのGoogleアカウントで続行"
+      subtitle="Continue with your @montessoribkk.com Google account"
+      jaSubtitle="@montessoribkk.comのGoogleアカウントで続行"
     >
       <Show when={error()}>
         <div
