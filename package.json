@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@base44/sdk": "^0.8.46",
-    "@base44/vite-plugin": "^1.0.34",
+    "@base44/vite-plugin": "^1.0.35",
     "@kobalte/core": "^0.13.13",
     "@material/material-color-utilities": "0.4.0",
     "@solidjs/router": "^1.0.0",
