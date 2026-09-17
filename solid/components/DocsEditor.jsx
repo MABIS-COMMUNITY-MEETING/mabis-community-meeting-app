@@ -345,6 +345,10 @@ export default function DocsEditor(props) {
   // function argument as a lazy initialiser, Solid's createSignal does not —
   // it would store the function itself as the value.
   const [stats, setStats] = createSignal(countStats(props.initialHtml));
+  /* Bumped whenever remote caret positions could have moved in pixel terms:
+     any text change (yours or theirs) and any scroll of the editor body. */
+  const [cursorLayout, setCursorLayout] = createSignal(0);
+  const bumpCursorLayout = () => setCursorLayout((n) => n + 1);
 
   const getQuill = () => quill;
 
@@ -1045,7 +1049,20 @@ export default function DocsEditor(props) {
         onDragLeave={handleImageDragLeave}
         onDrop={handleImageDrop}
       >
-        <div ref={editorEl} />
+        {/* Wrapped so the overlay shares an origin with quill.getBounds(),
+            which measures from the element Quill was constructed on. Hanging
+            the overlay off the outer padded container instead would offset
+            every caret by that padding. */}
+        <div class="relative">
+          <div ref={editorEl} />
+          <Show when={props.collab}>
+            <RemoteCursors
+              peers={props.collab.peers}
+              getQuill={getQuill}
+              tick={cursorLayout}
+            />
+          </Show>
+        </div>
         <Show when={imageDragActive()}>
           <div
             role="status"
