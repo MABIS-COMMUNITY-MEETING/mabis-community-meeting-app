@@ -743,7 +743,18 @@ export default function DiscussionWidget(props) {
 
           <div class="border-t border-border pt-4">
             <Suspense fallback={<PendingWidget name="Jobs" height={240} />}>
-              <JobsWidget members={members()} isAdmin={props.isAdmin} compact />
+              {/* wheelSession is NOT optional here, despite `compact`.
+
+                  Without it JobsWidget falls back to its own private signals,
+                  and this mount becomes a second, unrelated wheel sitting on
+                  the same Home page as the one in the Jobs widget. "Remove from
+                  wheel" then takes a name off whichever wheel you clicked and
+                  leaves it on the other, which reads as the button simply not
+                  working. Same for the chosen job, the winner and the shuffle.
+
+                  job-wheel-session.js states the rule: one session, mirrored by
+                  every view. `compact` only swaps the surrounding chrome. */}
+              <JobsWidget members={members()} isAdmin={props.isAdmin} wheelSession={props.wheelSession} compact />
             </Suspense>
           </div>
         </div>
