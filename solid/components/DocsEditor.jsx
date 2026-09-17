@@ -319,8 +319,26 @@ export default function DocsEditor(props) {
     const handleSelectionChange = (range) => {
       if (range) lastSelection = { index: range.index, length: range.length };
       syncFormats();
+      props.collab?.localSelection(range);
     };
-    const handleTextChange = () => { syncFormats(); emitChange(); };
+    /*
+     * `source` decides whether this edit goes on the wire. Only "user" may:
+     * "api" is our own toolbar, and "silent" is a remote edit already being
+     * applied by the collab session. Forwarding either would send other
+     * people's text back to them as if it were ours, which in OT terms is an
+     * op applied twice — the document duplicates the sentence and every client
+     * diverges from there.
+     *
+     * syncFormats/emitChange still run for every source, because the toolbar
+     * state and the word count describe what is on screen no matter who put it
+     * there.
+     */
+    const handleTextChange = (delta, _oldDelta, source) => {
+      syncFormats();
+      emitChange();
+      if (source === "user") props.collab?.localDelta(delta);
+      bumpCursorLayout();
+    };
     const handlePaste = (event) => {
       const html = event.clipboardData?.getData("text/html");
       if (!html) return;
@@ -346,6 +364,12 @@ export default function DocsEditor(props) {
 
     quill.on("selection-change", handleSelectionChange);
     quill.on("text-change", handleTextChange);
+    /* Attached after the initialHtml seed above, so that if this client turns
+       out to be the first into an empty room it has a document to seed it
+       with. Attaching earlier would offer the server an empty Delta and blank
+       the week for everyone who joined afterwards. */
+    props.collab?.attach(quill, { onRemoteApplied: emitChange });
+    quill.root.addEventListener("scroll", bumpCursorLayout, { passive: true });
     // Run before Quill's own paste listener. Quill skips events that are
     // already prevented, so rich clipboard content is sanitized and inserted
     // once instead of being inserted by both listeners.
@@ -358,6 +382,7 @@ export default function DocsEditor(props) {
     onCleanup(() => {
       quill?.off("selection-change", handleSelectionChange);
       quill?.off("text-change", handleTextChange);
+      quill?.root.removeEventListener("scroll", bumpCursorLayout);
       quill?.root.removeEventListener("paste", handlePaste, true);
       quill?.root.removeEventListener("click", handleLinkOpen);
       quill?.root.removeEventListener("dblclick", handleLinkOpen);
