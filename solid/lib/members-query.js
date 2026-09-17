@@ -17,6 +17,7 @@ const MEMBER_FIELDS = [
   "avatar_url",
   "avatar_color",
   "job_rotation_enabled",
+  "job_rotation_excluded_week",
 ];
 
 export function listMembers() {
