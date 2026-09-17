@@ -310,6 +310,7 @@ export default function MeetingMinutes(props) {
                 actors: base44.actors,
                 room: { actor: "MeetingDoc", id: roomIdFor(week) },
                 name: auth.user()?.full_name || "Someone",
+                onBecameWriter: () => handleSave(week),
               });
               if (collab) {
                 session = collab;
