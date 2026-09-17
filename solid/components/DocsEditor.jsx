@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, createEffect, on, Show, For, Index } from "solid-js";
+import { createSignal, createMemo, onMount, onCleanup, createEffect, on, Show, For, Index } from "solid-js";
 import {
   Bold, Italic, Underline, Strikethrough, List, ListOrdered, ListChecks,
   Quote, Code, Link2, Image as ImageIcon, Undo2, Redo2, Search, X,
@@ -43,6 +43,102 @@ import "quill/dist/quill.snow.css";
 function countStats(html) {
   const text = stripHtml(html || "").trim();
   return { words: text ? text.split(/\s+/).length : 0, characters: text.length };
+}
+
+/*
+ * Other people's carets, drawn over the text.
+ *
+ * Positions come from quill.getBounds(), which is a live measurement, so this
+ * has to recompute whenever the text reflows or the editor scrolls — not just
+ * when a cursor moves. That is what `tick` is: a counter bumped on text-change
+ * and scroll, read here purely to make the memo depend on it. Without it a
+ * caret stays pinned to stale pixels the moment anyone types above it.
+ *
+ * A multi-line selection is drawn as a caret only. getBounds() for a range
+ * spanning lines returns one box covering the whole block, including the empty
+ * gutter to the right of short lines, which reads as "they selected far more
+ * than they did". A caret at the focus end is less information but it is not
+ * wrong, and quietly wrong is the worse failure for a presence cue.
+ */
+function RemoteCursors(props) {
+  const marks = createMemo(() => {
+    props.tick();
+    const quill = props.getQuill();
+    const peers = props.peers();
+    if (!quill || !peers.length) return [];
+    /* getLength() counts Quill's trailing newline, which is not addressable. */
+    const max = Math.max(0, quill.getLength() - 1);
+
+    return peers.flatMap((peer) => {
+      if (!peer.cursor) return [];
+      const index = Math.min(Math.max(peer.cursor.index, 0), max);
+      const length = Math.max(0, Math.min(peer.cursor.length || 0, max - index));
+      try {
+        const caret = quill.getBounds(index + length, 0);
+        if (!caret) return [];
+        let band = null;
+        if (length > 0) {
+          const start = quill.getBounds(index, 0);
+          if (start && Math.abs(start.top - caret.top) < 1) {
+            band = {
+              left: start.left,
+              top: start.top,
+              width: Math.max(0, caret.left - start.left),
+              height: start.height,
+            };
+          }
+        }
+        return [{ id: peer.id, name: peer.name, color: peer.color, caret, band }];
+      } catch {
+        /* Bounds can be read mid-teardown, or for an index that a concurrent
+           delete just removed. Skipping one frame of one caret is invisible. */
+        return [];
+      }
+    });
+  });
+
+  return (
+    <div class="pointer-events-none absolute inset-0 z-20 overflow-hidden" aria-hidden="true">
+      <For each={marks()}>
+        {(mark) => (
+          <>
+            <Show when={mark.band}>
+              <div
+                class="absolute rounded-[2px] opacity-20"
+                style={{
+                  left: `${mark.band.left}px`, top: `${mark.band.top}px`,
+                  width: `${mark.band.width}px`, height: `${mark.band.height}px`,
+                  background: mark.color,
+                }}
+              />
+            </Show>
+            <div
+              class="absolute w-[2px] rounded-full"
+              style={{
+                left: `${mark.caret.left}px`, top: `${mark.caret.top}px`,
+                height: `${mark.caret.height}px`, background: mark.color,
+              }}
+            />
+            <Show when={mark.name}>
+              <div
+                class="absolute max-w-[12ch] truncate rounded px-1 py-px text-[9px] font-semibold leading-tight text-white shadow-sm"
+                style={{
+                  left: `${mark.caret.left}px`,
+                  /* Sits above the caret, and is allowed to go negative at the
+                     top of the document — the overlay clips rather than pushing
+                     the label down onto the word it is labelling. */
+                  top: `${mark.caret.top - 11}px`,
+                  background: mark.color,
+                }}
+              >
+                {mark.name}
+              </div>
+            </Show>
+          </>
+        )}
+      </For>
+    </div>
+  );
 }
 
 function ToolButton(props) {
