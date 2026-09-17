@@ -28,7 +28,7 @@ assert.match(sessionSource, /if \(!allowed\.includes\(status\(\)\)\) return fals
 assert.match(homeSource, /createMeetingModeSession\(\)/, "Home must own the meeting lifecycle");
 assert.match(homeSource, /forceMount=\{s\.index === "03" && meetingSession\.isActive\(\)\}/, "an off-screen Discussion section must mount for Meeting Mode");
 assert.match(lazySource, /setForcedMount\(true\)/, "forced sections must stay mounted after Meeting Mode closes");
-assert.match(meetingCardSource, /props\.onStartMeeting\?\.\(\);[\s\S]*void persistUnlockedMeetingDate/, "Meeting Mode must open before the optional attendance network write");
+assert.match(meetingCardSource, /props\.onStartMeeting\?\.\(date\);[\s\S]*void persistUnlockedMeetingDate/, "Meeting Mode must open before the optional attendance network write");
 assert.match(discussionSource, /whenIdle\([\s\S]*setMeetingJobsReady\(true\)/, "the full Jobs widget must be deferred to an idle slice");
 assert.match(discussionSource, /setMeetingNotesReady\(true\)/, "the notes editor must mount after the first paint");
 assert.match(discussionSource, /whenIdle\(\(\) => setNormalContentReady\(true\)/, "pause/end must not remount the normal editor and jobs table in the same click");
