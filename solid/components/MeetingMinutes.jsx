@@ -39,6 +39,16 @@ const DocsEditor = lazy(() => import("~/components/DocsEditor"));
  */
 /* Shown only until the editor mounts. Same surface and reserved height as the
    editor's document area so the swap causes no layout shift. */
+/*
+ * Week label to actor room id. The label is user-facing text ("14 August
+ * 2025"), and the room id rides in a URL, so anything outside this set is
+ * collapsed to a dash. Two different weeks cannot collide because the label is
+ * already unique per week and this mapping only removes separators.
+ */
+function roomIdFor(week) {
+  return `minutes-${String(week || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+}
+
 function ReadOnlyPaper(props) {
   return (
     <div
@@ -284,19 +294,67 @@ export default function MeetingMinutes(props) {
             called it; the render below used <DocsEditor> directly. Removed.
           */}
           <Show when={props.weekLabel} keyed>
-            {(week) => (
-              <DocsEditor
-                title={props.weekTitle || "Meeting minutes"}
-                initialHtml={initialHtml()}
-                onChange={(html) => handleChange(html, week)}
-                onSave={props.canEdit === false ? undefined : () => handleSave(week)}
-                saving={saveMutation.isPending}
-                saved={savedFlash()}
-                minHeight="420px"
-                stickyTop={props.stickyTop}
-                placeholder="Write the minutes for this week…"
-              />
-            )}
+            {(week) => {
+              /* One session per week, created inside the keyed block so it is
+                 torn down and rebuilt by the same identity swap that rebuilds
+                 the editor. A session outliving its week would be broadcasting
+                 this week's keystrokes into last week's room.
+
+                 Read-only viewers do not open a socket at all — there is
+                 nothing for them to send, and a connection per reader is a cost
+                 with no return. */
+              const collab = props.canEdit === false ? null : createCollabDoc({
+                actors: base44.actors,
+                room: { actor: "MeetingDoc", id: roomIdFor(week) },
+                Delta,
+                name: auth.user()?.full_name || "Someone",
+              });
+              if (collab) {
+                session = collab;
+                onCleanup(() => {
+                  if (session === collab) session = null;
+                  collab.dispose();
+                });
+              }
+
+              return (
+                <>
+                  <Show when={collab && collab.peers().length > 0}>
+                    <div class="mb-2 flex flex-wrap items-center gap-1.5" role="status" aria-live="polite">
+                      <span class="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                        Editing now
+                      </span>
+                      <For each={collab.peers()}>
+                        {(peer) => (
+                          <span
+                            class="inline-flex items-center gap-1 rounded-full border border-border px-1.5 py-0.5 text-[10px]"
+                          >
+                            <span
+                              class="h-1.5 w-1.5 rounded-full"
+                              style={{ background: peer.color }}
+                              aria-hidden="true"
+                            />
+                            {peer.name}
+                          </span>
+                        )}
+                      </For>
+                    </div>
+                  </Show>
+                  <DocsEditor
+                    title={props.weekTitle || "Meeting minutes"}
+                    initialHtml={initialHtml()}
+                    collab={collab || undefined}
+                    onChange={(html) => handleChange(html, week)}
+                    onSave={props.canEdit === false ? undefined : () => handleSave(week)}
+                    saving={saveMutation.isPending}
+                    saved={savedFlash()}
+                    minHeight="420px"
+                    stickyTop={props.stickyTop}
+                    placeholder="Write the minutes for this week…"
+                  />
+                </>
+              );
+            }}
           </Show>
         </Suspense>
       </IdleMount>
