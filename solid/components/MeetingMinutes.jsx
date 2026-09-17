@@ -5,7 +5,10 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "~/lib/AuthContext";
 import { createCollabDoc } from "~/lib/collab-doc";
 import { resolveMinutesDocument } from "@/lib/minutes-format";
-import { Delta } from "~/lib/quill-setup";
+/* Deliberately NO import of ~/lib/quill-setup here. See the header of
+   collab-doc.js: pulling Delta in from this file is what dragged the 203 KB
+   Quill chunk onto every Home visit. DocsEditor hands the constructor to the
+   session when it attaches. */
 
 // Lazy, like every other DocsEditor usage in the app (TopicItem,
 // AnnouncementsWidget, NewsWidget, DiscussionWidget's TopicForm). MeetingMinutes
@@ -306,7 +309,6 @@ export default function MeetingMinutes(props) {
               const collab = props.canEdit === false ? null : createCollabDoc({
                 actors: base44.actors,
                 room: { actor: "MeetingDoc", id: roomIdFor(week) },
-                Delta,
                 name: auth.user()?.full_name || "Someone",
               });
               if (collab) {
