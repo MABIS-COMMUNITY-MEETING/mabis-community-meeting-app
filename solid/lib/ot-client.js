@@ -149,15 +149,28 @@ export function createOtClient({ Delta, send, apply, reset }) {
          is the order they sit in on top of the server document. Doing it the
          other way round produces a delta that is internally consistent and
          lands in the wrong place — the failure mode that looks like text
-         appearing a few characters off when two people type at once. */
+         appearing a few characters off when two people type at once.
+
+         The flags look inverted and are not. quill-delta's identity is
+
+             a ∘ a.transform(b, p) === b ∘ b.transform(a, !p)
+
+         so the priority that decides the tie sits on the call that produces the
+         OTHER side's rebased op. We need the committed op to win, which means
+         `incoming.transform(pending, true)` — and that forces `false` on the
+         partner call. ot-server.js rebases the same pair with the same rule
+         (`history[i].transform(delta, true)`), so the client's copy of its own
+         pending op stays byte-identical to the one the server commits. Flip
+         either one and the two sides quietly disagree about whose insert goes
+         left; check-ot-convergence.mjs fails on seed 1 within a second. */
       if (pending) {
-        const nextPending = incoming.transform(pending, false);
-        incoming = pending.transform(incoming, true);
+        const nextPending = incoming.transform(pending, true);
+        incoming = pending.transform(incoming, false);
         pending = nextPending;
       }
       if (buffer) {
-        const nextBuffer = incoming.transform(buffer, false);
-        incoming = buffer.transform(incoming, true);
+        const nextBuffer = incoming.transform(buffer, true);
+        incoming = buffer.transform(incoming, false);
         buffer = nextBuffer;
       }
 
