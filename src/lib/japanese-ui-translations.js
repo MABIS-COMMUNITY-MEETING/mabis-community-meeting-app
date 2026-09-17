@@ -1,4 +1,5 @@
 const EXACT_TRANSLATIONS = {
+  "remove skips this week’s wheel only. they return next week; their profile is kept.": "今週のルーレットからのみ外します。来週は自動で戻り、プロフィールは残ります。",
   "access restricted": "アクセスが制限されています",
   "account": "アカウント",
   "active": "アクティブ",
