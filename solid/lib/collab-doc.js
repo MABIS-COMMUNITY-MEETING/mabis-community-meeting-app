@@ -5,11 +5,19 @@ import { createOtClient } from "./ot-client.js";
  * One live editing session: the MeetingDoc actor on one side, a Quill instance
  * on the other, ot-client.js doing the merge in between.
  *
- * `Delta` is passed in rather than imported. This module is pulled in by
- * DocsEditor, which already owns the Quill chunk; importing quill-setup here as
- * well would add a second edge into that chunk from a module that only needs
- * one constructor, and the lazy boundary around DocsEditor is load-bearing (see
- * the header of NewsWidget.jsx).
+ * `Delta` arrives through attach(), from the caller that already has Quill — it
+ * is never imported here, and the reason is a measured regression, not taste.
+ *
+ * The obvious version of this module took Delta as a createCollabDoc option, so
+ * MeetingMinutes imported it from ~/lib/quill-setup to pass it in. That one
+ * import moved Quill out of the DocsEditor chunk into a shared 203 KB
+ * quill-setup chunk that MeetingMinutes hard-depends on — meaning Quill loaded
+ * on every Home visit that renders Discussion, instead of when someone actually
+ * opens the editor. DocsEditor's chunk "shrank" from 72.5 KB to 12.7 KB gzip,
+ * which looks like a win in the build log and is the opposite of one.
+ *
+ * MeetingMinutes' own header already warns about exactly this. Taking the
+ * constructor from the live instance keeps the lazy boundary intact.
  *
  * ── Latency ─────────────────────────────────────────────────────────────────
  *
@@ -47,12 +55,14 @@ export function cursorColorFor(key) {
   return `hsl(${hash % 360} 72% 48%)`;
 }
 
-export function createCollabDoc({ actors, room, Delta, name, onStatus }) {
+export function createCollabDoc({ actors, room, name, onStatus }) {
   const [peers, setPeers] = createSignal([]);
   const [connected, setConnected] = createSignal(false);
   const [isWriter, setIsWriter] = createSignal(false);
 
   let quill = null;
+  let Delta = null;
+  let ot = null;
   let afterRemote = null;
   let connection = null;
   let subscription = null;
@@ -63,7 +73,7 @@ export function createCollabDoc({ actors, room, Delta, name, onStatus }) {
   const peerMap = new Map();
   const publishPeers = () => setPeers([...peerMap.values()].filter((p) => p.cursor));
 
-  const ot = createOtClient({
+  const buildOt = () => createOtClient({
     Delta,
     send: (message) => connection?.send(message),
     apply: (delta) => {
@@ -99,6 +109,7 @@ export function createCollabDoc({ actors, room, Delta, name, onStatus }) {
   });
 
   const handle = (message) => {
+    if (!ot) return;
     switch (message?.t) {
       case "init": {
         if (message.needsSeed && quill) {
@@ -154,20 +165,22 @@ export function createCollabDoc({ actors, room, Delta, name, onStatus }) {
     peers,
     connected,
     isWriter,
-    get syncing() { return ot.inFlight; },
+    get syncing() { return ot?.inFlight ?? false; },
 
-    /** Called by DocsEditor once Quill exists. */
+    /** Called by DocsEditor once Quill exists, with Quill's Delta constructor. */
     attach(instance, hooks = {}) {
       if (disposed) return;
       quill = instance;
+      Delta = hooks.Delta;
       afterRemote = hooks.onRemoteApplied || null;
+      ot = buildOt();
       connection = actors[room.actor](room.id).connect();
       subscription = connection.subscribe(handle);
     },
 
     /** A local edit. Only ever called with source === "user". */
     localDelta(delta) {
-      ot.local(delta);
+      ot?.local(delta);
     },
 
     /** Local caret moved. Throttled; the latest position always wins. */
@@ -185,7 +198,8 @@ export function createCollabDoc({ actors, room, Delta, name, onStatus }) {
       disposed = true;
       clearTimeout(cursorTimer);
       cursorTimer = null;
-      ot.disconnected();
+      ot?.disconnected();
+      ot = null;
       subscription?.unsubscribe();
       connection?.close();
       subscription = null;
