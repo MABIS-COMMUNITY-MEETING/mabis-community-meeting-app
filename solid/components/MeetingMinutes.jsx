@@ -1,4 +1,4 @@
-import { createSignal, createMemo, createEffect, on, onCleanup, lazy, Suspense, Show } from "solid-js";
+import { createSignal, createMemo, createEffect, on, onCleanup, lazy, Suspense, Show, For } from "solid-js";
 import IdleMount from "~/components/IdleMount";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
@@ -200,6 +200,10 @@ export default function MeetingMinutes(props) {
   const handleChange = (html, week = props.weekLabel) => {
     latest = { week, html };
     if (props.canEdit === false) return;
+    /* Gate only the automatic path. The explicit Save button below stays open
+       to everyone: it is a deliberate action, and since every participant holds
+       a converged copy the write is the same bytes whoever sends it. */
+    if (!shouldPersist()) return;
 
     // Target captured now, while we are definitely still on this week.
     const payload = { html, week, recordId: recordIdFor(week) };
