@@ -55,7 +55,7 @@ export function cursorColorFor(key) {
   return `hsl(${hash % 360} 72% 48%)`;
 }
 
-export function createCollabDoc({ actors, room, name, onStatus }) {
+export function createCollabDoc({ actors, room, name, onStatus, onBecameWriter }) {
   const [peers, setPeers] = createSignal([]);
   const [connected, setConnected] = createSignal(false);
   const [isWriter, setIsWriter] = createSignal(false);
@@ -155,9 +155,18 @@ export function createCollabDoc({ actors, room, name, onStatus }) {
         publishPeers();
         return;
       }
-      case "role":
+      case "role": {
+        const promoted = Boolean(message.writer) && !isWriter();
         setIsWriter(Boolean(message.writer));
+        /* Inheriting the role means the previous writer's tab just closed, and
+           whatever was sitting in their debounce went with it. Everyone holds a
+           converged copy, so the new writer can close that window immediately
+           by saving once on promotion. Without this, if nobody types again
+           after the writer leaves, the last edits reach the actor but never the
+           database — and the meeting looks saved right up until a reload. */
+        if (promoted) onBecameWriter?.();
         return;
+      }
     }
   };
 
