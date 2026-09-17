@@ -14,6 +14,7 @@ import {
 } from "../src/lib/jobsRotation.js";
 import { TAU, normalizeRotation, seededShuffle } from "../solid/lib/wheel-math.js";
 import { buildJobListPrintHtml, containsJapanese } from "../solid/lib/job-list-pdf.js";
+import { participatesInJobs, jobParticipationUpdate } from "../src/lib/job-participation.js";
 
 const august = new Date(2026, 7, 14, 12);
 assert.equal(getMonthLabel(august), "2026-08");
