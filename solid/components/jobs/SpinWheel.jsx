@@ -71,7 +71,7 @@ export default function SpinWheel(props) {
   const drawWheelFace = () => {
     const canvas = canvasEl;
     const list = members();
-    if (!canvas || list.length === 0 || !wheelFaceDirty) return;
+    if (!canvas || !wheelFaceDirty) return;
 
     const s = size();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -106,6 +106,10 @@ export default function SpinWheel(props) {
     const cx = s / 2, cy = s / 2, r = s / 2 - 8;
     const arc = (2 * Math.PI) / list.length;
     ctx.clearRect(0, 0, s, s);
+    if (list.length === 0) {
+      wheelFaceDirty = false;
+      return;
+    }
 
     const { primary: primaryColor, secondary: secondaryColor, ring: primaryDark, font: uiFont } = appearance;
 
@@ -210,6 +214,16 @@ export default function SpinWheel(props) {
   // (drawWheel's identity) changed too. Nothing does that automatically here,
   // so it needs its own effect — otherwise the wheel visibly goes stale.
   createEffect(on([members, size], () => {
+    // A spin snapshots its entrants. If the roster changes, cancel that spin
+    // before repainting so it cannot announce an excluded student.
+    if (spinning) {
+      spinGeneration += 1;
+      if (raf) cancelAnimationFrame(raf);
+      raf = null;
+      spinning = false;
+      setIsSpinning(false);
+      if (canvasEl) canvasEl.style.willChange = "auto";
+    }
     wheelFaceDirty = true;
     drawWheel(rotation);
   }, { defer: true }));
