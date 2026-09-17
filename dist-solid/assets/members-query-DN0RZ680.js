@@ -1,0 +1,1 @@
+import{L as e}from"./index-xIvLo15w.js";const o=["members"],a=["id","name","email","role","avatar_url","avatar_color","job_rotation_enabled","job_rotation_excluded_week"];function r(){return e.entities.Member.list("name",200,void 0,a)}export{o as M,r as l};
