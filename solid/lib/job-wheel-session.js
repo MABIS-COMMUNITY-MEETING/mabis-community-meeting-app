@@ -1,4 +1,5 @@
 import { createSignal } from "solid-js";
+import { createLocalDate } from "./current-date.js";
 
 /*
  * Home owns one wheel session and passes it both to the Home Jobs section and
@@ -8,6 +9,7 @@ import { createSignal } from "solid-js";
  */
 export function createJobWheelSession(defaultJobId = "water1") {
   return {
+    today: createLocalDate(),
     selectedJobId: createSignal(defaultJobId),
     winner: createSignal(null),
     removedIds: createSignal([]),
