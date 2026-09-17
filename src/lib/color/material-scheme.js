@@ -141,6 +141,10 @@ export function materialSchemeVars(seedHex, dark) {
 
 /** Swatches for palette strips and saved-theme previews. */
 export function materialSchemeSwatches(seedHex, dark) {
-  const colors = materialSchemeColors(seedHex, dark);
-  return [colors["--primary"], colors["--secondary"], colors["--accent"], colors["--background"]];
+  const entry = cachedScheme(seedHex, dark);
+  if (!entry.swatches) {
+    const { scheme } = entry;
+    entry.swatches = [scheme.primary, scheme.secondary, scheme.tertiary, scheme.background].map(hexFromArgb);
+  }
+  return [...entry.swatches];
 }
