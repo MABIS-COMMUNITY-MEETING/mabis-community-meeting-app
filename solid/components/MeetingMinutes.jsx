@@ -2,7 +2,10 @@ import { createSignal, createMemo, createEffect, on, onCleanup, lazy, Suspense, 
 import IdleMount from "~/components/IdleMount";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/solid-query";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "~/lib/AuthContext";
+import { createCollabDoc } from "~/lib/collab-doc";
 import { resolveMinutesDocument } from "@/lib/minutes-format";
+import { Delta } from "~/lib/quill-setup";
 
 // Lazy, like every other DocsEditor usage in the app (TopicItem,
 // AnnouncementsWidget, NewsWidget, DiscussionWidget's TopicForm). MeetingMinutes
@@ -60,7 +63,31 @@ function ReadOnlyPaper(props) {
 
 export default function MeetingMinutes(props) {
   const queryClient = useQueryClient();
+  const auth = useAuth();
   const [savedFlash, setSavedFlash] = createSignal(false);
+  /*
+   * The live session for the week currently on screen, or null before the
+   * editor has mounted. Held in a plain variable for the same reason recordId
+   * is: it is written during mount and must never re-trigger a render, because
+   * that would remount the editor mid-typing.
+   */
+  let session = null;
+
+  /*
+   * Who writes the document back to DiscussionTopic.
+   *
+   * When the live session is up, exactly one participant does — the actor picks
+   * them — so N people editing produce one stream of writes rather than N
+   * racing to overwrite the same row.
+   *
+   * The fallback is the important half. With no session, or a session that has
+   * not connected (actor unreachable, offline, socket still dialling), this
+   * returns true and every client saves exactly as it does today. Getting that
+   * backwards would be the worst possible bug in this change: a dropped
+   * connection would silently stop persisting, and the meeting would look fine
+   * on screen right up until someone reloaded and lost the hour.
+   */
+  const shouldPersist = () => !session || !session.connected() || session.isWriter();
   /*
    * The editor mounts on idle, not on click.
    *
