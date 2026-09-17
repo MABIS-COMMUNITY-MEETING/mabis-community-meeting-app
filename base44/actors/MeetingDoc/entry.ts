@@ -1,4 +1,9 @@
-import { Actor } from "@base44/sdk";
+/* The SDK's own docs say to import Actor from the bare "@base44/sdk" and let
+   the deploy bundler swap it for the Durable Object implementation. This
+   backend does not accept bare specifiers — it rejects the file on write — so
+   the version is pinned the same way base44/functions/textView/entry.ts pins
+   its SDK import. */
+import { Actor } from "npm:@base44/sdk@0.8.48";
 import Delta from "npm:quill-delta@5.1.0";
 import { createOtServer } from "../../shared/ot-server.js";
 
