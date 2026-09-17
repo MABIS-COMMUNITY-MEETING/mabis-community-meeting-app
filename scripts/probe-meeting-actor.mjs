@@ -30,8 +30,12 @@ async function mint(connectionId, anonId) {
     headers: { "Content-Type": "application/json", "X-Base44-Anonymous-Id": anonId },
     body: JSON.stringify({ room: ROOM, connection_id: connectionId }),
   });
-  assert.equal(response.status, 200, `mint failed: ${response.status} ${await response.text()}`);
-  return response.json();
+  /* Read the body once, then decide. Building the failure message inline with
+     `await response.text()` consumes it even on the success path, so the
+     json() below then throws "Body has already been read". */
+  const body = await response.text();
+  assert.equal(response.status, 200, `mint failed: ${response.status} ${body}`);
+  return JSON.parse(body);
 }
 
 function open(credentials) {
