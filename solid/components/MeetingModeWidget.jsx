@@ -1,12 +1,15 @@
-import { createSignal, onMount, onCleanup, lazy, Suspense, Show } from "solid-js";
+import { createSignal, createEffect, on, onMount, onCleanup, lazy, Suspense, Show } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import { Dialog as KDialog } from "@kobalte/core/dialog";
 import { Video, ArrowRight, Pause, Circle, Lock, Undo2 } from "lucide-solid";
-import { format, nextFriday, isFriday, getISOWeek, getYear } from "date-fns";
+import { format, isFriday } from "date-fns";
 import { base44 } from "@/api/base44Client";
 import { DialogPortal, DialogOverlay } from "~/components/ui/dialog";
 import { JapaneseText } from "~/components/primitives";
 import { useHomeLayout } from "~/lib/prefs";
+import { createLocalDate } from "~/lib/current-date";
+import { getWeekLabel } from "~/lib/weeks";
+import { parseMeetingDate, resolveMeetingDate, readSavedMeetingDate } from "@/lib/meeting-date";
 
 const PasswordModal = lazy(() => import("~/components/PasswordModal"));
 
@@ -65,24 +68,6 @@ const SUMMER_SKIN = {
   stripe: "linear-gradient(90deg, hsl(var(--secondary)), hsl(var(--bone) / 0.3), hsl(var(--secondary) / 0.4))",
 };
 
-function getNextFriday() {
-  const today = new Date();
-  return isFriday(today) ? today : nextFriday(today);
-}
-
-function getCurrentWeekLabel() {
-  const today = new Date();
-  const friday = isFriday(today) ? today : nextFriday(today);
-  return `${getYear(friday)}-W${String(getISOWeek(friday)).padStart(2, "0")}`;
-}
-
-const getMeetingEndedKey = () => `mabis_meeting_ended_${getCurrentWeekLabel()}`;
-
-function weekLabelForDate(d) {
-  const friday = isFriday(d) ? d : nextFriday(d);
-  return `${getYear(friday)}-W${String(getISOWeek(friday)).padStart(2, "0")}`;
-}
-
 /*
  * MeetingModeWidget — Solid port of src/components/MeetingModeWidget.jsx.
  *
@@ -97,9 +82,10 @@ function weekLabelForDate(d) {
  */
 export default function MeetingModeWidget(props) {
   const navigate = useNavigate();
-  const defaultDate = getNextFriday();
+  const today = props.meetingSession?.today || createLocalDate();
+  const getMeetingEndedKey = () => `mabis_meeting_ended_${props.meetingSession?.weekLabel?.() || getWeekLabel(today())}`;
 
-  const [customDate, setCustomDate] = createSignal(localStorage.getItem("mabis_meeting_date") || "");
+  const [customDate, setCustomDate] = createSignal(readSavedMeetingDate());
   const [meetingStatus, setMeetingStatus] = createSignal(null);
   const [meetingEnded, setMeetingEnded] = createSignal(localStorage.getItem(getMeetingEndedKey()) === "true");
   const [showPassword, setShowPassword] = createSignal(false);
@@ -109,7 +95,14 @@ export default function MeetingModeWidget(props) {
   const [starting, setStarting] = createSignal(false);
 
   const canStart = () => props.canStart !== false;
-  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const todayStr = () => format(today(), "yyyy-MM-dd");
+
+  createEffect(on(() => getWeekLabel(today()), (week) => {
+    if (props.meetingSession?.status?.() === "ended" && props.meetingSession.weekLabel() !== week) {
+      props.meetingSession.clear();
+    }
+    setMeetingEnded(localStorage.getItem(getMeetingEndedKey()) === "true");
+  }));
 
   onMount(() => {
     const handler = (e) => {
@@ -131,15 +124,15 @@ export default function MeetingModeWidget(props) {
     localStorage.removeItem(getMeetingEndedKey());
     setMeetingEnded(false);
     setMeetingStatus(null);
+    const weekLabel = props.meetingSession?.weekLabel?.() || getWeekLabel(today());
     props.meetingSession?.clear?.();
     window.dispatchEvent(new CustomEvent("meetingStatus", { detail: { status: null } }));
-    window.dispatchEvent(new CustomEvent("meetingUndo"));
+    window.dispatchEvent(new CustomEvent("meetingUndo", { detail: { weekLabel } }));
   };
 
-  const isFridayToday = isFriday(new Date());
-  const meetingDate = () => (customDate() ? new Date(customDate()) : defaultDate);
-  const isToday = () => format(meetingDate(), "yyyy-MM-dd") === todayStr;
-  const isLocked = () => !meetingEnded() && !isFridayToday;
+  const meetingDate = () => props.meetingSession?.date?.() || resolveMeetingDate(customDate(), today());
+  const isToday = () => format(meetingDate(), "yyyy-MM-dd") === todayStr();
+  const isLocked = () => !meetingEnded() && !isFriday(today());
 
   const status = () => {
     const sessionStatus = props.meetingSession?.status?.();
@@ -156,9 +149,9 @@ export default function MeetingModeWidget(props) {
   };
 
   const persistUnlockedMeetingDate = async (date) => {
-    const d = new Date(date);
-    if (isFriday(d)) return;
-    const wl = weekLabelForDate(d);
+    const d = parseMeetingDate(date);
+    if (!d || isFriday(d)) return;
+    const wl = getWeekLabel(d);
     try {
       const existing = await base44.entities.Attendance.filter({ week_label: wl });
       if (existing.length > 0) await base44.entities.Attendance.update(existing[0].id, { meeting_date: date });
@@ -175,14 +168,14 @@ export default function MeetingModeWidget(props) {
 
     // Open synchronously. The old flow awaited an Attendance round-trip first,
     // which made Start Meeting look randomly frozen on a slow connection.
-    props.onStartMeeting?.();
+    props.onStartMeeting?.(date);
     void persistUnlockedMeetingDate(date).finally(() => setStarting(false));
   };
 
   const handleWidgetClick = () => {
     if (meetingEnded()) return;
     if (!canStart()) return;
-    if (isLocked()) { setPendingDate(todayStr); setShowUnlockPassword(true); return; }
+    if (isLocked()) { setPendingDate(todayStr()); setShowUnlockPassword(true); return; }
     props.onStartMeeting?.();
   };
 
@@ -266,7 +259,7 @@ export default function MeetingModeWidget(props) {
             <Show when={!meetingEnded() && isLocked() && canStart()}>
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); setPendingDate(todayStr); setShowUnlockPassword(true); }}
+                onClick={(e) => { e.stopPropagation(); setPendingDate(todayStr()); setShowUnlockPassword(true); }}
                 class={skin().unlockButton}
                 aria-label="Unlock Meeting Mode"
               >
@@ -304,7 +297,7 @@ export default function MeetingModeWidget(props) {
           <PasswordModal
             open
             onClose={() => setShowUnlockPassword(false)}
-            onSuccess={() => { setPendingDate(todayStr); setShowUnlockPassword(false); setShowDateConfirm(true); }}
+            onSuccess={() => { setPendingDate(todayStr()); setShowUnlockPassword(false); setShowDateConfirm(true); }}
             title="Unlock Meeting Mode"
           />
         </Show>
