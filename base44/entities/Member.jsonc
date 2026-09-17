@@ -32,6 +32,10 @@
       "description": "Avatar border color hex",
       "default": "#951E3A"
     },
+    "job_rotation_excluded_week": {
+      "type": "string",
+      "description": "Friday-anchored ISO week excluded from jobs (YYYY-Www); automatically eligible in other weeks"
+    },
     "job_rotation_enabled": {
       "type": "boolean",
       "default": true,
