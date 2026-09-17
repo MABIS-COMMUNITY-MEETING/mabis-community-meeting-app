@@ -4,12 +4,18 @@
  *
  * partysocket is the transport behind @base44/sdk's Actors module. createClient
  * builds `client.actors` eagerly, so the library rode the boot path at 8.8 KiB
- * minified (3.0 KiB gzipped, measured) even though this app never touches
- * base44.actors at all — there is not one reference in src/ or solid/.
+ * minified (3.0 KiB gzipped, measured) even though nothing used it.
  *
- * Deleting it outright would be smaller still, and wrong: the day someone does
- * use an actor it must work, not fail with a stub error. So it loads on
- * construction instead, which for the current app means never.
+ * Deleting it outright would have been smaller still, and wrong — and that has
+ * now been demonstrated rather than merely argued. The live meeting document
+ * connects to the MeetingDoc actor (solid/lib/collab-doc.js), so this class is
+ * constructed for real the first time somebody opens the minutes.
+ *
+ * That is exactly the intended shape: the socket library is not on the boot
+ * path, it is on the path of the feature that needs it. Home still starts
+ * without it; opening the document pays for it once. Do not "optimise" this
+ * into a static import on the grounds that it is used now — every Home visit
+ * would carry it again, and most Home visits never open the editor.
  *
  * SUPPORTED SURFACE
  *
