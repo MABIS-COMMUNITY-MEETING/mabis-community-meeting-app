@@ -11,6 +11,8 @@ import {
   memberRotationKey, normalizeJobTitle, scheduledDaysFor,
 } from "@/lib/jobsRotation";
 import { useAuth } from "~/lib/AuthContext";
+import { createLocalDate } from "~/lib/current-date";
+import { participatesInJobs, jobParticipationUpdate } from "@/lib/job-participation";
 import { Button } from "~/components/ui";
 import { Select } from "~/components/ui/select";
 import { JapaneseText } from "~/components/primitives";
@@ -99,8 +101,9 @@ export default function JobsWidget(props) {
   const [jobActionMessage, setJobActionMessage] = createSignal("");
   const [rotationBusy, setRotationBusy] = createSignal(false);
 
-  const currentWeek = getCurrentWeekLabel();
-  const currentMonth = getMonthLabel();
+  const today = props.wheelSession?.today || createLocalDate();
+  const currentWeek = () => getCurrentWeekLabel(today());
+  const currentMonth = () => getMonthLabel(today());
 
   const members = () => props.members || [];
   const isAdmin = () => props.isAdmin;
@@ -123,14 +126,14 @@ export default function JobsWidget(props) {
     const list = assignments();
     if (migratedLegacyTimeKeepers || list.length === 0) return;
     const legacyCurrent = list.filter((a) =>
-      isTimeKeeperJob(a.job_title) && !a.month_label && a.week_label === currentWeek);
+      isTimeKeeperJob(a.job_title) && !a.month_label && a.week_label === currentWeek());
     migratedLegacyTimeKeepers = true;
     if (legacyCurrent.length === 0) return;
 
     Promise.all(legacyCurrent.map((a) => base44.entities.JobAssignment.update(a.id, {
       job_title: normalizeJobTitle(a.job_title),
       assignment_period: "monthly",
-      month_label: currentMonth,
+      month_label: currentMonth(),
       schedule_days: scheduledDaysFor(a),
     })))
       .then(() => queryClient.invalidateQueries({ queryKey: ["assignments"] }))
@@ -152,11 +155,11 @@ export default function JobsWidget(props) {
   const allJobs = createMemo(() => [...JOBS, ...customJobs()]);
   const studentMembers = createMemo(() => members().filter((m) => !m.role || m.role === "student"));
   const rotationMembers = createMemo(() =>
-    studentMembers().filter((m) => m.job_rotation_enabled !== false));
+    studentMembers().filter((m) => participatesInJobs(m, currentWeek())));
   const sortedStudentMembers = createMemo(() =>
     [...studentMembers()].sort((a, b) => displayName(a).localeCompare(displayName(b))));
   const currentAssignments = createMemo(() =>
-    assignments().filter((a) => assignmentIsCurrent(a, currentWeek, currentMonth)));
+    assignments().filter((a) => assignmentIsCurrent(a, currentWeek(), currentMonth())));
   const assignedJobLabels = createMemo(() => currentAssignments().map((a) => normalizeJobTitle(a.job_title)));
   const assignedMemberKeys = createMemo(() => new Set(
     currentAssignments().map((a) => memberRotationKey({ email: a.assigned_to_email, name: a.assigned_to_name }))));
@@ -191,13 +194,18 @@ export default function JobsWidget(props) {
   const winnerCanBeAssigned = () => {
     const w = winner();
     return !!w
+      && wheelMembers().some((member) => member.id === w.member.id)
       && (isTimeKeeperJob(w.jobLabel) || !assignedMemberKeys().has(memberRotationKey(w.member)))
       && !assignedJobLabels().includes(normalizeJobTitle(w.jobLabel));
   };
 
+  let removalWeek = currentWeek();
   createEffect(() => {
-    if (wheelMembers().length === 0 && spinCandidates().length > 0 && removedIds().length > 0) {
+    const week = currentWeek();
+    if (week !== removalWeek) {
+      removalWeek = week;
       setRemovedIds([]);
+      setWinner(null);
     }
   });
 
@@ -256,7 +264,7 @@ export default function JobsWidget(props) {
 
   const statusKeysFor = (a) =>
     jobPeriod(a) === "monthly"
-      ? getScheduledDatesForMonth(a, a.month_label || currentMonth)
+      ? getScheduledDatesForMonth(a, a.month_label || currentMonth())
       : scheduledDaysFor(a);
 
   // Synchronous duplicate guard — see the note at the top of this file.
@@ -264,8 +272,8 @@ export default function JobsWidget(props) {
 
   const carryToNextPeriod = (a) => {
     const period = jobPeriod(a);
-    const nextWeek = period === "weekly" ? getNextWeekLabel(a.week_label || currentWeek) : null;
-    const nextMonth = period === "monthly" ? getNextMonthLabel(a.month_label || currentMonth) : null;
+    const nextWeek = period === "weekly" ? getNextWeekLabel(a.week_label || currentWeek()) : null;
+    const nextMonth = period === "monthly" ? getNextMonthLabel(a.month_label || currentMonth()) : null;
     const exists = assignments().some((c) =>
       normalizeJobTitle(c.job_title) === normalizeJobTitle(a.job_title)
       && c.assigned_to_name === a.assigned_to_name
@@ -391,35 +399,50 @@ export default function JobsWidget(props) {
 
   const setRotationForMembers = async (targets, enabled) => {
     if (rotationBusy()) return;
+    const week = currentWeek();
     const changed = targets.filter((member) =>
-      member?.id && (member.job_rotation_enabled !== false) !== enabled);
+      member?.id && participatesInJobs(member, week) !== enabled);
     if (changed.length === 0) return;
 
     const targetIds = new Set(changed.map((member) => member.id));
-    const previousMembers = queryClient.getQueryData(["members"]);
+    const update = jobParticipationUpdate(enabled, week);
     setRotationBusy(true);
-    queryClient.setQueryData(["members"], (current = []) =>
-      current.map((member) =>
-        targetIds.has(member.id) ? { ...member, job_rotation_enabled: enabled } : member));
-
-    if (enabled) {
-      setRemovedIds((ids) => ids.filter((id) => !targetIds.has(id)));
-    } else if (winner() && targetIds.has(winner().member.id)) {
-      setWinner(null);
-    }
-
     try {
-      await Promise.all(changed.map((member) =>
-        base44.entities.Member.update(member.id, { job_rotation_enabled: enabled })));
-      const subject = changed.length === 1 ? displayName(changed[0]) : `${changed.length} students`;
-      setJobActionMessage(
-        `${subject} ${enabled ? "added to" : "removed from"} the job list.`,
-      );
-      window.setTimeout(() => setJobActionMessage(""), 4000);
-    } catch {
-      if (previousMembers !== undefined) {
-        queryClient.setQueryData(["members"], previousMembers);
+      // An already-running roster read must not undo the optimistic exclusion.
+      await queryClient.cancelQueries({ queryKey: ["members"] });
+      queryClient.setQueryData(["members"], (current = []) =>
+        current.map((member) =>
+          targetIds.has(member.id) ? { ...member, ...update } : member));
+
+      if (enabled) {
+        setRemovedIds((ids) => ids.filter((id) => !targetIds.has(id)));
+      } else if (winner() && targetIds.has(winner().member.id)) {
+        setWinner(null);
       }
+
+      const results = await Promise.allSettled(changed.map((member) =>
+        base44.entities.Member.update(member.id, update)));
+      const failed = new Map(changed
+        .filter((_, index) => results[index].status === "rejected")
+        .map((member) => [member.id, member]));
+      if (failed.size) {
+        // Preserve successful updates and unrelated realtime roster changes.
+        queryClient.setQueryData(["members"], (current = []) =>
+          current.map((member) => {
+            const before = failed.get(member.id);
+            return before ? {
+              ...member,
+              job_rotation_enabled: before.job_rotation_enabled,
+              job_rotation_excluded_week: before.job_rotation_excluded_week,
+            } : member;
+          }));
+        setJobActionMessage("Could not update the job list. Please try again.");
+      } else {
+        const subject = changed.length === 1 ? displayName(changed[0]) : `${changed.length} students`;
+        setJobActionMessage(`${subject} ${enabled ? "added to" : "removed from"} the job list.`);
+        window.setTimeout(() => setJobActionMessage(""), 4000);
+      }
+    } catch {
       setJobActionMessage("Could not update the job list. Please try again.");
     } finally {
       setRotationBusy(false);
@@ -438,8 +461,10 @@ export default function JobsWidget(props) {
     }
   };
 
-  const handleSpinComplete = (member) =>
+  const handleSpinComplete = (member) => {
+    if (!wheelMembers().some((candidate) => candidate.id === member?.id)) return;
     setWinner({ member, job: selectedJob(), jobLabel: selectedJob().label });
+  };
 
   const handleConfirmAssign = () => {
     const w = winner();
@@ -452,7 +477,7 @@ export default function JobsWidget(props) {
       assigned_to_email: w.member.email || "",
       assignment_period: period,
       schedule_days: scheduledDaysFor(job),
-      ...(period === "monthly" ? { month_label: currentMonth } : { week_label: currentWeek }),
+      ...(period === "monthly" ? { month_label: currentMonth() } : { week_label: currentWeek() }),
       completed: false,
     });
     setWinner(null);
@@ -493,7 +518,7 @@ export default function JobsWidget(props) {
       >
         <JobListStudio
           assignments={currentAssignments()}
-          periodLabel={`Week of ${formatWeekLabel(currentWeek)} / Time Keepers: ${formatMonthLabel(currentMonth)}`}
+          periodLabel={`Week of ${formatWeekLabel(currentWeek())} / Time Keepers: ${formatMonthLabel(currentMonth())}`}
           currentUser={auth.user()}
           isAdmin={isAdmin()}
           onClose={() => setShowJobListStudio(false)}
@@ -641,7 +666,7 @@ export default function JobsWidget(props) {
                     <p class="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                       {rotationMembers().length}/{studentMembers().length} on job list
                     </p>
-                    <p class="text-[10px] text-muted-foreground">Removing someone here does not delete their profile.</p>
+                    <p class="text-[10px] text-muted-foreground">Remove skips this week’s wheel only. They return next week; their profile is kept.</p>
                   </div>
                   <div class="flex gap-1.5">
                     <button
@@ -668,7 +693,7 @@ export default function JobsWidget(props) {
                     fallback={<p class="px-2 py-5 text-center text-xs text-muted-foreground">No student profiles yet.</p>}
                   >
                     {(member) => {
-                      const included = () => member.job_rotation_enabled !== false;
+                      const included = () => participatesInJobs(member, currentWeek());
                       return (
                         <div class="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 hover:bg-muted">
                           <div class="min-w-0">
@@ -785,11 +810,11 @@ export default function JobsWidget(props) {
       <div>
         <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <JapaneseText
-            ja={`今週：${formatWeekLabel(currentWeek)}・タイムキーパー：${formatMonthLabel(currentMonth)}—${currentAssignments().length}/${allJobs().length}件割り当て済み`}
+            ja={`今週：${formatWeekLabel(currentWeek())}・タイムキーパー：${formatMonthLabel(currentMonth())}—${currentAssignments().length}/${allJobs().length}件割り当て済み`}
             class="block text-xs font-semibold text-muted-foreground uppercase tracking-wide"
             japaneseClass="mt-0.5 block normal-case tracking-normal text-[0.9em]"
           >
-            Week of {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments().length}/{allJobs().length} assigned
+            Week of {formatWeekLabel(currentWeek())} · Time Keepers: {formatMonthLabel(currentMonth())} — {currentAssignments().length}/{allJobs().length} assigned
           </JapaneseText>
           <Button
             type="button"
@@ -812,7 +837,7 @@ export default function JobsWidget(props) {
           statusPending={updateAssignment.isPending}
           onDelete={handleRemoveAssignment}
           deletePending={removeAssignment.isPending}
-          currentMonth={currentMonth}
+          currentMonth={currentMonth()}
         />
       </div>
     </div>
@@ -826,11 +851,11 @@ export default function JobsWidget(props) {
           <div>
             <h2 class="mabis-widget-title font-display font-bold text-primary-foreground text-2xl">Jobs Assignment</h2>
             <JapaneseText
-              ja={`今週の係：${formatWeekLabel(currentWeek)}・タイムキーパー：${formatMonthLabel(currentMonth)}`}
+              ja={`今週の係：${formatWeekLabel(currentWeek())}・タイムキーパー：${formatMonthLabel(currentMonth())}`}
               class="block text-primary-foreground-muted text-sm"
               japaneseClass="block mt-0.5 text-[0.85em]"
             >
-              Weekly jobs: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)}
+              Weekly jobs: {formatWeekLabel(currentWeek())} · Time Keepers: {formatMonthLabel(currentMonth())}
             </JapaneseText>
           </div>
           <div class="mabis-widget-actions flex items-center gap-3">
@@ -896,7 +921,7 @@ export default function JobsWidget(props) {
             statusPending={updateAssignment.isPending}
             onDelete={handleRemoveAssignment}
             deletePending={removeAssignment.isPending}
-            currentMonth={currentMonth}
+            currentMonth={currentMonth()}
           />
         </div>
       }>
@@ -905,11 +930,11 @@ export default function JobsWidget(props) {
             <div>
               <h2 class="mabis-widget-title font-display font-bold text-primary-foreground text-xl">Jobs</h2>
               <JapaneseText
-                ja={`今週：${formatWeekLabel(currentWeek)}・タイムキーパー：${formatMonthLabel(currentMonth)}—${currentAssignments().length}/${allJobs().length}件割り当て済み`}
+                ja={`今週：${formatWeekLabel(currentWeek())}・タイムキーパー：${formatMonthLabel(currentMonth())}—${currentAssignments().length}/${allJobs().length}件割り当て済み`}
                 class="block text-primary-foreground-muted text-xs mt-0.5"
                 japaneseClass="block mt-0.5 text-[0.9em]"
               >
-                Weekly: {formatWeekLabel(currentWeek)} · Time Keepers: {formatMonthLabel(currentMonth)} — {currentAssignments().length}/{allJobs().length} assigned
+                Weekly: {formatWeekLabel(currentWeek())} · Time Keepers: {formatMonthLabel(currentMonth())} — {currentAssignments().length}/{allJobs().length} assigned
               </JapaneseText>
             </div>
             <div class="mabis-widget-actions flex items-center gap-2">
