@@ -53,6 +53,7 @@ export function createCollabDoc({ actors, room, Delta, name, onStatus }) {
   const [isWriter, setIsWriter] = createSignal(false);
 
   let quill = null;
+  let afterRemote = null;
   let connection = null;
   let subscription = null;
   let cursorTimer = null;
@@ -76,6 +77,12 @@ export function createCollabDoc({ actors, room, Delta, name, onStatus }) {
         if (peer.cursor) peer.cursor = ot.transformCursor(delta, peer.cursor);
       }
       publishPeers();
+      /* "silent" suppresses text-change (quill.js:551), which is exactly what
+         stops remote edits echoing back out as local ops — and also means the
+         editor's own onChange never fires for them. Left there, the elected
+         writer would persist a document containing everyone's edits except the
+         ones that arrived over the wire. This is the hook that closes that gap. */
+      afterRemote?.();
     },
     reset: (_rev, ops) => {
       if (!quill) return;
@@ -150,9 +157,10 @@ export function createCollabDoc({ actors, room, Delta, name, onStatus }) {
     get syncing() { return ot.inFlight; },
 
     /** Called by DocsEditor once Quill exists. */
-    attach(instance) {
+    attach(instance, hooks = {}) {
       if (disposed) return;
       quill = instance;
+      afterRemote = hooks.onRemoteApplied || null;
       connection = actors[room.actor](room.id).connect();
       subscription = connection.subscribe(handle);
     },
@@ -183,6 +191,7 @@ export function createCollabDoc({ actors, room, Delta, name, onStatus }) {
       subscription = null;
       connection = null;
       quill = null;
+      afterRemote = null;
       setConnected(false);
     },
   };
