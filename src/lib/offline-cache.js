@@ -170,10 +170,11 @@ export function startOfflineQueryPersistence(queryClient, userId) {
 
   const persist = async () => {
     if (stopped) return;
-    const state = dehydrate(queryClient, { shouldDehydrateQuery: queryCanPersist });
-    const serialized = JSON.stringify(state);
-    if (new Blob([serialized]).size > MAX_BYTES) return;
+    idleId = 0;
     try {
+      const state = dehydrate(queryClient, { shouldDehydrateQuery: queryCanPersist });
+      const serialized = JSON.stringify(state);
+      if (new Blob([serialized]).size > MAX_BYTES) return;
       await writeRecord({
         key: `queries:${userId}`,
         savedAt: Date.now(),
@@ -186,6 +187,8 @@ export function startOfflineQueryPersistence(queryClient, userId) {
 
   const schedule = () => {
     window.clearTimeout(timer);
+    if (idleId && "cancelIdleCallback" in window) window.cancelIdleCallback(idleId);
+    idleId = 0;
     timer = window.setTimeout(() => {
       if ("requestIdleCallback" in window) {
         idleId = window.requestIdleCallback(() => void persist(), { timeout: 2500 });
@@ -196,7 +199,15 @@ export function startOfflineQueryPersistence(queryClient, userId) {
   };
 
   const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-    if (event?.type === "updated" && event.query?.state.status === "success") schedule();
+    if (!PERSISTED_QUERY_ROOTS.has(event?.query?.queryKey?.[0])) return;
+    // Presence, fetching, invalidation and observer notifications do not change
+    // a usable snapshot. Save actual data changes and removals only.
+    if (event.type === "removed"
+      || (event.type === "added" && queryCanPersist(event.query))
+      || (event.type === "updated"
+        && (event.action?.type === "success" || event.action?.type === "setState"))) {
+      schedule();
+    }
   });
 
   schedule();
