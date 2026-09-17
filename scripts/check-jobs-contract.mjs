@@ -105,6 +105,56 @@ const announcementSource = source("solid/components/AnnouncementsWidget.jsx");
 assert.match(homeSource, /createJobWheelSession\(\)/);
 assert.match(homeSource, /wheelSession=\{wheelSession\}/);
 assert.match(discussionSource, /wheelSession=\{props\.wheelSession\}/);
+
+/*
+ * EVERY JobsWidget mount joins the shared session, not merely one of them —
+ * which is all the assertion above ever proved.
+ *
+ * DiscussionWidget mounts JobsWidget twice: once inside Meeting Mode, once in
+ * the ordinary section under the minutes. The second shipped without
+ * `wheelSession`, so it fell back to JobsWidget's private signals and became a
+ * second, unrelated wheel on the same Home page. "Remove from wheel" then took
+ * the name off whichever wheel you clicked and left it on the other, which is
+ * indistinguishable from the button not working.
+ *
+ * Counting the mounts is the whole point: the single-match assertion above
+ * passed happily the entire time the bug was live.
+ */
+const jobsWidgetMounts = discussionSource.match(/<JobsWidget[^/>]*/g) || [];
+assert.ok(jobsWidgetMounts.length >= 2, "DiscussionWidget should mount JobsWidget in both its meeting and normal views");
+for (const mount of jobsWidgetMounts) {
+  assert.match(
+    mount, /wheelSession=/,
+    `a JobsWidget mount is missing wheelSession, which forks it into an unrelated wheel: ${mount.trim()}`,
+  );
+}
+
+/*
+ * Removing somebody from the job list lasts exactly one week.
+ *
+ * This is behaviour, not source text. Every other job-list assertion in this
+ * file greps for a pattern, which cannot tell whether the dates actually work
+ * out — and "they come back next week" is the half a reader is most likely to
+ * assume rather than verify.
+ */
+const removalWeek = getCurrentWeekLabel(new Date(2026, 7, 14));   // 2026-W33
+const followingWeek = getCurrentWeekLabel(new Date(2026, 7, 21)); // 2026-W34
+assert.notEqual(removalWeek, followingWeek, "the two sample dates must fall in different meeting weeks");
+
+const student = { id: "m1", name: "Sample" };
+assert.equal(participatesInJobs(student, removalWeek), true, "a new student starts on the wheel");
+
+const afterRemove = { ...student, ...jobParticipationUpdate(false, removalWeek) };
+assert.equal(participatesInJobs(afterRemove, removalWeek), false, "Remove must take them off THIS week's wheel");
+assert.equal(participatesInJobs(afterRemove, followingWeek), true, "they must return by themselves the week after");
+
+const afterUndo = { ...afterRemove, ...jobParticipationUpdate(true, removalWeek) };
+assert.equal(participatesInJobs(afterUndo, removalWeek), true, "Add must put them back immediately, not next week");
+
+/* A legacy row with no dated exclusion is still an explicit opt-out, and must
+   not be quietly re-enrolled by the week-scoped logic above. */
+assert.equal(participatesInJobs({ ...student, job_rotation_enabled: false }, removalWeek), false);
+assert.equal(participatesInJobs({ ...student, job_rotation_enabled: false }, followingWeek), false);
 assert.match(jobsSource, /props\.wheelSession\?\.winner/);
 assert.match(wheelSessionSource, /shuffleSeed:\s*createSignal\(0\)/);
 assert.match(jobsSource, /props\.wheelSession\?\.shuffleSeed/);
