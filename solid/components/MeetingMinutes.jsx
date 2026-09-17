@@ -37,8 +37,6 @@ const DocsEditor = lazy(() => import("~/components/DocsEditor"));
  * document. resolveMinutesDocument() is shared with React and carries the
  * regression tests for the first; the payload capture below covers the second.
  */
-/* Shown only until the editor mounts. Same surface and reserved height as the
-   editor's document area so the swap causes no layout shift. */
 /*
  * Week label to actor room id. The label is user-facing text ("14 August
  * 2025"), and the room id rides in a URL, so anything outside this set is
@@ -49,6 +47,8 @@ function roomIdFor(week) {
   return `minutes-${String(week || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
 }
 
+/* Shown only until the editor mounts. Same surface and reserved height as the
+   editor's document area so the swap causes no layout shift. */
 function ReadOnlyPaper(props) {
   return (
     <div
