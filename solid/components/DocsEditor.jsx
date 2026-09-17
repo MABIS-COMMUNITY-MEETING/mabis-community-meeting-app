@@ -468,7 +468,7 @@ export default function DocsEditor(props) {
        out to be the first into an empty room it has a document to seed it
        with. Attaching earlier would offer the server an empty Delta and blank
        the week for everyone who joined afterwards. */
-    props.collab?.attach(quill, { onRemoteApplied: emitChange });
+    props.collab?.attach(quill, { Delta, onRemoteApplied: emitChange });
     quill.root.addEventListener("scroll", bumpCursorLayout, { passive: true });
     // Run before Quill's own paste listener. Quill skips events that are
     // already prevented, so rich clipboard content is sanitized and inserted
