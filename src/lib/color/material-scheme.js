@@ -19,6 +19,25 @@ import { hslStringFromHex } from "@/lib/color/hct";
 const SPEC_VERSION = "2025";
 const PLATFORM = "phone";
 const CONTRAST_LEVEL = 0;
+// A bounded seed/mode cache avoids solving identical dynamic roles again for
+// theme application and preview strips. Never expose cached mutable objects.
+const schemeCache = new Map();
+const MAX_CACHED_SCHEMES = 16;
+
+function cachedScheme(seedHex, dark) {
+  const key = `${argbFromHex(seedHex)}:${Boolean(dark)}`;
+  let entry = schemeCache.get(key);
+  if (entry) {
+    schemeCache.delete(key);
+  } else {
+    entry = { scheme: createMaterialScheme(seedHex, dark) };
+    if (schemeCache.size >= MAX_CACHED_SCHEMES) {
+      schemeCache.delete(schemeCache.keys().next().value);
+    }
+  }
+  schemeCache.set(key, entry);
+  return entry;
+}
 
 function createMaterialScheme(seedHex, dark) {
   return new SchemeTonalSpot(
@@ -37,7 +56,7 @@ const paletteHex = (palette, tone) => hexFromArgb(palette.tone(tone));
  * Primary chroma is intentionally mode-dependent in the 2025 phone spec.
  */
 export function materialPalettes(seedHex, dark = false) {
-  const scheme = createMaterialScheme(seedHex, dark);
+  const { scheme } = cachedScheme(seedHex, dark);
   return {
     hue: scheme.sourceColorHct.hue,
     primary: (tone) => paletteHex(scheme.primaryPalette, tone),
@@ -54,7 +73,9 @@ export function materialPalettes(seedHex, dark = false) {
  * Exported so the reference-derived contract can compare RGB bytes directly.
  */
 export function materialSchemeColors(seedHex, dark) {
-  const scheme = createMaterialScheme(seedHex, dark);
+  const entry = cachedScheme(seedHex, dark);
+  if (entry.colors) return { ...entry.colors };
+  const { scheme } = entry;
   const hex = (argb) => hexFromArgb(argb);
   const tone = (palette, value) => paletteHex(palette, value);
 
@@ -80,7 +101,7 @@ export function materialSchemeColors(seedHex, dark) {
     "--ring": hex(scheme.primary),
   };
 
-  return dark
+  entry.colors = dark
     ? {
         ...roles,
         "--role-student": tone(scheme.primaryPalette, 70),
@@ -99,6 +120,7 @@ export function materialSchemeColors(seedHex, dark) {
         "--role-admin": tone(scheme.tertiaryPalette, 50),
         "--role-editor": tone(scheme.secondaryPalette, 50),
       };
+  return { ...entry.colors };
 }
 
 /**
@@ -107,19 +129,18 @@ export function materialSchemeColors(seedHex, dark) {
  * @returns {Record<string,string>} CSS custom properties as HSL triplets
  */
 export function materialSchemeVars(seedHex, dark) {
-  return Object.fromEntries(
-    Object.entries(materialSchemeColors(seedHex, dark))
-      .map(([token, hex]) => [token, hslStringFromHex(hex)]),
-  );
+  const entry = cachedScheme(seedHex, dark);
+  if (!entry.vars) {
+    entry.vars = Object.fromEntries(
+      Object.entries(materialSchemeColors(seedHex, dark))
+        .map(([token, hex]) => [token, hslStringFromHex(hex)]),
+    );
+  }
+  return { ...entry.vars };
 }
 
 /** Swatches for palette strips and saved-theme previews. */
 export function materialSchemeSwatches(seedHex, dark) {
-  const scheme = createMaterialScheme(seedHex, dark);
-  return [
-    hexFromArgb(scheme.primary),
-    hexFromArgb(scheme.secondary),
-    hexFromArgb(scheme.tertiary),
-    hexFromArgb(scheme.background),
-  ];
+  const colors = materialSchemeColors(seedHex, dark);
+  return [colors["--primary"], colors["--secondary"], colors["--accent"], colors["--background"]];
 }
