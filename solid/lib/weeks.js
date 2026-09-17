@@ -1,4 +1,4 @@
-import { getISOWeek, getYear, nextFriday, isFriday, format } from "date-fns";
+import { getISOWeek, getISOWeekYear, nextFriday, isFriday, format } from "date-fns";
 
 /*
  * Week-label helpers, ported verbatim from DiscussionWidget.
@@ -12,7 +12,7 @@ import { getISOWeek, getYear, nextFriday, isFriday, format } from "date-fns";
 
 export function getWeekLabel(date) {
   const friday = isFriday(date) ? date : nextFriday(date);
-  return `${getYear(friday)}-W${String(getISOWeek(friday)).padStart(2, "0")}`;
+  return `${getISOWeekYear(friday)}-W${String(getISOWeek(friday)).padStart(2, "0")}`;
 }
 
 export function weekLabelToDate(label) {
@@ -39,7 +39,7 @@ export function formatWeekFull(label) {
 export function getNextWeekLabelFrom(weekLabel) {
   const d = weekLabelToDate(weekLabel);
   d.setDate(d.getDate() + 7);
-  return `${getYear(d)}-W${String(getISOWeek(d)).padStart(2, "0")}`;
+  return `${getISOWeekYear(d)}-W${String(getISOWeek(d)).padStart(2, "0")}`;
 }
 
 /** Japanese rendering of a week label, for the companion text. */
