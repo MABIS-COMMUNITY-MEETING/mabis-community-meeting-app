@@ -6,7 +6,7 @@ import {
   format,
   getDay,
   getISOWeek,
-  getYear,
+  getISOWeekYear,
   isFriday,
   nextFriday,
   parseISO,
@@ -59,7 +59,7 @@ export function getNextMonthLabel(label) {
 
 export function getCurrentWeekLabel(date = new Date()) {
   const friday = isFriday(date) ? date : nextFriday(date);
-  return `${getYear(friday)}-W${String(getISOWeek(friday)).padStart(2, "0")}`;
+  return `${getISOWeekYear(friday)}-W${String(getISOWeek(friday)).padStart(2, "0")}`;
 }
 
 export function weekLabelToDate(label) {
@@ -81,7 +81,7 @@ export function formatWeekLabel(label) {
 
 export function getNextWeekLabel(label) {
   const next = addWeeks(weekLabelToDate(label), 1);
-  return `${getYear(next)}-W${String(getISOWeek(next)).padStart(2, "0")}`;
+  return `${getISOWeekYear(next)}-W${String(getISOWeek(next)).padStart(2, "0")}`;
 }
 
 export function getVisibleWeekDates(monthLabel, referenceDate = new Date()) {
