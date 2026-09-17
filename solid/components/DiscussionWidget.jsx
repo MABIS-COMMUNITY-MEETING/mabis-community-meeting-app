@@ -11,6 +11,7 @@ import { base44 } from "@/api/base44Client";
 import { dedupeByIdentity } from "@/lib/memberIdentity";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { whenIdle } from "~/lib/perf";
+import { createMeetingModeSession } from "~/lib/meeting-mode-session";
 import { Button, Input } from "~/components/ui";
 import { Select } from "~/components/ui/select";
 import { JapaneseText } from "~/components/primitives";
@@ -93,12 +94,11 @@ export default function DiscussionWidget(props) {
   const [saveError, setSaveError] = createSignal("");
   const [saveRequestId, setSaveRequestId] = createSignal("");
   const [saveRequestSignature, setSaveRequestSignature] = createSignal("");
-  const [localMeetingMode, setLocalMeetingMode] = createSignal(location.state?.startMeeting === true);
-  const [meetingPaused, setMeetingPaused] = createSignal(false);
+  const meetingSession = props.meetingSession || createMeetingModeSession();
   const [meetingNotesReady, setMeetingNotesReady] = createSignal(false);
   const [meetingJobsReady, setMeetingJobsReady] = createSignal(false);
   const [normalContentReady, setNormalContentReady] = createSignal(true);
-  const meetingMode = () => props.meetingSession?.isActive?.() ?? localMeetingMode();
+  const meetingMode = meetingSession.isActive;
   const [weekOffset, setWeekOffset] = createSignal(0);
   const [fullscreen, setFullscreen] = createSignal(false);
 
@@ -106,11 +106,11 @@ export default function DiscussionWidget(props) {
 
   onMount(() => {
     const start = () => {
-      setMeetingPaused(false);
-      if (props.meetingSession) props.meetingSession.start();
-      else setLocalMeetingMode(true);
+      meetingSession.start();
     };
-    const undo = () => archiveWeek.mutate({ weekLabel: getWeekLabel(new Date()), archive: false });
+    const undo = (event) => archiveWeek.mutate({
+      weekLabel: event.detail?.weekLabel || meetingSession.weekLabel(), archive: false,
+    });
     if (location.state?.startMeeting === true) start();
     window.addEventListener("startMeetingMode", start);
     window.addEventListener("meetingUndo", undo);
@@ -124,10 +124,10 @@ export default function DiscussionWidget(props) {
   let wasInMeeting = false;
   let pendingAction = null; // "pause" | "end"
 
-  const meetingStatus = () => props.meetingSession?.status?.() || (meetingPaused() ? "paused" : meetingMode() ? "active" : "idle");
+  const meetingStatus = meetingSession.status;
 
   createEffect(on([meetingMode, meetingStatus], ([inMeeting, status]) => {
-    const currentWeek = getWeekLabel(new Date());
+    const currentWeek = meetingSession.weekLabel();
     if (inMeeting) {
       wasInMeeting = true;
       localStorage.removeItem(`mabis_meeting_ended_${currentWeek}`);
@@ -149,13 +149,8 @@ export default function DiscussionWidget(props) {
   const leaveMeetingMode = (action) => {
     if (!meetingMode()) return;
     pendingAction = action;
-    setMeetingPaused(action === "pause");
-    if (props.meetingSession) {
-      if (action === "pause") props.meetingSession.pause();
-      else props.meetingSession.end();
-    } else {
-      setLocalMeetingMode(false);
-    }
+    if (action === "pause") meetingSession.pause();
+    else meetingSession.end();
   };
 
   // Give the overlay shell a paint of its own, then mount Quill and the full
@@ -198,12 +193,13 @@ export default function DiscussionWidget(props) {
   }));
 
   const viewedWeek = createMemo(() => {
-    const base = new Date();
+    if (meetingMode()) return meetingSession.weekLabel();
+    const base = meetingSession.today();
     const offset = weekOffset();
     const d = offset === 0 ? base : offset > 0 ? addWeeks(base, offset) : subWeeks(base, Math.abs(offset));
     return getWeekLabel(d);
   });
-  const isCurrentWeek = () => weekOffset() === 0;
+  const isCurrentWeek = () => viewedWeek() === getWeekLabel(meetingSession.today());
 
   const topicsQuery = useQuery(() => ({
     queryKey: ["topics", viewedWeek()],
@@ -429,10 +425,9 @@ export default function DiscussionWidget(props) {
   });
 
   const meetingDateLabel = () => {
-    const md = localStorage.getItem("mabis_meeting_date");
-    const d = md ? new Date(md) : weekLabelToDate(viewedWeek());
+    const d = meetingSession.date() || weekLabelToDate(viewedWeek());
     return {
-      en: md ? format(d, "EEEE, d MMMM yyyy") : formatWeekFull(viewedWeek()),
+      en: format(d, "EEEE, d MMMM yyyy"),
       ja: new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "long" }).format(d),
     };
   };
