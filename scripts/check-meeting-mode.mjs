@@ -8,8 +8,11 @@ const meetingCardSource = fs.readFileSync("solid/components/MeetingModeWidget.js
 const discussionSource = fs.readFileSync("solid/components/DiscussionWidget.jsx", "utf8");
 const minutesSource = fs.readFileSync("solid/components/MeetingMinutes.jsx", "utf8");
 const docsEditorSource = fs.readFileSync("solid/components/DocsEditor.jsx", "utf8");
-const { createRoot } = await import("solid-js");
+const { createRoot, createSignal } = await import("solid-js");
 const { createMeetingModeSession } = await import("../solid/lib/meeting-mode-session.js");
+const { meetingDateForWeek, resolveMeetingDate } = await import("../src/lib/meeting-date.js");
+const { getCurrentWeekLabel } = await import("../src/lib/jobsRotation.js");
+const { format } = await import("date-fns");
 
 createRoot((dispose) => {
   const session = createMeetingModeSession();
@@ -24,7 +27,62 @@ createRoot((dispose) => {
   dispose();
 });
 
+/*
+ * The meeting date must follow the calendar, not the moment the meeting opened.
+ *
+ * The header showed "Tuesday, 25 August 2026" in mid-September because the date
+ * was resolved once inside start() and stored. Every check in this file was a
+ * source-text match, so nothing noticed that the value went stale the moment
+ * the week turned over. This drives a real clock across a week boundary with
+ * the session open, which is the only way to see it.
+ */
+createRoot((dispose) => {
+  const [now, setNow] = createSignal(new Date(2026, 7, 25)); // Tuesday, 25 Aug
+  const session = createMeetingModeSession("idle", now);
+
+  session.start("2026-08-25");
+  assert.equal(
+    format(session.date(), "yyyy-MM-dd"), "2026-08-25",
+    "a custom date inside the current week must be honoured",
+  );
+
+  // Three weeks pass with the meeting still open.
+  setNow(new Date(2026, 8, 18)); // Friday, 18 Sep
+  assert.equal(
+    format(session.date(), "yyyy-MM-dd"), "2026-09-18",
+    "an open meeting must re-date itself to the current week, not keep August",
+  );
+  assert.equal(session.weekLabel(), getCurrentWeekLabel(new Date(2026, 8, 18)));
+
+  // Paused is the same story — that is how a meeting most often spans a week.
+  session.pause();
+  setNow(new Date(2026, 8, 25)); // Friday, 25 Sep
+  assert.equal(
+    format(session.date(), "yyyy-MM-dd"), "2026-09-25",
+    "a paused meeting must re-date itself too",
+  );
+  dispose();
+});
+
+/* A date chosen for the week in view is still honoured — the fix must not
+   flatten every meeting onto Friday. Thursday meetings are a real thing here;
+   the Attendance rows for 2026-W33 and 2026-W35 are both Thursdays. */
+assert.equal(
+  format(meetingDateForWeek(new Date(2026, 7, 27), new Date(2026, 7, 25)), "yyyy-MM-dd"),
+  "2026-08-27",
+  "a same-week Thursday meeting must survive",
+);
+assert.equal(
+  format(resolveMeetingDate("2026-08-25", new Date(2026, 8, 18)), "yyyy-MM-dd"),
+  "2026-09-18",
+  "a stale saved date must fall back to the current week's Friday",
+);
+
 assert.match(sessionSource, /if \(!allowed\.includes\(status\(\)\)\) return false/, "meeting transitions must reject duplicate starts/stops");
+assert.match(
+  sessionSource, /meetingDateForWeek\(pinned, today\(\)\)/,
+  "the meeting date must be re-derived from the current week on read, never stored as a snapshot",
+);
 assert.match(homeSource, /createMeetingModeSession\(\)/, "Home must own the meeting lifecycle");
 assert.match(homeSource, /forceMount=\{s\.index === "03" && meetingSession\.isActive\(\)\}/, "an off-screen Discussion section must mount for Meeting Mode");
 assert.match(lazySource, /setForcedMount\(true\)/, "forced sections must stay mounted after Meeting Mode closes");
