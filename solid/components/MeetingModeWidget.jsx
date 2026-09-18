@@ -85,7 +85,10 @@ export default function MeetingModeWidget(props) {
   const today = props.meetingSession?.today || createLocalDate();
   const getMeetingEndedKey = () => `mabis_meeting_ended_${props.meetingSession?.weekLabel?.() || getWeekLabel(today())}`;
 
-  const [customDate, setCustomDate] = createSignal(readSavedMeetingDate());
+  /* Passing `today` matters: readSavedMeetingDate drops — and clears — a saved
+     date that belongs to an earlier week, so the picker opens on this week
+     rather than on whatever day was last chosen a month ago. */
+  const [customDate, setCustomDate] = createSignal(readSavedMeetingDate(today()));
   const [meetingStatus, setMeetingStatus] = createSignal(null);
   const [meetingEnded, setMeetingEnded] = createSignal(localStorage.getItem(getMeetingEndedKey()) === "true");
   const [showPassword, setShowPassword] = createSignal(false);
