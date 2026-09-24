@@ -204,7 +204,9 @@ export default function DiscussionWidget(props) {
   const topicsQuery = useQuery(() => ({
     queryKey: ["topics", viewedWeek()],
     queryFn: () => base44.entities.DiscussionTopic.filter({ week_label: viewedWeek() }, "-created_date", 100),
-    refetchInterval: 15000,
+    // Paused while a topic is open in the editor: a refetch gives the edited
+    // topic a new reference and <For> remounts it, destroying the live session.
+    refetchInterval: () => (editingTopicId() ? false : 15000),
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   }));
@@ -218,6 +220,11 @@ export default function DiscussionWidget(props) {
   createEffect(() => {
     let refreshFrame = 0;
     const unsubscribe = base44.entities.DiscussionTopic.subscribe(() => {
+      // While a topic is being edited, OT owns that topic and the editor is
+      // the source of truth — a refetch here would remount the editor. Other
+      // tabs' edits to this topic arrive over the actor; edits to other topics
+      // show up once editing ends and the poll/realtime resume.
+      if (editingTopicId()) return;
       if (refreshFrame) return;
       refreshFrame = requestAnimationFrame(() => {
         refreshFrame = 0;
@@ -336,12 +343,22 @@ export default function DiscussionWidget(props) {
    * typed. It deliberately does NOT reset the form — the explicit Save button
    * still owns title/submitter/priority and the act of closing the editor.
    */
+  /*
+   * No onSuccess on purpose. Merging into the cache or invalidating here would
+   * give the edited topic a new object reference, and Solid's <For> is
+   * reference-keyed — so the TopicItem (and the EditingView + its collab
+   * session + Quill inside it) would unmount and rebuild on every debounced
+   * save, ~every 800ms while typing. That reset the caret, tore down the OT
+   * session, and was why live editing looked dead.
+   *
+   * The editor is the source of truth while editing; the write still lands in
+   * the database and other tabs still receive it through the realtime
+   * subscription. The local cache refreshes when editing ends (Save commits
+   * via updateTopic, and the 15s poll / realtime resume once editingTopicId
+   * clears — both gated below).
+   */
   const persistDescription = useMutation(() => ({
     mutationFn: ({ id, description }) => base44.entities.DiscussionTopic.update(id, { description }),
-    onSuccess: (_saved, variables) => {
-      mergeTopicIntoCache(viewedWeek(), { id: variables.id, description: variables.description });
-      queryClient.invalidateQueries({ queryKey: ["topics"] });
-    },
   }));
 
   const toggleTopic = useMutation(() => ({

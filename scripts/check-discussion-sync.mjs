@@ -7,7 +7,8 @@ const entity = JSON.parse(entitySource);
 
 const requiredSourceContracts = [
   ["realtime topic subscription", "DiscussionTopic.subscribe"],
-  ["fallback polling", "refetchInterval: 15000"],
+  ["fallback polling", "15000"],
+  ["poll paused while editing", "editingTopicId() ? false : 15000"],
   ["reconnect refresh", "refetchOnReconnect: true"],
   ["immediate local cache update", "mergeTopicIntoCache"],
   ["stable request id", "saveRequestSignature"],
