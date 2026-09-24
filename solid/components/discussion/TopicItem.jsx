@@ -148,7 +148,14 @@ function EditingView(props) {
     })
     : null;
 
-  const shouldPersist = () => !collab || !collab.connected() || collab.isWriter();
+  /*
+   * A tab editing alone has nobody to race with, so it always saves — this is
+   * the fix for the case the actor's writer flag never lands on a lone editor
+   * (a stuck/hibernated room, a dropped role message), which left the
+   * description silently unpersisted. With peers present the single-writer rule
+   * still holds: the actor's chosen writer saves everyone's converged edits.
+   */
+  const shouldPersist = () => !collab || !collab.connected() || collab.isWriter() || collab.peers().length === 0;
 
   const flushPersist = () => {
     if (!pendingPersist) return;
