@@ -1,5 +1,8 @@
-import { Show, Index } from "solid-js";
+import { Show, Index, For, onCleanup } from "solid-js";
 import { X, Loader2, Pencil, Trash2 } from "lucide-solid";
+import { base44 } from "@/api/base44Client";
+import { useAuth } from "~/lib/AuthContext";
+import { createCollabDoc } from "~/lib/collab-doc";
 import { Button, Input } from "~/components/ui";
 import { Select } from "~/components/ui/select";
 import { PRIORITY_COLORS, PRIORITY_LABELS, PRIORITY_DOT } from "~/lib/weeks";
@@ -119,6 +122,24 @@ export default function TopicItem(props) {
    paper surface with real elevation, no accent tint competing with the
    toolbar, so the Docs-style editor inside is what reads. */
 function EditingView(props) {
+  const auth = useAuth();
+  /*
+   * One live session per topic, so two people editing the same topic's
+   * description see each other's caret and text appear in real time. The
+   * MeetingDoc actor owns the merge (operational transform), exactly as it
+   * does for the weekly minutes — only the room id differs. Persistence stays
+   * on the Save button: the editor holds the converged document, so a save
+   * writes everyone's edits, not just yours.
+   */
+  const collab = props.topic?.id
+    ? createCollabDoc({
+      actors: base44.actors,
+      room: { actor: "MeetingDoc", id: `topic-${props.topic.id}` },
+      name: auth.user()?.full_name || "Someone",
+    })
+    : null;
+  onCleanup(() => collab?.dispose());
+
   const memberOptions = () => [
     { value: "All", label: "All" },
     ...(props.members || []).map((m) => ({ value: m.name, label: m.name })),
@@ -160,6 +181,21 @@ function EditingView(props) {
           />
         </div>
 
+        <Show when={collab && collab.peers().length > 0}>
+          <div class="flex flex-wrap items-center gap-1.5" role="status" aria-live="polite">
+            <span class="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              Editing now
+            </span>
+            <For each={collab.peers()}>
+              {(peer) => (
+                <span class="inline-flex items-center gap-1 rounded-full border border-border px-1.5 py-0.5 text-[10px]">
+                  <span class="h-1.5 w-1.5 rounded-full" style={{ background: peer.color }} aria-hidden="true" />
+                  {peer.name}
+                </span>
+              )}
+            </For>
+          </div>
+        </Show>
         <DiscussionDocumentEditor
           fallbackHeight={props.compact ? "140px" : "180px"}
           title={props.editTitle}
@@ -168,6 +204,7 @@ function EditingView(props) {
           onChange={props.onDescriptionChange}
           minHeight={props.compact ? "140px" : "180px"}
           initialHtml={props.editDescription}
+          collab={collab || undefined}
         />
 
         <Show when={props.error}>
