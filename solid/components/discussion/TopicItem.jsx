@@ -127,18 +127,58 @@ function EditingView(props) {
    * One live session per topic, so two people editing the same topic's
    * description see each other's caret and text appear in real time. The
    * MeetingDoc actor owns the merge (operational transform), exactly as it
-   * does for the weekly minutes — only the room id differs. Persistence stays
-   * on the Save button: the editor holds the converged document, so a save
-   * writes everyone's edits, not just yours.
+   * does for the weekly minutes — only the room id differs.
+   *
+   * Persistence is debounced and writer-elected, the same way the minutes are:
+   * exactly one participant saves the description back to the record as they
+   * type, so a second tab (or a read-only viewer) sees the change arrive over
+   * the realtime subscription without anyone pressing Save. The Save button
+   * still commits title, submitter and priority; the description is already
+   * current by then. With no session or a dropped socket, every tab saves —
+   * the same fallback the minutes use, for the same reason.
    */
+  let pendingPersist = null;
+
   const collab = props.topic?.id
     ? createCollabDoc({
       actors: base44.actors,
       room: { actor: "MeetingDoc", id: `topic-${props.topic.id}` },
       name: auth.user()?.full_name || "Someone",
+      onBecameWriter: () => flushPersist(),
     })
     : null;
-  onCleanup(() => collab?.dispose());
+
+  const shouldPersist = () => !collab || !collab.connected() || collab.isWriter();
+
+  const flushPersist = () => {
+    if (!pendingPersist) return;
+    clearTimeout(pendingPersist.timer);
+    const { html } = pendingPersist;
+    pendingPersist = null;
+    props.onPersistDescription?.(html);
+  };
+
+  const schedulePersist = (html) => {
+    if (!props.topic?.id || !props.onPersistDescription) return;
+    if (!shouldPersist()) return;
+    if (pendingPersist) clearTimeout(pendingPersist.timer);
+    const timer = setTimeout(() => {
+      pendingPersist = null;
+      props.onPersistDescription(html);
+    }, 800);
+    pendingPersist = { timer, html };
+  };
+
+  const flushOnHidden = () => { if (document.visibilityState === "hidden") flushPersist(); };
+  document.addEventListener("visibilitychange", flushOnHidden);
+  window.addEventListener("pagehide", flushPersist);
+
+  onCleanup(() => {
+    document.removeEventListener("visibilitychange", flushOnHidden);
+    window.removeEventListener("pagehide", flushPersist);
+    flushPersist();
+    collab?.dispose();
+  });
 
   const memberOptions = () => [
     { value: "All", label: "All" },
@@ -201,7 +241,7 @@ function EditingView(props) {
           title={props.editTitle}
           onTitleChange={props.onTitleChange}
           placeholder="Write your topic description, paste screenshots, add context…"
-          onChange={props.onDescriptionChange}
+          onChange={(html) => { props.onDescriptionChange(html); schedulePersist(html); }}
           minHeight={props.compact ? "140px" : "180px"}
           initialHtml={props.editDescription}
           collab={collab || undefined}

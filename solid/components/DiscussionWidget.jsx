@@ -328,6 +328,22 @@ export default function DiscussionWidget(props) {
     onError: saveFailed,
   }));
 
+  /*
+   * Live persistence for a topic's description while it is being edited. This
+   * is the writer-elected, debounced path that mirrors MeetingMinutes: only the
+   * actor's chosen writer saves, so N editors produce one stream of writes, and
+   * a second tab sees the text arrive over the realtime subscription as it is
+   * typed. It deliberately does NOT reset the form — the explicit Save button
+   * still owns title/submitter/priority and the act of closing the editor.
+   */
+  const persistDescription = useMutation(() => ({
+    mutationFn: ({ id, description }) => base44.entities.DiscussionTopic.update(id, { description }),
+    onSuccess: (_saved, variables) => {
+      mergeTopicIntoCache(viewedWeek(), { id: variables.id, description: variables.description });
+      queryClient.invalidateQueries({ queryKey: ["topics"] });
+    },
+  }));
+
   const toggleTopic = useMutation(() => ({
     mutationFn: ({ id, completed }) => base44.entities.DiscussionTopic.update(id, { completed }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["topics"] }),
@@ -417,6 +433,7 @@ export default function DiscussionWidget(props) {
     error: saveError(),
     onTitleChange: setTitle,
     onDescriptionChange: setDescription,
+    onPersistDescription: (html) => persistDescription.mutate({ id: topic.id, description: html }),
     onSubmittedByChange: setSubmittedBy,
     onPriorityChange: setPriority,
     onSave: handleAdd,
