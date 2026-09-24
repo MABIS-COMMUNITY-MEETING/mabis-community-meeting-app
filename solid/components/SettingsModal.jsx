@@ -39,15 +39,15 @@ const LAYOUT_CHOICES = [
     key: "simple",
     label: "Summer style",
     ja: "サマースタイル",
-    detail: "Default · the interface the school has always used. White cards, one after another.",
-    jaDetail: "標準・これまで使ってきた画面です。白いカードが上から順に並びます。",
+    detail: "Opt-in · the interface the school has always used. White cards, one after another.",
+    jaDetail: "オプション・これまで使ってきた画面です。白いカードが上から順に並びます。",
   },
   {
     key: "boss",
     label: "Boss style",
     ja: "ボススタイル",
-    detail: "The editorial front page · large masthead, numbered sections and scrolling type.",
-    jaDetail: "大きな見出しや番号付きの区切りがある、雑誌のような表示です。",
+    detail: "Default · the editorial front page. Large masthead, numbered sections and scrolling type.",
+    jaDetail: "標準・大きな見出しや番号付きの区切りがある、雑誌のような表示です。",
   },
 ];
 

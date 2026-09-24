@@ -65,13 +65,14 @@ function addDirectDynamicImports(key) {
 }
 
 /*
- * The boss Home layout is one chunk, and it belongs to nobody by default.
+ * The boss Home layout is one chunk, and it is the default layout.
  *
- * Home defaults to the original MABIS interface, so precaching the editorial
- * layout would download and store code the great majority of visits never
- * execute. It is emitted as a separate list instead, and the worker fetches it
- * only once the page says the boss layout is in use — dropping it again when
- * the reader switches back. See applyLayout() below.
+ * Home defaults to the editorial (boss) interface, so this chunk is fetched on
+ * first boot via the layout message (see applyLayout() below) rather than held
+ * in the install precache — keeping the install footprint small while still
+ * caching the default layout's code for offline use shortly after first load.
+ * Switching back to Summer deletes it from the layout cache. See applyLayout()
+ * below.
  */
 const BOSS_ONLY_CHUNKS = new Set(["boss"]);
 const isBossOnly = (key) => BOSS_ONLY_CHUNKS.has(manifest[key]?.name);

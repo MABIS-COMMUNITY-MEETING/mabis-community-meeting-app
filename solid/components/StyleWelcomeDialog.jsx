@@ -23,20 +23,20 @@ function hasExplicitStyleChoice() {
 
 const STYLE_CHOICES = [
   {
-    key: "simple",
+    key: "boss",
     number: "01",
+    label: "Boss style",
+    jaLabel: "ボススタイル",
+    description: "Modern and editorial — a bold masthead, numbered sections, and more visual movement. The recommended default.",
+    jaDescription: "モダンで雑誌のような、大きな見出しと番号付きセクションを使った、動きのあるレイアウトです。おすすめの標準スタイルです。",
+  },
+  {
+    key: "simple",
+    number: "02",
     label: "Summer style",
     jaLabel: "サマースタイル",
     description: "Simple and familiar — straightforward cards, less visual movement, and the original MABIS layout.",
     jaDescription: "シンプルで親しみやすい、わかりやすいカード中心のMABIS本来のレイアウトです。画面の動きも控えめです。",
-  },
-  {
-    key: "boss",
-    number: "02",
-    label: "Boss style",
-    jaLabel: "ボススタイル",
-    description: "Modern and editorial — a bold masthead, numbered sections, and more visual movement.",
-    jaDescription: "モダンで雑誌のような、大きな見出しと番号付きセクションを使った、動きのあるレイアウトです。",
   },
 ];
 
