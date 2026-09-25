@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Bell, X } from "lucide-solid";
 import { useAuth } from "~/lib/AuthContext";
 import { getWeekLabel } from "~/lib/weeks";
+import { assignmentIsCurrent, getMonthLabel } from "@/lib/jobsRotation";
 
 /*
  * Weekly job reminder — port of src/components/JobReminder.jsx.
@@ -50,6 +51,7 @@ export default function JobReminder() {
   })());
   const todayKey = `job_reminder_${new Date().toDateString()}`;
   const currentWeek = getWeekLabel(new Date());
+  const currentMonth = getMonthLabel(new Date());
 
   const assignmentsQuery = useQuery(() => ({
     queryKey: ["assignments"],
@@ -58,7 +60,8 @@ export default function JobReminder() {
 
 
   const myJobs = () => (assignmentsQuery.data || []).filter((a) =>
-    a.week_label === currentWeek && auth.user()?.email && a.assigned_to_email === auth.user().email
+    auth.user()?.email && a.assigned_to_email === auth.user().email
+    && assignmentIsCurrent(a, currentWeek, currentMonth)
   );
 
   const pending = () => myJobs().filter((a) => {

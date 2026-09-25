@@ -158,8 +158,27 @@ export default function JobsWidget(props) {
     studentMembers().filter((m) => participatesInJobs(m, currentWeek())));
   const sortedStudentMembers = createMemo(() =>
     [...studentMembers()].sort((a, b) => displayName(a).localeCompare(displayName(b))));
-  const currentAssignments = createMemo(() =>
-    assignments().filter((a) => assignmentIsCurrent(a, currentWeek(), currentMonth())));
+  // Weekly jobs never reset: an assignment stays current until it is removed,
+  // so keep the newest assignment per job title (the list is newest-first).
+  // Monthly jobs still expire at the month boundary. Without this dedupe the
+  // wheel would see every historical weekly assignment as "taken" and nobody
+  // could spin.
+  const currentAssignments = createMemo(() => {
+    const week = currentWeek();
+    const month = currentMonth();
+    const list = assignments();
+    const monthly = list.filter((a) => jobPeriod(a) === "monthly" && assignmentIsCurrent(a, week, month));
+    const seen = new Set();
+    const weekly = [];
+    for (const a of list) {
+      if (jobPeriod(a) !== "weekly" || !assignmentIsCurrent(a, week, month)) continue;
+      const title = normalizeJobTitle(a.job_title);
+      if (seen.has(title)) continue;
+      seen.add(title);
+      weekly.push(a);
+    }
+    return [...monthly, ...weekly];
+  });
   const assignedJobLabels = createMemo(() => currentAssignments().map((a) => normalizeJobTitle(a.job_title)));
   const assignedMemberKeys = createMemo(() => new Set(
     currentAssignments().map((a) => memberRotationKey({ email: a.assigned_to_email, name: a.assigned_to_name }))));
@@ -272,6 +291,10 @@ export default function JobsWidget(props) {
 
   const carryToNextPeriod = (a) => {
     const period = jobPeriod(a);
+    // Weekly jobs never reset, so an assignment already persists into the next
+    // week — carrying a fresh copy would only stack duplicates. Only monthly
+    // jobs still carry forward on "not done".
+    if (period !== "monthly") return;
     const nextWeek = period === "weekly" ? getNextWeekLabel(a.week_label || currentWeek()) : null;
     const nextMonth = period === "monthly" ? getNextMonthLabel(a.month_label || currentMonth()) : null;
     const exists = assignments().some((c) =>
@@ -335,7 +358,9 @@ export default function JobsWidget(props) {
     const message = nextState === "done"
       ? `Checked off "${title}".`
       : nextState === "notdone"
-        ? `Marked "${title}" not done — carried to the next ${jobPeriod(a) === "monthly" ? "month" : "week"}.`
+        ? jobPeriod(a) === "monthly"
+          ? `Marked "${title}" not done — carried to the next month.`
+          : `Marked "${title}" not done.`
         : `Cleared the status for "${title}".`;
     setJobActionMessage(message);
     window.setTimeout(() => setJobActionMessage(""), 5000);
@@ -375,7 +400,9 @@ export default function JobsWidget(props) {
       const nextNotDone = [...new Set([...notDone, ...actionKeys])];
       updateAssignment.mutate({ id: jobId, data: { days_completed: nextDone, not_done_days: nextNotDone, completed: false, not_done: true } });
       carryToNextPeriod(a);
-      setJobActionMessage(`Marked "${normalizeJobTitle(a.job_title)}" as not done — carried to the next ${period === "monthly" ? "month" : "week"}.`);
+      setJobActionMessage(period === "monthly"
+        ? `Marked "${normalizeJobTitle(a.job_title)}" as not done — carried to the next month.`
+        : `Marked "${normalizeJobTitle(a.job_title)}" as not done.`);
     }
 
     window.history.replaceState({}, "", window.location.pathname);
@@ -453,7 +480,13 @@ export default function JobsWidget(props) {
   const handleClearAll = async () => {
     if (!window.confirm("Clear all current weekly and monthly job assignments?")) return;
     try {
-      await Promise.all(currentAssignments().map((a) => base44.entities.JobAssignment.delete(a.id)));
+      // Delete every current assignment, not just the deduped view, so clearing
+      // truly empties the board — weekly jobs never reset, so every weekly
+      // assignment is current and would otherwise reappear from the dedupe.
+      const week = currentWeek();
+      const month = currentMonth();
+      const toDelete = assignments().filter((a) => assignmentIsCurrent(a, week, month));
+      await Promise.all(toDelete.map((a) => base44.entities.JobAssignment.delete(a.id)));
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
       setRemovedIds([]);
     } catch {
@@ -666,7 +699,7 @@ export default function JobsWidget(props) {
                     <p class="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                       {rotationMembers().length}/{studentMembers().length} on job list
                     </p>
-                    <p class="text-[10px] text-muted-foreground">Remove skips this week’s wheel only. They return next week; their profile is kept.</p>
+                    <p class="text-[10px] text-muted-foreground">Remove takes them off the job list until you add them back. Their profile is kept.</p>
                   </div>
                   <div class="flex gap-1.5">
                     <button

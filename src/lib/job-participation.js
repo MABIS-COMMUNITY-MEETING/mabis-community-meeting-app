@@ -7,8 +7,10 @@ export function participatesInJobs(member, week) {
 }
 
 export function jobParticipationUpdate(enabled, week) {
-  return {
-    job_rotation_enabled: true,
-    job_rotation_excluded_week: enabled ? "" : week,
-  };
+  // Removal is permanent until somebody re-adds the student: setting
+  // job_rotation_enabled to false keeps them off the wheel in every future
+  // week, so a removed student cannot reappear on their own after Sunday.
+  return enabled
+    ? { job_rotation_enabled: true, job_rotation_excluded_week: "" }
+    : { job_rotation_enabled: false, job_rotation_excluded_week: "" };
 }

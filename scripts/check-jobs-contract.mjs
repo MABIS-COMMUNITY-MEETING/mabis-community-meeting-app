@@ -41,7 +41,7 @@ assert.equal(normalizeJobTitle("Time Taker (2)"), "Time Keeper (2)");
 assert.equal(assignmentIsCurrent({ job_title: "Water Plants (1)", week_label: "2026-W33" }, "2026-W33", "2026-08"), true);
 assert.equal(assignmentIsCurrent({ job_title: "Time Keeper (1)", month_label: "2026-08" }, "2026-W33", "2026-08"), true);
 assert.equal(assignmentIsCurrent({ job_title: "Time Taker (2)", week_label: "2026-W33" }, "2026-W33", "2026-08"), true);
-assert.equal(assignmentIsCurrent({ job_title: "Clean Lounge (1)", week_label: "2026-W32" }, "2026-W33", "2026-08"), false);
+assert.equal(assignmentIsCurrent({ job_title: "Clean Lounge (1)", week_label: "2026-W32" }, "2026-W33", "2026-08"), true, "weekly jobs never reset — a previous week's assignment stays current");
 
 // A completed spin normalizes its angle, so repeated spins never accumulate a
 // huge floating-point value. Exercise far more spins than a real meeting will.
@@ -130,12 +130,12 @@ for (const mount of jobsWidgetMounts) {
 }
 
 /*
- * Removing somebody from the job list lasts exactly one week.
+ * Removing somebody from the job list is permanent until they are re-added.
  *
  * This is behaviour, not source text. Every other job-list assertion in this
  * file greps for a pattern, which cannot tell whether the dates actually work
- * out — and "they come back next week" is the half a reader is most likely to
- * assume rather than verify.
+ * out — and "they come back on their own" is the half a reader is most likely
+ * to assume rather than verify.
  */
 const removalWeek = getCurrentWeekLabel(new Date(2026, 7, 14));   // 2026-W33
 const followingWeek = getCurrentWeekLabel(new Date(2026, 7, 21)); // 2026-W34
@@ -145,14 +145,14 @@ const student = { id: "m1", name: "Sample" };
 assert.equal(participatesInJobs(student, removalWeek), true, "a new student starts on the wheel");
 
 const afterRemove = { ...student, ...jobParticipationUpdate(false, removalWeek) };
-assert.equal(participatesInJobs(afterRemove, removalWeek), false, "Remove must take them off THIS week's wheel");
-assert.equal(participatesInJobs(afterRemove, followingWeek), true, "they must return by themselves the week after");
+assert.equal(participatesInJobs(afterRemove, removalWeek), false, "Remove must take them off the wheel");
+assert.equal(participatesInJobs(afterRemove, followingWeek), false, "a removed student must NOT come back on their own in a later week");
 
 const afterUndo = { ...afterRemove, ...jobParticipationUpdate(true, removalWeek) };
 assert.equal(participatesInJobs(afterUndo, removalWeek), true, "Add must put them back immediately, not next week");
 
 /* A legacy row with no dated exclusion is still an explicit opt-out, and must
-   not be quietly re-enrolled by the week-scoped logic above. */
+   not be quietly re-enrolled. */
 assert.equal(participatesInJobs({ ...student, job_rotation_enabled: false }, removalWeek), false);
 assert.equal(participatesInJobs({ ...student, job_rotation_enabled: false }, followingWeek), false);
 assert.match(jobsSource, /props\.wheelSession\?\.winner/);

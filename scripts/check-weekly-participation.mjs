@@ -16,7 +16,7 @@ const excluded = { ...student, ...jobParticipationUpdate(false, week) };
 assert.equal(participatesInJobs(student, week), true);
 assert.equal(participatesInJobs(excluded, week), false, "remove excludes this week");
 assert.equal(participatesInJobs(JSON.parse(JSON.stringify(excluded)), week), false, "reload retains exclusion");
-assert.equal(participatesInJobs(excluded, getWeekLabel(nextSaturday)), true, "next meeting week restores the student");
+assert.equal(participatesInJobs(excluded, getWeekLabel(nextSaturday)), false, "a removed student stays removed across weeks until re-added");
 assert.equal(participatesInJobs({ ...excluded, ...jobParticipationUpdate(true, week) }, week), true, "Add restores immediately");
 assert.equal(participatesInJobs({ ...student, job_rotation_enabled: false }, week), false, "undated legacy opt-outs are not silently erased");
 assert.deepEqual([excluded].filter((m) => participatesInJobs(m, week)), [], "last removal must leave an empty wheel");

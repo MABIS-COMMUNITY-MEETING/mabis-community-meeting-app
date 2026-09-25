@@ -145,5 +145,5 @@ export function jobPeriod(jobOrAssignment) {
 export function assignmentIsCurrent(assignment, weekLabel, monthLabel) {
   return jobPeriod(assignment) === "monthly"
     ? assignment?.month_label === monthLabel || (!assignment?.month_label && assignment?.week_label === weekLabel)
-    : assignment?.week_label === weekLabel;
+    : true; // weekly jobs never reset — an assignment stays current until removed
 }
