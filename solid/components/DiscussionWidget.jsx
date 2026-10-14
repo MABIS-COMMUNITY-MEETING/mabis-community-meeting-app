@@ -504,6 +504,7 @@ export default function DiscussionWidget(props) {
       </div>
 
       <DiscussionDocumentEditor
+        draftCollab
         fallbackHeight={`${formProps.editorHeight ?? 180}px`}
         title={title()}
         onTitleChange={setTitle}

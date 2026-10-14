@@ -10,7 +10,7 @@ import { useAuth } from "~/lib/AuthContext";
 import { Button, Input } from "~/components/ui";
 import { JapaneseText } from "~/components/primitives";
 
-const DocsEditor = lazy(() => import("~/components/DocsEditor"));
+import DiscussionDocumentEditor from "~/components/discussion/DiscussionDocumentEditor";
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 
@@ -145,15 +145,15 @@ export default function NewsWidget(props) {
           <div class="border border-border rounded-xl p-3 space-y-3 bg-muted sm:p-4">
             <Input placeholder="News title..." value={title()} onInput={(e) => setTitle(e.currentTarget.value)} class="rounded-lg" />
 
-            <Suspense fallback={<div class="widget-loading-shell" style={{ "--widget-fallback-height": "140px" }} aria-hidden />}>
-              <DocsEditor
-                initialHtml={body()}
-                onChange={setBody}
-                placeholder="Write the news…"
-                minHeight="140px"
-                title={title() || "Untitled news"}
-              />
-            </Suspense>
+            <DiscussionDocumentEditor
+              draftCollab
+              fallbackHeight="140px"
+              initialHtml={body()}
+              onChange={setBody}
+              placeholder="Write the news…"
+              minHeight="140px"
+              title={title() || "Untitled news"}
+            />
 
             <div class="flex flex-wrap gap-2">
               <label class="flex items-center gap-1.5 cursor-pointer px-3 py-2 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-muted-foreground">

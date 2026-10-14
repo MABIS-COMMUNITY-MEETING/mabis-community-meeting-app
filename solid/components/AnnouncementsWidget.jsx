@@ -13,7 +13,7 @@ import { Button, Input } from "~/components/ui";
 import { Select } from "~/components/ui/select";
 import { JapaneseText } from "~/components/primitives";
 
-const DocsEditor = lazy(() => import("~/components/DocsEditor"));
+import DiscussionDocumentEditor from "~/components/discussion/DiscussionDocumentEditor";
 
 const MABIS_LOGO = "https://media.base44.com/images/public/6a2fcc3f4fec7200fed7a889/b6064da4f_MabisLogo-800x800.png/v1/fill/w_144,h_144/logo.webp";
 
@@ -211,15 +211,15 @@ export default function AnnouncementsWidget(props) {
               class="rounded-lg border-border bg-card font-semibold"
             />
 
-            <Suspense fallback={<div class="widget-loading-shell" style={{ "--widget-fallback-height": "120px" }} aria-hidden />}>
-              <DocsEditor
-                initialHtml={body()}
-                onChange={setBody}
-                placeholder="Write your announcement…"
-                minHeight="120px"
-                title="Announcement"
-              />
-            </Suspense>
+            <DiscussionDocumentEditor
+              draftCollab
+              fallbackHeight="120px"
+              initialHtml={body()}
+              onChange={setBody}
+              placeholder="Write your announcement…"
+              minHeight="120px"
+              title="Announcement"
+            />
 
             <Show when={imagePreview()}>
               <div class="relative inline-block">

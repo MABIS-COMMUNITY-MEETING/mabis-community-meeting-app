@@ -162,8 +162,6 @@ const loaders = {
   "/history/announcements": () => import("~/pages/AnnouncementsHistory"),
   "/history/news": () => import("~/pages/NewsHistory"),
   "/feedback": () => import("~/pages/Feedback"),
-  "/documents": () => import("~/pages/Documents"),
-  "/documents/:id": () => import("~/pages/DocumentEditor"),
 };
 
 const started = new Map();

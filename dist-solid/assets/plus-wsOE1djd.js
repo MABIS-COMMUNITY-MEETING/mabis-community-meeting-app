@@ -1,0 +1,1 @@
+import{I as e}from"./Icon-DHVVZv8Z.js";import{e as o,m as r}from"./index-CTeef0gr.js";var p=[["path",{d:"M5 12h14",key:"1ays0h"}],["path",{d:"M12 5v14",key:"s699le"}]],s=a=>o(e,r(a,{iconNode:p,name:"plus"})),l=s;export{l as p};
