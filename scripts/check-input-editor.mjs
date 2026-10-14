@@ -8,7 +8,11 @@ const dom = new JSDOM("<!doctype html><html><body></body></html>", {
 });
 globalThis.window = dom.window;
 globalThis.document = dom.window.document;
-globalThis.navigator = dom.window.navigator;
+Object.defineProperty(globalThis, "navigator", {
+  value: dom.window.navigator,
+  configurable: true,
+  writable: true,
+});
 globalThis.Element = dom.window.Element;
 globalThis.Node = dom.window.Node;
 globalThis.Text = dom.window.Text;
