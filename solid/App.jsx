@@ -40,6 +40,8 @@ const History = lazy(() => import("~/pages/History"));
 const AnnouncementsHistory = lazy(() => import("~/pages/AnnouncementsHistory"));
 const NewsHistory = lazy(() => import("~/pages/NewsHistory"));
 const Feedback = lazy(() => import("~/pages/Feedback"));
+const Documents = lazy(() => import("~/pages/Documents"));
+const DocumentEditor = lazy(() => import("~/pages/DocumentEditor"));
 const NotFound = lazy(() => import("~/pages/NotFound"));
 
 /*
@@ -141,6 +143,14 @@ function ProtectedFeedback() {
   return <Protected><Feedback /></Protected>;
 }
 
+function ProtectedDocuments() {
+  return <Protected><Documents /></Protected>;
+}
+
+function ProtectedDocumentEditor() {
+  return <Protected><DocumentEditor /></Protected>;
+}
+
 /* React wraps every route except Splash in PageTransition. */
 function TransitionedLogin() {
   const auth = useAuth();
@@ -201,6 +211,8 @@ export default function App() {
               <Route path="/history/announcements" component={ProtectedAnnouncementsHistory} />
               <Route path="/history/news" component={ProtectedNewsHistory} />
               <Route path="/feedback" component={ProtectedFeedback} />
+              <Route path="/documents" component={ProtectedDocuments} />
+              <Route path="/documents/:id" component={ProtectedDocumentEditor} />
               <Route path="*" component={TransitionedNotFound} />
             </Router>
           </Suspense>

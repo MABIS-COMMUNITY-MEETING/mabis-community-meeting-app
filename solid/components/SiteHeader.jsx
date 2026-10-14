@@ -17,6 +17,7 @@ const NAV = [
   { label: "Announcements", ja: "お知らせ", to: "/history/announcements", n: "03" },
   { label: "News", ja: "ニュース", to: "/history/news", n: "04" },
   { label: "Feedback Inbox", ja: "フィードバック受信箱", to: "/feedback", n: "05" },
+  { label: "Documents", ja: "ドキュメント", to: "/documents", n: "06" },
 ];
 
 /*
